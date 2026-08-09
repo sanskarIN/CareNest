@@ -54,7 +54,8 @@ public sealed class MauiNavigator(
         cancellationToken.ThrowIfCancellationRequested();
         return MainThread.InvokeOnMainThreadAsync(() =>
         {
-            var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
+            var windows = Microsoft.Maui.Controls.Application.Current?.Windows;
+            var window = windows is { Count: > 0 } ? windows[0] : null;
             if (window is not null)
             {
                 window.Page = services.GetRequiredService<Views.AppShell>();
@@ -67,7 +68,8 @@ public sealed class MauiNavigator(
         cancellationToken.ThrowIfCancellationRequested();
         return MainThread.InvokeOnMainThreadAsync(() =>
         {
-            var window = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
+            var windows = Microsoft.Maui.Controls.Application.Current?.Windows;
+            var window = windows is { Count: > 0 } ? windows[0] : null;
             if (window is not null)
             {
                 window.Page = new NavigationPage(services.GetRequiredService<Views.OnboardingPage>());
