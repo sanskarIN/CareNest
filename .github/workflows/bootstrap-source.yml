@@ -1,0 +1,43 @@
+name: CareNest source bootstrap
+
+on:
+  push:
+    branches:
+      - main
+      - build/carenest-bootstrap
+    paths:
+      - build/bootstrap/trigger.txt
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reconstruct validated source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat build/bootstrap/source.part.* > /tmp/carenest-source.b64
+          base64 -d /tmp/carenest-source.b64 > /tmp/carenest-source.tar.xz
+          echo "7a712eec2ee969768cec28eb513c886da66765899412586ba91f2a0cde8b73e8  /tmp/carenest-source.tar.xz" | sha256sum -c -
+          mkdir -p /tmp/carenest-source
+          tar -xJf /tmp/carenest-source.tar.xz -C /tmp/carenest-source
+      - name: Create clean release commit with requested identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout -B carenest-release origin/main
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/carenest-source/. .
+          git config user.name "Sanskar"
+          git config user.email "sanskarin@outlook.in"
+          git add -A
+          git commit -m "feat: build complete CareNest local-first health organizer"
+          git push origin HEAD:refs/heads/release/carenest-1.0.0-rc.1 --force
