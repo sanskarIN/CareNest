@@ -36,6 +36,9 @@ jobs:
           git checkout -B carenest-release origin/main
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -a /tmp/carenest-source/. .
+          rm -rf .github/workflows
+          mkdir -p .github/workflows
+          git show origin/main:LICENSE > LICENSE
           git config user.name "Sanskar"
           git config user.email "sanskarin@outlook.in"
           git add -A
