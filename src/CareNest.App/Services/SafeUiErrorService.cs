@@ -13,7 +13,8 @@ public sealed class SafeUiErrorService(ILogger<SafeUiErrorService> logger)
                 "CareNest operation failed. Sensitive user fields are intentionally excluded from this log message.");
         }
 
-        var page = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault()?.Page;
+        var windows = Microsoft.Maui.Controls.Application.Current?.Windows;
+        var page = windows is { Count: > 0 } ? windows[0].Page : null;
         if (page is null)
         {
             return;
