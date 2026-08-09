@@ -3,5 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>CareNest.Shared</RootNamespace>
     <AssemblyName>CareNest.Shared</AssemblyName>
+    <!-- The required public project/namespace name "CareNest.Shared" intentionally triggers CA1716 for cross-language keyword compatibility; Result<T> factory methods intentionally trigger CA1000 to keep the small result primitive ergonomic and allocation-free. These are reviewed design exceptions, not blanket analyzer suppression. -->
+    <NoWarn>$(NoWarn);CA1716;CA1000</NoWarn>
   </PropertyGroup>
 </Project>
