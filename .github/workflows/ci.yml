@@ -1,0 +1,75 @@
+name: CareNest CI
+
+on:
+  push:
+    branches: [main, "release/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-tests:
+    name: Core tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore and test unit tests
+        run: dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj --configuration Release --nologo
+      - name: Restore and test integration tests
+        run: dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj --configuration Release --nologo
+      - name: Run UI contract tests
+        run: dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj --configuration Release --nologo
+
+  android:
+    name: Android build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Android MAUI workload
+        run: dotnet workload install maui-android
+      - name: Build Android
+        run: dotnet build src/CareNest.App/CareNest.App.csproj -f net10.0-android -c Release --nologo
+
+  windows:
+    name: Windows build
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Windows MAUI workload
+        run: dotnet workload install maui
+      - name: Build Windows
+        run: dotnet build src/CareNest.App/CareNest.App.csproj -f net10.0-windows10.0.19041.0 -c Release --nologo
+
+  apple:
+    name: Apple build
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Apple MAUI workloads
+        run: dotnet workload install maui-ios maui-maccatalyst
+      - name: Build iOS simulator target
+        run: dotnet build src/CareNest.App/CareNest.App.csproj -f net10.0-ios -c Release -p:RuntimeIdentifier=iossimulator-arm64 --nologo
+      - name: Build Mac Catalyst
+        run: dotnet build src/CareNest.App/CareNest.App.csproj -f net10.0-maccatalyst -c Release --nologo
