@@ -1,0 +1,4 @@
+CareNest 1.0.0-rc.1 — BMC artwork and release-hardening exact-head verification
+
+This marker exists only to trigger pull-request CI for the current main head plus the marker commit.
+It contains no user, health, credential, document, backup, or signing data.
