@@ -17,6 +17,9 @@ public sealed class DatabaseMigrationTests
 
         var journalMode = await store.Database.Connection.ExecuteScalarAsync<string>("PRAGMA journal_mode;");
         Assert.Equal("wal", journalMode, ignoreCase: true);
+
+        var busyTimeout = await store.Database.Connection.ExecuteScalarAsync<int>("PRAGMA busy_timeout;");
+        Assert.True(busyTimeout >= 5000);
     }
 
     [Fact]
