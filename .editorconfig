@@ -24,6 +24,8 @@ dotnet_diagnostic.CA1303.severity = suggestion
 # Performance and culture-explicitness guidance remains visible to contributors,
 # but these recommendations must not hide functional compile/test failures in CI.
 dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1711.severity = suggestion
+dotnet_diagnostic.CA1822.severity = suggestion
 dotnet_diagnostic.CA1848.severity = suggestion
 dotnet_diagnostic.CA1859.severity = suggestion
 dotnet_diagnostic.CA1865.severity = suggestion
