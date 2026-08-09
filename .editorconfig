@@ -21,9 +21,13 @@ dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_event = false:suggestion
 dotnet_diagnostic.CA2007.severity = none
 dotnet_diagnostic.CA1303.severity = suggestion
-# Logging delegate optimization is performance guidance, not a release-blocking correctness rule.
-# Keep it visible to contributors without failing all platform builds.
+# Performance and culture-explicitness guidance remains visible to contributors,
+# but these recommendations must not hide functional compile/test failures in CI.
+dotnet_diagnostic.CA1305.severity = suggestion
 dotnet_diagnostic.CA1848.severity = suggestion
+dotnet_diagnostic.CA1859.severity = suggestion
+dotnet_diagnostic.CA1865.severity = suggestion
+dotnet_diagnostic.CA1869.severity = suggestion
 
 # Descriptive xUnit test names intentionally use underscores for readability.
 [tests/**/*.cs]
