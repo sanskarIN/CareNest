@@ -13,7 +13,7 @@ public static class AppointmentRules
 
         if (appointment.ReminderMinutesBefore is < 0 or > 60 * 24 * 30)
         {
-            throw new ArgumentOutOfRangeException(nameof(appointment.ReminderMinutesBefore));
+            throw new ArgumentOutOfRangeException(nameof(appointment), "Appointment reminder must be between 0 minutes and 30 days before the appointment.");
         }
     }
 }
