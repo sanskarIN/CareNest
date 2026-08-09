@@ -86,7 +86,7 @@ The current release has no automatic cloud sync and no silent caregiver sharing.
 
 **[Buy Me a Coffee → https://buymeacoffee.com/sanskarIN](https://buymeacoffee.com/sanskarIN)**
 
-CareNest is open source. Voluntary project support helps continued design, testing, documentation, accessibility work, platform maintenance, and future releases.
+CareNest is open source. If you want to voluntarily support continued development, the link above helps fund design, testing, documentation, accessibility work, platform maintenance, and future releases.
 
 Project support does not unlock medical advice, premium health behavior, different reminder behavior, or access to user health data.
 
