@@ -1,0 +1,3 @@
+CareNest 1.0.0-rc.1 verification pass 6
+Base: 682aef2aa31981c6be31086aa7af8e1c8e56e94b
+Purpose: verify backup snapshot, shared MAUI compile fixes, analyzer scoping, and hardened Android notification integration across all supported targets.
