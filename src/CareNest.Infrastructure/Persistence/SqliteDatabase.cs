@@ -71,7 +71,11 @@ public sealed class SqliteDatabase : IAsyncDisposable
         }
 
         var escaped = destinationPath.Replace("'", "''", StringComparison.Ordinal);
-        await Connection.ExecuteAsync("PRAGMA wal_checkpoint(FULL);");
+
+        // wal_checkpoint returns a result row (busy/log/checkpointed). Consume the
+        // first scalar rather than executing it as a non-query; sqlite-net otherwise
+        // surfaces SQLITE_ROW as a misleading "not an error" exception.
+        _ = await Connection.ExecuteScalarAsync<int>("PRAGMA wal_checkpoint(FULL);");
         await Connection.ExecuteAsync($"VACUUM INTO '{escaped}';");
     }
 
