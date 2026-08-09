@@ -48,6 +48,7 @@
     <ProjectReference Include="..\CareNest.Domain\CareNest.Domain.csproj" />
     <ProjectReference Include="..\CareNest.Infrastructure\CareNest.Infrastructure.csproj" />
     <ProjectReference Include="..\CareNest.Shared\CareNest.Shared.csproj" />
+    <PackageReference Include="Microsoft.Maui.Controls" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
 </Project>
