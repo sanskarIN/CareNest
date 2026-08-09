@@ -23,4 +23,8 @@ Include affected version, platform, reproduction conditions, impact, and suggest
 - SQLite records rely on platform application sandbox protections; CareNest does **not** claim transparent database encryption at rest.
 - No production secrets belong in source control.
 
+## Dependency security
+
+Known dependency advisories and any temporary, narrowly scoped audit exception are tracked in `docs/security/DEPENDENCY_RISK_REGISTER.md`. A suppression does not mean a vulnerability is fixed; it exists only to keep the remaining build and test pipeline observable while an upgrade or dependency migration is evaluated.
+
 See `docs/security/THREAT_MODEL.md` for boundaries and residual risks.
