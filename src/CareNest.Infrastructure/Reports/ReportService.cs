@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using CareNest.Application.Contracts;
 using CareNest.Shared;
@@ -6,6 +7,11 @@ namespace CareNest.Infrastructure.Reports;
 
 public sealed class ReportService(ICareNestRepository repository) : IReportService
 {
+    private static readonly JsonSerializerOptions ExportJsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
     public async Task<string> CreateProfileDataJsonAsync(
         string profileId,
         string outputPath,
@@ -57,7 +63,7 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
         await JsonSerializer.SerializeAsync(
             stream,
             payload,
-            new JsonSerializerOptions { WriteIndented = true },
+            ExportJsonOptions,
             cancellationToken);
         return outputPath;
     }
@@ -102,8 +108,8 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
             lines.Add(
                 $"- {medicine.Name} | form: {medicine.Form} | " +
                 $"strength text: {medicine.StrengthText ?? "not entered"} | state: {medicine.State} | " +
-                $"estimated stock: {(estimatedStock?.ToString("0.##") ?? "not tracked")} | " +
-                $"refill date: {(medicine.RefillDate?.ToString("yyyy-MM-dd") ?? "not entered")}");
+                $"estimated stock: {(estimatedStock?.ToString("0.##", CultureInfo.InvariantCulture) ?? "not tracked")} | " +
+                $"refill date: {(medicine.RefillDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "not entered")}");
         }
 
         lines.Add("");
@@ -160,7 +166,7 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
             profiles.TryGetValue(x.ProfileId, out var p) ? p.Name : "Unknown profile",
             medicines.TryGetValue(x.MedicineId, out var m) ? m.Name : "Unknown medicine",
             x.Status,
-            x.EventUtc.ToString("O"),
+            x.EventUtc.ToString("O", CultureInfo.InvariantCulture),
             x.Note,
             x.ManuallyEdited
         }));
@@ -195,8 +201,8 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
         rows.AddRange(occurrences.Select(x => (IReadOnlyList<object?>)new object?[]
         {
             medicines.TryGetValue(x.MedicineId, out var m) ? m.Name : "Unknown medicine",
-            x.ScheduledUtc.ToString("O"),
-            x.LocalScheduledTime.ToString("s"),
+            x.ScheduledUtc.ToString("O", CultureInfo.InvariantCulture),
+            x.LocalScheduledTime.ToString("s", CultureInfo.InvariantCulture),
             x.TimeZoneId,
             x.State,
             x.FollowUp
@@ -226,10 +232,10 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
         {
             x.Title,
             x.ClinicianOrFacility,
-            x.StartsUtc.ToString("O"),
+            x.StartsUtc.ToString("O", CultureInfo.InvariantCulture),
             x.TimeZoneId,
             x.Location,
-            x.FollowUpDate?.ToString("O"),
+            x.FollowUpDate?.ToString("O", CultureInfo.InvariantCulture),
             x.Archived
         }));
 
@@ -259,7 +265,7 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
             x.FolderName,
             x.OriginalFileName,
             x.OriginalSizeBytes,
-            x.CreatedUtc.ToString("O")
+            x.CreatedUtc.ToString("O", CultureInfo.InvariantCulture)
         }));
 
         await CsvWriter.WriteAsync(outputPath, rows, cancellationToken);
@@ -290,7 +296,7 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
                 estimated,
                 medicine.RefillThreshold,
                 medicine.StockChangePerTakenEvent,
-                medicine.RefillDate?.ToString("yyyy-MM-dd"),
+                medicine.RefillDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 medicine.State
             });
         }
@@ -323,8 +329,8 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
                 {
                     profiles.TryGetValue(x.ProfileId, out var p) ? p.Name : "Unknown profile",
                     medicines.TryGetValue(x.MedicineId, out var m) ? m.Name : "Unknown medicine",
-                    x.ScheduledUtc.ToString("O"),
-                    x.LocalScheduledTime.ToString("s"),
+                    x.ScheduledUtc.ToString("O", CultureInfo.InvariantCulture),
+                    x.LocalScheduledTime.ToString("s", CultureInfo.InvariantCulture),
                     x.TimeZoneId,
                     x.State
                 }));
@@ -332,5 +338,4 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
         await CsvWriter.WriteAsync(outputPath, rows, cancellationToken);
         return outputPath;
     }
-
 }
