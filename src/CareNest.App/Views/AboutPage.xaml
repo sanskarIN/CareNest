@@ -39,6 +39,8 @@
           <Label Text="Open source and support" Style="{StaticResource SectionTitle}" />
           <Button Text="GitHub repository" Command="{Binding OpenRepositoryCommand}" />
           <Button Text="Creator profile" Command="{Binding OpenCreatorCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Support CareNest on Buy Me a Coffee" Command="{Binding SupportProjectCommand}" Style="{StaticResource SecondaryButton}" />
+          <Label Text="Project support is voluntary and does not unlock medical advice, premium health features, or different reminder behavior." Style="{StaticResource MutedText}" />
           <Button Text="Business: sanskarin@outlook.in" Command="{Binding BusinessEmailCommand}" Style="{StaticResource SecondaryButton}" />
           <Button Text="Support: supportramsandesh@gmail.com" Command="{Binding SupportEmailCommand}" Style="{StaticResource SecondaryButton}" />
           <Button Text="Privacy policy" Command="{Binding PrivacyCommand}" Style="{StaticResource SecondaryButton}" />
