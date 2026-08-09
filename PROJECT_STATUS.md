@@ -25,11 +25,12 @@
 - MAUI per-target CI restore/build isolation is implemented without propagating app target frameworks into referenced `net10.0` projects.
 - Android notification integration has explicit API-level guards and nullability checks.
 - Apple verification uses a macOS 26 runner compatible with the current .NET 10 Apple workload.
-- Buy Me a Coffee voluntary project-support URL is centralized as `https://buymeacoffee.com/sanskarIN`.
-- The About page exposes a dedicated voluntary project-support action.
-- `.github/FUNDING.yml` exposes the same URL through GitHub funding metadata.
-- README, support, privacy, terms, security, threat-model, data-lifecycle, changelog, store-guidance, release-checklist, and UI-contract surfaces document the voluntary/non-medical funding boundary.
-- `docs/releases/NEXT_STEPS.md` tracks production-release blockers, store/signing work, release promotion tasks, post-release quality work, and separately reviewed future-version ideas.
+- Voluntary Buy Me a Coffee project-support link is centralized at `https://buymeacoffee.com/sanskarIN` and exposed through the About/support surfaces and GitHub funding metadata.
+- Custom CareNest Buy Me a Coffee vector artwork is stored at `src/CareNest.App/Resources/Images/buy_me_a_coffee_carenest.svg`.
+- Clickable visual support pages are available at `BUY_ME_A_COFFEE.md` and `docs/SUPPORT_CARENEST.md`.
+- Release preflight scripts are available for Bash and PowerShell.
+- Manual cross-platform/device test matrix and store-submission checklist are documented.
+- SQLite dependency migration/verification plan is documented for the open advisory path.
 
 ## Security dependency status
 
@@ -40,23 +41,19 @@ An attempted `2.1.12` bundle pin was rejected because that version is not availa
 - the exact advisory URL is temporarily suppressed through `NuGetAuditSuppress` so unrelated compile/test failures remain visible;
 - no wildcard or severity-wide audit suppression is used;
 - `docs/security/DEPENDENCY_RISK_REGISTER.md` records the open risk, mitigation context and review trigger;
-- `docs/releases/NEXT_STEPS.md` Priority 0 item 1 tracks the required upgrade/removal/re-verification work;
-- final production release review must upgrade or replace the dependency path when an available compatible patched package exists, or record an explicit release decision after security review.
+- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` defines the upgrade/provider-migration regression gate;
+- final production release review must upgrade/replace the dependency path or explicitly block release until the risk is acceptably resolved.
 
-## Latest automated verification completed
+## Automated verification completed
 
-Verification PR #16 exercised source head:
-
-`2b8f97525ea8d3b41bf62e20d76e1cc224dab102`
-
-The verification marker branch was not merged into `main`. PR #16 was closed after verification succeeded.
+Funding-enabled verification PR #16 exercised source head `2b8f97525ea8d3b41bf62e20d76e1cc224dab102`. The verification marker branch was not merged into `main`.
 
 GitHub Actions CareNest CI run #87 (`31301203981`) completed successfully:
 
 - Unit tests: 15 passed, 0 failed, 0 skipped.
 - Integration tests: 11 passed, 0 failed, 0 skipped.
 - UI-contract tests: 10 passed, 0 failed, 0 skipped.
-- Total automated tests: 36 passed, 0 failed, 0 skipped.
+- Total tests: 36 passed, 0 failed, 0 skipped.
 - Android Release build: passed.
 - Windows Release build: passed.
 - iOS simulator Release build: passed.
@@ -64,22 +61,23 @@ GitHub Actions CareNest CI run #87 (`31301203981`) completed successfully:
 
 CodeQL run #86 (`31301203985`) also completed successfully.
 
-This fresh pass verified the funding-support runtime/UI changes, shared funding URL constant, About-page command, GitHub funding metadata, funding-link UI-contract tests, and all existing core/platform behavior present at that source head.
-
-## Funding boundary
-
-CareNest project funding is optional. The Buy Me a Coffee action does not unlock medical advice, premium health behavior, different reminder scheduling/delivery, emergency assistance, support priority, or access to local health data.
-
-The support page is an external third-party service opened only after explicit user action. CareNest does not automatically send local profiles, medicine data, documents, backups, app-lock data, or reminder history to the funding provider.
-
-Before store submission, current Apple and Google rules for external voluntary funding/payment links must be reviewed because store policies can change. That policy review is explicitly tracked in the release checklist and `docs/releases/NEXT_STEPS.md`.
+PR #16 was closed after verification succeeded because it contained only a verification marker and did not need to be merged.
 
 ## Current
 
-- Complete CareNest `1.0.0-rc.1` product source is on `main`.
-- Source head `2b8f97525ea8d3b41bf62e20d76e1cc224dab102` has a fully green automated core/platform/CodeQL matrix.
-- Later `main` commits after that source head are documentation/security/status guidance updates only and do not alter product runtime behavior.
-- Final `1.0.0` tagging remains intentionally blocked on the manual release checklist, the tracked SQLite dependency advisory decision/resolution, current store-policy review for the funding link, signing, final store/privacy preparation, and exact-final-commit verification if later runtime/UI/dependency changes occur.
+- Product runtime source at funding-enabled verified head `2b8f97525ea8d3b41bf62e20d76e1cc224dab102` has a fully green automated test/build/security-analysis matrix.
+- Later BMC vector/support documentation/release-preparation commits do not alter CareNest medical, reminder, persistence, encryption, or scheduling behavior.
+- Because the new SVG resides in the MAUI image resource tree, the exact final packaging commit should receive a fresh platform build before signed/public release.
+- Final `1.0.0` tagging remains intentionally blocked on the manual release checklist, current store-policy review for the external funding link, signing/store preparation, final exact-commit CI/CodeQL evidence, and an explicit resolution/release decision for the tracked SQLite dependency advisory.
+
+## Next work prepared
+
+- `docs/releases/NEXT_STEPS.md` contains the ordered release path.
+- `build/scripts/release-preflight.sh` and `build/scripts/release-preflight.ps1` provide repeatable preflight checks on a fully provisioned host.
+- `docs/releases/MANUAL_TEST_MATRIX.md` defines device/manual functional, reminder, privacy and accessibility evidence.
+- `docs/releases/STORE_SUBMISSION_CHECKLIST.md` defines packaging/store/funding-link review gates.
+- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` defines the dependency upgrade/replacement test strategy.
+- `BUY_ME_A_COFFEE.md` and `docs/SUPPORT_CARENEST.md` expose the highlighted clickable BMC support artwork.
 
 ## Deferred to later versions
 
@@ -95,4 +93,4 @@ The local execution container used for repository assembly does not include the 
 
 Manual device checks, `dotnet format --verify-no-changes` on a fully provisioned development host, signing, and store packaging remain separate release activities and are not marked complete unless they are actually performed.
 
-See `what_changed.md` for the implementation and verification record and `docs/releases/NEXT_STEPS.md` for the ordered next-step roadmap.
+See `what_changed.md` for the implementation and verification record.
