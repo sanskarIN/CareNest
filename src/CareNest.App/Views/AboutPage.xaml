@@ -36,10 +36,12 @@
 
       <Border Style="{StaticResource Card}" SemanticProperties.Description="Voluntary project support for CareNest">
         <VerticalStackLayout Spacing="12">
-          <Image Source="carenest_support.svg"
-                 HeightRequest="108"
-                 Aspect="AspectFit"
-                 SemanticProperties.Description="Support CareNest on Buy Me a Coffee" />
+          <ImageButton Source="carenest_support.svg"
+                       HeightRequest="108"
+                       Aspect="AspectFit"
+                       BackgroundColor="Transparent"
+                       Command="{Binding SupportProjectCommand}"
+                       SemanticProperties.Description="Open the CareNest Buy Me a Coffee support page from the CareNest support logo" />
           <Label Text="Support CareNest" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" />
           <Label Text="Help continued open-source development, testing, accessibility work, documentation, and platform maintenance." HorizontalTextAlignment="Center" />
           <Button Text="☕ Buy Me a Coffee — sanskarIN"
