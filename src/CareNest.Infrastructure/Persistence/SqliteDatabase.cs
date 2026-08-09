@@ -42,10 +42,7 @@ public sealed class SqliteDatabase : IAsyncDisposable
             }
 
             _connection = CreateConnection();
-            await _connection.ExecuteAsync("PRAGMA foreign_keys = ON;");
-            await _connection.ExecuteAsync("PRAGMA journal_mode = WAL;");
-            await _connection.ExecuteAsync("PRAGMA synchronous = NORMAL;");
-            await _connection.ExecuteAsync("PRAGMA busy_timeout = 5000;");
+            await ConfigureConnectionAsync(_connection);
 
             await ApplyMigrationsAsync(cancellationToken);
             _initialized = true;
@@ -106,9 +103,7 @@ public sealed class SqliteDatabase : IAsyncDisposable
                 File.Copy(validatedDatabasePath, DatabasePath, overwrite: true);
                 DeleteSidecars(DatabasePath);
                 _connection = CreateConnection();
-                await _connection.ExecuteAsync("PRAGMA foreign_keys = ON;");
-                await _connection.ExecuteAsync("PRAGMA journal_mode = WAL;");
-                await _connection.ExecuteAsync("PRAGMA busy_timeout = 5000;");
+                await ConfigureConnectionAsync(_connection);
                 _initialized = false;
                 await ApplyMigrationsAsync(cancellationToken);
                 _initialized = true;
@@ -137,6 +132,7 @@ public sealed class SqliteDatabase : IAsyncDisposable
                 }
 
                 _connection = CreateConnection();
+                await ConfigureConnectionAsync(_connection);
                 _initialized = false;
                 await ApplyMigrationsAsync(CancellationToken.None);
                 _initialized = true;
@@ -151,6 +147,23 @@ public sealed class SqliteDatabase : IAsyncDisposable
 
     private SQLiteAsyncConnection CreateConnection() =>
         new(DatabasePath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
+
+    private static async Task ConfigureConnectionAsync(SQLiteAsyncConnection connection)
+    {
+        await connection.ExecuteAsync("PRAGMA foreign_keys = ON;");
+
+        // journal_mode is a result-producing PRAGMA. Calling ExecuteAsync uses
+        // sqlite3_step as a non-query and sqlite-net can surface SQLITE_ROW as
+        // an exception. Read the returned mode explicitly instead.
+        var journalMode = await connection.ExecuteScalarAsync<string>("PRAGMA journal_mode = WAL;");
+        if (!string.Equals(journalMode, "wal", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("CareNest could not enable SQLite WAL journal mode.");
+        }
+
+        await connection.ExecuteAsync("PRAGMA synchronous = NORMAL;");
+        await connection.ExecuteAsync("PRAGMA busy_timeout = 5000;");
+    }
 
     private async Task ApplyMigrationsAsync(CancellationToken cancellationToken)
     {
@@ -236,7 +249,7 @@ public sealed class SqliteDatabase : IAsyncDisposable
         return rows.Count == 0 ? 0 : rows[0].Version;
     }
 
-    private Task RecordVersionAsync(int version) =>
+    private Task<int> RecordVersionAsync(int version) =>
         _connection!.ExecuteAsync("INSERT OR REPLACE INTO SchemaInfo (Version, AppliedUtc) VALUES (?, ?)", version, DateTime.UtcNow);
 
     private static void DeleteSidecars(string databasePath)
