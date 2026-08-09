@@ -25,6 +25,10 @@ dotnet_diagnostic.CA1303.severity = suggestion
 # Keep it visible to contributors without failing all platform builds.
 dotnet_diagnostic.CA1848.severity = suggestion
 
+# Descriptive xUnit test names intentionally use underscores for readability.
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none
+
 [*.{xaml,xml,props,targets,csproj,sln}]
 indent_style = space
 indent_size = 2
