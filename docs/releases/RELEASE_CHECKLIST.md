@@ -13,7 +13,7 @@ CodeQL run: `#66` / `31300473160`
 - [x] Android Release build.
 - [x] Windows Release build.
 - [x] iOS simulator Release build.
-- [ ] Mac Catalyst Release build — still running in CI run #67 when this evidence block was written.
+- [x] Mac Catalyst Release build.
 - [x] CodeQL analysis.
 
 The checkmarks above record only GitHub-hosted automated evidence for the stated source head. They do not substitute for the manual device, signing, accessibility, notification-delivery, or store-readiness checks below.
@@ -27,7 +27,7 @@ The checkmarks above record only GitHub-hosted automated evidence for the stated
 - [x] Run unit, integration and UI-contract tests.
 - [x] Build Android release.
 - [x] Build Windows release.
-- [ ] On macOS, complete both iOS and Mac Catalyst release verification; iOS is green and Mac Catalyst remains pending above.
+- [x] On macOS, build iOS simulator and Mac Catalyst release targets.
 - [ ] Manual onboarding smoke test.
 - [ ] Create/edit/delete profiles on real/emulated target devices.
 - [ ] Create/pause/resume medicine schedules.
