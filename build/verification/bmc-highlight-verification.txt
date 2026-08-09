@@ -1,0 +1,3 @@
+CareNest BMC highlight verification
+Validates linked support badge asset, About-page support card, and all existing cross-platform gates.
+Verification-only marker; do not merge.
