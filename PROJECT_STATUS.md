@@ -25,6 +25,11 @@
 - MAUI per-target CI restore/build isolation is implemented without propagating app target frameworks into referenced `net10.0` projects.
 - Android notification integration has explicit API-level guards and nullability checks.
 - Apple verification uses a macOS 26 runner compatible with the current .NET 10 Apple workload.
+- Buy Me a Coffee voluntary project-support URL is centralized as `https://buymeacoffee.com/sanskarIN`.
+- The About page exposes a dedicated voluntary project-support action.
+- `.github/FUNDING.yml` exposes the same URL through GitHub funding metadata.
+- README, support, privacy, terms, changelog, release checklist, and UI-contract coverage document and enforce the voluntary/non-medical funding boundary.
+- `docs/releases/NEXT_STEPS.md` tracks production-release blockers, store/signing work, release promotion tasks, post-release quality work, and separately reviewed future-version ideas.
 
 ## Security dependency status
 
@@ -37,7 +42,7 @@ An attempted `2.1.12` bundle pin was rejected because that version is not availa
 - `docs/security/DEPENDENCY_RISK_REGISTER.md` records the open risk, mitigation context and review trigger;
 - final production release review must upgrade or replace the dependency path when an available compatible patched package exists.
 
-## Automated verification completed
+## Previous automated verification
 
 Verification PR #15 exercised source head `682aef2aa31981c6be31086aa7af8e1c8e56e94b`. The verification marker branch was not merged into `main`.
 
@@ -55,11 +60,40 @@ CodeQL run #66 (`31300473160`) also completed successfully.
 
 PR #15 was closed after verification succeeded because it contained only a verification marker and did not need to be merged.
 
+## Fresh verification after funding-support changes
+
+Runtime/UI and UI-contract changes after the previously verified source head require a new complete matrix before those changes can be called release-verified.
+
+Verification PR #16 targets `main` source head:
+
+`2b8f97525ea8d3b41bf62e20d76e1cc224dab102`
+
+Fresh workflows:
+
+- CareNest CI run #87 / `31301203981`.
+- CodeQL run #86 / `31301203985`.
+
+Current confirmed result from this new pass:
+
+- Unit tests: 15 passed, 0 failed, 0 skipped.
+- Integration tests: 11 passed, 0 failed, 0 skipped.
+- UI-contract tests: 10 passed, 0 failed, 0 skipped.
+
+Android, Windows, Apple platform builds and CodeQL remain part of this same verification gate until they return final conclusions.
+
+## Funding boundary
+
+CareNest project funding is optional. The Buy Me a Coffee action does not unlock medical advice, premium health behavior, different reminder scheduling/delivery, emergency assistance, support priority, or access to local health data.
+
+The support page is an external third-party service opened only after explicit user action. CareNest does not automatically send local profiles, medicine data, documents, backups, app-lock data, or reminder history to the funding provider.
+
+Before store submission, current Apple and Google rules for external voluntary funding/payment links must be reviewed because store policies can change. That policy review is explicitly tracked in the release checklist and `docs/releases/NEXT_STEPS.md`.
+
 ## Current
 
-- Product source at verified head `682aef2aa31981c6be31086aa7af8e1c8e56e94b` has a fully green automated test/build/security-analysis matrix.
-- Later `main` commits after that source head are documentation/status corrections only and do not alter product runtime behavior.
-- Final `1.0.0` tagging remains intentionally blocked on the manual release checklist and an explicit release decision for the tracked SQLite dependency advisory.
+- Complete CareNest `1.0.0-rc.1` product source remains on `main`.
+- Fresh verification PR #16 is the authoritative automated gate for the new funding-support runtime/UI changes.
+- Final `1.0.0` tagging remains intentionally blocked on the manual release checklist, the tracked SQLite dependency advisory decision/resolution, store-policy review for the funding link, signing, and final exact-commit verification.
 
 ## Deferred to later versions
 
@@ -75,4 +109,4 @@ The local execution container used for repository assembly does not include the 
 
 Manual device checks, `dotnet format --verify-no-changes` on a fully provisioned development host, signing, and store packaging remain separate release activities and are not marked complete unless they are actually performed.
 
-See `what_changed.md` for the implementation and verification record.
+See `what_changed.md` for the implementation and verification record and `docs/releases/NEXT_STEPS.md` for the ordered next-step roadmap.
