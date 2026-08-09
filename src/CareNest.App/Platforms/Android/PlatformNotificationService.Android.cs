@@ -15,6 +15,7 @@ public partial class PlatformNotificationService
     internal const string ChannelId = "carenest_reminders";
     internal const string ReminderAction = "com.sanskar.carenest.REMINDER";
     private const string ScheduledIdsKey = "notifications.android.scheduled-ids";
+    private static readonly long[] SilentVibrationPattern = [0L];
 
     private partial async Task<bool> RequestPermissionCoreAsync(
         CancellationToken cancellationToken)
@@ -24,9 +25,8 @@ public partial class PlatformNotificationService
 
         if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
         {
-            return NotificationManagerCompat
-                .From(Android.App.Application.Context)
-                .AreNotificationsEnabled();
+            var context = GetApplicationContext();
+            return GetNotificationManager(context).AreNotificationsEnabled();
         }
 
         var status = await Permissions.RequestAsync<Permissions.PostNotifications>();
@@ -39,17 +39,16 @@ public partial class PlatformNotificationService
         cancellationToken.ThrowIfCancellationRequested();
         EnsureChannel();
 
-        var context = Android.App.Application.Context;
+        var context = GetApplicationContext();
         var manager = (AlarmManager?)context.GetSystemService(Context.AlarmService);
-        var notificationGranted = NotificationManagerCompat
-            .From(context)
-            .AreNotificationsEnabled();
+        var notificationGranted = GetNotificationManager(context).AreNotificationsEnabled();
 
-        var exactAvailable = Build.VERSION.SdkInt < BuildVersionCodes.S ||
+        var exactAvailable = !OperatingSystem.IsAndroidVersionAtLeast(31) ||
             manager?.CanScheduleExactAlarms() == true;
 
         var power = (PowerManager?)context.GetSystemService(Context.PowerService);
-        var batteryExempt = power?.IsIgnoringBatteryOptimizations(context.PackageName) ?? false;
+        var packageName = GetPackageName(context);
+        var batteryExempt = power?.IsIgnoringBatteryOptimizations(packageName) ?? false;
 
         var warnings = new List<string>();
         if (!notificationGranted)
@@ -81,7 +80,7 @@ public partial class PlatformNotificationService
         cancellationToken.ThrowIfCancellationRequested();
         EnsureChannel();
 
-        var context = Android.App.Application.Context;
+        var context = GetApplicationContext();
         var manager = (AlarmManager?)context.GetSystemService(Context.AlarmService)
             ?? throw new InvalidOperationException("Android alarm manager is unavailable.");
 
@@ -98,7 +97,7 @@ public partial class PlatformNotificationService
 
         if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
         {
-            if (Build.VERSION.SdkInt < BuildVersionCodes.S ||
+            if (!OperatingSystem.IsAndroidVersionAtLeast(31) ||
                 manager.CanScheduleExactAlarms())
             {
                 manager.SetExactAndAllowWhileIdle(
@@ -132,7 +131,7 @@ public partial class PlatformNotificationService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var context = Android.App.Application.Context;
+        var context = GetApplicationContext();
         var manager = (AlarmManager?)context.GetSystemService(Context.AlarmService);
         var pending = CreateCancellationPendingIntent(context, occurrenceId);
 
@@ -142,9 +141,7 @@ public partial class PlatformNotificationService
             pending.Cancel();
         }
 
-        NotificationManagerCompat
-            .From(context)
-            .Cancel(ToRequestCode(occurrenceId));
+        GetNotificationManager(context).Cancel(ToRequestCode(occurrenceId));
 
         RemoveScheduledId(occurrenceId);
         return Task.CompletedTask;
@@ -159,9 +156,7 @@ public partial class PlatformNotificationService
             await CancelCoreAsync(id, cancellationToken);
         }
 
-        NotificationManagerCompat
-            .From(Android.App.Application.Context)
-            .CancelAll();
+        GetNotificationManager(GetApplicationContext()).CancelAll();
     }
 
     private partial Task ShowTestCoreAsync(
@@ -191,9 +186,10 @@ public partial class PlatformNotificationService
     {
         EnsureChannel();
 
-        var context = Android.App.Application.Context;
+        var context = GetApplicationContext();
+        var packageName = GetPackageName(context);
         var launchIntent = context.PackageManager?
-            .GetLaunchIntentForPackage(context.PackageName);
+            .GetLaunchIntentForPackage(packageName);
 
         PendingIntent? launchPending = null;
         if (launchIntent is not null)
@@ -206,19 +202,19 @@ public partial class PlatformNotificationService
                 PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
         }
 
-        var builder = new NotificationCompat.Builder(context, ChannelId)
-            .SetSmallIcon(Resource.Mipmap.appicon)
-            .SetContentTitle(title)
-            .SetContentText(body)
-            .SetPriority(NotificationCompat.PriorityHigh)
-            .SetAutoCancel(!persistent)
-            .SetOngoing(persistent)
-            .SetCategory(NotificationCompat.CategoryReminder)
-            .SetSilent(!playSound);
+        var builder = new NotificationCompat.Builder(context, ChannelId);
+        builder.SetSmallIcon(Resource.Mipmap.appicon);
+        builder.SetContentTitle(title);
+        builder.SetContentText(body);
+        builder.SetPriority(NotificationCompat.PriorityHigh);
+        builder.SetAutoCancel(!persistent);
+        builder.SetOngoing(persistent);
+        builder.SetCategory(NotificationCompat.CategoryReminder);
+        builder.SetSilent(!playSound);
 
         if (!vibrate)
         {
-            builder.SetVibrate(new long[] { 0L });
+            builder.SetVibrate(SilentVibrationPattern);
         }
 
         if (launchPending is not null)
@@ -226,9 +222,9 @@ public partial class PlatformNotificationService
             builder.SetContentIntent(launchPending);
         }
 
-        NotificationManagerCompat
-            .From(context)
-            .Notify(ToRequestCode(occurrenceId), builder.Build());
+        var notification = builder.Build()
+            ?? throw new InvalidOperationException("Android notification construction failed.");
+        GetNotificationManager(context).Notify(ToRequestCode(occurrenceId), notification);
     }
 
     private static PendingIntent CreateReminderPendingIntent(
@@ -245,10 +241,11 @@ public partial class PlatformNotificationService
         intent.PutExtra("vibrate", request.Vibrate);
 
         return PendingIntent.GetBroadcast(
-            context,
-            ToRequestCode(request.OccurrenceId),
-            intent,
-            PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
+                context,
+                ToRequestCode(request.OccurrenceId),
+                intent,
+                PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable)
+            ?? throw new InvalidOperationException("Android reminder pending intent could not be created.");
     }
 
     private static PendingIntent? CreateCancellationPendingIntent(
@@ -267,12 +264,12 @@ public partial class PlatformNotificationService
 
     private static void EnsureChannel()
     {
-        if (Build.VERSION.SdkInt < BuildVersionCodes.O)
+        if (!OperatingSystem.IsAndroidVersionAtLeast(26))
         {
             return;
         }
 
-        var context = Android.App.Application.Context;
+        var context = GetApplicationContext();
         var manager = (NotificationManager?)context.GetSystemService(Context.NotificationService);
         if (manager is null)
         {
@@ -289,6 +286,19 @@ public partial class PlatformNotificationService
 
         manager.CreateNotificationChannel(channel);
     }
+
+    private static Context GetApplicationContext() =>
+        Android.App.Application.Context
+        ?? throw new InvalidOperationException("Android application context is unavailable.");
+
+    private static NotificationManagerCompat GetNotificationManager(Context context) =>
+        NotificationManagerCompat.From(context)
+        ?? throw new InvalidOperationException("Android notification manager is unavailable.");
+
+    private static string GetPackageName(Context context) =>
+        !string.IsNullOrWhiteSpace(context.PackageName)
+            ? context.PackageName
+            : throw new InvalidOperationException("Android package name is unavailable.");
 
     private static int ToRequestCode(string value)
     {
