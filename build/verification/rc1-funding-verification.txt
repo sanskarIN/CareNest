@@ -1,0 +1,5 @@
+CareNest 1.0.0-rc.1 verification marker.
+
+Purpose: verify the Buy Me a Coffee support integration, funding-link contract tests, privacy/terms wording, and all existing platform/runtime gates against main head 2b8f97525ea8d3b41bf62e20d76e1cc224dab102.
+
+This marker is verification-only and must not be merged into main.
