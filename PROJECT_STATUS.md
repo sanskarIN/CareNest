@@ -37,23 +37,29 @@ An attempted `2.1.12` bundle pin was rejected because that version is not availa
 - `docs/security/DEPENDENCY_RISK_REGISTER.md` records the open risk, mitigation context and review trigger;
 - final production release review must upgrade or replace the dependency path when an available compatible patched package exists.
 
-## Automated verification completed for current source head
+## Automated verification completed
 
-Verification PR #15 is exercising source head `682aef2aa31981c6be31086aa7af8e1c8e56e94b`.
+Verification PR #15 exercised source head `682aef2aa31981c6be31086aa7af8e1c8e56e94b`. The verification marker branch was not merged into `main`.
 
-Completed successfully in GitHub Actions run #67:
+GitHub Actions CareNest CI run #67 (`31300473171`) completed successfully:
 
-- Unit tests.
-- Integration tests, including encrypted document/backup coverage and WAL-backed snapshot regression coverage.
-- UI-contract tests.
-- Android Release build.
-- Windows Release build.
-- CodeQL analysis in run #66.
+- Unit tests: 15 passed, 0 failed, 0 skipped.
+- Integration tests: 11 passed, 0 failed, 0 skipped.
+- UI-contract tests: 8 passed, 0 failed, 0 skipped.
+- Android Release build: passed.
+- Windows Release build: passed.
+- iOS simulator Release build: passed.
+- Mac Catalyst Release build: passed.
+
+CodeQL run #66 (`31300473160`) also completed successfully.
+
+PR #15 was closed after verification succeeded because it contained only a verification marker and did not need to be merged.
 
 ## Current
 
-- PR #15 remains the active verification gate while its Apple job completes the iOS simulator build and then the Mac Catalyst build.
-- Final release tagging remains blocked until all automated platform checks are green and the manual release checklist is completed on real devices/hosts.
+- Product source at verified head `682aef2aa31981c6be31086aa7af8e1c8e56e94b` has a fully green automated test/build/security-analysis matrix.
+- Later `main` commits after that source head are documentation/status corrections only and do not alter product runtime behavior.
+- Final `1.0.0` tagging remains intentionally blocked on the manual release checklist and an explicit release decision for the tracked SQLite dependency advisory.
 
 ## Deferred to later versions
 
@@ -67,6 +73,6 @@ Completed successfully in GitHub Actions run #67:
 
 The local execution container used for repository assembly does not include the `dotnet` command or MAUI workloads. Local restore, formatting, compilation, emulator/device smoke tests, signing, and store packaging therefore cannot be truthfully claimed as executed inside that container. GitHub-hosted CI is the authoritative automated build/test verification surface for this delivery.
 
-Manual device checks, signing and store packaging remain separate release activities and are not marked complete unless they are actually performed.
+Manual device checks, `dotnet format --verify-no-changes` on a fully provisioned development host, signing, and store packaging remain separate release activities and are not marked complete unless they are actually performed.
 
 See `what_changed.md` for the implementation and verification record.
