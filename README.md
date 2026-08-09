@@ -2,6 +2,8 @@
 
 CareNest is an open-source, local-first health organizer built with .NET MAUI and C#. It helps people organize medicine reminders, appointments, health documents, stock/refill notes, and multiple local family profiles without requiring an account or network connection.
 
+[![Support CareNest on Buy Me a Coffee](src/CareNest.App/Resources/Images/carenest_support.svg)](https://buymeacoffee.com/sanskarIN)
+
 > **Medical limitation:** CareNest is an organizational tool. It does not diagnose conditions, determine dosage, recommend treatment, verify adherence, replace a clinician or pharmacist, or provide emergency services. Follow instructions from qualified professionals. In an emergency, contact local emergency services instead of relying on this app.
 
 ## Highlights
@@ -80,11 +82,11 @@ Read [`PRIVACY.md`](PRIVACY.md), [`SECURITY.md`](SECURITY.md), the threat model 
 
 The current release has no automatic cloud sync and no silent caregiver sharing. Known dependency advisories are not represented as fixed merely because CI contains a narrowly scoped audit exception; the dependency risk register is the source of truth for those open items.
 
-## Project support
+## ☕ Support CareNest
 
-CareNest is open source. If you want to voluntarily support continued development:
+**[Buy Me a Coffee → https://buymeacoffee.com/sanskarIN](https://buymeacoffee.com/sanskarIN)**
 
-- Buy Me a Coffee: https://buymeacoffee.com/sanskarIN
+CareNest is open source. Voluntary project support helps continued design, testing, documentation, accessibility work, platform maintenance, and future releases.
 
 Project support does not unlock medical advice, premium health behavior, different reminder behavior, or access to user health data.
 
@@ -99,7 +101,7 @@ The release-candidate promotion checklist, production blockers, manual device te
 - Business: `sanskarin@outlook.in`
 - Support: `supportramsandesh@gmail.com`
 - Creator: https://www.github.com/sanskarIN
-- Voluntary support: https://buymeacoffee.com/sanskarIN
+- Voluntary support: **https://buymeacoffee.com/sanskarIN**
 
 ## Open source
 
