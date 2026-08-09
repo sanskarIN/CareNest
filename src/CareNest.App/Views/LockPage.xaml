@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.LockPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    NavigationPage.HasNavigationBar="False">
+  <Grid Padding="24">
+    <VerticalStackLayout Spacing="18"
+                         VerticalOptions="Center"
+                         MaximumWidthRequest="480">
+      <Image Source="carenest_mark.svg"
+             HeightRequest="96"
+             SemanticProperties.Description="CareNest logo" />
+      <Label Text="CareNest is locked"
+             Style="{StaticResource PageTitle}"
+             HorizontalTextAlignment="Center" />
+      <Label Text="Enter your local app-lock PIN."
+             HorizontalTextAlignment="Center" />
+      <Entry Text="{Binding Pin}"
+             IsPassword="True"
+             Keyboard="Numeric"
+             MaxLength="32"
+             Placeholder="PIN"
+             ReturnType="Go"
+             ReturnCommand="{Binding UnlockCommand}"
+             SemanticProperties.Description="CareNest app-lock PIN" />
+      <Label Text="{Binding StatusMessage}"
+             TextColor="{StaticResource Danger}"
+             HorizontalTextAlignment="Center" />
+      <Button Text="Unlock"
+              Command="{Binding UnlockCommand}"
+              IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+      <ActivityIndicator IsRunning="{Binding IsBusy}"
+                         IsVisible="{Binding IsBusy}" />
+    </VerticalStackLayout>
+  </Grid>
+</ContentPage>

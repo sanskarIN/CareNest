@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors Condition="'$(CI)' == 'true'">true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <RepositoryUrl>https://github.com/sanskarIN/CareNest</RepositoryUrl>
+    <Authors>Sanskar</Authors>
+    <Company>CareNest</Company>
+    <Copyright>Copyright © 2026 Sanskar</Copyright>
+  </PropertyGroup>
+</Project>

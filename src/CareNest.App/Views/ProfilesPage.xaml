@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.ProfilesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Profiles">
+  <Grid Padding="20" RowDefinitions="Auto,*" MaximumWidthRequest="900">
+    <Grid ColumnDefinitions="*,Auto">
+      <VerticalStackLayout>
+        <Label Text="Local profiles" Style="{StaticResource PageTitle}" />
+        <Label Text="Profiles stay on this device. Sensitive fields are optional."
+               Style="{StaticResource MutedText}" />
+      </VerticalStackLayout>
+      <Button Grid.Column="1"
+              Text="Add"
+              Command="{Binding AddCommand}"
+              SemanticProperties.Hint="Create another local CareNest profile" />
+    </Grid>
+
+    <CollectionView Grid.Row="1"
+                    Margin="0,16,0,0"
+                    ItemsSource="{Binding Profiles}"
+                    EmptyView="No profiles are available.">
+      <CollectionView.ItemTemplate>
+        <DataTemplate>
+          <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+              <Border WidthRequest="44"
+                      HeightRequest="44"
+                      StrokeShape="RoundRectangle 22"
+                      BackgroundColor="{Binding ProfileColor}">
+                <Label Text="●"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="White"
+                       FontAttributes="Bold"
+                       SemanticProperties.Description="Profile marker" />
+              </Border>
+              <VerticalStackLayout Grid.Column="1">
+                <Label Text="{Binding Name}"
+                       FontAttributes="Bold" />
+                <Label Text="{Binding BloodGroup, StringFormat='Blood group: {0}'}"
+                       Style="{StaticResource MutedText}" />
+                <Label Text="Primary"
+                       IsVisible="{Binding IsPrimary}"
+                       Style="{StaticResource MutedText}" />
+              </VerticalStackLayout>
+              <Button Grid.Column="2"
+                      Text="Edit"
+                      Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditCommand}"
+                      CommandParameter="{Binding .}"
+                      Style="{StaticResource SecondaryButton}" />
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </CollectionView.ItemTemplate>
+    </CollectionView>
+  </Grid>
+</ContentPage>

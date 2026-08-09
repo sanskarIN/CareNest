@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.AppointmentEditorPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Appointment">
+  <ScrollView>
+    <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="760">
+      <Label Text="Appointment" Style="{StaticResource PageTitle}" />
+
+      <Label Text="Profile" />
+      <Picker ItemsSource="{Binding Profiles}"
+              ItemDisplayBinding="{Binding Name}"
+              SelectedItem="{Binding SelectedProfile}" />
+
+      <Label Text="Title" />
+      <Entry Text="{Binding Title}" MaxLength="180" />
+
+      <Label Text="Clinician or facility (optional)" />
+      <Entry Text="{Binding ClinicianOrFacility}" MaxLength="180" />
+
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+        <VerticalStackLayout>
+          <Label Text="Date" />
+          <DatePicker Date="{Binding Date}" />
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Column="1">
+          <Label Text="Time" />
+          <TimePicker Time="{Binding Time}" />
+        </VerticalStackLayout>
+      </Grid>
+
+      <Label Text="Time-zone identifier" />
+      <Entry Text="{Binding TimeZoneId}" />
+      <Label Text="The appointment time is converted using this explicit time zone. CareNest does not silently change the stored appointment time."
+             Style="{StaticResource MutedText}" />
+
+      <Label Text="Location entered manually (optional)" />
+      <Entry Text="{Binding Location}" MaxLength="300" />
+
+      <Label Text="Preparation notes (optional)" />
+      <Editor Text="{Binding PreparationNotes}" MaxLength="4000" />
+
+      <Label Text="Questions to ask (optional)" />
+      <Editor Text="{Binding QuestionsToAsk}" MaxLength="4000" />
+
+      <Label Text="Attachment (optional)" />
+      <Label Text="{Binding AttachmentLabel}" Style="{StaticResource MutedText}" />
+      <FlexLayout Direction="Row" Wrap="Wrap">
+        <Button Text="Import attachment"
+                Command="{Binding AttachDocumentCommand}"
+                Style="{StaticResource SecondaryButton}"
+                Margin="0,0,8,8" />
+        <Button Text="Export attachment"
+                Command="{Binding ExportAttachmentCommand}"
+                IsVisible="{Binding HasAttachment}"
+                Style="{StaticResource SecondaryButton}"
+                Margin="0,0,8,8" />
+        <Button Text="Detach"
+                Command="{Binding DetachDocumentCommand}"
+                IsVisible="{Binding HasAttachment}"
+                Style="{StaticResource SecondaryButton}"
+                Margin="0,0,8,8" />
+      </FlexLayout>
+      <Label Text="Imported attachments are encrypted in CareNest Documents. CareNest does not interpret their medical content."
+             Style="{StaticResource MutedText}" />
+
+      <HorizontalStackLayout Spacing="12">
+        <Switch IsToggled="{Binding HasFollowUp}" />
+        <Label Text="Record a follow-up date"
+               VerticalTextAlignment="Center" />
+      </HorizontalStackLayout>
+      <DatePicker Date="{Binding FollowUpDate}"
+                  IsVisible="{Binding HasFollowUp}" />
+
+      <HorizontalStackLayout Spacing="12">
+        <Switch IsToggled="{Binding HasReminder}" />
+        <Label Text="Create an appointment reminder"
+               VerticalTextAlignment="Center" />
+      </HorizontalStackLayout>
+      <Entry Text="{Binding ReminderMinutesText}"
+             IsVisible="{Binding HasReminder}"
+             Keyboard="Numeric"
+             Placeholder="Minutes before appointment" />
+      <Label Text="CareNest asks for notification permission only when a reminder is created. Delivery can still be affected by operating-system restrictions."
+             IsVisible="{Binding HasReminder}"
+             Style="{StaticResource MutedText}" />
+
+      <HorizontalStackLayout Spacing="12"
+                             IsVisible="{Binding IsExisting}">
+        <Switch IsToggled="{Binding Archived}" />
+        <Label Text="Archive appointment"
+               VerticalTextAlignment="Center" />
+      </HorizontalStackLayout>
+
+      <Label Text="{Binding StatusMessage}"
+             TextColor="{StaticResource Danger}" />
+
+      <Button Text="Save appointment"
+              Command="{Binding SaveCommand}"
+              IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+
+      <Button Text="Export calendar file (.ics)"
+              Command="{Binding ExportCalendarCommand}"
+              IsVisible="{Binding IsExisting}"
+              Style="{StaticResource SecondaryButton}" />
+
+      <Button Text="Delete appointment"
+              IsVisible="{Binding IsExisting}"
+              Clicked="DeleteClicked"
+              Style="{StaticResource DangerButton}" />
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

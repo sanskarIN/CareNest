@@ -1,0 +1,28 @@
+# Release Checklist
+
+- [ ] Update version, changelog and release notes.
+- [ ] `dotnet format --verify-no-changes`.
+- [ ] Restore with locked/known package sources.
+- [ ] Build Domain/Application/Infrastructure.
+- [ ] Run unit, integration and UI-contract tests.
+- [ ] Build Android release.
+- [ ] Build Windows release.
+- [ ] On macOS, build iOS and Mac Catalyst release.
+- [ ] Manual onboarding smoke test.
+- [ ] Create/edit/delete profiles.
+- [ ] Create/pause/resume medicine schedules.
+- [ ] Verify notification permission denied and granted flows.
+- [ ] Verify Android battery/exact-alarm diagnostics.
+- [ ] Verify time-zone change rebuild.
+- [ ] Mark taken/skipped/delayed/missed and edit log.
+- [ ] Import/export/delete encrypted documents.
+- [ ] Create appointment and calendar export.
+- [ ] Export CSV and PDF reports; verify disclaimers.
+- [ ] Create encrypted backup; restore on clean data; reject wrong password.
+- [ ] Enable/disable app lock and verify cold-start lock.
+- [ ] Large-text, screen reader, keyboard and reduced-motion checks.
+- [ ] Light/dark/system theme checks.
+- [ ] Confirm no document content or credentials in logs.
+- [ ] Review third-party notices and licenses.
+- [ ] Sign packages using secrets outside the repository.
+- [ ] Verify store privacy disclosures match actual behavior.

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.MedicinesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Medicines">
+  <Grid Padding="20" RowDefinitions="Auto,Auto,*" MaximumWidthRequest="920">
+    <Grid ColumnDefinitions="*,Auto">
+      <VerticalStackLayout>
+        <Label Text="Medicine records" Style="{StaticResource PageTitle}" />
+        <Label Text="CareNest stores the strength and instructions exactly as you enter them. It never calculates or infers dosage."
+               Style="{StaticResource MutedText}" />
+      </VerticalStackLayout>
+      <Button Grid.Column="1"
+              Text="Add"
+              Command="{Binding AddCommand}" />
+    </Grid>
+
+    <Border Grid.Row="1"
+            Style="{StaticResource Card}"
+            Margin="0,12,0,12">
+      <Label Text="Stock values are estimates based only on your entries. Check the actual medicine supply instead of relying on the estimate." />
+    </Border>
+
+    <CollectionView Grid.Row="2"
+                    ItemsSource="{Binding Items}"
+                    EmptyView="No medicine records yet.">
+      <CollectionView.ItemTemplate>
+        <DataTemplate>
+          <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+              <Label Text="{Binding Name}"
+                     FontAttributes="Bold" />
+              <Label Grid.Column="1"
+                     Text="{Binding State}"
+                     Style="{StaticResource MutedText}" />
+              <Label Grid.Row="1"
+                     Text="{Binding ProfileName}"
+                     Style="{StaticResource MutedText}" />
+              <Label Grid.Row="1"
+                     Grid.Column="1"
+                     Text="{Binding StrengthText}"
+                     Style="{StaticResource MutedText}" />
+              <HorizontalStackLayout Grid.Row="2" Spacing="10">
+                <Label Text="{Binding StockText}"
+                       Style="{StaticResource MutedText}" />
+                <Label Text="Low stock estimate"
+                       IsVisible="{Binding LowStock}"
+                       TextColor="{StaticResource Warning}" />
+              </HorizontalStackLayout>
+              <Button Grid.Row="2"
+                      Grid.Column="1"
+                      Text="Edit"
+                      Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditCommand}"
+                      CommandParameter="{Binding .}"
+                      Style="{StaticResource SecondaryButton}" />
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </CollectionView.ItemTemplate>
+    </CollectionView>
+  </Grid>
+</ContentPage>

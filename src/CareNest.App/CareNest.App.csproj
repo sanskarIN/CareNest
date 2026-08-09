@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CareNest.App</RootNamespace>
+    <AssemblyName>CareNest.App</AssemblyName>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ApplicationTitle>CareNest</ApplicationTitle>
+    <ApplicationId>com.sanskar.carenest</ApplicationId>
+    <ApplicationDisplayVersion>1.0.0-rc.1</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <WindowsPackageType>None</WindowsPackageType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiIcon Include="Resources\AppIcon\appicon.svg"
+              ForegroundFile="Resources\AppIcon\appiconfg.svg"
+              Color="#E8F2EE" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg"
+                      Color="#F5FAF8"
+                      BaseSize="512,512" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiAsset Include="Resources\Raw\**"
+               LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CareNest.Application\CareNest.Application.csproj" />
+    <ProjectReference Include="..\CareNest.Domain\CareNest.Domain.csproj" />
+    <ProjectReference Include="..\CareNest.Infrastructure\CareNest.Infrastructure.csproj" />
+    <ProjectReference Include="..\CareNest.Shared\CareNest.Shared.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+  </ItemGroup>
+</Project>

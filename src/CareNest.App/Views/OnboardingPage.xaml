@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.OnboardingPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:strings="clr-namespace:CareNest.App.Resources.Strings"
+    Title="Welcome to CareNest">
+  <ScrollView>
+    <VerticalStackLayout Padding="24" Spacing="20" MaximumWidthRequest="720">
+      <Image Source="carenest_mark.svg"
+             HeightRequest="96"
+             SemanticProperties.Description="CareNest logo" />
+      <Label Text="{x:Static strings:AppText.OnboardingWelcome}"
+             Style="{StaticResource PageTitle}" />
+      <Label Text="Your local-first health organizer"
+             Style="{StaticResource SectionTitle}" />
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="10">
+          <Label Text="Local-first storage" FontAttributes="Bold" />
+          <Label Text="{x:Static strings:AppText.LocalFirstDescription}" />
+          <Label Text="{x:Static strings:AppText.BackupResponsibility}" Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="10">
+          <Label Text="Medical limitation" FontAttributes="Bold" />
+          <Label Text="{x:Static strings:AppText.MedicalDisclaimer}" />
+          <Label Text="{x:Static strings:AppText.ReminderLimitations}" />
+          <HorizontalStackLayout Spacing="12">
+            <CheckBox IsChecked="{Binding DisclaimerAccepted}"
+                      SemanticProperties.Description="Confirm understanding of CareNest medical limitations" />
+            <Label Text="I understand these limitations."
+                   VerticalTextAlignment="Center" />
+          </HorizontalStackLayout>
+        </VerticalStackLayout>
+      </Border>
+
+      <Label Text="Primary local profile" Style="{StaticResource SectionTitle}" />
+      <Entry Placeholder="Name or nickname"
+             Text="{Binding ProfileName}"
+             MaxLength="120"
+             SemanticProperties.Description="Primary profile name or nickname" />
+
+      <Label Text="Optional app lock" Style="{StaticResource SectionTitle}" />
+      <HorizontalStackLayout Spacing="12">
+        <Switch IsToggled="{Binding EnableLock}"
+                SemanticProperties.Description="Enable optional CareNest app lock" />
+        <Label Text="Protect CareNest with a local PIN"
+               VerticalTextAlignment="Center" />
+      </HorizontalStackLayout>
+      <Entry Placeholder="6–32 digit PIN"
+             Text="{Binding Pin}"
+             IsPassword="True"
+             Keyboard="Numeric"
+             MaxLength="32"
+             IsVisible="{Binding EnableLock}"
+             SemanticProperties.Description="Optional CareNest app-lock PIN" />
+      <Label Text="The PIN is not stored directly. Losing access to the device or its secure storage can affect app-lock recovery."
+             IsVisible="{Binding EnableLock}"
+             Style="{StaticResource MutedText}" />
+
+      <Label Text="{Binding StatusMessage}"
+             TextColor="{StaticResource Danger}"
+             IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotEmptyConverter}}" />
+
+      <Button Text="Finish setup"
+              Command="{Binding FinishCommand}"
+              IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+              SemanticProperties.Hint="Creates the primary local profile and opens CareNest" />
+
+      <ActivityIndicator IsVisible="{Binding IsBusy}"
+                         IsRunning="{Binding IsBusy}" />
+      <Label Text="{x:Static strings:AppText.MadeBy}"
+             Style="{StaticResource MutedText}"
+             HorizontalTextAlignment="Center" />
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

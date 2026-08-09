@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.ReportsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Reports">
+  <ScrollView>
+    <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="780">
+      <Label Text="Reports and exports" Style="{StaticResource PageTitle}" />
+      <Border Style="{StaticResource WarningCard}">
+        <Label Text="Reports contain sensitive, user-entered information. They are organizational exports, not verified clinical records and do not contain treatment conclusions." />
+      </Border>
+
+      <Label Text="Profile filter" />
+      <Picker ItemsSource="{Binding Profiles}"
+              ItemDisplayBinding="{Binding Name}"
+              SelectedItem="{Binding SelectedProfile}"
+              Title="All profiles for list reports" />
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="10">
+          <Label Text="Per-profile summary" FontAttributes="Bold" />
+          <Label Text="PDF with profile, medicines, upcoming appointments, stock notes, and document list. No clinical scoring."
+                 Style="{StaticResource MutedText}" />
+          <Button Text="Export complete profile data JSON"
+                  Command="{Binding ExportProfileDataCommand}" />
+          <Button Text="Export profile summary PDF"
+                  Command="{Binding ExportProfileSummaryCommand}"
+                  Style="{StaticResource SecondaryButton}" />
+          <Label Text="The JSON export contains profile-associated structured records and document metadata. Export selected encrypted document contents separately from Documents."
+                 Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="10">
+          <Label Text="Data lists" FontAttributes="Bold" />
+          <Button Text="Export medication log CSV" Command="{Binding ExportMedicationLogCommand}" />
+          <Button Text="Export upcoming schedule CSV" Command="{Binding ExportUpcomingCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Export appointment history CSV" Command="{Binding ExportAppointmentsCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Export document list CSV" Command="{Binding ExportDocumentsCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Export stock and refill CSV" Command="{Binding ExportStockRefillCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Export missed reminders CSV" Command="{Binding ExportMissedRemindersCommand}" Style="{StaticResource SecondaryButton}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Label Text="{Binding StatusMessage}" Style="{StaticResource MutedText}" />
+      <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

@@ -1,3 +1,0 @@
-assemble CareNest 1.0.0-rc.1
-archive-sha256: 7a712eec2ee969768cec28eb513c886da66765899412586ba91f2a0cde8b73e8
-retry: 2

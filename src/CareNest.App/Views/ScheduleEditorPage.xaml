@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.ScheduleEditorPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Reminder schedule">
+  <ScrollView>
+    <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="760">
+      <Label Text="Reminder schedule" Style="{StaticResource PageTitle}" />
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout>
+          <Label Text="You control the schedule." FontAttributes="Bold" />
+          <Label Text="CareNest does not determine dosage or silently change schedule times. Every-N-hours schedules are used only when you explicitly select that mode and interval." />
+        </VerticalStackLayout>
+      </Border>
+
+      <Label Text="Schedule type" />
+      <Picker ItemsSource="{Binding Kinds}"
+              SelectedItem="{Binding Kind}" />
+
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+        <VerticalStackLayout>
+          <Label Text="Start date" />
+          <DatePicker Date="{Binding StartDate}" />
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Column="1">
+          <HorizontalStackLayout>
+            <Switch IsToggled="{Binding HasEndDate}" />
+            <Label Text="End date"
+                   VerticalTextAlignment="Center" />
+          </HorizontalStackLayout>
+          <DatePicker Date="{Binding EndDate}"
+                      IsVisible="{Binding HasEndDate}" />
+        </VerticalStackLayout>
+      </Grid>
+
+      <VerticalStackLayout IsVisible="{Binding IsSpecificTimes}" Spacing="6">
+        <Label Text="Specific reminder times" />
+        <Entry Text="{Binding ReminderTimesText}"
+               Placeholder="08:00, 14:00, 20:00"
+               SemanticProperties.Hint="Enter one or more explicit times separated by commas" />
+        <Label Text="Use local HH:mm times separated by commas. CareNest stores each time exactly as part of this schedule."
+               Style="{StaticResource MutedText}" />
+      </VerticalStackLayout>
+
+      <VerticalStackLayout IsVisible="{Binding IsInterval}">
+        <Label Text="Starting time for the explicit interval" />
+        <TimePicker Time="{Binding ReminderTime}" />
+        <Label Text="Explicit interval in hours" />
+        <Entry Text="{Binding IntervalHoursText}"
+               Keyboard="Numeric"
+               Placeholder="Example: 8" />
+      </VerticalStackLayout>
+
+      <VerticalStackLayout IsVisible="{Binding IsCycle}">
+        <Label Text="Cycle" />
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+          <Entry Text="{Binding CycleOnDaysText}"
+                 Keyboard="Numeric"
+                 Placeholder="On-days" />
+          <Entry Grid.Column="1"
+                 Text="{Binding CycleOffDaysText}"
+                 Keyboard="Numeric"
+                 Placeholder="Off-days" />
+        </Grid>
+      </VerticalStackLayout>
+
+      <VerticalStackLayout IsVisible="{Binding IsWeekdaySelection}">
+        <Label Text="Selected weekdays" />
+        <Grid ColumnDefinitions="Auto,*,Auto,*"
+              RowDefinitions="Auto,Auto,Auto,Auto">
+          <CheckBox IsChecked="{Binding Monday}" />
+          <Label Grid.Column="1" Text="Monday" VerticalTextAlignment="Center" />
+          <CheckBox Grid.Column="2" IsChecked="{Binding Tuesday}" />
+          <Label Grid.Column="3" Text="Tuesday" VerticalTextAlignment="Center" />
+
+          <CheckBox Grid.Row="1" IsChecked="{Binding Wednesday}" />
+          <Label Grid.Row="1" Grid.Column="1" Text="Wednesday" VerticalTextAlignment="Center" />
+          <CheckBox Grid.Row="1" Grid.Column="2" IsChecked="{Binding Thursday}" />
+          <Label Grid.Row="1" Grid.Column="3" Text="Thursday" VerticalTextAlignment="Center" />
+
+          <CheckBox Grid.Row="2" IsChecked="{Binding Friday}" />
+          <Label Grid.Row="2" Grid.Column="1" Text="Friday" VerticalTextAlignment="Center" />
+          <CheckBox Grid.Row="2" Grid.Column="2" IsChecked="{Binding Saturday}" />
+          <Label Grid.Row="2" Grid.Column="3" Text="Saturday" VerticalTextAlignment="Center" />
+
+          <CheckBox Grid.Row="3" IsChecked="{Binding Sunday}" />
+          <Label Grid.Row="3" Grid.Column="1" Text="Sunday" VerticalTextAlignment="Center" />
+        </Grid>
+      </VerticalStackLayout>
+
+      <Label Text="Schedule time zone" />
+      <Entry Text="{Binding TimeZoneId}"
+             Placeholder="System time-zone identifier" />
+      <Label Text="CareNest records the selected time-zone identifier and rebuilds future reminder occurrences when the app detects changes. Operating-system restrictions can still affect delivery."
+             Style="{StaticResource MutedText}" />
+
+      <HorizontalStackLayout Spacing="12"
+                             IsVisible="{Binding HasAutomaticReminder}">
+        <Switch IsToggled="{Binding FollowUpEnabled}" />
+        <Label Text="Optional follow-up reminder"
+               VerticalTextAlignment="Center" />
+      </HorizontalStackLayout>
+      <Entry Text="{Binding FollowUpMinutesText}"
+             Keyboard="Numeric"
+             Placeholder="Minutes after reminder"
+             IsVisible="{Binding FollowUpEnabled}" />
+
+      <HorizontalStackLayout Spacing="12">
+        <Switch IsToggled="{Binding Enabled}" />
+        <Label Text="Schedule enabled"
+               VerticalTextAlignment="Center" />
+      </HorizontalStackLayout>
+
+      <Label Text="{Binding StatusMessage}"
+             TextColor="{StaticResource Warning}" />
+
+      <Button Text="Save schedule"
+              Command="{Binding SaveCommand}"
+              IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

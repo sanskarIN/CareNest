@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Settings">
+  <ScrollView>
+    <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="820">
+      <Label Text="Settings" Style="{StaticResource PageTitle}" />
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="12">
+          <Label Text="Appearance and accessibility" Style="{StaticResource SectionTitle}" />
+          <Label Text="Theme" />
+          <Picker ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding Theme}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Reduced motion preference" VerticalTextAlignment="Center" />
+            <Switch Grid.Column="1" IsToggled="{Binding ReducedMotion}" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Larger interface preference" VerticalTextAlignment="Center" />
+            <Switch Grid.Column="1" IsToggled="{Binding LargeInterface}" />
+          </Grid>
+          <Label Text="These preferences are stored locally. Platform text-size and accessibility settings continue to be respected."
+                 Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="12">
+          <Label Text="Notifications and reminders" Style="{StaticResource SectionTitle}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Quiet hours" VerticalTextAlignment="Center" />
+            <Switch Grid.Column="1" IsToggled="{Binding QuietHoursEnabled}" />
+          </Grid>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12" IsVisible="{Binding QuietHoursEnabled}">
+            <VerticalStackLayout>
+              <Label Text="Start" />
+              <TimePicker Time="{Binding QuietHoursStart}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Column="1">
+              <Label Text="End" />
+              <TimePicker Time="{Binding QuietHoursEnd}" />
+            </VerticalStackLayout>
+          </Grid>
+          <Label Text="Quiet hours suppress system reminder notifications within the chosen local-time window; CareNest does not alter the stored schedule time."
+                 Style="{StaticResource MutedText}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Privacy-friendly generic notification labels" VerticalTextAlignment="Center" />
+            <Switch Grid.Column="1" IsToggled="{Binding GenericLabels}" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Persistent reminder where supported" VerticalTextAlignment="Center" />
+            <Switch Grid.Column="1" IsToggled="{Binding PersistentNotifications}" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Reminder sound preference" VerticalTextAlignment="Center" />
+            <Switch Grid.Column="1" IsToggled="{Binding SoundEnabled}" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Vibration preference" VerticalTextAlignment="Center" />
+            <Switch Grid.Column="1" IsToggled="{Binding VibrationEnabled}" />
+          </Grid>
+          <Label Text="The operating system can override sound or vibration through channel/focus settings." Style="{StaticResource MutedText}" />
+          <Button Text="Save preferences" Command="{Binding SavePreferencesCommand}" />
+          <Button Text="Refresh notification diagnostics" Command="{Binding NotificationDiagnosticsCommand}"
+                  Style="{StaticResource SecondaryButton}" />
+          <Label Text="{Binding Diagnostics}" Style="{StaticResource MutedText}" />
+          <HorizontalStackLayout Spacing="10">
+            <Button Text="Test notification" Command="{Binding TestReminderCommand}" />
+            <Button Text="Rebuild reminders" Command="{Binding RebuildRemindersCommand}"
+                    Style="{StaticResource SecondaryButton}" />
+          </HorizontalStackLayout>
+          <Label Text="Reminder delivery can be affected by permissions, battery optimization, time-zone changes, and operating-system restrictions."
+                 Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="12">
+          <Label Text="App lock" Style="{StaticResource SectionTitle}" />
+          <Label Text="{Binding AppLockEnabled, StringFormat='Enabled: {0}'}" />
+          <Button Text="Enable or change PIN" Clicked="EnableLockClicked" />
+          <Button Text="Disable app lock" Clicked="DisableLockClicked" Style="{StaticResource SecondaryButton}" />
+          <Label Text="PINs are verified locally. CareNest cannot recover a forgotten PIN." Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="12">
+          <Label Text="Backup and restore" Style="{StaticResource SectionTitle}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Optional backup reminder preference" VerticalTextAlignment="Center" />
+            <Switch Grid.Column="1" IsToggled="{Binding BackupReminderEnabled}" />
+          </Grid>
+          <Button Text="Create encrypted backup" Clicked="CreateBackupClicked" />
+          <Button Text="Restore encrypted backup" Clicked="RestoreBackupClicked" Style="{StaticResource SecondaryButton}" />
+          <Border Style="{StaticResource WarningCard}">
+            <Label Text="Backups are manual and encrypted. Keep the password and exported backup safe. Restore overwrites current CareNest data after integrity checks." />
+          </Border>
+        </VerticalStackLayout>
+      </Border>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="12">
+          <Label Text="Storage and privacy" Style="{StaticResource SectionTitle}" />
+          <Label Text="{Binding StorageUsage, StringFormat='Encrypted document storage: {0}'}" />
+          <Button Text="Compact local database" Command="{Binding VacuumCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Clear temporary export/preview cache" Command="{Binding ClearCacheCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Delete all CareNest data from this device" Clicked="ResetDataClicked" Style="{StaticResource DangerButton}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="12">
+          <Label Text="Developer diagnostics" Style="{StaticResource SectionTitle}" />
+          <Label Text="{Binding SchemaVersion, StringFormat='Database schema version: {0}'}" />
+          <Label Text="{Binding CurrentTimeZone, StringFormat='Current device time zone: {0}'}" />
+          <Label Text="Time-zone behavior: each medicine schedule keeps its explicitly saved time-zone identifier. Device time-zone changes rebuild future requests but do not silently rewrite saved schedule times." Style="{StaticResource MutedText}" />
+          <Label Text="Time-zone simulation (diagnostic only)" />
+          <Entry Text="{Binding TimeZoneSimulation}" Placeholder="Time-zone identifier" />
+          <Button Text="Simulate time zone" Command="{Binding SimulateTimeZoneCommand}" Style="{StaticResource SecondaryButton}" />
+          <Label Text="{Binding SimulationResult}" Style="{StaticResource MutedText}" />
+          <Label Text="Redacted schedule inspector" FontAttributes="Bold" />
+          <CollectionView ItemsSource="{Binding RedactedSchedule}"
+                          HeightRequest="180"
+                          EmptyView="No future reminder occurrences are currently materialized.">
+            <CollectionView.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="Auto,*,Auto" Padding="0,4">
+                  <Label Text="{Binding ShortId}" Style="{StaticResource MutedText}" />
+                  <Label Grid.Column="1" Text="{Binding DueUtc, StringFormat='{0:g} UTC'}" Style="{StaticResource MutedText}" />
+                  <Label Grid.Column="2" Text="{Binding State}" Style="{StaticResource MutedText}" />
+                </Grid>
+              </DataTemplate>
+            </CollectionView.ItemTemplate>
+          </CollectionView>
+          <Button Text="Export sanitized diagnostics and schedule inspector"
+                  Command="{Binding ExportSanitizedDiagnosticsCommand}"
+                  Style="{StaticResource SecondaryButton}" />
+          <Label Text="Sanitized diagnostics omit medicine names, profile names, health-document contents, contact details, and notes."
+                 Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Label Text="{Binding StatusMessage}" Style="{StaticResource MutedText}" />
+      <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

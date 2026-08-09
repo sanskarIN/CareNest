@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="ProductName" xml:space="preserve"><value>CareNest</value></data>
+  <data name="OnboardingWelcome" xml:space="preserve"><value>Welcome to CareNest</value></data>
+  <data name="LocalFirstDescription" xml:space="preserve"><value>CareNest works without an account. Records stay in this app’s local storage in the current release. There is no automatic cloud upload.</value></data>
+  <data name="BackupResponsibility" xml:space="preserve"><value>You are responsible for keeping useful encrypted backups and protecting exported copies.</value></data>
+  <data name="MedicalDisclaimer" xml:space="preserve"><value>CareNest is an organizational tool only. It does not diagnose conditions, determine dosage, recommend treatment, replace a doctor or pharmacist, or provide emergency services. Follow instructions from qualified professionals.</value></data>
+  <data name="ReminderLimitations" xml:space="preserve"><value>Reminder delivery can be affected by permissions, battery optimization, device shutdown, time-zone changes, and operating-system restrictions. In an emergency, contact local emergency services instead of relying on CareNest.</value></data>
+  <data name="MadeBy" xml:space="preserve"><value>Made by the Sanskar</value></data>
+</root>

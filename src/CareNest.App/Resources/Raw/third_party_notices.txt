@@ -1,0 +1,7 @@
+CareNest includes open-source components restored from NuGet.
+
+sqlite-net-pcl — MIT-style license; see the package's distribution for its current license text.
+Microsoft .NET / .NET MAUI components — licenses and notices are provided by Microsoft and their package distributions.
+xUnit is used by test projects and is not shipped as an application runtime dependency.
+
+Before publishing a binary release, generate and review a dependency license inventory for the exact restored package graph.
