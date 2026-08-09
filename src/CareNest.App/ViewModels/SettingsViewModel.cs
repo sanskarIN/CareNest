@@ -15,6 +15,9 @@ public sealed record RedactedScheduleItem(string OccurrenceId, DateTime DueUtc, 
 
 public sealed class SettingsViewModel : ObservableViewModel
 {
+    private static readonly string[] CacheDirectoryNames =
+        ["Reports", "Backups", "Restore", "Exports", "ProfilePreviews"];
+
     private readonly ICareNestRepository _repository;
     private readonly AppStateService _state;
     private readonly INotificationService _notifications;
@@ -281,12 +284,11 @@ public sealed class SettingsViewModel : ObservableViewModel
             StatusMessage = "Future reminder requests were rebuilt from user-entered schedules.";
         }, "CareNest could not rebuild reminder requests.");
 
-
     private Task ClearCacheAsync() =>
         RunAsync(ct =>
         {
             ct.ThrowIfCancellationRequested();
-            foreach (var name in new[] { "Reports", "Backups", "Restore", "Exports", "ProfilePreviews" })
+            foreach (var name in CacheDirectoryNames)
             {
                 var path = Path.Combine(FileSystem.Current.CacheDirectory, name);
                 if (Directory.Exists(path))
@@ -337,12 +339,11 @@ public sealed class SettingsViewModel : ObservableViewModel
 
             foreach (var item in upcoming)
             {
-                text.AppendLine($"- occurrence={ShortId(item.OccurrenceId)} dueUtc={item.DueUtc:O} state={item.State}");
+                text.AppendLine($"- occurrence={ShortId(item.OccurrenceId)} dueUtc={item.ScheduledUtc:O} state={item.State}");
             }
             text.AppendLine("Health names, document contents, notes, and contact details are intentionally omitted.");
             await _files.ShareTextAsync(text.ToString(), "CareNest sanitized diagnostics", ct);
         }, "CareNest could not export sanitized diagnostics.");
-
 
     private async Task LoadRedactedScheduleAsync(CancellationToken ct)
     {
@@ -350,7 +351,7 @@ public sealed class SettingsViewModel : ObservableViewModel
         RedactedSchedule.Clear();
         foreach (var item in upcoming)
         {
-            RedactedSchedule.Add(new RedactedScheduleItem(item.OccurrenceId, item.DueUtc, item.State));
+            RedactedSchedule.Add(new RedactedScheduleItem(item.OccurrenceId, item.ScheduledUtc, item.State));
         }
     }
 
