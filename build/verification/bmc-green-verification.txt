@@ -1,0 +1,3 @@
+CareNest BMC green verification
+Validates corrected BMC wording contracts, clickable support logo, NuGet dependency audit, core tests, platform builds, and CodeQL.
+Verification-only marker; do not merge.
