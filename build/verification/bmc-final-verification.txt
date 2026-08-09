@@ -1,0 +1,3 @@
+CareNest final BMC support verification
+Validates the original linked support badge, clickable in-app support logo, NuGet dependency audit fallback, release gate files, core tests, platform builds, and CodeQL.
+Verification-only marker; do not merge.
