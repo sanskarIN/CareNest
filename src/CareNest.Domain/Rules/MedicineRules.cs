@@ -14,23 +14,23 @@ public static class MedicineRules
 
         if (medicine.EndDate is { } end && end.Date < medicine.StartDate.Date)
         {
-            throw new ArgumentException("End date cannot be before start date.", nameof(medicine.EndDate));
+            throw new ArgumentException("End date cannot be before start date.", nameof(medicine));
         }
 
         if (medicine.StockCount is < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(medicine.StockCount), "Stock count cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(medicine), "Stock count cannot be negative.");
         }
 
         if (medicine.RefillThreshold is < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(medicine.RefillThreshold), "Refill threshold cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(medicine), "Refill threshold cannot be negative.");
         }
 
         if (medicine.StockChangePerTakenEvent is < 0)
         {
             throw new ArgumentOutOfRangeException(
-                nameof(medicine.StockChangePerTakenEvent),
+                nameof(medicine),
                 "The user-entered stock change per Taken event cannot be negative.");
         }
     }
@@ -41,35 +41,35 @@ public static class MedicineRules
 
         if (schedule.EndDate is { } end && end.Date < schedule.StartDate.Date)
         {
-            throw new ArgumentException("Schedule end date cannot be before start date.");
+            throw new ArgumentException("Schedule end date cannot be before start date.", nameof(schedule));
         }
 
         if (schedule.Kind == ScheduleKind.EveryNHours)
         {
             if (schedule.IntervalHours is null or < 1 or > 168)
             {
-                throw new ArgumentOutOfRangeException(nameof(schedule.IntervalHours), "Every-N-hours schedules require an explicit interval from 1 to 168 hours.");
+                throw new ArgumentOutOfRangeException(nameof(schedule), "Every-N-hours schedules require an explicit interval from 1 to 168 hours.");
             }
 
             if (times.Count != 1)
             {
-                throw new ArgumentException("Every-N-hours schedules require exactly one user-selected starting time.");
+                throw new ArgumentException("Every-N-hours schedules require exactly one user-selected starting time.", nameof(times));
             }
         }
         else if (schedule.Kind != ScheduleKind.AsNeeded && times.Count == 0)
         {
-            throw new ArgumentException("At least one user-selected reminder time is required.");
+            throw new ArgumentException("At least one user-selected reminder time is required.", nameof(times));
         }
 
         if (schedule.Kind == ScheduleKind.SelectedWeekdays && schedule.WeekdayMask == 0)
         {
-            throw new ArgumentException("Select at least one weekday.");
+            throw new ArgumentException("Select at least one weekday.", nameof(schedule));
         }
 
         if (schedule.Kind == ScheduleKind.Cycle &&
             (schedule.CycleOnDays is null or < 1 || schedule.CycleOffDays is null or < 1))
         {
-            throw new ArgumentException("Cycle schedules require explicit on-days and off-days.");
+            throw new ArgumentException("Cycle schedules require explicit on-days and off-days.", nameof(schedule));
         }
 
         foreach (var time in times)
@@ -80,7 +80,7 @@ public static class MedicineRules
 
         if (schedule.FollowUpMinutes is < 1 or > 1440)
         {
-            throw new ArgumentOutOfRangeException(nameof(schedule.FollowUpMinutes), "Follow-up must be between 1 minute and 24 hours.");
+            throw new ArgumentOutOfRangeException(nameof(schedule), "Follow-up must be between 1 minute and 24 hours.");
         }
 
         _ = TimeZoneInfo.FindSystemTimeZoneById(schedule.TimeZoneId);
