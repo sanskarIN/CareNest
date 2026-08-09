@@ -80,6 +80,18 @@ Read [`PRIVACY.md`](PRIVACY.md), [`SECURITY.md`](SECURITY.md), the threat model 
 
 The current release has no automatic cloud sync and no silent caregiver sharing. Known dependency advisories are not represented as fixed merely because CI contains a narrowly scoped audit exception; the dependency risk register is the source of truth for those open items.
 
+## Project support
+
+CareNest is open source. If you want to voluntarily support continued development:
+
+- Buy Me a Coffee: https://buymeacoffee.com/sanskarIN
+
+Project support does not unlock medical advice, premium health behavior, different reminder behavior, or access to user health data.
+
+## Next steps
+
+The release-candidate promotion checklist, production blockers, manual device testing, signing/store preparation, and future-version ideas are tracked in [`docs/releases/NEXT_STEPS.md`](docs/releases/NEXT_STEPS.md).
+
 ## Branding
 
 - Product: **CareNest**
@@ -87,6 +99,7 @@ The current release has no automatic cloud sync and no silent caregiver sharing.
 - Business: `sanskarin@outlook.in`
 - Support: `supportramsandesh@gmail.com`
 - Creator: https://www.github.com/sanskarIN
+- Voluntary support: https://buymeacoffee.com/sanskarIN
 
 ## Open source
 
