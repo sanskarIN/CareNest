@@ -1,0 +1,3 @@
+CareNest 1.0.0-rc.1 verification pass 4
+Base: 8c039ae7d6e852dda05a984221a1cc67b7b8910b
+Purpose: verify per-run MAUI target selection and SQLite journal-mode initialization fix.
