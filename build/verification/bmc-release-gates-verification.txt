@@ -1,0 +1,3 @@
+CareNest BMC and release-gate verification
+Validates highlighted support UI/assets, privacy-safe issue reporting, dependency review, release gate, core tests, platform builds, and CodeQL.
+Verification-only marker; do not merge.
