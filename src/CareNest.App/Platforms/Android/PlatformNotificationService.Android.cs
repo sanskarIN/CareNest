@@ -363,7 +363,7 @@ public sealed class CareNestReminderReceiver : BroadcastReceiver
 {
     Intent.ActionBootCompleted,
     Intent.ActionTimeChanged,
-    Intent.ActionTimeZoneChanged
+    Intent.ActionTimezoneChanged
 })]
 public sealed class CareNestSystemEventReceiver : BroadcastReceiver
 {
