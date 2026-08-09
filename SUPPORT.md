@@ -6,7 +6,7 @@
 
 **[Buy Me a Coffee → https://buymeacoffee.com/sanskarIN](https://buymeacoffee.com/sanskarIN)**
 
-Financial support is completely optional. It helps continued open-source development, testing, documentation, accessibility work, and platform maintenance. It does not unlock medical advice, premium health behavior, different reminder behavior, faster emergency assistance, or access to user health data.
+Financial support is optional. It can help continued open-source development, testing, documentation, accessibility work, and platform maintenance. It does not unlock medical advice, premium health behavior, different reminder behavior, faster emergency assistance, or access to user health data.
 
 ## Application and project support
 
