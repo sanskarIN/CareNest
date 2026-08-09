@@ -14,6 +14,7 @@ This register tracks dependency advisories that affect the CareNest release line
 - **Release impact:** This exception must remain visible in release review. A final production release should either consume an available dependency version that resolves the advisory or migrate the persistence/native-SQLite dependency path after compatibility testing.
 - **Data-boundary mitigation:** CareNest remains local-first, does not expose a remote database listener, does not ingest arbitrary SQL from users, and uses application-controlled parameterized repository operations. These properties reduce exposure but do not make the advisory disappear.
 - **Review trigger:** Every dependency update, every release candidate, and any NuGet/SQLite dependency change.
+- **Next-step owner document:** `docs/releases/NEXT_STEPS.md` Priority 0 item 1 tracks the upgrade/removal/re-verification work required before the advisory can be considered resolved for production.
 
 ## Rules for exceptions
 
@@ -22,3 +23,4 @@ This register tracks dependency advisories that affect the CareNest release line
 3. Prefer upgrading or replacing the dependency over retaining an exception.
 4. Re-run unit, integration, platform build, backup/restore, migration, and document tests after changing SQLite-related dependencies.
 5. Remove the matching `NuGetAuditSuppress` entry as soon as the dependency chain can restore and build with a verified patched version.
+6. Do not mark the public `1.0.0` release checklist complete until this risk has an explicit production release decision or a verified dependency resolution.
