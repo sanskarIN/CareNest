@@ -17,12 +17,18 @@
 - Android/iOS/Mac Catalyst notification integrations and Windows fallback diagnostics.
 - App lock primitives and secure secret storage.
 - Unit/integration/UI-contract tests.
-- GitHub workflow, release checklist, troubleshooting and contribution documentation.
+- GitHub workflow, CodeQL, Dependabot, release checklist, troubleshooting and contribution documentation.
 - Branding vector sources and store guidance.
+- Initial release implementation merged to `main` through PR #3.
+- CodeQL verification succeeded for the release branch.
+- Post-merge CI blockers were identified from GitHub Actions logs and corrected on `main`:
+  - CA1848 logging-optimization analyzer no longer blocks release builds.
+  - SQLitePCLRaw native packages were moved past vulnerable `2.1.11` and centrally pinned consistently.
 
 ## Current
 
-- External build verification on a machine with the .NET 10 SDK and MAUI workloads.
+- Pull request #10 exercises the complete pull-request CI matrix against the post-merge fixes.
+- Final release tagging should occur only after the verification matrix is green.
 
 ## Deferred to later versions
 
@@ -32,8 +38,8 @@
 - Medical interpretation, diagnosis, treatment advice, interaction checking, or clinical risk scoring.
 - Any analytics/telemetry until explicit consent and a privacy review exist.
 
-## Blocked in the current execution environment
+## Environment limitation
 
-The repository source can be created and reviewed here, but this execution environment does not include the `dotnet` command or MAUI workloads. Therefore local `dotnet restore`, formatting, compilation, emulator/device smoke tests, signing, and store packaging cannot be truthfully claimed as executed here. CI is configured to perform automated restore/build/test checks on GitHub-hosted runners.
+The local execution container used for repository assembly does not include the `dotnet` command or MAUI workloads. Local restore, formatting, compilation, emulator/device smoke tests, signing, and store packaging therefore cannot be truthfully claimed as executed inside that container. GitHub-hosted CI is the authoritative automated build/test verification surface for this delivery.
 
-See `what_changed.md` for implementation and verification details.
+See `what_changed.md` for the implementation and verification record.
