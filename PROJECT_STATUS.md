@@ -28,7 +28,7 @@
 - Buy Me a Coffee voluntary project-support URL is centralized as `https://buymeacoffee.com/sanskarIN`.
 - The About page exposes a dedicated voluntary project-support action.
 - `.github/FUNDING.yml` exposes the same URL through GitHub funding metadata.
-- README, support, privacy, terms, changelog, release checklist, and UI-contract coverage document and enforce the voluntary/non-medical funding boundary.
+- README, support, privacy, terms, security, threat-model, data-lifecycle, changelog, store-guidance, release-checklist, and UI-contract surfaces document the voluntary/non-medical funding boundary.
 - `docs/releases/NEXT_STEPS.md` tracks production-release blockers, store/signing work, release promotion tasks, post-release quality work, and separately reviewed future-version ideas.
 
 ## Security dependency status
@@ -40,46 +40,31 @@ An attempted `2.1.12` bundle pin was rejected because that version is not availa
 - the exact advisory URL is temporarily suppressed through `NuGetAuditSuppress` so unrelated compile/test failures remain visible;
 - no wildcard or severity-wide audit suppression is used;
 - `docs/security/DEPENDENCY_RISK_REGISTER.md` records the open risk, mitigation context and review trigger;
-- final production release review must upgrade or replace the dependency path when an available compatible patched package exists.
+- `docs/releases/NEXT_STEPS.md` Priority 0 item 1 tracks the required upgrade/removal/re-verification work;
+- final production release review must upgrade or replace the dependency path when an available compatible patched package exists, or record an explicit release decision after security review.
 
-## Previous automated verification
+## Latest automated verification completed
 
-Verification PR #15 exercised source head `682aef2aa31981c6be31086aa7af8e1c8e56e94b`. The verification marker branch was not merged into `main`.
+Verification PR #16 exercised source head:
 
-GitHub Actions CareNest CI run #67 (`31300473171`) completed successfully:
+`2b8f97525ea8d3b41bf62e20d76e1cc224dab102`
+
+The verification marker branch was not merged into `main`. PR #16 was closed after verification succeeded.
+
+GitHub Actions CareNest CI run #87 (`31301203981`) completed successfully:
 
 - Unit tests: 15 passed, 0 failed, 0 skipped.
 - Integration tests: 11 passed, 0 failed, 0 skipped.
-- UI-contract tests: 8 passed, 0 failed, 0 skipped.
+- UI-contract tests: 10 passed, 0 failed, 0 skipped.
+- Total automated tests: 36 passed, 0 failed, 0 skipped.
 - Android Release build: passed.
 - Windows Release build: passed.
 - iOS simulator Release build: passed.
 - Mac Catalyst Release build: passed.
 
-CodeQL run #66 (`31300473160`) also completed successfully.
+CodeQL run #86 (`31301203985`) also completed successfully.
 
-PR #15 was closed after verification succeeded because it contained only a verification marker and did not need to be merged.
-
-## Fresh verification after funding-support changes
-
-Runtime/UI and UI-contract changes after the previously verified source head require a new complete matrix before those changes can be called release-verified.
-
-Verification PR #16 targets `main` source head:
-
-`2b8f97525ea8d3b41bf62e20d76e1cc224dab102`
-
-Fresh workflows:
-
-- CareNest CI run #87 / `31301203981`.
-- CodeQL run #86 / `31301203985`.
-
-Current confirmed result from this new pass:
-
-- Unit tests: 15 passed, 0 failed, 0 skipped.
-- Integration tests: 11 passed, 0 failed, 0 skipped.
-- UI-contract tests: 10 passed, 0 failed, 0 skipped.
-
-Android, Windows, Apple platform builds and CodeQL remain part of this same verification gate until they return final conclusions.
+This fresh pass verified the funding-support runtime/UI changes, shared funding URL constant, About-page command, GitHub funding metadata, funding-link UI-contract tests, and all existing core/platform behavior present at that source head.
 
 ## Funding boundary
 
@@ -91,9 +76,10 @@ Before store submission, current Apple and Google rules for external voluntary f
 
 ## Current
 
-- Complete CareNest `1.0.0-rc.1` product source remains on `main`.
-- Fresh verification PR #16 is the authoritative automated gate for the new funding-support runtime/UI changes.
-- Final `1.0.0` tagging remains intentionally blocked on the manual release checklist, the tracked SQLite dependency advisory decision/resolution, store-policy review for the funding link, signing, and final exact-commit verification.
+- Complete CareNest `1.0.0-rc.1` product source is on `main`.
+- Source head `2b8f97525ea8d3b41bf62e20d76e1cc224dab102` has a fully green automated core/platform/CodeQL matrix.
+- Later `main` commits after that source head are documentation/security/status guidance updates only and do not alter product runtime behavior.
+- Final `1.0.0` tagging remains intentionally blocked on the manual release checklist, the tracked SQLite dependency advisory decision/resolution, current store-policy review for the funding link, signing, final store/privacy preparation, and exact-final-commit verification if later runtime/UI/dependency changes occur.
 
 ## Deferred to later versions
 
