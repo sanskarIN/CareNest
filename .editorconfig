@@ -21,6 +21,9 @@ dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_event = false:suggestion
 dotnet_diagnostic.CA2007.severity = none
 dotnet_diagnostic.CA1303.severity = suggestion
+# Logging delegate optimization is performance guidance, not a release-blocking correctness rule.
+# Keep it visible to contributors without failing all platform builds.
+dotnet_diagnostic.CA1848.severity = suggestion
 
 [*.{xaml,xml,props,targets,csproj,sln}]
 indent_style = space
