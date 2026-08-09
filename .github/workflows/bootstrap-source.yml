@@ -1,12 +1,12 @@
 name: CareNest source bootstrap
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-      - build/carenest-bootstrap
     paths:
       - build/bootstrap/trigger.txt
+      - .github/workflows/bootstrap-source.yml
 
 permissions:
   contents: write
