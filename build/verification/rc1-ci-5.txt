@@ -1,0 +1,3 @@
+CareNest 1.0.0-rc.1 verification pass 5
+Base: 9132ed496433be7f6c3772d3b79b759a1a312be1
+Purpose: verify SQLite bootstrap fixes, explicit MAUI Controls reference, platform source isolation, Android timezone intent, and macOS 26 Apple runner compatibility.
