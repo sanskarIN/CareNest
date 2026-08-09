@@ -1,0 +1,3 @@
+CareNest 1.0.0-rc.1 verification pass 2
+Base: a09fefd97babb4ccb8faa667cd893e3619a9badb
+Purpose: exercise PR CI after analyzer scoping and NuGet audit exception corrections.
