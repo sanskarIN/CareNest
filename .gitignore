@@ -1,0 +1,62 @@
+# Build
+bin/
+obj/
+artifacts/
+TestResults/
+*.user
+*.suo
+*.userprefs
+.vs/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# MAUI / mobile
+*.keystore
+*.jks
+*.mobileprovision
+*.p12
+*.cer
+*.apk
+*.aab
+*.ipa
+*.msix
+*.msixbundle
+*.appx
+*.appxbundle
+
+# Secrets / signing
+*.snk
+*.pfx
+*.key
+*.pem
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.Production.json
+
+# Local data / backups
+*.db
+*.db-shm
+*.db-wal
+*.carenestbackup
+*.cndoc
+exports/
+backups/
+local-data/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml

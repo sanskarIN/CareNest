@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:strings="clr-namespace:CareNest.App.Resources.Strings"
+    Title="About">
+  <ScrollView>
+    <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="780">
+      <Image Source="carenest_mark.svg"
+             HeightRequest="96"
+             WidthRequest="96"
+             SemanticProperties.Description="CareNest caring nest and check mark logo" />
+      <Label Text="CareNest" Style="{StaticResource PageTitle}" HorizontalTextAlignment="Center" />
+      <Label Text="{x:Static strings:AppText.MadeBy}" HorizontalTextAlignment="Center" FontAttributes="Bold" />
+      <Label Text="{Binding Version, StringFormat='Version {0}'}" HorizontalTextAlignment="Center" Style="{StaticResource MutedText}" />
+      <Label Text="{Binding Build, StringFormat='Build {0}'}" HorizontalTextAlignment="Center" Style="{StaticResource MutedText}" />
+
+      <Border Style="{StaticResource WarningCard}">
+        <VerticalStackLayout Spacing="8">
+          <Label Text="Medical limitations" FontAttributes="Bold" />
+          <Label Text="CareNest is an organizational tool. It does not provide medical diagnosis, determine dosage, recommend treatment, or replace a doctor, pharmacist, or emergency service." />
+          <Label Text="Follow instructions from qualified professionals. Reminder delivery can be affected by device settings, permissions, battery optimization, time-zone changes, and operating-system restrictions." />
+          <Label Text="In an emergency, contact local emergency services rather than relying on CareNest." FontAttributes="Bold" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="10">
+          <Label Text="Privacy and technology" Style="{StaticResource SectionTitle}" />
+          <Label Text="Current release: local-first, no account required, no automatic cloud upload. .NET MAUI, C#, XAML, SQLite, MVVM." />
+          <Label Text="Database-at-rest protection depends on platform storage protections. CareNest encrypts imported document payloads and manual backup exports using platform-supported secret storage and standard cryptography." Style="{StaticResource MutedText}" />
+          <Label Text="{Binding Platform, StringFormat='Platform: {0}'}" Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="10">
+          <Label Text="Open source and support" Style="{StaticResource SectionTitle}" />
+          <Button Text="GitHub repository" Command="{Binding OpenRepositoryCommand}" />
+          <Button Text="Creator profile" Command="{Binding OpenCreatorCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Business: sanskarin@outlook.in" Command="{Binding BusinessEmailCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Support: supportramsandesh@gmail.com" Command="{Binding SupportEmailCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Privacy policy" Command="{Binding PrivacyCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Terms" Command="{Binding TermsCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Security policy" Command="{Binding SecurityCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Bundled third-party notices" Command="{Binding ThirdPartyNoticesCommand}" Style="{StaticResource SecondaryButton}" />
+          <Label Text="Licensed under Apache License 2.0. See the repository LICENSE, NOTICE, third-party notices, privacy, terms, security, and support documents." Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Label Text="{Binding StatusMessage}" Style="{StaticResource MutedText}" />
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

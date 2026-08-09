@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.MedicationLogPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Medication log">
+  <ScrollView>
+    <VerticalStackLayout Padding="20" Spacing="18" MaximumWidthRequest="980">
+      <Grid ColumnDefinitions="*,Auto">
+        <VerticalStackLayout>
+          <Label Text="Medication log" Style="{StaticResource PageTitle}" />
+          <Label Text="These are user-entered or user-confirmed organizational records, not a verified clinical record."
+                 Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+        <Button Grid.Column="1"
+                Text="Refresh"
+                Command="{Binding RefreshCommand}"
+                Style="{StaticResource SecondaryButton}" />
+      </Grid>
+
+      <Label Text="Upcoming actions" Style="{StaticResource SectionTitle}" />
+      <CollectionView ItemsSource="{Binding Upcoming}"
+                      EmptyView="No upcoming reminder occurrences.">
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+              <VerticalStackLayout Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                  <Label Text="{Binding MedicineName}"
+                         FontAttributes="Bold" />
+                  <Label Grid.Column="1"
+                         Text="{Binding ScheduledUtc, StringFormat='{0:g} UTC'}"
+                         Style="{StaticResource MutedText}" />
+                </Grid>
+                <Label Text="{Binding ProfileName}"
+                       Style="{StaticResource MutedText}" />
+                <FlexLayout Wrap="Wrap"
+                            Direction="Row"
+                            JustifyContent="Start">
+                  <Button Text="Taken"
+                          Margin="0,0,8,8"
+                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.TakenCommand}"
+                          CommandParameter="{Binding .}" />
+                  <Button Text="Skipped"
+                          Margin="0,0,8,8"
+                          Style="{StaticResource SecondaryButton}"
+                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SkippedCommand}"
+                          CommandParameter="{Binding .}" />
+                  <Button Text="Delayed"
+                          Margin="0,0,8,8"
+                          Style="{StaticResource SecondaryButton}"
+                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DelayedCommand}"
+                          CommandParameter="{Binding .}" />
+                  <Button Text="Snooze 10 min"
+                          Margin="0,0,8,8"
+                          Style="{StaticResource SecondaryButton}"
+                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SnoozeCommand}"
+                          CommandParameter="{Binding .}" />
+                </FlexLayout>
+              </VerticalStackLayout>
+            </Border>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+
+      <Label Text="History filters and calendar date" Style="{StaticResource SectionTitle}" />
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="10">
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <VerticalStackLayout>
+              <Label Text="Profile" />
+              <Picker ItemsSource="{Binding Profiles}"
+                      ItemDisplayBinding="{Binding Name}"
+                      SelectedItem="{Binding SelectedProfile}"
+                      Title="All profiles" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Grid.Column="1">
+              <Label Text="Medicine" />
+              <Picker ItemsSource="{Binding Medicines}"
+                      ItemDisplayBinding="{Binding Name}"
+                      SelectedItem="{Binding SelectedMedicine}"
+                      Title="All medicines" />
+            </VerticalStackLayout>
+          </Grid>
+          <HorizontalStackLayout Spacing="12">
+            <Switch IsToggled="{Binding FilterSingleDate}" />
+            <Label Text="Filter by calendar date" VerticalTextAlignment="Center" />
+          </HorizontalStackLayout>
+          <DatePicker Date="{Binding FilterDate}" IsVisible="{Binding FilterSingleDate}" />
+          <HorizontalStackLayout Spacing="10">
+            <Button Text="Apply filters" Command="{Binding ApplyFilterCommand}" />
+            <Button Text="Clear filters" Command="{Binding ClearFilterCommand}" Style="{StaticResource SecondaryButton}" />
+          </HorizontalStackLayout>
+        </VerticalStackLayout>
+      </Border>
+
+      <Label Text="History" Style="{StaticResource SectionTitle}" />
+      <CollectionView ItemsSource="{Binding Entries}"
+                      EmptyView="No medication log entries yet.">
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+              <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                <Label Text="{Binding MedicineName}"
+                       FontAttributes="Bold" />
+                <Label Grid.Column="1"
+                       Text="{Binding Status}" />
+                <Label Grid.Row="1"
+                       Text="{Binding ProfileName}"
+                       Style="{StaticResource MutedText}" />
+                <Label Grid.Row="1" Grid.Column="1"
+                       Text="{Binding EventUtc, StringFormat='{0:g} UTC'}"
+                       Style="{StaticResource MutedText}" />
+                <Label Grid.Row="2"
+                       Text="{Binding Note}"
+                       LineBreakMode="TailTruncation"
+                       MaxLines="2" />
+                <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="6">
+                  <Button Text="Edit"
+                          Clicked="EditLogClicked"
+                          CommandParameter="{Binding .}"
+                          Style="{StaticResource SecondaryButton}" />
+                  <Button Text="History"
+                          Clicked="HistoryClicked"
+                          CommandParameter="{Binding .}"
+                          Style="{StaticResource SecondaryButton}" />
+                </VerticalStackLayout>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+
+      <Border Style="{StaticResource Card}">
+        <Label Text="CareNest uses neutral status labels and does not judge adherence. Ask a qualified professional if you have medical questions about missed or changed medicine use." />
+      </Border>
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

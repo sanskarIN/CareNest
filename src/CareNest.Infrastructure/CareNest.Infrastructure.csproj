@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>CareNest.Infrastructure</RootNamespace>
+    <AssemblyName>CareNest.Infrastructure</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CareNest.Application\CareNest.Application.csproj" />
+    <ProjectReference Include="..\CareNest.Domain\CareNest.Domain.csproj" />
+    <ProjectReference Include="..\CareNest.Shared\CareNest.Shared.csproj" />
+    <PackageReference Include="sqlite-net-pcl" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>

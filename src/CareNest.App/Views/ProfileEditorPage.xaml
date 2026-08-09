@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.ProfileEditorPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Profile">
+  <ScrollView>
+    <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="720">
+      <Label Text="Profile details" Style="{StaticResource PageTitle}" />
+      <Label Text="Only a name or nickname is required. Other sensitive fields are optional."
+             Style="{StaticResource MutedText}" />
+
+      <Label Text="Name or nickname" />
+      <Entry Text="{Binding Name}" MaxLength="120" SemanticProperties.Description="Profile name or nickname" />
+
+      <Label Text="Profile photo (optional)" />
+      <Image Source="{Binding PhotoDisplayPath}"
+             IsVisible="{Binding HasPhoto}"
+             HeightRequest="140"
+             WidthRequest="140"
+             Aspect="AspectFill"
+             SemanticProperties.Description="Selected local profile photo preview" />
+      <FlexLayout Direction="Row" Wrap="Wrap" JustifyContent="Start">
+        <Button Text="Choose photo"
+                Command="{Binding ChoosePhotoCommand}"
+                Style="{StaticResource SecondaryButton}"
+                Margin="0,0,8,8" />
+        <Button Text="Use camera"
+                Command="{Binding CapturePhotoCommand}"
+                Style="{StaticResource SecondaryButton}"
+                Margin="0,0,8,8" />
+        <Button Text="Remove photo"
+                Command="{Binding RemovePhotoCommand}"
+                IsVisible="{Binding HasPhoto}"
+                Style="{StaticResource SecondaryButton}"
+                Margin="0,0,8,8" />
+      </FlexLayout>
+      <Label Text="Profile photos are encrypted in CareNest storage and are not shared automatically."
+             Style="{StaticResource MutedText}" />
+
+      <HorizontalStackLayout Spacing="12">
+        <Switch IsToggled="{Binding HasDateOfBirth}" />
+        <Label Text="Store date of birth" VerticalTextAlignment="Center" />
+      </HorizontalStackLayout>
+      <DatePicker Date="{Binding DateOfBirth}"
+                  IsVisible="{Binding HasDateOfBirth}"
+                  MaximumDate="{Binding Today}" />
+
+      <Label Text="Blood group (optional)" />
+      <Entry Text="{Binding BloodGroup}" MaxLength="20" />
+
+      <Label Text="Allergies or sensitivities entered by you (optional)" />
+      <Editor Text="{Binding Allergies}" MaxLength="2000" />
+
+      <Label Text="Notes (optional)" />
+      <Editor Text="{Binding Notes}" MaxLength="4000" />
+
+      <Label Text="Profile color (hex)" />
+      <Entry Text="{Binding ProfileColor}" MaxLength="9" />
+
+      <HorizontalStackLayout Spacing="12">
+        <Switch IsToggled="{Binding IsPrimary}" />
+        <Label Text="Primary profile" VerticalTextAlignment="Center" />
+      </HorizontalStackLayout>
+
+      <Border Style="{StaticResource Card}" IsVisible="{Binding IsExisting}">
+        <VerticalStackLayout Spacing="10">
+          <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Emergency contacts" FontAttributes="Bold" />
+            <Button Grid.Column="1" Text="Add contact" Clicked="AddContactClicked"
+                    Style="{StaticResource SecondaryButton}" />
+          </Grid>
+          <Label Text="Stored only on this device. CareNest does not automatically call or share with contacts."
+                 Style="{StaticResource MutedText}" />
+          <CollectionView ItemsSource="{Binding EmergencyContacts}" EmptyView="No emergency contacts saved.">
+            <CollectionView.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="*,Auto" Padding="0,6">
+                  <VerticalStackLayout>
+                    <Label Text="{Binding Name}" FontAttributes="Bold" />
+                    <Label Text="{Binding Relationship}" Style="{StaticResource MutedText}" />
+                    <Label Text="{Binding PhoneNumber}" Style="{StaticResource MutedText}" />
+                  </VerticalStackLayout>
+                  <Button Grid.Column="1"
+                          Text="Delete"
+                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteContactCommand}"
+                          CommandParameter="{Binding .}"
+                          Style="{StaticResource SecondaryButton}" />
+                </Grid>
+              </DataTemplate>
+            </CollectionView.ItemTemplate>
+          </CollectionView>
+        </VerticalStackLayout>
+      </Border>
+
+      <Label Text="{Binding StatusMessage}" TextColor="{StaticResource Danger}" />
+
+      <Button Text="Save profile"
+              Command="{Binding SaveCommand}"
+              IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+
+      <Button Text="Delete profile and associated local records"
+              IsVisible="{Binding IsExisting}"
+              Clicked="DeleteClicked"
+              Style="{StaticResource DangerButton}" />
+
+      <Label Text="Deleting a profile removes its CareNest records and encrypted document files on this device. Previously exported files or backups are not deleted."
+             IsVisible="{Binding IsExisting}"
+             Style="{StaticResource MutedText}" />
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.DocumentsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Documents">
+  <ScrollView>
+    <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="980">
+      <Label Text="Encrypted document organizer" Style="{StaticResource PageTitle}" />
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout>
+          <Label Text="Local and private by design" FontAttributes="Bold" />
+          <Label Text="Imported document bytes are encrypted in CareNest local storage. CareNest does not interpret prescriptions, reports, images, or other medical documents in this release." />
+          <Label Text="Exporting creates a decrypted copy for the destination you explicitly choose. That copy is then protected by the destination app or storage provider."
+                 Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+      </Border>
+
+      <Label Text="Add a document" Style="{StaticResource SectionTitle}" />
+      <Picker ItemsSource="{Binding Profiles}"
+              ItemDisplayBinding="{Binding Name}"
+              SelectedItem="{Binding SelectedProfile}"
+              Title="Profile" />
+      <Entry Text="{Binding Title}"
+             Placeholder="Document title"
+             MaxLength="180" />
+      <Picker ItemsSource="{Binding Categories}"
+              SelectedItem="{Binding Category}"
+              Title="Category" />
+      <Entry Text="{Binding FolderName}"
+             Placeholder="Optional local folder name"
+             MaxLength="120" />
+      <Editor Text="{Binding Notes}"
+              Placeholder="Optional notes"
+              MaxLength="2000" />
+      <HorizontalStackLayout Spacing="10">
+        <Button Text="Import file"
+                Command="{Binding ImportCommand}" />
+        <Button Text="Capture photo"
+                Command="{Binding CaptureCommand}"
+                Style="{StaticResource SecondaryButton}" />
+      </HorizontalStackLayout>
+      <Label Text="{Binding StatusMessage}"
+             TextColor="{StaticResource Warning}" />
+
+      <Grid ColumnDefinitions="*,Auto">
+        <Label Text="Stored documents" Style="{StaticResource SectionTitle}" />
+        <Label Grid.Column="1"
+               Text="{Binding StorageUsageBytes, Converter={StaticResource BytesToSizeConverter}, StringFormat='Encrypted storage: {0}'}"
+               Style="{StaticResource MutedText}"
+               VerticalTextAlignment="Center" />
+      </Grid>
+
+      <SearchBar Text="{Binding SearchText}"
+                 Placeholder="Search title, folder, filename, category, or tag"
+                 SemanticProperties.Description="Search locally stored CareNest document metadata" />
+
+      <CollectionView ItemsSource="{Binding Items}"
+                      EmptyView="No matching documents are stored.">
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Border Style="{StaticResource Card}" Margin="0,0,0,10">
+              <VerticalStackLayout Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                  <Label Text="{Binding Title}" FontAttributes="Bold" />
+                  <Label Grid.Column="1"
+                         Text="{Binding Category}"
+                         Style="{StaticResource MutedText}" />
+                </Grid>
+                <Label Text="{Binding ProfileName}"
+                       Style="{StaticResource MutedText}" />
+                <Label Text="{Binding FolderName, StringFormat='Folder: {0}'}"
+                       Style="{StaticResource MutedText}" />
+                <Label Text="{Binding OriginalFileName}"
+                       Style="{StaticResource MutedText}" />
+                <Label Text="{Binding Tags, StringFormat='Tags: {0}'}"
+                       Style="{StaticResource MutedText}" />
+                <Label Text="{Binding SizeText}"
+                       Style="{StaticResource MutedText}" />
+                <FlexLayout Wrap="Wrap">
+                  <Button Text="Export"
+                          Margin="0,0,8,8"
+                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ExportCommand}"
+                          CommandParameter="{Binding .}" />
+                  <Button Text="Tags"
+                          Margin="0,0,8,8"
+                          Clicked="TagsClicked"
+                          CommandParameter="{Binding .}"
+                          Style="{StaticResource SecondaryButton}" />
+                  <Button Text="Delete"
+                          Margin="0,0,8,8"
+                          Clicked="DeleteClicked"
+                          CommandParameter="{Binding .}"
+                          Style="{StaticResource DangerButton}" />
+                </FlexLayout>
+              </VerticalStackLayout>
+            </Border>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

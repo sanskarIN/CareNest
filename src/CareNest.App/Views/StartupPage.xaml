@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="CareNest.App.Views.StartupPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    NavigationPage.HasNavigationBar="False">
+  <Grid Padding="32" RowDefinitions="*,Auto,*">
+    <VerticalStackLayout Grid.Row="1" Spacing="20" HorizontalOptions="Center">
+      <Image Source="carenest_mark.svg"
+             HeightRequest="120"
+             WidthRequest="120"
+             SemanticProperties.Description="CareNest logo" />
+      <Label Text="CareNest"
+             Style="{StaticResource PageTitle}"
+             HorizontalTextAlignment="Center" />
+      <ActivityIndicator IsRunning="True"
+                         HeightRequest="44"
+                         SemanticProperties.Description="CareNest is preparing local data" />
+      <Label Text="Preparing your local organizer…"
+             Style="{StaticResource MutedText}"
+             HorizontalTextAlignment="Center" />
+      <Label Text="Made by the Sanskar"
+             Style="{StaticResource MutedText}"
+             HorizontalTextAlignment="Center" />
+    </VerticalStackLayout>
+  </Grid>
+</ContentPage>
