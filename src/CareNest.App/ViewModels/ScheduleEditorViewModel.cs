@@ -8,6 +8,8 @@ namespace CareNest.App.ViewModels;
 
 public sealed class ScheduleEditorViewModel : ObservableViewModel
 {
+    private static readonly char[] ReminderTimeSeparators = [',', ';', '\n'];
+
     private readonly IMedicineService _medicines;
     private readonly ICareNestRepository _repository;
     private readonly INotificationService _notifications;
@@ -114,7 +116,7 @@ public sealed class ScheduleEditorViewModel : ObservableViewModel
                 medicineId,
                 ct);
 
-            var schedule = schedules.FirstOrDefault();
+            var schedule = schedules.Count == 0 ? null : schedules[0];
             if (schedule is null)
             {
                 TimeZoneId = TimeZoneInfo.Local.Id;
@@ -147,7 +149,7 @@ public sealed class ScheduleEditorViewModel : ObservableViewModel
                 ct);
 
             var orderedTimes = times.OrderBy(x => x.Hour).ThenBy(x => x.Minute).ToArray();
-            var firstTime = orderedTimes.FirstOrDefault();
+            var firstTime = orderedTimes.Length == 0 ? null : orderedTimes[0];
             if (firstTime is not null)
             {
                 ReminderTime = new TimeSpan(firstTime.Hour, firstTime.Minute, 0);
@@ -166,19 +168,19 @@ public sealed class ScheduleEditorViewModel : ObservableViewModel
                     "Medicine record is missing.");
             }
 
-            var interval = Kind == ScheduleKind.EveryNHours
+            int? interval = Kind == ScheduleKind.EveryNHours
                 ? ParseRequiredPositiveInt(IntervalHoursText, "Interval hours")
                 : null;
 
-            var cycleOn = Kind == ScheduleKind.Cycle
+            int? cycleOn = Kind == ScheduleKind.Cycle
                 ? ParseRequiredPositiveInt(CycleOnDaysText, "Cycle on-days")
                 : null;
 
-            var cycleOff = Kind == ScheduleKind.Cycle
+            int? cycleOff = Kind == ScheduleKind.Cycle
                 ? ParseRequiredPositiveInt(CycleOffDaysText, "Cycle off-days")
                 : null;
 
-            var followUp = FollowUpEnabled && Kind != ScheduleKind.AsNeeded
+            int? followUp = FollowUpEnabled && Kind != ScheduleKind.AsNeeded
                 ? ParseRequiredPositiveInt(FollowUpMinutesText, "Follow-up minutes")
                 : null;
 
@@ -270,11 +272,11 @@ public sealed class ScheduleEditorViewModel : ObservableViewModel
         DayOfWeek day) =>
         (mask & (1 << (int)day)) != 0;
 
-
     private static IReadOnlyCollection<ScheduleTime> ParseReminderTimes(string value)
     {
-        var parts = value
-            .Split(new[] { ',', ';', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var parts = value.Split(
+            ReminderTimeSeparators,
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         if (parts.Length == 0)
         {
