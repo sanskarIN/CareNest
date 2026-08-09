@@ -12,6 +12,7 @@ Source model: Apache-2.0 open source
 Business email: `sanskarin@outlook.in`  
 Support email: `supportramsandesh@gmail.com`  
 Creator profile: `https://www.github.com/sanskarIN`  
+Voluntary project support: `https://buymeacoffee.com/sanskarIN`  
 Watermark: `Made by the Sanskar`
 
 ---
@@ -66,6 +67,8 @@ The release-candidate source includes:
 - database migration version display;
 - storage usage and cache controls;
 - About, license, privacy, terms, support, business contact and open-source surfaces;
+- voluntary Buy Me a Coffee project-support action with no health-feature entitlement;
+- GitHub funding metadata for the same voluntary support destination;
 - original CareNest SVG app-icon/splash/mark assets;
 - unit, integration and UI-contract tests;
 - GitHub Actions cross-platform CI;
@@ -110,7 +113,7 @@ build/
   workflows/
 ```
 
-Required repository files are present, including `README.md`, `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md`, `PRIVACY.md`, `TERMS.md`, `CHANGELOG.md`, `.gitignore`, `.editorconfig`, `Directory.Build.props`, `Directory.Packages.props`, `PROJECT_STATUS.md`, `DECISIONS.md`, issue templates, pull-request template, CI, CodeQL and Dependabot configuration.
+Required repository files are present, including `README.md`, `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md`, `PRIVACY.md`, `TERMS.md`, `CHANGELOG.md`, `.gitignore`, `.editorconfig`, `Directory.Build.props`, `Directory.Packages.props`, `PROJECT_STATUS.md`, `DECISIONS.md`, issue templates, pull-request template, CI, CodeQL, Dependabot configuration and GitHub funding metadata.
 
 ---
 
@@ -477,7 +480,7 @@ Temporary verification branches/PRs were intentionally used to obtain fresh pull
 - PR #12 — framework-selection verification; superseded.
 - PR #13 — SQLite/MAUI CI verification; superseded.
 - PR #14 — MAUI/SQLite/shared-source verification; superseded after additional source-level failures were exposed.
-- PR #15 — final cross-platform verification for product source head `682aef2aa31981c6be31086aa7af8e1c8e56e94b`.
+- PR #15 — final cross-platform verification for product source head `682aef2aa31981c6be31086aa7af8e1c8e56e94b` before the later funding-support runtime/UI addition.
 
 PR #15 branch:
 
@@ -493,7 +496,7 @@ PR #15 was closed after all automated gates completed successfully.
 
 ---
 
-## Final automated verification evidence
+## Previous automated verification evidence — PR #15
 
 ### CareNest CI
 
@@ -608,6 +611,9 @@ A generation-script string-quoting error occurred during an early local assembly
 - Exported/decrypted files leave CareNest protection only after explicit user action.
 - SQLite records rely on application sandbox/device protections; CareNest does **not** falsely claim transparent whole-database encryption at rest.
 - The open SQLitePCLRaw advisory is explicitly tracked instead of being hidden behind a claim that it was fixed.
+- The external Buy Me a Coffee support destination is fixed in a shared HTTPS constant and opened only after explicit user action.
+- CareNest does not append health data, document metadata, profile identifiers, reminder history, backup data, app-lock data or payment secrets to the funding URL.
+- The external funding provider is outside the CareNest trust boundary and is governed by its own privacy/security/payment rules once opened.
 
 ---
 
@@ -645,7 +651,8 @@ A generation-script string-quoting error occurred during an early local assembly
 - No automatic cloud upload: implemented by architecture; no cloud service exists in v1.
 - Local caregiver mode: implemented without silent sharing.
 - Theme/accessibility/localization readiness: implemented with system/light/dark preferences, scalable UI tokens, reduced-motion behavior and English resource architecture ready for additional languages.
-- Automated quality gate: final source head passed core tests, Android, Windows, iOS simulator, Mac Catalyst and CodeQL.
+- Automated quality gate: latest funding-enabled source head passed core tests, Android, Windows, iOS simulator, Mac Catalyst and CodeQL.
+- Voluntary project funding: implemented through the About page and GitHub funding metadata without changing CareNest health functionality, safety boundaries or local-data access.
 
 ---
 
@@ -709,30 +716,211 @@ The following activities remain intentionally **not marked complete** because th
 - manual backup restore on a release build/clean installation;
 - cold-start app-lock testing;
 - screen-reader/large-text/keyboard/reduced-motion manual accessibility checks;
+- current Apple/Google store-policy review for the external voluntary project-support link;
 - package signing;
 - store packaging/submission;
-- final review/decision for the open SQLitePCLRaw advisory.
+- final review/decision or verified dependency resolution for the open SQLitePCLRaw advisory.
 
 `docs/releases/RELEASE_CHECKLIST.md` records automated evidence separately from those manual release activities so nothing is silently represented as verified when it is not.
 
 ---
 
-## Current repository state after this continuation
+## Funding-support and next-step continuation
+
+### Buy Me a Coffee support integration
+
+Requested voluntary support URL:
+
+`https://buymeacoffee.com/sanskarIN`
+
+Implemented runtime/repository work:
+
+- `edeb445eaa9ff3a2bbc66cc771146efbd4e18bdb` — `feat: add CareNest funding URL constant`;
+- `c9afd3646559823757897053d9ea745839bfc2a9` — `feat: add in-app project support command`;
+- `9339e0382c9f85820ea3415746eb76b60f0a0dba` — `feat: expose voluntary project support link in About`;
+- `ec7e86ff818d46df5c92a6497d81ad2dca5c41cf` — `chore: add Buy Me a Coffee funding link`;
+- `7c38bc0b1dc7859a8890b94cf360a742d3a6488e` — `docs: add funding and next-step links to README`;
+- `6cc6694b8fcff1b6abe87eb4b50e2520059f065a` — `docs: add voluntary project support information`;
+- `eb51bc25a8c7540654b4ec6f3dae416cb1c9482f` — `test: cover Buy Me a Coffee support surface`.
+
+The About view model now consumes the shared repository/creator/business/support/funding constants instead of duplicating those values directly in command construction.
+
+The About page displays a `Support CareNest on Buy Me a Coffee` button and explicitly says project support is voluntary and does not unlock medical advice, premium health features or different reminder behavior.
+
+GitHub funding metadata was added at:
+
+`.github/FUNDING.yml`
+
+with the same custom support URL.
+
+### Funding privacy/security/legal boundary
+
+Additional documentation commits:
+
+- `7a44a050a5506410a21b25e4faf1333b5bc54fbf` — `docs: document voluntary support link privacy boundary`;
+- `02ab94f13636339499c7e5fef80184ee7f090a6c` — `docs: clarify voluntary funding has no CareNest entitlement`;
+- `45504aef88ce2a9b59ae38b9a33659c724283812` — `docs: document external support-link data boundary`;
+- `d663921434f6892a19ac2a382f04a03346b393fa` — `security: model external project-support link boundary`;
+- `e887a107dda24b9c1ffd5de1eb2119779d80eb1c` — `security: document external link trust boundary`;
+- `c925f27ce2ad91f16521ccfd880d8d3c5f55cfcf` — `docs: add funding-link store listing guidance`.
+
+Current rules are explicit:
+
+- the support URL is a fixed HTTPS destination;
+- it opens only after explicit user interaction;
+- no CareNest health records/documents/backups/profile identifiers/reminder history/app-lock data are appended to the link;
+- no funding-provider API key/payment SDK/payment credential is included in CareNest for this link;
+- the external service becomes an independent privacy/security/payment boundary after it is opened;
+- contributing does not buy medical advice, treatment guidance, emergency help, premium reminder behavior, data access or a different CareNest safety standard.
+
+### Store-policy caution retained
+
+A current Apple/Google store-policy determination was not claimed in this repository work because store rules can change and must be checked against the intended distribution channel at submission time.
+
+The release checklist and next-step roadmap require:
+
+- verifying current Apple App Store rules for the external voluntary support link;
+- verifying current Google Play rules for the external voluntary support link;
+- conditionally hiding/removing the in-app external link for a channel if that channel's current policy requires it;
+- never relabeling the link as a medical purchase or health-feature entitlement to work around store rules.
+
+### Detailed next-step roadmap added
+
+New file:
+
+`docs/releases/NEXT_STEPS.md`
+
+Commit:
+
+- `c814f1365608dacce95cee1c5966f68690198fde` — `docs: add concrete CareNest next-step roadmap`.
+
+The roadmap does not pretend future work is already complete. It separates:
+
+#### Priority 0 — production blockers
+
+1. Resolve the open SQLitePCLRaw dependency advisory and remove the temporary audit exception only after a compatible verified dependency path exists.
+2. Run manual real/emulated-device and accessibility smoke tests on Android, Windows, iOS/iPadOS and Mac Catalyst.
+3. Verify current app-store policy for the external voluntary support link.
+4. Prepare Android/Apple/Windows signing identities and keep signing secrets outside Git.
+5. Finish store listings, screenshots, data-safety/privacy disclosures and medical-safety wording.
+
+#### Priority 1 — release promotion
+
+6. Create a final exact-commit verification branch after Priority 0 is complete.
+7. Promote version/release metadata and create the final annotated tag only from verified source.
+8. Build/archive signed Android, Apple and Windows release artifacts with provenance/checksums where appropriate.
+
+#### Priority 2 — post-release quality
+
+9. Establish an explicit user-submitted feedback/bug-report flow without hidden telemetry.
+10. Expand notification, time-zone/DST, backup-compatibility, corruption/low-storage and accessibility test coverage.
+11. Improve release engineering with protected artifact workflows, dependency review, SBOMs and attestations where supported.
+
+#### Priority 3 — CareNest 1.x enhancements
+
+12. Expand localization/resource coverage.
+13. Improve reminder usability without inferring clinical intent.
+14. Improve local document organization/search/duplicate handling.
+15. Improve backup usability and future migration fixtures.
+
+#### Priority 4 — separately reviewed future versions
+
+Potential encrypted sync, remote caregiver collaboration and accounts remain deliberately deferred until new threat modeling, privacy design, authentication/key design, abuse analysis and explicit consent controls exist.
+
+No future roadmap item changes the current rule that CareNest does not provide diagnosis, dosage calculation, treatment advice, medication-interaction claims or clinical risk scoring.
+
+### Release/security documents linked to next steps
+
+Relevant commits:
+
+- `b3dfd68461a4084721328e399e277010589a8fa2` — `docs: add funding-link store-policy release gate`;
+- `2b8f97525ea8d3b41bf62e20d76e1cc224dab102` — `docs: record voluntary project funding support`;
+- `368c26408756f8facc52f30a7868478df237f0be` — `docs: connect SQLite risk to production next steps`;
+- `841a5dff8d54881518a78bb913554cc41249febb` — `docs: record green funding-enabled release verification`;
+- `11f05c230ef66c07caa33d20341d9485bd309d76` — `docs: finalize funding-enabled green verification status`.
+
+---
+
+## Funding-enabled verification pull request — PR #16
+
+A fresh verification was required because the funding work changed runtime/UI source and added UI-contract tests after PR #15's previously verified runtime head.
+
+Verification source head:
+
+`2b8f97525ea8d3b41bf62e20d76e1cc224dab102`
+
+Verification branch:
+
+`ci/carenest-rc1-funding-verification`
+
+Verification marker commit:
+
+`547845c945da9af5ff5738ebddf12e2370a9b664`
+
+Pull request:
+
+`#16 — Verify CareNest funding support integration`
+
+The marker file existed only to trigger pull-request workflows. PR #16 was closed after successful verification and was **not merged**, so the verification marker was not added to production `main`.
+
+### CareNest CI run #87
+
+- workflow: `CareNest CI`;
+- run number: `87`;
+- run id: `31301203981`;
+- final status: `completed`;
+- final conclusion: `success`.
+
+Core test evidence:
+
+- `CareNest.UnitTests`: 15 passed, 0 failed, 0 skipped;
+- `CareNest.IntegrationTests`: 11 passed, 0 failed, 0 skipped;
+- `CareNest.UiTests`: 10 passed, 0 failed, 0 skipped;
+- total: 36 passed, 0 failed, 0 skipped.
+
+The two additional UI-contract tests specifically verify consistency of the Buy Me a Coffee URL and the voluntary-support wording across runtime/repository support surfaces.
+
+Platform build evidence:
+
+- Android Release build: passed;
+- Windows Release build: passed;
+- iOS simulator Release build: passed;
+- Mac Catalyst Release build: passed.
+
+### CodeQL run #86
+
+- workflow: `CodeQL`;
+- run number: `86`;
+- run id: `31301203985`;
+- final status: `completed`;
+- final conclusion: `success`.
+
+---
+
+## Current repository state after funding/next-step continuation
 
 - Complete CareNest `1.0.0-rc.1` product source is on `main`.
-- Runtime source head `682aef2aa31981c6be31086aa7af8e1c8e56e94b` has a fully green automated matrix.
-- CareNest CI run #67 succeeded.
-- CodeQL run #66 succeeded.
+- Buy Me a Coffee voluntary support URL is `https://buymeacoffee.com/sanskarIN`.
+- The support URL is centralized in `AppConstants.FundingUrl`.
+- The About page exposes the voluntary support action.
+- `.github/FUNDING.yml` exposes the same support URL for GitHub repository funding UI.
+- README, SUPPORT, PRIVACY, TERMS, SECURITY, threat model, data lifecycle, store guidance and changelog document the funding boundary.
+- `docs/releases/NEXT_STEPS.md` contains the complete ordered next-step roadmap.
+- `docs/releases/RELEASE_CHECKLIST.md` records the new verification evidence and remaining manual/store/signing/security gates.
+- `PROJECT_STATUS.md` records the funding-enabled verified state.
+- Source head `2b8f97525ea8d3b41bf62e20d76e1cc224dab102` has a fully green automated matrix.
+- CareNest CI run #87 succeeded.
+- CodeQL run #86 succeeded.
 - 15 unit tests passed.
 - 11 integration tests passed.
-- 8 UI-contract tests passed.
+- 10 UI-contract tests passed.
+- 36 total automated tests passed with 0 failed and 0 skipped.
 - Android Release build passed.
 - Windows Release build passed.
 - iOS simulator Release build passed.
 - Mac Catalyst Release build passed.
-- Verification PR #15 was closed without merging its marker file.
-- Changelog, README, development setup, security policy, dependency risk register, release checklist and project status were updated to match actual verified behavior.
-- `what_changed.md` now records the complete continuation/hardening sequence rather than the obsolete PR #10 status.
+- Verification PR #16 was closed without merging its marker file.
+- Later `main` commits after the verified source head are documentation/security/status guidance changes only; they do not alter product runtime behavior.
 - The SQLitePCLRaw advisory remains explicitly open; it is not claimed fixed.
-- Final `1.0.0` publication/tagging remains gated on the manual release checklist and an explicit dependency-risk decision.
+- Final `1.0.0` publication/tagging remains gated on the manual release checklist, current store-policy review for the funding link, signing/store preparation and the SQLite dependency-risk decision/resolution.
 - Cloud synchronization, remote caregiver collaboration, accounts/mobile-number authentication, server-side storage, medical interpretation, diagnosis, treatment advice, medication-interaction claims and clinical risk scoring remain deferred to later separately reviewed versions.
