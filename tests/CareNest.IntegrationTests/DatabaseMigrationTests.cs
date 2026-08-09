@@ -23,6 +23,33 @@ public sealed class DatabaseMigrationTests
     }
 
     [Fact]
+    public async Task Snapshot_FromWalDatabase_CreatesNonEmptyDatabaseFile()
+    {
+        await using var store = await TestStore.CreateAsync();
+        var profile = new PersonProfile { Name = "Snapshot profile", IsPrimary = true };
+        await store.Repository.SaveProfileAsync(profile);
+
+        var snapshotPath = Path.Combine(
+            Path.GetTempPath(),
+            $"carenest-snapshot-{Guid.NewGuid():N}.db");
+
+        try
+        {
+            await store.Database.CreateSnapshotAsync(snapshotPath);
+
+            Assert.True(File.Exists(snapshotPath));
+            Assert.True(new FileInfo(snapshotPath).Length > 0);
+        }
+        finally
+        {
+            if (File.Exists(snapshotPath))
+            {
+                File.Delete(snapshotPath);
+            }
+        }
+    }
+
+    [Fact]
     public async Task Repository_RoundTripsCoreEntities()
     {
         await using var store = await TestStore.CreateAsync();
