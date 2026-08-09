@@ -152,9 +152,9 @@ public sealed class SqliteDatabase : IAsyncDisposable
     {
         await connection.ExecuteAsync("PRAGMA foreign_keys = ON;");
 
-        // journal_mode is a result-producing PRAGMA. Calling ExecuteAsync uses
-        // sqlite3_step as a non-query and sqlite-net can surface SQLITE_ROW as
-        // an exception. Read the returned mode explicitly instead.
+        // journal_mode and busy_timeout are result-producing pragmas. Reading
+        // their returned values avoids sqlite-net treating SQLITE_ROW as a
+        // non-query failure on native providers used by CI and device builds.
         var journalMode = await connection.ExecuteScalarAsync<string>("PRAGMA journal_mode = WAL;");
         if (!string.Equals(journalMode, "wal", StringComparison.OrdinalIgnoreCase))
         {
@@ -162,7 +162,12 @@ public sealed class SqliteDatabase : IAsyncDisposable
         }
 
         await connection.ExecuteAsync("PRAGMA synchronous = NORMAL;");
-        await connection.ExecuteAsync("PRAGMA busy_timeout = 5000;");
+
+        var busyTimeout = await connection.ExecuteScalarAsync<int>("PRAGMA busy_timeout = 5000;");
+        if (busyTimeout < 5000)
+        {
+            throw new InvalidOperationException("CareNest could not configure the SQLite busy timeout.");
+        }
     }
 
     private async Task ApplyMigrationsAsync(CancellationToken cancellationToken)
