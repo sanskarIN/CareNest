@@ -34,7 +34,7 @@ public partial class StartupPage : ContentPage
         try
         {
             var destination = await _startup.InitializeAsync();
-            var page = destination switch
+            Page page = destination switch
             {
                 StartupDestination.Onboarding => _services.GetRequiredService<OnboardingPage>(),
                 StartupDestination.Lock => _services.GetRequiredService<LockPage>(),
