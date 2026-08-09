@@ -6,7 +6,7 @@ Security fixes are prioritized for the newest release line.
 
 ## Reporting
 
-Do not open a public issue for a vulnerability that could expose health records, backups, lock credentials, documents, or notification contents. Report privately to:
+Do not open a public issue for a vulnerability that could expose health records, backups, lock credentials, documents, notification contents, or sensitive data passed to an external link. Report privately to:
 
 - Business/security contact: `sanskarin@outlook.in`
 - Support: `supportramsandesh@gmail.com`
@@ -22,6 +22,9 @@ Include affected version, platform, reproduction conditions, impact, and suggest
 - Structured logs redact sensitive content.
 - SQLite records rely on platform application sandbox protections; CareNest does **not** claim transparent database encryption at rest.
 - No production secrets belong in source control.
+- Repository, policy, creator and voluntary project-support destinations are fixed external links opened only after explicit user action.
+- The Buy Me a Coffee project-support link does not embed CareNest health data, profile identifiers, document metadata, reminder history, backup data, payment credentials, or CareNest secrets in the URL.
+- The external funding provider remains outside the CareNest trust boundary and is governed by its own security/privacy controls after the user leaves CareNest.
 
 ## Dependency security
 
