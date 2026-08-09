@@ -14,6 +14,9 @@ public sealed class DatabaseMigrationTests
         Assert.Equal(5, version);
         var integrity = await store.Database.Connection.ExecuteScalarAsync<string>("PRAGMA integrity_check;");
         Assert.Equal("ok", integrity, ignoreCase: true);
+
+        var journalMode = await store.Database.Connection.ExecuteScalarAsync<string>("PRAGMA journal_mode;");
+        Assert.Equal("wal", journalMode, ignoreCase: true);
     }
 
     [Fact]
