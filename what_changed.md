@@ -21,11 +21,13 @@ Watermark: `Made by the Sanskar`
 
 CareNest remains a local-first organizational application. It does not diagnose conditions, determine dosage, infer doses, recommend treatment, perform medication-interaction checking, produce clinical risk scores, replace a doctor/pharmacist, or provide emergency services.
 
-All reminder schedules come from explicit user input. Medicine strength and instruction text are stored as entered and are not interpreted as dosage rules. `StockChangePerTakenEvent` is also explicitly user-entered and is never inferred from medicine strength or instruction text.
+All reminder schedules come from explicit user input. Medicine strength and instruction text are stored as entered and are not interpreted as dosage rules. `StockChangePerTakenEvent` is explicitly user-entered and is never inferred from medicine strength or instruction text.
 
 Reminder delivery limitations are surfaced instead of hidden. Device permissions, battery optimization, exact-alarm capability, operating-system restrictions, shutdown/force-stop behavior, daylight-saving changes and time-zone changes can affect delivery.
 
 The application tells users to follow qualified professional instructions and to contact local emergency services in an emergency rather than rely on CareNest.
+
+Buy Me a Coffee support is voluntary project support only. It does not unlock app functionality, provide medical services, create priority health support, create a CareNest account, or cause CareNest to transmit health records to the funding site.
 
 ---
 
@@ -67,14 +69,19 @@ The release-candidate source includes:
 - database migration version display;
 - storage usage and cache controls;
 - About, license, privacy, terms, support, business contact and open-source surfaces;
-- voluntary Buy Me a Coffee project-support action with no health-feature entitlement;
-- GitHub funding metadata for the same voluntary support destination;
+- voluntary Buy Me a Coffee project-support action;
+- GitHub funding metadata;
+- custom CareNest BMC vector artwork and clickable repository support pages;
 - original CareNest SVG app-icon/splash/mark assets;
 - unit, integration and UI-contract tests;
 - GitHub Actions cross-platform CI;
 - CodeQL analysis;
 - Dependabot configuration;
-- architecture, security, privacy, testing, setup, troubleshooting and release documentation.
+- architecture, security, privacy, testing, setup, troubleshooting and release documentation;
+- repeatable Bash and PowerShell release-preflight scripts;
+- manual cross-platform release test matrix;
+- store-submission checklist;
+- SQLite dependency migration/verification plan.
 
 ---
 
@@ -103,17 +110,20 @@ docs/
   setup/
   testing/
   releases/
+  SUPPORT_CARENEST.md
 
 build/
   scripts/
-  verification/                 # verification-only branch markers, never runtime product data
 
 .github/
   ISSUE_TEMPLATE/
   workflows/
+  FUNDING.yml
+
+BUY_ME_A_COFFEE.md
 ```
 
-Required repository files are present, including `README.md`, `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md`, `PRIVACY.md`, `TERMS.md`, `CHANGELOG.md`, `.gitignore`, `.editorconfig`, `Directory.Build.props`, `Directory.Packages.props`, `PROJECT_STATUS.md`, `DECISIONS.md`, issue templates, pull-request template, CI, CodeQL, Dependabot configuration and GitHub funding metadata.
+Required repository files are present, including `README.md`, `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md`, `PRIVACY.md`, `TERMS.md`, `CHANGELOG.md`, `.gitignore`, `.editorconfig`, `Directory.Build.props`, `Directory.Packages.props`, `PROJECT_STATUS.md`, `DECISIONS.md`, issue templates, pull-request template, CI, CodeQL and Dependabot configuration.
 
 ---
 
@@ -181,7 +191,8 @@ Completed:
 - About/open-source/support/legal surfaces;
 - theme handling;
 - accessibility-oriented semantics and scalable controls;
-- localization-ready resources.
+- localization-ready resources;
+- voluntary Buy Me a Coffee support action on the project/support surface.
 
 Original phase label:
 
@@ -230,6 +241,7 @@ Completed:
 - WAL-backed snapshot regression test;
 - report/export safety tests;
 - XAML/UI-contract tests;
+- BMC support-surface consistency tests;
 - Android Release CI build;
 - Windows Release CI build;
 - iOS simulator Release CI build;
@@ -240,6 +252,23 @@ Completed:
 Original phase label:
 
 `test: add quality gates documentation and release readiness`
+
+### Phase 5 — release-preparation hardening and project-support presentation
+
+Completed in the latest continuation:
+
+- custom scalable CareNest Buy Me a Coffee vector badge;
+- root-level clickable BMC support page;
+- documentation-level clickable BMC support page;
+- explicit third-party/external-link privacy and medical-entitlement boundaries;
+- Bash release-preflight script;
+- PowerShell release-preflight script;
+- cross-platform manual release test matrix;
+- store-submission checklist covering Android, Windows, iOS and Mac Catalyst;
+- store-policy review gate for the external BMC link;
+- SQLite dependency migration/upgrade verification plan;
+- expanded project status and release checklist;
+- expanded handoff documentation in this file.
 
 ---
 
@@ -261,14 +290,14 @@ The implementation was intentionally delivered as a coherent source tree rather 
 
 Important commits from the initial implementation/hardening history include:
 
-- `ci: add cross-platform CareNest build and test workflow`
-- `ci: add CodeQL security analysis`
-- `fix: scope analyzer exceptions for shared primitives`
-- `ci: isolate platform target frameworks per runner`
-- `fix: use valid rule parameter names in profile validation`
-- `fix: use valid appointment validation parameter name`
-- `fix: use valid medicine rule parameter names`
-- `fix: resolve reminder planner performance analyzer findings`
+- `ci: add cross-platform CareNest build and test workflow`;
+- `ci: add CodeQL security analysis`;
+- `fix: scope analyzer exceptions for shared primitives`;
+- `ci: isolate platform target frameworks per runner`;
+- `fix: use valid rule parameter names in profile validation`;
+- `fix: use valid appointment validation parameter name`;
+- `fix: use valid medicine rule parameter names`;
+- `fix: resolve reminder planner performance analyzer findings`.
 
 ---
 
@@ -284,8 +313,7 @@ This did not represent incorrect reminder behavior or unsafe health-data logging
 
 Fix:
 
-- commit `7fed6d76ae2407d17bf3b19e8e4b112b3f39e279`
-- `ci: keep CA1848 logging optimization non-blocking`
+- `7fed6d76ae2407d17bf3b19e8e4b112b3f39e279` — `ci: keep CA1848 logging optimization non-blocking`.
 
 The rule remains visible as a suggestion rather than hiding real compile/test failures.
 
@@ -297,24 +325,25 @@ NuGet audit reported high-severity advisory:
 
 against SQLitePCLRaw native package `2.1.11` resolved through the current `sqlite-net-pcl` dependency chain.
 
-An attempted move to `SQLitePCLRaw.bundle_green` `2.1.12` failed because NuGet.org reported no such bundle version was available. Therefore the repository was corrected back to actual available package versions rather than retaining an impossible pin.
+An attempted move to `SQLitePCLRaw.bundle_green` `2.1.12` failed because the GitHub-hosted restore reported no such bundle version was available. Therefore the repository was corrected back to an actually restorable dependency graph rather than retaining an impossible pin.
 
-Relevant commits:
+Relevant history includes:
 
-- `7489b70f0cf37be7545e1ecb338fec6a7ccf90dd` — initial attempted security update, later corrected after NuGet restore proved the requested version unavailable;
-- `eda483e...` — `build: restore available SQLitePCLRaw package versions`;
-- `a09fefd...` — `security: document temporary SQLite audit suppression in build`;
-- `1c5f569...` — `security: add dependency risk register for SQLite advisory`;
-- `c8928ec...` — `docs: link dependency risk register from security policy`.
+- `7489b70f0cf37be7545e1ecb338fec6a7ccf90dd` — initial attempted security update, later corrected after NuGet restore proved the requested bundle version unavailable;
+- `build: restore available SQLitePCLRaw package versions`;
+- `security: document temporary SQLite audit suppression in build`;
+- `security: add dependency risk register for SQLite advisory`;
+- `docs: link dependency risk register from security policy`.
 
 Current accurate state:
 
-- SQLitePCLRaw native packages remain at available `2.1.11` through the current dependency chain;
+- SQLitePCLRaw native package `2.1.11` remains in the currently tracked dependency path;
 - the exact advisory URL is temporarily listed through `NuGetAuditSuppress`;
 - no wildcard or severity-wide NuGet audit suppression is used;
 - `docs/security/DEPENDENCY_RISK_REGISTER.md` marks the risk **open**;
 - the suppression is not represented as a vulnerability fix;
-- final production release review must upgrade or replace the dependency path when an available compatible patched version exists.
+- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` defines the upgrade/provider replacement validation path;
+- final production release remains gated on an explicit dependency-risk decision/resolution.
 
 The local-first architecture, absence of a remote database listener, absence of arbitrary user-supplied SQL execution and parameterized repository operations reduce exposure but do not erase the advisory.
 
@@ -324,7 +353,7 @@ CA1707 was being promoted to an error for descriptive underscore-separated test 
 
 Fix:
 
-- `87116d2...` — `test: scope CA1707 away from descriptive test names`
+- `test: scope CA1707 away from descriptive test names`.
 
 The exception is scoped to tests.
 
@@ -334,7 +363,7 @@ Several performance/culture analyzer recommendations were promoted to errors bef
 
 Fixes included:
 
-- `45a0095...` — `ci: keep advisory infrastructure analyzers non-blocking`;
+- `ci: keep advisory infrastructure analyzers non-blocking`;
 - `988fffd85f792cad58c09aaf2286398d0a4294c1` — `ci: keep framework binding and delegate naming analyzers advisory`.
 
 Correctness/security rules were not globally disabled. Platform availability CA1416 was fixed in Android code rather than suppressed globally.
@@ -343,31 +372,31 @@ Correctness/security rules were not globally disabled. Platform availability CA1
 
 The original CI command supplied `TargetFrameworks=...` globally. MSBuild propagated that property into referenced `net10.0` projects and generated invalid/missing restore assets.
 
-Fixes:
+Fixes included:
 
-- `4249ddb...` — `build: add non-propagating platform target selector`;
-- `d589405...` — `ci: select one MAUI target per runner without leaking to references`.
+- `build: add non-propagating platform target selector`;
+- `ci: select one MAUI target per runner without leaking to references`.
 
-`CareNest.App.csproj` now accepts `CareNestTargetFramework`, allowing CI/development hosts to narrow the MAUI app before restore/build without changing target frameworks in Domain/Application/Infrastructure/Shared projects.
+`CareNest.App.csproj` accepts `CareNestTargetFramework`, allowing CI/development hosts to narrow the MAUI app before restore/build without changing target frameworks in Domain/Application/Infrastructure/Shared projects.
 
 ### 6. SQLite initialization failed because result-producing PRAGMAs used ExecuteAsync
 
-GitHub-hosted integration tests exposed sqlite-net behavior where result-producing PRAGMAs returned `SQLITE_ROW`; treating them as non-query `ExecuteAsync` operations surfaced misleading `not an error` exceptions.
+GitHub-hosted integration tests exposed sqlite-net behavior where result-producing PRAGMAs returned `SQLITE_ROW`; treating them as non-query `ExecuteAsync` operations surfaced misleading failures.
 
-Fixes:
+Fixes included:
 
-- `8c039ae...` — `fix: read SQLite journal mode result during initialization`;
-- `cd7087e...` — `test: assert CareNest enables SQLite WAL mode`;
-- `6d1ee4d...` — `fix: read SQLite busy-timeout pragma result`;
-- `e9e9795...` — `test: assert SQLite busy-timeout configuration`;
-- `b8f4e8e...` — `fix: consume SQLite WAL checkpoint result for backups`;
-- `e9d7f28...` — `test: cover WAL-backed database snapshot creation`.
+- `fix: read SQLite journal mode result during initialization`;
+- `test: assert CareNest enables SQLite WAL mode`;
+- `fix: read SQLite busy-timeout pragma result`;
+- `test: assert SQLite busy-timeout configuration`;
+- `fix: consume SQLite WAL checkpoint result for backups`;
+- `test: cover WAL-backed database snapshot creation`.
 
 Current behavior:
 
-- `PRAGMA journal_mode = WAL` is read with `ExecuteScalarAsync<string>` and validated;
-- `PRAGMA busy_timeout = 5000` is read with `ExecuteScalarAsync<int>` and validated;
-- `PRAGMA wal_checkpoint(FULL)` is consumed as a scalar result before `VACUUM INTO` backup snapshot creation;
+- `PRAGMA journal_mode = WAL` is read with a scalar result and validated;
+- `PRAGMA busy_timeout = 5000` is read with a scalar result and validated;
+- `PRAGMA wal_checkpoint(FULL)` is consumed as a result before backup snapshot creation;
 - regression tests verify WAL mode, busy timeout and snapshot creation.
 
 This corrected all integration failures that had previously occurred before backup/restore test logic could run.
@@ -376,222 +405,374 @@ This corrected all integration failures that had previously occurred before back
 
 Fix:
 
-- `63dbdab...` — `perf: reuse report serializer settings and invariant export formatting`
+- `perf: reuse report serializer settings and invariant export formatting`.
 
-The report service now reuses serializer settings and uses explicit invariant formatting where appropriate for machine-readable exported values.
+The report service reuses serializer settings and uses explicit invariant formatting where appropriate for machine-readable exported values.
 
 ### 8. MAUI package/source isolation was incomplete
 
 GitHub platform builds exposed that the app needed an explicit MAUI Controls package reference and stronger platform-source isolation.
 
-Fixes:
+Fixes included:
 
-- `53a8a7d...` — `build: pin explicit MAUI Controls package`;
-- `cc8c030...` — `build: reference MAUI Controls from app project`;
-- `9c8989a...` — `build: compile only the active platform source tree`;
-- `97e6707...` — added MAUI application global usings;
-- `523239d...` — `build: make MAUI and DI namespaces explicit`.
+- `build: pin explicit MAUI Controls package`;
+- `build: reference MAUI Controls from app project`;
+- `build: compile only the active platform source tree`;
+- explicit MAUI application global usings;
+- `build: make MAUI and DI namespaces explicit`.
 
-Inactive `Platforms/Android`, `Platforms/iOS`, `Platforms/MacCatalyst` and `Platforms/Windows` C# source trees are excluded when they do not match the current target.
+Inactive platform source trees are excluded when they do not match the current target.
 
 ### 9. Android time-zone intent constant was incorrect
 
 Fix:
 
-- `fab3380...` — `fix: use Android timezone-change intent constant`
+- `fix: use Android timezone-change intent constant`.
 
 The receiver now uses the Android binding constant that actually exists for time-zone change events.
 
 ### 10. Apple CI runner/Xcode mismatch
 
-The .NET 10 iOS workload installed by CI required a current Xcode toolchain. The earlier `macos-15` runner selected Xcode 16.4 and failed before application compilation.
+The .NET 10 Apple workload installed by CI required a current Xcode toolchain. The earlier runner selected an incompatible Xcode version and failed before application compilation.
 
 Fix:
 
-- `9132ed4...` — `ci: use macOS 26 runner for current Xcode toolchain`
+- `ci: use macOS 26 runner for current Xcode toolchain`.
 
-The `macos-26` runner was accepted and subsequently compiled both iOS simulator and Mac Catalyst Release targets successfully.
+The macOS 26 runner was accepted and subsequently compiled both iOS simulator and Mac Catalyst Release targets successfully.
 
 ### 11. Shared MAUI source compile errors
 
 Once restore/toolchain issues were removed, CI reached source compilation and exposed several shared C# errors.
 
-Fixes:
+Fixes included:
 
-- `b78f0529...` — `fix: give startup destination switch an explicit Page type`;
-- `2c0c4e27...` — `fix: make schedule editor nullable values and collections explicit`;
+- `fix: give startup destination switch an explicit Page type`;
+- `fix: make schedule editor nullable values and collections explicit`;
 - `e292fc963cc693943566a23052e3342ea31d0d33` — `fix: use scheduled reminder timestamps in redacted diagnostics`;
 - `c0b90ce1...` — `perf: avoid LINQ for active window lookup`;
 - `b4f8972f...` — `perf: avoid LINQ for navigation window lookup`.
 
-The reminder preview contract exposes `ScheduledUtc`; developer diagnostics now use that real contract member instead of a nonexistent `DueUtc` property.
+The reminder preview contract exposes the actual scheduled timestamp used by developer diagnostics instead of referencing a nonexistent property.
 
 ### 12. Android notification integration required explicit platform hardening
 
-After shared C# fixes, the Android compiler/analyzers exposed nullable Java binding values and API-level availability concerns.
+After shared C# fixes, Android compiler/analyzers exposed nullable Java binding values and API-level availability concerns.
 
 Fix:
 
 - `682aef2aa31981c6be31086aa7af8e1c8e56e94b` — `fix: harden Android notification nullability and API guards`.
 
-The Android implementation now includes:
+The Android implementation includes:
 
 - explicit application-context validation;
 - explicit package-name validation;
 - notification-manager validation;
 - explicit pending-intent null handling;
 - explicit notification-build null handling;
-- API 31 exact-alarm checks guarded with `OperatingSystem.IsAndroidVersionAtLeast(31)`;
-- API 26 notification-channel creation guarded with `OperatingSystem.IsAndroidVersionAtLeast(26)`;
+- API 31 exact-alarm checks guarded by platform version;
+- API 26 notification-channel creation guarded by platform version;
 - reusable static silent-vibration pattern;
 - platform availability problems solved in code instead of globally suppressing CA1416.
 
-The Android Release build passed after this change.
+The Android Release build passed after these changes.
 
-### 13. Documentation build commands were synchronized with the verified project model
+### 13. Documentation build commands synchronized with verified project model
 
-Documentation fixes:
+README and development setup use `CareNestTargetFramework` for narrow-workload target builds so contributors do not accidentally evaluate unrelated MAUI targets.
 
-- `67cab88...` — `docs: document target-specific MAUI build commands`;
-- `4dd8ef4c3a5def9e6589a01689ff9555194c3746` — `docs: align README builds with verified target selector`.
+### 14. Release records corrected after verification
 
-README and development setup now use `CareNestTargetFramework` for narrow-workload target builds so contributors do not accidentally evaluate unrelated MAUI targets.
+Project status, release checklist, README/build guidance and the handoff were updated after actual CI evidence was available rather than claiming unverified results.
 
-### 14. Release records were corrected after verification
+---
 
-Documentation/status commits include:
+## Funding integration completed before the latest artwork pass
 
-- `fc20955dc84929ea6d7ee9aee3adf9760e66e9f3` — `docs: record rc1 hardening and verification fixes`;
-- `2915aecbb4c4846a14dc12cac20810861b8f890d` — `docs: correct current rc1 verification status`;
-- `76c22b226fe55efb646bbc1cf4010963e1b9ac77` — `docs: record automated rc1 release evidence`;
-- `fbae16104c07432d275986b5d215e59ab15b5526` — `docs: mark automated Mac Catalyst verification green`;
-- `1479c71378c836d5205c8ef373164fe6bee9e0cc` — `docs: finalize green automated rc1 verification status`.
+The project-support destination is:
 
-These documentation commits were made after the verified runtime source head and do not alter product runtime behavior.
+`https://buymeacoffee.com/sanskarIN`
+
+The implementation already included:
+
+- `AppConstants.FundingUrl` as the shared runtime source for the URL;
+- an About/support command that opens the external destination only after explicit user action;
+- GitHub `.github/FUNDING.yml` metadata;
+- README/SUPPORT/PRIVACY/TERMS/security/store guidance explaining the funding boundary;
+- UI-contract coverage to prevent support URL/wording drift;
+- no feature unlock, account creation, premium medical service, diagnosis, treatment or reminder advantage tied to financial support.
+
+The funding-enabled verification pass added two UI-contract tests, increasing the UI-contract suite from 8 to 10 tests.
+
+---
+
+## Custom BMC artwork and highlighting added in the latest continuation
+
+### Vector artwork
+
+Added:
+
+`src/CareNest.App/Resources/Images/buy_me_a_coffee_carenest.svg`
+
+The asset is a custom CareNest project-support graphic with:
+
+- a warm yellow/coffee-brown visual treatment;
+- a custom coffee-cup illustration;
+- prominent `BUY ME A COFFEE` heading;
+- visible `buymeacoffee.com/sanskarIN` text;
+- `SUPPORT CARENEST` callout;
+- scalable vector format suitable for repository/app resource use;
+- descriptive SVG `<title>` and `<desc>` metadata.
+
+The asset is custom CareNest project artwork and is not represented as an official Buy Me a Coffee brand logo.
+
+### Clickable support pages
+
+Added:
+
+- `BUY_ME_A_COFFEE.md` at repository root;
+- `docs/SUPPORT_CARENEST.md`.
+
+Both pages make the vector artwork clickable and point to:
+
+`https://buymeacoffee.com/sanskarIN`
+
+Both pages also state that support is voluntary and does not create CareNest feature/medical/privacy entitlements.
+
+### Existing repository highlighting retained
+
+The existing GitHub funding metadata and textual support surfaces remain in place, so the BMC destination is discoverable through both native repository funding UI and project documentation.
+
+---
+
+## Release-preflight automation added
+
+### Bash
+
+Added:
+
+`build/scripts/release-preflight.sh`
+
+The script:
+
+- requires a .NET SDK;
+- prints the installed .NET environment;
+- scans `src/` and `tests/` for `TODO`, `FIXME` and `NotImplementedException` implementation markers;
+- runs `dotnet format CareNest.sln --verify-no-changes`;
+- builds Domain/Application/Infrastructure in Release mode;
+- runs unit, integration and UI-contract tests;
+- emits a dependency vulnerability report for the infrastructure dependency graph;
+- optionally builds a selected MAUI target when `CARENEST_TARGET` is set;
+- explicitly reminds maintainers that manual/device/accessibility/signing/store-policy/dependency-risk checks remain separate.
+
+### PowerShell
+
+Added:
+
+`build/scripts/release-preflight.ps1`
+
+It provides the same release-preflight intent for Windows/PowerShell hosts with explicit `$LASTEXITCODE` checks around build/test/format commands.
+
+The scripts do not claim to replace GitHub-hosted platform builds or real-device testing.
+
+---
+
+## Manual release matrix added
+
+Added:
+
+`docs/releases/MANUAL_TEST_MATRIX.md`
+
+The matrix covers:
+
+- fresh install/onboarding;
+- profiles and app lock;
+- medicine/schedule variants;
+- reminder state transitions;
+- quiet hours/follow-ups;
+- appointments/calendar export;
+- encrypted documents;
+- stock/refill behavior;
+- PDF/CSV/JSON reports;
+- encrypted backup/restore/wrong-password behavior;
+- reset/deletion;
+- themes, large text, screen reader, keyboard and reduced motion;
+- Buy Me a Coffee external-action behavior;
+- offline/local-first use;
+- Android notification permission/exact alarm/battery/reboot/time/time-zone scenarios;
+- iOS/Mac Catalyst notification scenarios;
+- Windows reminder limitation scenarios;
+- privacy/security checks;
+- release evidence rules using fictional data only.
+
+This matrix deliberately leaves device-dependent rows unchecked until they are actually executed on the intended release devices/simulators.
+
+---
+
+## Store submission checklist added
+
+Added:
+
+`docs/releases/STORE_SUBMISSION_CHECKLIST.md`
+
+It covers:
+
+- final version/build metadata;
+- exact-source CI/CodeQL evidence;
+- dependency/advisory review;
+- package identities and signing secrets;
+- non-medical store claims;
+- reminder limitation wording;
+- privacy/data-safety disclosures;
+- fictional screenshot/test data requirements;
+- current-policy review for BMC/external funding links;
+- Android signing/AAB/device checks;
+- Windows signing/package identity checks;
+- iOS signing/privacy/notification checks;
+- Mac Catalyst signing/distribution/accessibility checks;
+- release artifact/source SHA/run-ID recording;
+- explicit rule not to publish final `1.0.0` solely because compilation is green.
+
+The checklist does not guess current store rules. It requires a current review at submission time because platform policies can change.
+
+---
+
+## SQLite dependency migration plan added
+
+Added:
+
+`docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`
+
+The plan defines two safe paths:
+
+1. upgrade to a compatible patched dependency graph when one is actually available;
+2. replace the SQLite provider/native dependency path if necessary, while preserving the Infrastructure boundary and local-first design.
+
+Required post-change evidence includes:
+
+- unit/integration/UI-contract tests;
+- clean database initialization;
+- migration/foreign-key/repository/cascade behavior;
+- WAL/busy-timeout or intentionally redesigned equivalent behavior;
+- backup snapshot and encrypted backup/restore tests;
+- document/reference survival;
+- Android/Windows/iOS/Mac Catalyst builds;
+- CodeQL;
+- upgrade of a fictional pre-existing device database;
+- pre/post migration backup tests;
+- reminder rebuild verification;
+- exact dependency graph and CI/run evidence in the risk register and handoff.
+
+The plan explicitly forbids claiming the advisory fixed merely because a suppression exists.
 
 ---
 
 ## Verification pull-request sequence
 
-Temporary verification branches/PRs were intentionally used to obtain fresh pull-request-triggered GitHub Actions evidence without merging verification marker files into production source.
+Temporary verification branches/PRs were used to obtain fresh pull-request-triggered GitHub Actions evidence without merging marker files into production source.
 
 - PR #10 — first post-merge verification; superseded after new failures were discovered.
 - PR #11 — analyzer/NuGet correction verification; superseded.
 - PR #12 — framework-selection verification; superseded.
 - PR #13 — SQLite/MAUI CI verification; superseded.
 - PR #14 — MAUI/SQLite/shared-source verification; superseded after additional source-level failures were exposed.
-- PR #15 — final cross-platform verification for product source head `682aef2aa31981c6be31086aa7af8e1c8e56e94b` before the later funding-support runtime/UI addition.
+- PR #15 — full cross-platform verification for runtime source head `682aef2aa31981c6be31086aa7af8e1c8e56e94b`.
+- PR #16 — funding-enabled verification for source head `2b8f97525ea8d3b41bf62e20d76e1cc224dab102`.
 
-PR #15 branch:
-
-`ci/carenest-rc1-verification-6`
-
-Verification marker commit:
-
-`6203225fb3e6608a78f867cc0f30352a3c014745`
-
-The marker changed only a verification text file. It was **not** merged into `main`.
-
-PR #15 was closed after all automated gates completed successfully.
+Verification markers changed only verification text files and were not merged into production `main`.
 
 ---
 
-## Previous automated verification evidence — PR #15
+## Latest completed automated verification evidence
 
 ### CareNest CI
 
-GitHub Actions workflow run:
+GitHub Actions workflow:
 
-- workflow: `CareNest CI`
-- run number: `67`
-- run id: `31300473171`
-- final status: `completed`
-- final conclusion: `success`
-- source head under verification: `682aef2aa31981c6be31086aa7af8e1c8e56e94b`
+- workflow: `CareNest CI`;
+- run number: `87`;
+- run id: `31301203981`;
+- final status: `completed`;
+- final conclusion: `success`;
+- source head under verification: `2b8f97525ea8d3b41bf62e20d76e1cc224dab102`.
 
 ### Core tests
-
-The Core tests job completed successfully on Ubuntu 24.04 with .NET 10.0.302.
 
 Exact results:
 
 - `CareNest.UnitTests`: 15 passed, 0 failed, 0 skipped;
 - `CareNest.IntegrationTests`: 11 passed, 0 failed, 0 skipped;
-- `CareNest.UiTests`: 8 passed, 0 failed, 0 skipped.
+- `CareNest.UiTests`: 10 passed, 0 failed, 0 skipped.
 
-Total automated test cases in that job:
+Total automated tests in that run:
 
-- 34 passed;
+- 36 passed;
 - 0 failed;
 - 0 skipped.
 
-The integration suite includes the corrected SQLite initialization/snapshot paths as well as encrypted document/backup/report behavior.
+The two additional UI-contract tests cover the BMC support URL/surface consistency.
 
 ### Android
-
-Android MAUI workload installation succeeded.
 
 Release build succeeded for:
 
 `net10.0-android`
 
-using:
-
-`CareNestTargetFramework=net10.0-android`
+using the non-propagating `CareNestTargetFramework` selection model.
 
 ### Windows
 
-Windows MAUI workload installation succeeded.
-
 Release build succeeded for:
 
-`net10.0-windows10.0.19041.0`
-
-using the non-propagating `CareNestTargetFramework` selector.
+`net10.0-windows10.0.19041.0`.
 
 ### iOS
-
-Apple MAUI workloads installed successfully on the macOS 26 runner.
 
 Release simulator build succeeded for:
 
 `net10.0-ios`
 
-with:
-
-`RuntimeIdentifier=iossimulator-arm64`
+with the simulator runtime used by the GitHub Apple job.
 
 ### Mac Catalyst
 
 Release build succeeded for:
 
-`net10.0-maccatalyst`
-
-on the same macOS 26 Apple job.
+`net10.0-maccatalyst`.
 
 ### CodeQL
 
-GitHub Actions workflow run:
+GitHub Actions workflow:
 
-- workflow: `CodeQL`
-- run number: `66`
-- run id: `31300473160`
-- final status: `completed`
+- workflow: `CodeQL`;
+- run number: `86`;
+- run id: `31301203985`;
+- final status: `completed`;
 - final conclusion: `success`.
 
 ---
 
-## Static/source hygiene checks
+## Why another final exact-commit build is still required
 
-Static review and repository searches have also been used during implementation/hardening.
+The latest completed CI evidence above verifies the funding-enabled runtime source before the custom vector badge/release-preparation files were added.
 
-Current repository search found no remaining:
+The new BMC SVG is stored inside `CareNest.App/Resources/Images`. Even though it does not change reminder/persistence/medical logic, it is part of the MAUI resource tree. Therefore the exact final packaging commit should receive another Android/Windows/iOS/Mac Catalyst build and CodeQL pass before signed/public release.
 
-- `TODO` implementation markers;
-- `FIXME` implementation markers;
-- `NotImplementedException` placeholders.
+That requirement is intentionally left open in `docs/releases/RELEASE_CHECKLIST.md` until a fresh verification is completed for the exact final source head.
 
-Earlier generation/static review also checked XML/XAML well-formedness, project-reference resolution, XAML `x:Class`/code-behind matching and stale settings-key references before the release branch was assembled.
+---
+
+## Static/source hygiene
+
+Repository hardening previously checked for and removed release-blocking placeholders.
+
+Release preflight now contains an explicit source scan for:
+
+- `TODO`;
+- `FIXME`;
+- `NotImplementedException`.
+
+Earlier static review also checked XML/XAML well-formedness, project-reference resolution, XAML `x:Class`/code-behind matching and stale settings-key references before the release branch was assembled.
 
 A generation-script string-quoting error occurred during an early local assembly pass; that pass did not write repository source. The generator input was corrected before the release tree was delivered.
 
@@ -609,11 +790,9 @@ A generation-script string-quoting error occurred during an early local assembly
 - No analytics or telemetry were added.
 - No CareNest backend, cloud sync, account system or automatic upload exists in this release.
 - Exported/decrypted files leave CareNest protection only after explicit user action.
-- SQLite records rely on application sandbox/device protections; CareNest does **not** falsely claim transparent whole-database encryption at rest.
+- SQLite records rely on application sandbox/device protections; CareNest does **not** claim transparent whole-database encryption at rest.
 - The open SQLitePCLRaw advisory is explicitly tracked instead of being hidden behind a claim that it was fixed.
-- The external Buy Me a Coffee support destination is fixed in a shared HTTPS constant and opened only after explicit user action.
-- CareNest does not append health data, document metadata, profile identifiers, reminder history, backup data, app-lock data or payment secrets to the funding URL.
-- The external funding provider is outside the CareNest trust boundary and is governed by its own privacy/security/payment rules once opened.
+- External links such as GitHub/BMC are explicit user actions and leave the CareNest trust boundary.
 
 ---
 
@@ -651,8 +830,10 @@ A generation-script string-quoting error occurred during an early local assembly
 - No automatic cloud upload: implemented by architecture; no cloud service exists in v1.
 - Local caregiver mode: implemented without silent sharing.
 - Theme/accessibility/localization readiness: implemented with system/light/dark preferences, scalable UI tokens, reduced-motion behavior and English resource architecture ready for additional languages.
-- Automated quality gate: latest funding-enabled source head passed core tests, Android, Windows, iOS simulator, Mac Catalyst and CodeQL.
-- Voluntary project funding: implemented through the About page and GitHub funding metadata without changing CareNest health functionality, safety boundaries or local-data access.
+- Automated quality gate: latest completed funding-enabled source head passed unit/integration/UI-contract tests, Android, Windows, iOS simulator, Mac Catalyst and CodeQL.
+- Voluntary project support: BMC URL is centralized, documented, tested and separated from medical/feature entitlements.
+- Visual project-support highlight: custom vector badge and clickable support pages are implemented.
+- Release-preparation tooling: preflight scripts, manual matrix, store checklist and dependency migration plan are implemented.
 
 ---
 
@@ -664,7 +845,7 @@ Reminder timing can be affected by notification permission, exact-alarm capabili
 
 ### iOS / Mac Catalyst
 
-Local notification delivery remains controlled by operating-system notification policy. The CI build proves compilation for current targets, not guaranteed real-device notification delivery.
+Local notification delivery remains controlled by operating-system notification policy. CI build success proves compilation, not guaranteed real-device notification delivery.
 
 ### Windows
 
@@ -691,9 +872,19 @@ git config user.email "sanskarin@outlook.in"
 git config user.name "Sanskar"
 ```
 
-The connected GitHub write API used in this chat does not expose author/committer email fields on create/update commit operations. Connector-created commits therefore use the authenticated GitHub identity. This repository does not falsely claim that the connector forced `sanskarin@outlook.in` into those commit objects.
+The connected GitHub write API used in this chat does not expose author/committer email fields on the create/update file operations. Connector-created commits therefore use the authenticated GitHub identity. This repository does not falsely claim that the connector forced `sanskarin@outlook.in` into those commit objects.
 
 Local/future maintainer commits can use the requested address through the included setup scripts.
+
+---
+
+## Documentation-write recovery note
+
+During this latest continuation, an attempted handoff-file update wrote a temporary placeholder to `what_changed.md`. The repository was immediately restored to the last known-good handoff commit before replaying the valid BMC/release-hardening changes.
+
+The recovery intentionally removed the temporary placeholder state from `main` before the valid continuation commits were replayed. No CareNest runtime, health data model, reminder logic, encryption logic, database logic or user data was affected by that documentation-only recovery.
+
+This section is included for traceability rather than hiding the repository maintenance correction.
 
 ---
 
@@ -701,13 +892,14 @@ Local/future maintainer commits can use the requested address through the includ
 
 The local execution container used for repository assembly does not contain the .NET SDK/MAUI workloads. Therefore local `dotnet restore`, `dotnet format`, platform compilation, emulator/device smoke tests, signing and store packaging cannot truthfully be claimed as executed inside that container.
 
-Instead, GitHub-hosted CI provided the automated source verification described above and is green for the verified source head.
+GitHub-hosted CI provided the automated verification described above for the latest completed verified runtime source.
 
-The following activities remain intentionally **not marked complete** because they require an appropriately provisioned development host, real/emulated devices, signing credentials or store access:
+The following activities remain intentionally **not marked complete** because they require an appropriately provisioned development host, real/emulated devices, signing credentials, current store access/policy review, or a verified dependency update:
 
-- `dotnet format --verify-no-changes` on a fully provisioned host;
-- manual onboarding smoke testing;
-- manual profile/medicine/schedule workflows on target devices;
+- run the new release-preflight script on a fully provisioned host;
+- fresh exact-final-commit Android/Windows/iOS/Mac Catalyst builds after the BMC SVG resource addition;
+- fresh exact-final-commit CodeQL;
+- manual onboarding/profile/medicine/schedule workflows on target devices;
 - notification permission denied/granted manual testing;
 - Android exact-alarm/battery behavior on representative devices;
 - real time-zone-change delivery testing;
@@ -716,211 +908,31 @@ The following activities remain intentionally **not marked complete** because th
 - manual backup restore on a release build/clean installation;
 - cold-start app-lock testing;
 - screen-reader/large-text/keyboard/reduced-motion manual accessibility checks;
-- current Apple/Google store-policy review for the external voluntary project-support link;
+- current app-store policy review for the external funding link;
 - package signing;
 - store packaging/submission;
-- final review/decision or verified dependency resolution for the open SQLitePCLRaw advisory.
+- final review/resolution for the open SQLitePCLRaw advisory.
 
-`docs/releases/RELEASE_CHECKLIST.md` records automated evidence separately from those manual release activities so nothing is silently represented as verified when it is not.
-
----
-
-## Funding-support and next-step continuation
-
-### Buy Me a Coffee support integration
-
-Requested voluntary support URL:
-
-`https://buymeacoffee.com/sanskarIN`
-
-Implemented runtime/repository work:
-
-- `edeb445eaa9ff3a2bbc66cc771146efbd4e18bdb` — `feat: add CareNest funding URL constant`;
-- `c9afd3646559823757897053d9ea745839bfc2a9` — `feat: add in-app project support command`;
-- `9339e0382c9f85820ea3415746eb76b60f0a0dba` — `feat: expose voluntary project support link in About`;
-- `ec7e86ff818d46df5c92a6497d81ad2dca5c41cf` — `chore: add Buy Me a Coffee funding link`;
-- `7c38bc0b1dc7859a8890b94cf360a742d3a6488e` — `docs: add funding and next-step links to README`;
-- `6cc6694b8fcff1b6abe87eb4b50e2520059f065a` — `docs: add voluntary project support information`;
-- `eb51bc25a8c7540654b4ec6f3dae416cb1c9482f` — `test: cover Buy Me a Coffee support surface`.
-
-The About view model now consumes the shared repository/creator/business/support/funding constants instead of duplicating those values directly in command construction.
-
-The About page displays a `Support CareNest on Buy Me a Coffee` button and explicitly says project support is voluntary and does not unlock medical advice, premium health features or different reminder behavior.
-
-GitHub funding metadata was added at:
-
-`.github/FUNDING.yml`
-
-with the same custom support URL.
-
-### Funding privacy/security/legal boundary
-
-Additional documentation commits:
-
-- `7a44a050a5506410a21b25e4faf1333b5bc54fbf` — `docs: document voluntary support link privacy boundary`;
-- `02ab94f13636339499c7e5fef80184ee7f090a6c` — `docs: clarify voluntary funding has no CareNest entitlement`;
-- `45504aef88ce2a9b59ae38b9a33659c724283812` — `docs: document external support-link data boundary`;
-- `d663921434f6892a19ac2a382f04a03346b393fa` — `security: model external project-support link boundary`;
-- `e887a107dda24b9c1ffd5de1eb2119779d80eb1c` — `security: document external link trust boundary`;
-- `c925f27ce2ad91f16521ccfd880d8d3c5f55cfcf` — `docs: add funding-link store listing guidance`.
-
-Current rules are explicit:
-
-- the support URL is a fixed HTTPS destination;
-- it opens only after explicit user interaction;
-- no CareNest health records/documents/backups/profile identifiers/reminder history/app-lock data are appended to the link;
-- no funding-provider API key/payment SDK/payment credential is included in CareNest for this link;
-- the external service becomes an independent privacy/security/payment boundary after it is opened;
-- contributing does not buy medical advice, treatment guidance, emergency help, premium reminder behavior, data access or a different CareNest safety standard.
-
-### Store-policy caution retained
-
-A current Apple/Google store-policy determination was not claimed in this repository work because store rules can change and must be checked against the intended distribution channel at submission time.
-
-The release checklist and next-step roadmap require:
-
-- verifying current Apple App Store rules for the external voluntary support link;
-- verifying current Google Play rules for the external voluntary support link;
-- conditionally hiding/removing the in-app external link for a channel if that channel's current policy requires it;
-- never relabeling the link as a medical purchase or health-feature entitlement to work around store rules.
-
-### Detailed next-step roadmap added
-
-New file:
-
-`docs/releases/NEXT_STEPS.md`
-
-Commit:
-
-- `c814f1365608dacce95cee1c5966f68690198fde` — `docs: add concrete CareNest next-step roadmap`.
-
-The roadmap does not pretend future work is already complete. It separates:
-
-#### Priority 0 — production blockers
-
-1. Resolve the open SQLitePCLRaw dependency advisory and remove the temporary audit exception only after a compatible verified dependency path exists.
-2. Run manual real/emulated-device and accessibility smoke tests on Android, Windows, iOS/iPadOS and Mac Catalyst.
-3. Verify current app-store policy for the external voluntary support link.
-4. Prepare Android/Apple/Windows signing identities and keep signing secrets outside Git.
-5. Finish store listings, screenshots, data-safety/privacy disclosures and medical-safety wording.
-
-#### Priority 1 — release promotion
-
-6. Create a final exact-commit verification branch after Priority 0 is complete.
-7. Promote version/release metadata and create the final annotated tag only from verified source.
-8. Build/archive signed Android, Apple and Windows release artifacts with provenance/checksums where appropriate.
-
-#### Priority 2 — post-release quality
-
-9. Establish an explicit user-submitted feedback/bug-report flow without hidden telemetry.
-10. Expand notification, time-zone/DST, backup-compatibility, corruption/low-storage and accessibility test coverage.
-11. Improve release engineering with protected artifact workflows, dependency review, SBOMs and attestations where supported.
-
-#### Priority 3 — CareNest 1.x enhancements
-
-12. Expand localization/resource coverage.
-13. Improve reminder usability without inferring clinical intent.
-14. Improve local document organization/search/duplicate handling.
-15. Improve backup usability and future migration fixtures.
-
-#### Priority 4 — separately reviewed future versions
-
-Potential encrypted sync, remote caregiver collaboration and accounts remain deliberately deferred until new threat modeling, privacy design, authentication/key design, abuse analysis and explicit consent controls exist.
-
-No future roadmap item changes the current rule that CareNest does not provide diagnosis, dosage calculation, treatment advice, medication-interaction claims or clinical risk scoring.
-
-### Release/security documents linked to next steps
-
-Relevant commits:
-
-- `b3dfd68461a4084721328e399e277010589a8fa2` — `docs: add funding-link store-policy release gate`;
-- `2b8f97525ea8d3b41bf62e20d76e1cc224dab102` — `docs: record voluntary project funding support`;
-- `368c26408756f8facc52f30a7868478df237f0be` — `docs: connect SQLite risk to production next steps`;
-- `841a5dff8d54881518a78bb913554cc41249febb` — `docs: record green funding-enabled release verification`;
-- `11f05c230ef66c07caa33d20341d9485bd309d76` — `docs: finalize funding-enabled green verification status`.
+`docs/releases/RELEASE_CHECKLIST.md`, `docs/releases/MANUAL_TEST_MATRIX.md`, `docs/releases/STORE_SUBMISSION_CHECKLIST.md` and `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` keep automated evidence separate from manual/store/security activities so nothing is silently represented as verified when it is not.
 
 ---
 
-## Funding-enabled verification pull request — PR #16
-
-A fresh verification was required because the funding work changed runtime/UI source and added UI-contract tests after PR #15's previously verified runtime head.
-
-Verification source head:
-
-`2b8f97525ea8d3b41bf62e20d76e1cc224dab102`
-
-Verification branch:
-
-`ci/carenest-rc1-funding-verification`
-
-Verification marker commit:
-
-`547845c945da9af5ff5738ebddf12e2370a9b664`
-
-Pull request:
-
-`#16 — Verify CareNest funding support integration`
-
-The marker file existed only to trigger pull-request workflows. PR #16 was closed after successful verification and was **not merged**, so the verification marker was not added to production `main`.
-
-### CareNest CI run #87
-
-- workflow: `CareNest CI`;
-- run number: `87`;
-- run id: `31301203981`;
-- final status: `completed`;
-- final conclusion: `success`.
-
-Core test evidence:
-
-- `CareNest.UnitTests`: 15 passed, 0 failed, 0 skipped;
-- `CareNest.IntegrationTests`: 11 passed, 0 failed, 0 skipped;
-- `CareNest.UiTests`: 10 passed, 0 failed, 0 skipped;
-- total: 36 passed, 0 failed, 0 skipped.
-
-The two additional UI-contract tests specifically verify consistency of the Buy Me a Coffee URL and the voluntary-support wording across runtime/repository support surfaces.
-
-Platform build evidence:
-
-- Android Release build: passed;
-- Windows Release build: passed;
-- iOS simulator Release build: passed;
-- Mac Catalyst Release build: passed.
-
-### CodeQL run #86
-
-- workflow: `CodeQL`;
-- run number: `86`;
-- run id: `31301203985`;
-- final status: `completed`;
-- final conclusion: `success`.
-
----
-
-## Current repository state after funding/next-step continuation
+## Current repository state after this continuation
 
 - Complete CareNest `1.0.0-rc.1` product source is on `main`.
-- Buy Me a Coffee voluntary support URL is `https://buymeacoffee.com/sanskarIN`.
-- The support URL is centralized in `AppConstants.FundingUrl`.
-- The About page exposes the voluntary support action.
-- `.github/FUNDING.yml` exposes the same support URL for GitHub repository funding UI.
-- README, SUPPORT, PRIVACY, TERMS, SECURITY, threat model, data lifecycle, store guidance and changelog document the funding boundary.
-- `docs/releases/NEXT_STEPS.md` contains the complete ordered next-step roadmap.
-- `docs/releases/RELEASE_CHECKLIST.md` records the new verification evidence and remaining manual/store/signing/security gates.
-- `PROJECT_STATUS.md` records the funding-enabled verified state.
-- Source head `2b8f97525ea8d3b41bf62e20d76e1cc224dab102` has a fully green automated matrix.
-- CareNest CI run #87 succeeded.
-- CodeQL run #86 succeeded.
-- 15 unit tests passed.
-- 11 integration tests passed.
-- 10 UI-contract tests passed.
-- 36 total automated tests passed with 0 failed and 0 skipped.
-- Android Release build passed.
-- Windows Release build passed.
-- iOS simulator Release build passed.
-- Mac Catalyst Release build passed.
-- Verification PR #16 was closed without merging its marker file.
-- Later `main` commits after the verified source head are documentation/security/status guidance changes only; they do not alter product runtime behavior.
-- The SQLitePCLRaw advisory remains explicitly open; it is not claimed fixed.
-- Final `1.0.0` publication/tagging remains gated on the manual release checklist, current store-policy review for the funding link, signing/store preparation and the SQLite dependency-risk decision/resolution.
+- Buy Me a Coffee support URL is `https://buymeacoffee.com/sanskarIN`.
+- Funding URL remains centralized in shared constants and existing runtime support action.
+- GitHub funding metadata remains present.
+- Custom BMC vector artwork is present in the MAUI image resource tree.
+- Root and documentation support pages make the BMC artwork clickable.
+- Bash and PowerShell release-preflight scripts are present.
+- Manual release test matrix is present.
+- Store submission/funding-policy checklist is present.
+- SQLite dependency migration/verification plan is present.
+- Latest completed funding-enabled verification: CareNest CI run #87 and CodeQL run #86, both successful.
+- Latest completed test counts: 15 unit + 11 integration + 10 UI-contract = 36 passed, 0 failed, 0 skipped.
+- Latest completed platform verification: Android, Windows, iOS simulator and Mac Catalyst Release builds passed.
+- A new exact-final-commit platform/CodeQL verification is still required because a new MAUI SVG resource was added after run #87.
+- The SQLitePCLRaw advisory remains explicitly open and is not claimed fixed.
+- Final `1.0.0` publication/tagging remains gated on fresh exact-commit automated verification, manual release matrix, accessibility/device checks, current BMC/store-policy review, signing/packaging and the dependency-risk decision/resolution.
 - Cloud synchronization, remote caregiver collaboration, accounts/mobile-number authentication, server-side storage, medical interpretation, diagnosis, treatment advice, medication-interaction claims and clinical risk scoring remain deferred to later separately reviewed versions.
