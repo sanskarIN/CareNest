@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using CareNest.App.Services;
+using CareNest.Shared;
 
 namespace CareNest.App.ViewModels;
 
@@ -12,13 +13,14 @@ public sealed class AboutViewModel : ObservableViewModel
         SafeUiErrorService errors) : base(errors)
     {
         _files = files;
-        OpenRepositoryCommand = new AsyncCommand(() => OpenAsync("https://github.com/sanskarIN/CareNest"));
-        OpenCreatorCommand = new AsyncCommand(() => OpenAsync("https://www.github.com/sanskarIN"));
-        BusinessEmailCommand = new AsyncCommand(() => OpenAsync("mailto:sanskarin@outlook.in"));
-        SupportEmailCommand = new AsyncCommand(() => OpenAsync("mailto:supportramsandesh@gmail.com"));
-        PrivacyCommand = new AsyncCommand(() => OpenAsync("https://github.com/sanskarIN/CareNest/blob/main/PRIVACY.md"));
-        TermsCommand = new AsyncCommand(() => OpenAsync("https://github.com/sanskarIN/CareNest/blob/main/TERMS.md"));
-        SecurityCommand = new AsyncCommand(() => OpenAsync("https://github.com/sanskarIN/CareNest/blob/main/SECURITY.md"));
+        OpenRepositoryCommand = new AsyncCommand(() => OpenAsync(AppConstants.RepositoryUrl));
+        OpenCreatorCommand = new AsyncCommand(() => OpenAsync(AppConstants.CreatorUrl));
+        SupportProjectCommand = new AsyncCommand(() => OpenAsync(AppConstants.FundingUrl));
+        BusinessEmailCommand = new AsyncCommand(() => OpenAsync($"mailto:{AppConstants.BusinessEmail}"));
+        SupportEmailCommand = new AsyncCommand(() => OpenAsync($"mailto:{AppConstants.SupportEmail}"));
+        PrivacyCommand = new AsyncCommand(() => OpenAsync($"{AppConstants.RepositoryUrl}/blob/main/PRIVACY.md"));
+        TermsCommand = new AsyncCommand(() => OpenAsync($"{AppConstants.RepositoryUrl}/blob/main/TERMS.md"));
+        SecurityCommand = new AsyncCommand(() => OpenAsync($"{AppConstants.RepositoryUrl}/blob/main/SECURITY.md"));
         ThirdPartyNoticesCommand = new AsyncCommand(ShowThirdPartyNoticesAsync);
     }
 
@@ -28,13 +30,13 @@ public sealed class AboutViewModel : ObservableViewModel
 
     public ICommand OpenRepositoryCommand { get; }
     public ICommand OpenCreatorCommand { get; }
+    public ICommand SupportProjectCommand { get; }
     public ICommand BusinessEmailCommand { get; }
     public ICommand SupportEmailCommand { get; }
     public ICommand PrivacyCommand { get; }
     public ICommand TermsCommand { get; }
     public ICommand SecurityCommand { get; }
     public ICommand ThirdPartyNoticesCommand { get; }
-
 
     private Task ShowThirdPartyNoticesAsync() =>
         RunAsync(async ct =>
