@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using CareNest.Domain.Entities;
@@ -8,6 +9,7 @@ namespace CareNest.Application.Services;
 
 public sealed class ReminderPlanner
 {
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "The planner is intentionally registered as an injectable application service so callers are not coupled to static behavior.")]
     public IReadOnlyList<ReminderOccurrence> BuildOccurrences(
         Medicine medicine,
         MedicineSchedule schedule,
@@ -157,7 +159,7 @@ public sealed class ReminderPlanner
     }
 
     private static void AddOccurrence(
-        ICollection<ReminderOccurrence> result,
+        List<ReminderOccurrence> result,
         Medicine medicine,
         MedicineSchedule schedule,
         PersonProfile profile,
