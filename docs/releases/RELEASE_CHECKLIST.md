@@ -16,18 +16,19 @@ CodeQL run: `#66` / `31300473160`
 - [x] Mac Catalyst Release build.
 - [x] CodeQL analysis.
 
-The checkmarks above record only GitHub-hosted automated evidence for the stated source head. They do not substitute for the manual device, signing, accessibility, notification-delivery, or store-readiness checks below.
+The checkmarks above record only GitHub-hosted automated evidence for the stated source head. They do not substitute for the manual device, signing, accessibility, notification-delivery, or store-readiness checks below. Runtime/UI changes after that source head must receive a new complete verification pass before final release.
 
 ## Release preparation and manual verification
 
 - [ ] Update version, changelog and release notes for the final release tag.
 - [ ] `dotnet format --verify-no-changes` on a fully provisioned development host.
 - [ ] Restore with locked/known package sources.
-- [x] Build Domain/Application/Infrastructure through the automated test/build pipeline.
-- [x] Run unit, integration and UI-contract tests.
-- [x] Build Android release.
-- [x] Build Windows release.
-- [x] On macOS, build iOS simulator and Mac Catalyst release targets.
+- [x] Build Domain/Application/Infrastructure through the automated test/build pipeline for the previously verified source head.
+- [x] Run unit, integration and UI-contract tests for the previously verified source head.
+- [x] Build Android release for the previously verified source head.
+- [x] Build Windows release for the previously verified source head.
+- [x] On macOS, build iOS simulator and Mac Catalyst release targets for the previously verified source head.
+- [ ] Re-run the complete automated verification matrix on the exact final release commit after all runtime/UI changes are complete.
 - [ ] Manual onboarding smoke test.
 - [ ] Create/edit/delete profiles on real/emulated target devices.
 - [ ] Create/pause/resume medicine schedules.
@@ -45,9 +46,14 @@ The checkmarks above record only GitHub-hosted automated evidence for the stated
 - [ ] Confirm no document content or credentials in device logs.
 - [ ] Review third-party notices and licenses.
 - [ ] Review `docs/security/DEPENDENCY_RISK_REGISTER.md`; the SQLitePCLRaw advisory remains open until an available compatible patched dependency path exists.
+- [ ] Verify current Apple App Store rules for the external voluntary project-support link before submission.
+- [ ] Verify current Google Play rules for the external voluntary project-support link before submission.
+- [ ] Confirm Buy Me a Coffee support remains optional and does not unlock medical advice, health features, reminder behavior, support priority, or access to CareNest data.
+- [ ] If a distribution channel disallows the in-app external support link, remove or conditionally hide that button for the affected store build while retaining permitted repository funding metadata.
 - [ ] Sign packages using secrets outside the repository.
 - [ ] Verify store privacy disclosures match actual behavior.
+- [ ] Review [`NEXT_STEPS.md`](NEXT_STEPS.md) and record which Priority 0 items are complete.
 
 ## Release rule
 
-Do not tag or publish a final `1.0.0` build while an automated platform gate is failing or incomplete, while the tracked SQLite dependency advisory has not received an explicit release decision, or before required manual checks for the intended distribution platforms are completed.
+Do not tag or publish a final `1.0.0` build while an automated platform gate is failing or incomplete, while runtime/UI changes have not been re-verified, while the tracked SQLite dependency advisory has not received an explicit release decision, while the external funding-link policy has not been reviewed for the intended store, or before required manual checks for the intended distribution platforms are completed.
