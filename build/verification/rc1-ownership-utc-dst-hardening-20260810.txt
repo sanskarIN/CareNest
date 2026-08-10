@@ -1,0 +1,5 @@
+CareNest exact-head verification marker.
+
+Source head: 04057299fe6d13012734ba235e6fa92604753948
+Scope: reminder ownership validation, UTC planning/rebuild/snooze contracts, archived-profile suppression, schedule validation hardening, deterministic property recurrence tests, expanded DST matrix tests, and aligned test/quality documentation.
+This marker is verification-only and must not be merged into main.
