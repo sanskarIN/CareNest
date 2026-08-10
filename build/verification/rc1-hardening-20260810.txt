@@ -1,0 +1,6 @@
+CareNest exact-head hardening verification marker.
+
+Production main source head: 47234b65c2060e0417a7e7cd6b005d286594df3a
+Date: 2026-08-10
+Purpose: trigger pull-request CI, CodeQL and dependency-audit evidence after privacy logging, repository policy, architecture, data-model, branding, formatting and release-engineering hardening.
+This marker is verification-only and must not be merged into main.
