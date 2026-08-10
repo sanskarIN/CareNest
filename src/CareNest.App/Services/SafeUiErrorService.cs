@@ -6,7 +6,7 @@ public sealed class SafeUiErrorService(ILogger<SafeUiErrorService> logger)
 {
     public async Task ShowAsync(string safeMessage, Exception? exception = null)
     {
-        if (exception is not null)
+        if (exception is not null && logger.IsEnabled(LogLevel.Error))
         {
             var exceptionType = exception.GetType().FullName ?? "Unknown";
             logger.LogError(
