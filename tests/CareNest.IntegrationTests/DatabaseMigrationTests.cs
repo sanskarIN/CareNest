@@ -93,6 +93,32 @@ public sealed class DatabaseMigrationTests
     }
 
     [Fact]
+    public async Task Snapshot_WhenAlreadyCancelled_ThrowsAndLeavesNoOutputFile()
+    {
+        await using var store = await TestStore.CreateAsync();
+        var snapshotPath = Path.Combine(
+            Path.GetTempPath(),
+            $"carenest-snapshot-cancelled-{Guid.NewGuid():N}.db");
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        try
+        {
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => store.Database.CreateSnapshotAsync(snapshotPath, cancellation.Token));
+
+            Assert.False(File.Exists(snapshotPath));
+        }
+        finally
+        {
+            if (File.Exists(snapshotPath))
+            {
+                File.Delete(snapshotPath);
+            }
+        }
+    }
+
+    [Fact]
     public async Task Repository_RoundTripsCoreEntities()
     {
         await using var store = await TestStore.CreateAsync();
