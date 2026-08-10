@@ -19,7 +19,13 @@ Complete this review against the exact commit proposed for a public release.
 - [ ] Stock math uses only explicit user-entered stock quantities/change values.
 - [ ] Reminder schedule frequency/time/date/cycle values come only from explicit user-entered schedule values.
 - [ ] As-needed schedules do not create automatic occurrences.
+- [ ] Archived profiles and inactive medicine states do not automatically materialize reminders.
+- [ ] Planner ownership checks reject profile/medicine/schedule/persisted schedule-time mismatches before materialization.
+- [ ] Unknown schedule kinds and unsupported weekday-mask bits are rejected rather than silently interpreted.
+- [ ] Planner windows and coordinator rebuild overrides require UTC timestamps.
+- [ ] Snooze requires an explicit future UTC timestamp before persistence or platform scheduling.
 - [ ] Invalid daylight-saving local times are not silently replaced with inferred alternative reminder times.
+- [ ] Ambiguous daylight-saving times remain deterministic across repeated rebuilds.
 - [ ] Reminder delivery limitations remain visible and are not represented as guaranteed.
 
 ## Secrets, app lock and cryptography
@@ -74,7 +80,22 @@ Complete this review against the exact commit proposed for a public release.
 
 ## Current RC1 automated reference
 
-For comparison during the next final-release review, source head `69c4dd9319f7dc47edea1786e683f7d90c656e1e` passed PR #28 with CareNest CI #220 / `31378000135`, CodeQL #220 / `31378000143`, Dependency Audit #8 / `31378000134`, formatting, 37 unit tests, 13 integration tests, 51 UI-contract tests, and Android/Windows/iOS-simulator/Mac-Catalyst Release builds. This reference does not pre-approve a later production commit.
+For comparison during the next final-release review, source head `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` passed marker-only PR #30 with:
+
+- CareNest CI #248 / `31382194805` — success;
+- platform-neutral formatting — success;
+- 74 unit tests — passed;
+- 13 integration tests — passed;
+- 54 UI-contract/policy tests — passed;
+- 141 total core tests — passed;
+- Android Release — success;
+- Windows Release — success;
+- iOS simulator Release — success;
+- Mac Catalyst Release — success;
+- CodeQL #248 / `31382194687` — success;
+- Dependency Audit #10 / `31382194683` — success.
+
+PR #29 / CI #246 is retained as a superseded failure record because it exposed CA2263 in a new non-generic `Enum.IsDefined` call. The source was fixed on `main` and reverified through PR #30 rather than weakening the analyzer policy. This reference does not pre-approve a later production commit and does not resolve the open SQLite dependency risk or manual/distribution gates.
 
 ## Approval record
 
