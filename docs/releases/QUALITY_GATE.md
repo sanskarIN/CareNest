@@ -23,6 +23,7 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - Planner window start/end and reminder rebuild overrides require actual UTC `DateTime` values.
 - Duplicate explicit clock times do not create duplicate occurrence identities.
 - Reminder ownership is verified across profile → medicine → schedule → persisted schedule-time relationships before materialization.
+- Unknown schedule kinds, unsupported weekday-mask bits, invalid explicit intervals and invalid time-zone identifiers are rejected rather than silently reinterpreted.
 - Invalid daylight-saving spring-forward local times do not cause CareNest to invent an alternate reminder time.
 - Ambiguous daylight-saving fall-back local times remain deterministic across rebuilds.
 - Representative DST gap/overlap coverage spans North America, Europe and Australia when those identifiers exist on the test host.
@@ -38,6 +39,7 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - No analytics/telemetry client is introduced.
 - No common signing/credential files are committed.
 - Error/reminder logging does not pass full exception objects or health-record identifiers to the structured logger.
+- Planner ownership mismatches fail closed instead of silently creating occurrences under another local entity.
 - Document and backup encryption tests pass.
 - WAL snapshot tests verify copied committed data and SQLite integrity rather than only file existence.
 - A pre-cancelled snapshot operation leaves no output file.
@@ -59,9 +61,24 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - Mac Catalyst Release build passes.
 - Release evidence artifacts are generated for the exact final release commit.
 
-The previously verified RC1 hardening baseline was `69c4dd9319f7dc47edea1786e683f7d90c656e1e`, verified by PR #28 with CI #220 / `31378000135`, CodeQL #220 / `31378000143`, Dependency Audit #8 / `31378000134`, formatting, 37 unit tests, 13 integration tests, 51 UI-contract tests, and all four platform Release builds green.
+The latest RC1 hardening source baseline is `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`, verified by marker-only PR #30 with:
 
-New reminder ownership/UTC/snooze/DST/property hardening after that baseline requires a fresh exact-head verification before it replaces the baseline in release evidence. Automated green status remains necessary but not sufficient for final public release.
+- CareNest CI #248 / `31382194805`: success;
+- platform-neutral formatting: success;
+- 74 unit tests: passed;
+- 13 integration tests: passed;
+- 54 UI-contract/policy tests: passed;
+- 141 total core tests: passed;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL #248 / `31382194687`: success;
+- Dependency Audit #10 / `31382194683`: success.
+
+PR #29 / CI #246 intentionally remains recorded as a superseded failure: it exposed CA2263 in the non-generic `Enum.IsDefined` overload added during schedule validation hardening. The source was fixed on `main` instead of suppressing the analyzer, and PR #30 verified the corrected exact head.
+
+This baseline is automated evidence only. The final public release still needs a fresh exact promoted-commit Release Evidence run after all release blockers are cleared.
 
 ## Manual evidence
 
@@ -72,6 +89,7 @@ New reminder ownership/UTC/snooze/DST/property hardening after that baseline req
 - Notification permission and delivery limitations tested.
 - Android exact-alarm/battery/reboot behavior tested on representative devices.
 - Time-zone change behavior tested.
+- Snooze behavior tested against real platform notification scheduling.
 - Document import/export/delete tested.
 - Calendar export tested.
 - Encrypted backup/restore tested on clean installation/release build.
