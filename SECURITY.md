@@ -19,12 +19,16 @@ Include affected version, platform, reproduction conditions, impact, and suggest
 - Imported health documents are encrypted locally with AES-256-GCM.
 - Backup files are encrypted with password-derived AES-256-GCM keys.
 - PINs are not stored directly; the app stores a salted password-derived verifier in secure platform storage.
-- Structured logs redact sensitive content.
+- Structured logs redact sensitive content; full exception objects/messages/stack traces and health-record identifiers are not required for normal CareNest diagnostics.
 - SQLite records rely on platform application sandbox protections; CareNest does **not** claim transparent database encryption at rest.
 - No production secrets belong in source control.
 - Repository, policy, creator and voluntary project-support destinations are fixed external links opened only after explicit user action.
 - The Buy Me a Coffee project-support link does not embed CareNest health data, profile identifiers, document metadata, reminder history, backup data, payment credentials, or CareNest secrets in the URL.
 - The external funding provider remains outside the CareNest trust boundary and is governed by its own security/privacy controls after the user leaves CareNest.
+
+## Logging privacy
+
+The detailed logging boundary is documented in `docs/security/LOGGING_PRIVACY.md`. Runtime and diagnostic changes must preserve that contract.
 
 ## Dependency security
 
