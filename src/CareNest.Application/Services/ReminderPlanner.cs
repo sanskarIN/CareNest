@@ -23,6 +23,7 @@ public sealed class ReminderPlanner
         ArgumentNullException.ThrowIfNull(times);
         ArgumentNullException.ThrowIfNull(profile);
 
+        ValidateUtcWindow(fromUtc, toUtc);
         ValidateOwnership(medicine, schedule, times, profile);
         MedicineRules.ValidateSchedule(schedule, times);
 
@@ -35,8 +36,8 @@ public sealed class ReminderPlanner
         }
 
         var zone = TimeZoneInfo.FindSystemTimeZoneById(schedule.TimeZoneId);
-        var fromLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(fromUtc, DateTimeKind.Utc), zone);
-        var toLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(toUtc, DateTimeKind.Utc), zone);
+        var fromLocal = TimeZoneInfo.ConvertTimeFromUtc(fromUtc, zone);
+        var toLocal = TimeZoneInfo.ConvertTimeFromUtc(toUtc, zone);
 
         var startDate = MaxDate(schedule.StartDate.Date, medicine.StartDate.Date, fromLocal.Date.AddDays(-1));
         var endDate = MinDate(
@@ -81,6 +82,19 @@ public sealed class ReminderPlanner
             .Select(x => x.First())
             .OrderBy(x => x.ScheduledUtc)
             .ToArray();
+    }
+
+    private static void ValidateUtcWindow(DateTime fromUtc, DateTime toUtc)
+    {
+        if (fromUtc.Kind != DateTimeKind.Utc)
+        {
+            throw new ArgumentException("Reminder planning window start must be UTC.", nameof(fromUtc));
+        }
+
+        if (toUtc.Kind != DateTimeKind.Utc)
+        {
+            throw new ArgumentException("Reminder planning window end must be UTC.", nameof(toUtc));
+        }
     }
 
     private static void ValidateOwnership(
