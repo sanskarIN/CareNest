@@ -31,6 +31,13 @@
 - Release preflight scripts are available for Bash and PowerShell.
 - Manual cross-platform/device test matrix and store-submission checklist are documented.
 - SQLite dependency migration/verification plan is documented for the open advisory path.
+- Platform-neutral formatting verification is now part of the core CI job.
+- Repository policy tests enforce no TODO/FIXME/NotImplemented placeholders in runtime source, no runtime network/telemetry client introduction, no clinical decision feature-name regressions, no common signing/secret files, and presence of required governance/release files.
+- Architecture contract tests enforce Shared/Domain/Application/Infrastructure dependency direction and keep MAUI isolated to the app composition project.
+- ViewModel contract tests enforce no direct SQLite/network-client access from concrete ViewModels and preserve the notification-permission and as-needed reminder boundaries.
+- Data-model contract tests cover all entities required by the CareNest master prompt and preserve medicine strength/instruction values as opaque text.
+- Branding/localization contract tests validate the adaptive icon, splash, BMC artwork, English safety resource keys, and highlighted support destination.
+- Added original monochrome, light-surface, and dark-surface CareNest mark variants for system/brand surfaces.
 
 ## Security dependency status
 
@@ -44,40 +51,49 @@ An attempted `2.1.12` bundle pin was rejected because that version is not availa
 - `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` defines the upgrade/provider-migration regression gate;
 - final production release review must upgrade/replace the dependency path or explicitly block release until the risk is acceptably resolved.
 
-## Automated verification completed
+## Last fully verified runtime baseline
 
-Funding-enabled verification PR #16 exercised source head `2b8f97525ea8d3b41bf62e20d76e1cc224dab102`. The verification marker branch was not merged into `main`.
+Funding-enabled verification PR #21 records the last fully green baseline before the current additional hardening work.
 
-GitHub Actions CareNest CI run #87 (`31301203981`) completed successfully:
+Verified source head: `52abe54cfc771c411b78332d78217a5876ebc4c8`.
 
-- Unit tests: 15 passed, 0 failed, 0 skipped.
-- Integration tests: 11 passed, 0 failed, 0 skipped.
-- UI-contract tests: 10 passed, 0 failed, 0 skipped.
-- Total tests: 36 passed, 0 failed, 0 skipped.
+Evidence recorded on PR #21:
+
+- CareNest CI run #115 / `31302769113`: success.
+- Unit tests: 15 passed.
+- Integration tests: 11 passed.
+- UI-contract tests: 10 passed.
 - Android Release build: passed.
 - Windows Release build: passed.
 - iOS simulator Release build: passed.
 - Mac Catalyst Release build: passed.
+- CodeQL run #114 / `31302769108`: success.
+- Dependency Audit run #4 / `31302769112`: success.
 
-CodeQL run #86 (`31301203985`) also completed successfully.
+## Current hardening head
 
-PR #16 was closed after verification succeeded because it contained only a verification marker and did not need to be merged.
+Current `main` now contains additional automated release-hardening changes after the last green baseline:
 
-## Current
+- platform-neutral `dotnet format --verify-no-changes` CI checks;
+- repository policy/security boundary tests;
+- architecture-boundary tests;
+- ViewModel contract tests;
+- required data-model contract tests;
+- branding/localization contract tests;
+- monochrome/light/dark CareNest mark variants.
 
-- Product runtime source at funding-enabled verified head `2b8f97525ea8d3b41bf62e20d76e1cc224dab102` has a fully green automated test/build/security-analysis matrix.
-- Later BMC vector/support documentation/release-preparation commits do not alter CareNest medical, reminder, persistence, encryption, or scheduling behavior.
-- Because the new SVG resides in the MAUI image resource tree, the exact final packaging commit should receive a fresh platform build before signed/public release.
-- Final `1.0.0` tagging remains intentionally blocked on the manual release checklist, current store-policy review for the external funding link, signing/store preparation, final exact-commit CI/CodeQL evidence, and an explicit resolution/release decision for the tracked SQLite dependency advisory.
+Because these changes alter CI/test/resource files, the earlier PR #22 verification head is now stale and must not be treated as evidence for the newest `main` head. A fresh exact-head verification PR is required after this continuation is complete.
 
-## Next work prepared
+## Release blockers that remain real
 
-- `docs/releases/NEXT_STEPS.md` contains the ordered release path.
-- `build/scripts/release-preflight.sh` and `build/scripts/release-preflight.ps1` provide repeatable preflight checks on a fully provisioned host.
-- `docs/releases/MANUAL_TEST_MATRIX.md` defines device/manual functional, reminder, privacy and accessibility evidence.
-- `docs/releases/STORE_SUBMISSION_CHECKLIST.md` defines packaging/store/funding-link review gates.
-- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` defines the dependency upgrade/replacement test strategy.
-- `BUY_ME_A_COFFEE.md` and `docs/SUPPORT_CARENEST.md` expose the highlighted clickable BMC support artwork.
+- Complete manual device/emulator matrix on Android, Windows, iOS/iPadOS, and Mac Catalyst.
+- Complete manual screen-reader, large-text, keyboard, contrast, and reduced-motion checks.
+- Verify current Apple App Store and Google Play policy for the external voluntary project-support link before submission.
+- Prepare signing identities/credentials outside Git.
+- Build and inspect signed release packages on appropriately provisioned hosts.
+- Complete store listing screenshots/data-safety/privacy disclosures.
+- Resolve or make an explicit final release decision for the tracked SQLitePCLRaw advisory.
+- Obtain a fresh fully green exact-head CI/CodeQL/dependency-audit verification after current hardening changes.
 
 ## Deferred to later versions
 
@@ -91,6 +107,6 @@ PR #16 was closed after verification succeeded because it contained only a verif
 
 The local execution container used for repository assembly does not include the `dotnet` command or MAUI workloads. Local restore, formatting, compilation, emulator/device smoke tests, signing, and store packaging therefore cannot be truthfully claimed as executed inside that container. GitHub-hosted CI is the authoritative automated build/test verification surface for this delivery.
 
-Manual device checks, `dotnet format --verify-no-changes` on a fully provisioned development host, signing, and store packaging remain separate release activities and are not marked complete unless they are actually performed.
+Manual device checks, signing, and store packaging remain separate release activities and are not marked complete unless they are actually performed.
 
-See `what_changed.md` for the implementation and verification record.
+See `what_changed.md` for the detailed implementation and verification record.
