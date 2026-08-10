@@ -28,6 +28,7 @@ public sealed class ReminderPlanner
         MedicineRules.ValidateSchedule(schedule, times);
 
         if (!schedule.Enabled ||
+            profile.IsArchived ||
             medicine.State != MedicineState.Active ||
             schedule.Kind == ScheduleKind.AsNeeded ||
             toUtc <= fromUtc)
