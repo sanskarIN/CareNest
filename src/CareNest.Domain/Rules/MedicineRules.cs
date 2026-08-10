@@ -6,6 +6,8 @@ namespace CareNest.Domain.Rules;
 
 public static class MedicineRules
 {
+    private const int ValidWeekdayMask = 0b1111111;
+
     public static void Validate(Medicine medicine)
     {
         Guard.NotBlank(medicine.ProfileId, nameof(medicine.ProfileId), 64);
@@ -39,6 +41,11 @@ public static class MedicineRules
     {
         Guard.NotBlank(schedule.MedicineId, nameof(schedule.MedicineId), 64);
 
+        if (!Enum.IsDefined(typeof(ScheduleKind), schedule.Kind))
+        {
+            throw new ArgumentOutOfRangeException(nameof(schedule), "Schedule type is not recognized.");
+        }
+
         if (schedule.EndDate is { } end && end.Date < schedule.StartDate.Date)
         {
             throw new ArgumentException("Schedule end date cannot be before start date.", nameof(schedule));
@@ -61,9 +68,17 @@ public static class MedicineRules
             throw new ArgumentException("At least one user-selected reminder time is required.", nameof(times));
         }
 
-        if (schedule.Kind == ScheduleKind.SelectedWeekdays && schedule.WeekdayMask == 0)
+        if (schedule.Kind == ScheduleKind.SelectedWeekdays)
         {
-            throw new ArgumentException("Select at least one weekday.", nameof(schedule));
+            if (schedule.WeekdayMask == 0)
+            {
+                throw new ArgumentException("Select at least one weekday.", nameof(schedule));
+            }
+
+            if ((schedule.WeekdayMask & ~ValidWeekdayMask) != 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(schedule), "Weekday selection contains unsupported bits.");
+            }
         }
 
         if (schedule.Kind == ScheduleKind.Cycle &&
@@ -83,6 +98,7 @@ public static class MedicineRules
             throw new ArgumentOutOfRangeException(nameof(schedule), "Follow-up must be between 1 minute and 24 hours.");
         }
 
+        schedule.TimeZoneId = Guard.NotBlank(schedule.TimeZoneId, nameof(schedule.TimeZoneId), 128);
         _ = TimeZoneInfo.FindSystemTimeZoneById(schedule.TimeZoneId);
     }
 }
