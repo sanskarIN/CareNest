@@ -8,14 +8,29 @@ CareNest schedules reminders only from explicit user-entered schedule data. It d
 
 `ScheduleKind.AsNeeded` creates no automatic reminder occurrences.
 
+## Entity ownership boundary
+
+Reminder planning verifies the local ownership graph before materializing any occurrence:
+
+- the supplied schedule must belong to the supplied medicine record;
+- the supplied medicine record must belong to the supplied local profile;
+- a persisted `ScheduleTime` carrying a `MedicineScheduleId` must belong to the supplied schedule;
+- unbound editor `ScheduleTime` values are allowed before persistence and are interpreted only with the explicitly supplied schedule.
+
+An ownership mismatch throws instead of silently creating a reminder under another medicine or local profile.
+
+Archived profiles produce no automatic occurrences even if a caller reaches the planner without the coordinator's normal archive filter.
+
 ## Planning window
 
 Reminder materialization uses a half-open UTC window:
 
+- both `fromUtc` and `toUtc` must have `DateTimeKind.Utc`;
+- local or unspecified planning-window values are rejected instead of being silently reinterpreted as UTC;
 - an occurrence exactly at `fromUtc` is included;
 - an occurrence exactly at `toUtc` is excluded.
 
-This allows adjacent rebuild windows to meet at one boundary without duplicating the boundary occurrence.
+This allows adjacent rebuild windows to meet at one boundary without duplicating the boundary occurrence and prevents accidental local-clock reinterpretation.
 
 ## Stable occurrence identity
 
@@ -40,7 +55,7 @@ No occurrence is created after the applicable user-entered end date.
 
 ## Selected weekdays
 
-Only weekdays represented in the explicit weekday mask are eligible. A selected-weekday schedule with no selected day is rejected during validation.
+Only weekdays represented in the seven supported weekday-mask bits are eligible. A selected-weekday schedule with no selected day is rejected during validation. Unsupported bits are rejected rather than silently ignored.
 
 ## Cycle schedules
 
@@ -55,15 +70,20 @@ Every-N-hours schedules require:
 
 Occurrences advance by the explicit elapsed-time interval. They are not converted into a guessed number of doses per day.
 
-## Follow-ups
+## Follow-ups and snooze handling
 
 A follow-up is a separate occurrence at the explicit `FollowUpMinutes` offset. It has its own stable occurrence key and does not change the original occurrence time.
 
-## Medicine and schedule state
+A snooze action is accepted only when the caller supplies an explicit future UTC timestamp. Null, past, local-kind, and unspecified-kind snooze timestamps are rejected before persistence or platform notification scheduling.
+
+Reminder-coordinator rebuild overrides likewise require a UTC `fromUtc` value.
+
+## Medicine, profile, and schedule state
 
 Automatic occurrences are not created when:
 
 - the schedule is disabled;
+- the local profile is archived;
 - the medicine is paused;
 - the medicine is completed;
 - the medicine is archived;
@@ -77,26 +97,46 @@ For a local time that does not exist because the clock moves forward, CareNest d
 
 For a local time that occurs twice because the clock moves backward, CareNest chooses one deterministic occurrence using the greater of the two UTC offsets. Rebuilding the same window therefore produces the same UTC occurrence and occurrence key.
 
+Automated DST matrix coverage exercises representative zones in North America, Europe, and Australia when those zone identifiers are available on the test host.
+
 Time-zone behavior must remain deterministic and must never be presented as guaranteed delivery. Operating-system permissions, battery restrictions, force-stop/shutdown behavior, and platform notification policies can still affect actual notification delivery.
+
+## Deterministic property coverage
+
+The unit suite includes deterministic randomized/property-style recurrence checks. A fixed random seed is used so failures are reproducible. The property checks verify that:
+
+- daily occurrences stay inside arbitrary half-open UTC windows;
+- occurrence keys remain unique within a build result;
+- results remain chronological;
+- cycle patterns match explicit on/off-day arithmetic across a matrix of values;
+- every valid selected-weekday mask emits only selected days;
+- representative every-N-hours intervals preserve the exact elapsed UTC spacing entered by the user.
+
+These checks do not generate or infer any clinical schedule.
 
 ## Automated coverage
 
-The unit suite protects:
+The unit and contract suites protect:
 
 - daily multi-time schedules;
 - as-needed no-automatic-reminder behavior;
-- selected weekdays;
+- selected weekdays and weekday-mask validation;
 - cycle on/off patterns;
 - custom date-range boundaries;
 - medicine end-date boundaries;
-- paused/completed/archived suppression;
+- archived-profile suppression;
+- paused/completed/archived medicine suppression;
 - every-N-hours intervals;
 - follow-up separation;
+- explicit future-UTC snooze validation;
 - disabled schedules;
 - stable occurrence keys;
-- ambiguous DST local times;
-- invalid spring-forward local times;
+- entity ownership boundaries;
+- UTC planning-window validation;
+- ambiguous DST local times across representative zones;
+- invalid spring-forward local times across representative zones;
 - half-open planning windows;
 - duplicate-time deduplication;
 - chronological result ordering;
+- deterministic randomized recurrence properties;
 - schedule-validation boundaries.
