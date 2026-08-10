@@ -51,6 +51,11 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
 
         if (salt is null || expected is null)
         {
+            if (expected is not null)
+            {
+                CryptographicOperations.ZeroMemory(expected);
+            }
+
             return false;
         }
 
@@ -68,6 +73,7 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
         finally
         {
             CryptographicOperations.ZeroMemory(actual);
+            CryptographicOperations.ZeroMemory(expected);
         }
     }
 
