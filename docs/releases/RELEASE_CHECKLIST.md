@@ -2,18 +2,18 @@
 
 ## Automated verification evidence
 
-Latest exact-head verification PR: `#28`  
-Source head verified: `69c4dd9319f7dc47edea1786e683f7d90c656e1e`  
-Verification marker head: `a1362b551749762ae816e8b4366c8f1eb97538fa`  
-CareNest CI run: `#220` / `31378000135`  
-CodeQL run: `#220` / `31378000143`  
-Dependency Audit run: `#8` / `31378000134`
+Latest exact-head verification PR: `#30`  
+Source head verified: `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`  
+Verification marker head: `59016b7e2b13d5ac1c93cf0db973f275c6e7eb19`  
+CareNest CI run: `#248` / `31382194805`  
+CodeQL run: `#248` / `31382194687`  
+Dependency Audit run: `#10` / `31382194683`
 
 - [x] Platform-neutral `dotnet format --verify-no-changes` gate.
-- [x] Unit tests — 37 passed, 0 failed, 0 skipped.
+- [x] Unit tests — 74 passed, 0 failed, 0 skipped.
 - [x] Integration tests — 13 passed, 0 failed, 0 skipped.
-- [x] UI-contract/policy tests — 51 passed, 0 failed, 0 skipped.
-- [x] Total automated test cases in the core job — 101 passed, 0 failed, 0 skipped.
+- [x] UI-contract/policy tests — 54 passed, 0 failed, 0 skipped.
+- [x] Total automated test cases in the core job — 141 passed, 0 failed, 0 skipped.
 - [x] Android Release build.
 - [x] Windows Release build.
 - [x] iOS simulator Release build.
@@ -21,11 +21,11 @@ Dependency Audit run: `#8` / `31378000134`
 - [x] CodeQL analysis.
 - [x] Dependency Audit.
 
-PR #28 was a verification-only branch containing only `build/verification/rc1-reminder-applock-hardening-20260810.txt` beyond source head `69c4dd...`. It was closed without merging after the full matrix completed successfully, so the marker is not production source.
+PR #30 was a verification-only branch containing only `build/verification/rc1-ownership-utc-dst-hardening-20260810-2.txt` beyond source head `c61f3c31...`. It was closed without merging after the full matrix completed successfully, so the marker is not production source.
 
-The verified source includes the previous repository/privacy/architecture hardening plus the new medicine schedule validation coverage, recurrence/date/state/DST boundary coverage, reminder window/dedup/order coverage, WAL snapshot content/cancellation coverage, app-lock verifier-buffer clearing, app-lock security contracts, and aligned security/testing documentation.
+The verified source includes all previous repository/privacy/architecture/reminder/snapshot/app-lock hardening plus planner entity-ownership validation, archived-profile suppression, UTC planning/rebuild/snooze contracts, schedule enum/weekday/time-zone validation hardening, deterministic property-style recurrence coverage, and representative multi-zone DST gap/overlap coverage.
 
-The checkmarks above record GitHub-hosted automated evidence for source head `69c4dd...`. Later status/changelog/handoff documentation commits do not change runtime/test/product source and are not represented as a new platform-verification head.
+The checkmarks above record GitHub-hosted automated evidence for exact source head `c61f3c31...`. Later documentation-only status/changelog/handoff commits do not change runtime/test/product source and are not represented as a new platform-verification head.
 
 Automated green status does not substitute for manual device, signing, accessibility, notification-delivery, current store-policy, or dependency-risk checks.
 
@@ -38,6 +38,8 @@ The current green result follows marker-only exact-head verification cycles that
 - PR #26 / CI #198: Dependency Audit #6 and CodeQL #198 passed; formatting, unit and integration tests passed; UI compilation found one remaining nullable project-reference filename contract error.
 - PR #27 / CI #200: all automated gates passed for the privacy/policy hardening baseline.
 - PR #28 / CI #220: all automated gates passed after reminder schedule/DST/window hardening, WAL snapshot integrity/cancellation coverage, and app-lock verifier clearing/security contracts were added.
+- PR #29 / CI #246: marker-only verification exposed CA2263 in the newly added non-generic `Enum.IsDefined(Type, object)` schedule-kind validation. The source was corrected on `main`; the PR was closed without merge and is not release evidence.
+- PR #30 / CI #248: all automated gates passed on the corrected exact source head, including 141 core tests and all four platform Release builds.
 
 ## Release-preparation additions now present
 
@@ -57,7 +59,7 @@ The current green result follows marker-only exact-head verification cycles that
 - security release-review checklist;
 - release-notes template;
 - exact-head verification-branch protocol;
-- automated repository/architecture/ViewModel/data-model/branding/async/logging/app-lock policy contracts;
+- automated repository/architecture/ViewModel/data-model/branding/async/logging/app-lock/reminder-integrity policy contracts;
 - original light, dark, and monochrome CareNest mark variants.
 
 ## Release preparation and manual verification
@@ -79,17 +81,24 @@ The current green result follows marker-only exact-head verification cycles that
 
 - [x] Every-N-hours requires explicit valid interval and exactly one explicit starting time.
 - [x] Selected-weekday schedules require at least one explicit selected day.
+- [x] Selected-weekday masks reject unsupported bits outside the seven weekday positions.
+- [x] Unknown schedule enum values are rejected.
+- [x] Blank/unknown time-zone identifiers are rejected and valid identifiers are trimmed before lookup.
 - [x] Cycle schedules require explicit positive on/off day values.
 - [x] Schedule end-before-start and out-of-range clock times are rejected.
-- [x] Unknown time-zone identifiers are rejected by schedule validation.
 - [x] As-needed schedules create no automatic occurrences.
-- [x] Paused/completed/archived medicines and disabled schedules create no automatic occurrences.
+- [x] Archived profiles, paused/completed/archived medicines and disabled schedules create no automatic occurrences.
+- [x] Planner validates profile → medicine → schedule → persisted schedule-time ownership before materialization.
 - [x] Custom/schedule/medicine date boundaries are enforced.
-- [x] Half-open planning windows include `fromUtc` and exclude `toUtc`.
+- [x] Planning window inputs must be UTC and half-open windows include `fromUtc` while excluding `toUtc`.
+- [x] Reminder rebuild overrides require UTC.
+- [x] Snooze actions require an explicit future UTC timestamp before persistence/platform scheduling.
 - [x] Duplicate explicit times are deduplicated by stable occurrence identity.
 - [x] Out-of-order explicit times return chronologically ordered occurrences.
 - [x] DST-invalid spring-forward local times do not cause an invented alternate reminder time.
 - [x] DST-overlap local times produce a deterministic occurrence.
+- [x] DST gap/overlap matrix covers representative North America, Europe and Australia zones when available on the test host.
+- [x] Deterministic fixed-seed property tests validate random planning windows, cycle matrices, all supported weekday masks, uniqueness/order, and representative every-N-hours spacing.
 - [x] WAL snapshots contain committed profile data and pass SQLite integrity check.
 - [x] Pre-cancelled WAL snapshot requests throw cancellation and leave no output file.
 - [x] App-lock verifier uses salted PBKDF2-HMAC-SHA256 and fixed-time comparison.
@@ -108,6 +117,7 @@ The current green result follows marker-only exact-head verification cycles that
 - [ ] Verify reboot/time/time-zone rebuild behavior on applicable platforms.
 - [ ] Verify stored schedule intent is not silently rewritten after a time-zone change.
 - [ ] Mark taken/skipped/delayed/missed and edit medication log.
+- [ ] Verify snooze rejects invalid/past clock values and behaves correctly with real platform notification scheduling.
 - [ ] Verify quiet hours and follow-up reminder behavior.
 - [ ] Import/export/delete encrypted documents.
 - [ ] Create appointment and calendar export.
@@ -136,6 +146,7 @@ The current green result follows marker-only exact-head verification cycles that
 - [x] Automated policy checks reject runtime network/telemetry client introduction for the local-first v1 scope.
 - [x] Automated policy checks reject named diagnosis/dosage/treatment/interaction/risk-scoring feature regressions.
 - [x] App-lock security contract protects salted PBKDF2-HMAC-SHA256, fixed-time verification, verifier-buffer clearing, no plaintext PIN persistence, and lock-material removal.
+- [x] Planner ownership checks fail closed rather than materializing reminder occurrences under mismatched local entities.
 - [ ] Confirm on target devices that no document content, backup passwords, plaintext PINs, sensitive notes or private file paths appear in device/platform logs.
 - [ ] Confirm export/share operations occur only after explicit user action.
 - [ ] Confirm no CareNest account/backend/network requirement appears in normal local-first flows.
