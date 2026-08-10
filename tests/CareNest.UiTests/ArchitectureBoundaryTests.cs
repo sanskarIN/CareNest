@@ -75,7 +75,8 @@ public sealed class ArchitectureBoundaryTests
             .Descendants("ProjectReference")
             .Select(node => (string?)node.Attribute("Include"))
             .Where(value => !string.IsNullOrWhiteSpace(value))
-            .Select(value => Path.GetFileNameWithoutExtension(value!))
+            .Select(value => value!.Replace('\\', '/'))
+            .Select(Path.GetFileNameWithoutExtension)
             .ToArray();
     }
 }
