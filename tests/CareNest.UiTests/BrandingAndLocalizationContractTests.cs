@@ -4,6 +4,17 @@ namespace CareNest.UiTests;
 
 public sealed class BrandingAndLocalizationContractTests
 {
+    private static readonly string[] RequiredResourceKeys =
+    [
+        "ProductName",
+        "OnboardingWelcome",
+        "LocalFirstDescription",
+        "BackupResponsibility",
+        "MedicalDisclaimer",
+        "ReminderLimitations",
+        "MadeBy"
+    ];
+
     [Fact]
     public void MauiProject_DeclaresAdaptiveIconSplashAndImageResources()
     {
@@ -26,6 +37,7 @@ public sealed class BrandingAndLocalizationContractTests
             Path.Combine("src", "CareNest.App", "Resources", "Images", "carenest_monochrome.svg"),
             Path.Combine("src", "CareNest.App", "Resources", "Images", "carenest_mark_light.svg"),
             Path.Combine("src", "CareNest.App", "Resources", "Images", "carenest_mark_dark.svg"),
+            Path.Combine("src", "CareNest.App", "Resources", "Images", "carenest_support.svg"),
             Path.Combine("src", "CareNest.App", "Resources", "Images", "buy_me_a_coffee_carenest.svg")
         };
 
@@ -55,16 +67,7 @@ public sealed class BrandingAndLocalizationContractTests
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .ToHashSet(StringComparer.Ordinal);
 
-        foreach (var required in new[]
-                 {
-                     "ProductName",
-                     "OnboardingWelcome",
-                     "LocalFirstDescription",
-                     "BackupResponsibility",
-                     "MedicalDisclaimer",
-                     "ReminderLimitations",
-                     "MadeBy"
-                 })
+        foreach (var required in RequiredResourceKeys)
         {
             Assert.Contains(required, names);
         }
@@ -85,5 +88,16 @@ public sealed class BrandingAndLocalizationContractTests
             Assert.Contains(expected, page, StringComparison.Ordinal);
             Assert.Contains("buy_me_a_coffee_carenest.svg", page, StringComparison.Ordinal);
         }
+    }
+
+    [Fact]
+    public void AboutPage_UsesClickableRestoredSupportBadge()
+    {
+        var about = RepositoryLocator.Read("src", "CareNest.App", "Views", "AboutPage.xaml");
+
+        Assert.Contains("<ImageButton Source=\"carenest_support.svg\"", about, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding SupportProjectCommand}\"", about, StringComparison.Ordinal);
+        Assert.Contains("Support CareNest on Buy Me a Coffee", about, StringComparison.Ordinal);
+        Assert.Contains("https://buymeacoffee.com/sanskarIN", about, StringComparison.Ordinal);
     }
 }
