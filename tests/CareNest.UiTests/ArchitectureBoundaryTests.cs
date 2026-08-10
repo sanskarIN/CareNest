@@ -4,6 +4,17 @@ namespace CareNest.UiTests;
 
 public sealed class ArchitectureBoundaryTests
 {
+    private static readonly string[] DomainDependencies = ["CareNest.Shared"];
+    private static readonly string[] ApplicationDependencies = ["CareNest.Domain", "CareNest.Shared"];
+    private static readonly string[] InfrastructureDependencies = ["CareNest.Application", "CareNest.Domain", "CareNest.Shared"];
+    private static readonly string[] PlatformNeutralProjects =
+    [
+        "CareNest.Shared",
+        "CareNest.Domain",
+        "CareNest.Application",
+        "CareNest.Infrastructure"
+    ];
+
     [Fact]
     public void Shared_HasNoProjectDependencies()
     {
@@ -15,37 +26,27 @@ public sealed class ArchitectureBoundaryTests
     public void Domain_DependsOnlyOnShared()
     {
         var refs = ProjectReferences("CareNest.Domain");
-        Assert.Equal(new[] { "CareNest.Shared" }, refs.Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(DomainDependencies, refs.Order(StringComparer.Ordinal).ToArray());
     }
 
     [Fact]
     public void Application_DependsOnlyOnDomainAndShared()
     {
         var refs = ProjectReferences("CareNest.Application");
-        Assert.Equal(
-            new[] { "CareNest.Domain", "CareNest.Shared" },
-            refs.Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(ApplicationDependencies, refs.Order(StringComparer.Ordinal).ToArray());
     }
 
     [Fact]
     public void Infrastructure_DependsOnlyOnApplicationDomainAndShared()
     {
         var refs = ProjectReferences("CareNest.Infrastructure");
-        Assert.Equal(
-            new[] { "CareNest.Application", "CareNest.Domain", "CareNest.Shared" },
-            refs.Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(InfrastructureDependencies, refs.Order(StringComparer.Ordinal).ToArray());
     }
 
     [Fact]
     public void PlatformNeutralProjects_DoNotReferenceMaui()
     {
-        foreach (var project in new[]
-                 {
-                     "CareNest.Shared",
-                     "CareNest.Domain",
-                     "CareNest.Application",
-                     "CareNest.Infrastructure"
-                 })
+        foreach (var project in PlatformNeutralProjects)
         {
             var source = RepositoryLocator.Read("src", project, $"{project}.csproj");
             Assert.DoesNotContain("Microsoft.Maui", source, StringComparison.Ordinal);
