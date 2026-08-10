@@ -1,35 +1,92 @@
 name: Bug report
-description: Report reproducible CareNest behavior
+description: Report reproducible CareNest behavior without sharing private health data
 title: "[Bug] "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
-      value: "Do not attach real health documents, medicine records, backup files, passwords, or other private data."
+      value: |
+        Thank you for helping improve CareNest.
+
+        **Privacy reminder:** do not attach real health documents, medicine records, appointment details, backup files, PINs/passwords, contact details, or other private health/personal data. Reproduce with fictional data whenever possible.
   - type: input
     id: version
     attributes:
       label: CareNest version
+      description: Example: 1.0.0-rc.1
+      placeholder: 1.0.0-rc.1
     validations:
       required: true
   - type: dropdown
     id: platform
     attributes:
       label: Platform
-      options: [Android, iOS, Mac Catalyst, Windows]
+      options:
+        - Android
+        - iOS / iPadOS
+        - Mac Catalyst / macOS
+        - Windows
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: Operating-system version
+      description: Provide only the OS version; do not include a device serial number or account identifier.
+      placeholder: Android 16 / iOS 26 / macOS 26 / Windows 11
+    validations:
+      required: true
+  - type: input
+    id: timezone
+    attributes:
+      label: Time zone
+      description: Useful for reminder bugs. A region-style value is preferred when known.
+      placeholder: Asia/Kolkata
+  - type: dropdown
+    id: notification-permission
+    attributes:
+      label: Notification permission state
+      options:
+        - Granted
+        - Denied
+        - Not requested yet
+        - Not sure / not applicable
+  - type: dropdown
+    id: reproducibility
+    attributes:
+      label: How often does it happen?
+      options:
+        - Every time
+        - Often
+        - Sometimes
+        - Happened once
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
       label: Reproduction steps using fictional data
+      description: Provide the smallest sequence that reproduces the problem without including sensitive health information.
+      placeholder: |
+        1. Create a fictional local profile.
+        2. Add a fictional reminder at 09:00.
+        3. ...
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
       label: Expected behavior
+    validations:
+      required: true
   - type: textarea
     id: actual
     attributes:
       label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Optional sanitized diagnostics
+      description: Paste only diagnostics you have reviewed for private data. Never attach health documents, backup files, passwords, PINs, or real medical details.
