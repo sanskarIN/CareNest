@@ -1,0 +1,59 @@
+name: Dependency Audit
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Show dependency-file changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --unified=0 "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- \
+            Directory.Packages.props \
+            Directory.Build.props \
+            'src/**/*.csproj' \
+            'tests/**/*.csproj' || true
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Audit platform-neutral dependency graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore tests/CareNest.UnitTests/CareNest.UnitTests.csproj --nologo -p:NuGetAudit=true -p:NuGetAuditMode=all
+          dotnet restore tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj --nologo -p:NuGetAudit=true -p:NuGetAuditMode=all
+          dotnet restore tests/CareNest.UiTests/CareNest.UiTests.csproj --nologo -p:NuGetAudit=true -p:NuGetAuditMode=all
+
+      - name: Install Android MAUI workload for app dependency audit
+        run: dotnet workload install maui-android
+
+      - name: Audit MAUI app dependency graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore src/CareNest.App/CareNest.App.csproj --nologo \
+            -p:CareNestTargetFramework=net10.0-android \
+            -p:NuGetAudit=true \
+            -p:NuGetAuditMode=all
+
+      - name: Explain dependency graph integration
+        shell: bash
+        run: |
+          echo 'GitHub Dependency Review action is not used because the repository Dependency Graph is not currently enabled.'
+          echo 'This workflow provides an immediately usable NuGet audit fallback. If Dependency Graph is enabled later, the GitHub Dependency Review action can be added as an additional gate.'
