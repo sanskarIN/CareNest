@@ -18,6 +18,13 @@ All notable changes follow Keep a Changelog principles and semantic versioning.
 - `CareNest Release Evidence` workflow that records exact source/ref/toolchain identity, TRX results, transitive dependency inventories, SHA-256 evidence checksums, and an immutable Actions artifact for a manual/tag-triggered release candidate.
 - `docs/releases/RELEASE_EVIDENCE.md`, `QUALITY_GATE.md`, `SECURITY_RELEASE_REVIEW.md`, `RELEASE_NOTES_TEMPLATE.md`, and `VERIFICATION_BRANCH_PROTOCOL.md`.
 - Automated async-safety contract coverage preventing common synchronous task-blocking patterns in runtime source.
+- Expanded medicine-schedule validation tests for explicit intervals/start times, selected weekdays, cycle on/off values, date ordering, clock ranges, and unknown time-zone identifiers.
+- Expanded reminder-planner tests for cycle schedules, custom/schedule/medicine end boundaries, paused/completed/archived suppression, and daylight-saving gaps.
+- Reminder planning boundary tests for half-open UTC windows, duplicate-time deduplication, stable occurrence identity, and chronological ordering.
+- `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` documenting deterministic, non-clinical schedule materialization rules.
+- WAL snapshot integration coverage that opens the copied database read-only, verifies committed profile content, and executes `PRAGMA integrity_check`.
+- Snapshot cancellation regression coverage ensuring a pre-cancelled request creates no output file.
+- App-lock security contract coverage for salted PBKDF2-HMAC-SHA256 verification, fixed-time comparison, verifier-buffer clearing, plaintext-PIN non-persistence, stored lock-material removal, and numeric PIN policy.
 
 ### Changed
 
@@ -26,6 +33,9 @@ All notable changes follow Keep a Changelog principles and semantic versioning.
 - Expanded required-repository policy checks to include CI, CodeQL, Dependency Audit, Release Gate, Release Evidence, logging privacy, dependency risk, and security/quality review files.
 - Repository/logging source-policy scans now ignore generated `bin`/`obj` content so checks apply to committed source instead of generated SDK files.
 - Architecture project-reference parsing is separator-normalized for Linux/Windows compatibility and explicitly non-null under nullable analysis.
+- App-lock verification now clears both the newly derived verifier and the verifier retrieved from secure storage after a PIN comparison; malformed/missing-salt paths also clear a retrieved verifier before returning.
+- Threat-model/security documentation now explicitly treats app lock as a local privacy barrier rather than whole-database/device encryption and records weak-PIN/device-compromise residual risk.
+- Test-plan documentation now records exact schedule, snapshot, and app-lock invariants protected by automation.
 
 ### Fixed
 
@@ -35,32 +45,37 @@ All notable changes follow Keep a Changelog principles and semantic versioning.
 - Corrected CA1861 constant-array allocation guidance in architecture tests.
 - Corrected cross-platform project-reference path parsing and a nullable filename return caught by exact-head CI.
 - Corrected policy-test false positives caused by generated `obj` global-using files.
+- Added regression evidence that invalid spring-forward local schedule times do not cause CareNest to invent a replacement reminder time.
+- Added explicit regression evidence that duplicate user-entered clock times do not create duplicate reminder occurrences.
 
 ### Verification
 
-Exact production source head verified: `8417513db36c72b0ec2cfaccadb6ac47ba361f11`.
+Latest exact production source head verified: `69c4dd9319f7dc47edea1786e683f7d90c656e1e`.
 
-Final verification PR #27 used marker head `aefd53869b7eaf54815de446fc83373c7977d04d` and was closed without merge after success.
+Verification PR #28 used marker head `a1362b551749762ae816e8b4366c8f1eb97538fa`, changed only `build/verification/rc1-reminder-applock-hardening-20260810.txt`, and was closed without merge after success.
 
-- CareNest CI #200 / `31375336226`: success.
+- CareNest CI #220 / `31378000135`: success.
 - Platform-neutral formatting: success.
-- Unit tests: 15 passed, 0 failed, 0 skipped.
-- Integration tests: 11 passed, 0 failed, 0 skipped.
-- UI-contract/policy tests: 46 passed, 0 failed, 0 skipped.
-- Total core automated tests: 72 passed, 0 failed, 0 skipped.
+- Unit tests: 37 passed, 0 failed, 0 skipped.
+- Integration tests: 13 passed, 0 failed, 0 skipped.
+- UI-contract/policy tests: 51 passed, 0 failed, 0 skipped.
+- Total core automated tests: 101 passed, 0 failed, 0 skipped.
 - Android Release: success.
 - Windows Release: success.
 - iOS simulator Release: success.
 - Mac Catalyst Release: success.
-- CodeQL #200 / `31375336083`: success.
-- Dependency Audit #7 / `31375336088`: success.
+- CodeQL #220 / `31378000143`: success.
+- Dependency Audit #8 / `31378000134`: success.
 
-The final green pass followed superseded verification PRs #24–#26 that exposed and drove fixes for analyzer, privacy-logging, path-normalization, generated-source scanning, and nullable-contract problems instead of weakening those gates.
+The previous green source baseline was PR #27 / source head `8417513db36c72b0ec2cfaccadb6ac47ba361f11` with 72 core tests and all automated platform/security gates green. PR #28 supersedes that baseline after the additional schedule/snapshot/app-lock hardening.
+
+Earlier superseded verification PRs #24–#26 exposed and drove fixes for analyzer, privacy-logging, path-normalization, generated-source scanning, and nullable-contract problems instead of weakening those gates.
 
 ### Security
 
 - `GHSA-2m69-gcr7-jv3q` remains explicitly open for the SQLitePCLRaw `2.1.11` dependency path. This continuation does not claim it fixed.
 - The exact advisory suppression remains narrowly scoped and is still governed by `docs/security/DEPENDENCY_RISK_REGISTER.md` and `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
+- App-lock verifier memory handling is hardened, but app lock remains a local privacy barrier and does not claim protection against a compromised/rooted/jailbroken device or weak-PIN offline guessing.
 - Public production promotion remains blocked on an explicit dependency-risk decision/resolution plus manual device/accessibility/store/signing work.
 
 ## [1.0.0-rc.1] - 2026-08-09
