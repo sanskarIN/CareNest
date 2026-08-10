@@ -18,7 +18,8 @@ Include affected version, platform, reproduction conditions, impact, and suggest
 - No required account or server in v1.
 - Imported health documents are encrypted locally with AES-256-GCM.
 - Backup files are encrypted with password-derived AES-256-GCM keys.
-- PINs are not stored directly; the app stores a salted password-derived verifier in secure platform storage.
+- PINs are not stored directly; the app stores a random salt and a PBKDF2-HMAC-SHA256 verifier in secure platform storage, uses fixed-time verification, and clears verifier buffers after checks where the managed runtime permits.
+- The optional app lock is a local privacy barrier, not full database encryption or a substitute for device authentication. Weak numeric PINs can still have limited entropy, especially on a compromised device.
 - Structured logs redact sensitive content; full exception objects/messages/stack traces and health-record identifiers are not required for normal CareNest diagnostics.
 - SQLite records rely on platform application sandbox protections; CareNest does **not** claim transparent database encryption at rest.
 - No production secrets belong in source control.
