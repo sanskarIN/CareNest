@@ -4,21 +4,22 @@ This document tracks work after the source-complete `1.0.0-rc.1` milestone. It i
 
 ## Automated hardening baseline completed
 
-Exact source head `8417513db36c72b0ec2cfaccadb6ac47ba361f11` passed:
+Exact source head `69c4dd9319f7dc47edea1786e683f7d90c656e1e` passed through marker-only verification PR #28:
 
-- CareNest CI #200 / `31375336226`;
+- CareNest CI #220 / `31378000135`;
 - platform-neutral formatting;
-- 15 unit tests;
-- 11 integration tests;
-- 46 UI-contract/policy tests;
+- 37 unit tests;
+- 13 integration tests;
+- 51 UI-contract/policy tests;
+- 101 total core automated tests;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
 - Mac Catalyst Release;
-- CodeQL #200 / `31375336083`;
-- Dependency Audit #7 / `31375336088`.
+- CodeQL #220 / `31378000143`;
+- Dependency Audit #8 / `31378000134`.
 
-This automated baseline does not complete the production-release blockers below.
+This baseline includes deterministic reminder scheduling boundaries, daylight-saving gap/overlap coverage, WAL snapshot content/cancellation coverage, and app-lock verifier-buffer hardening. It does not complete the production-release blockers below.
 
 ## Priority 0 — production-release blockers
 
@@ -99,7 +100,7 @@ Automated repository policy tests reject common committed signing/secret file ty
 The current hardening head has a green exact-head matrix, but the final production-candidate verification must happen **after** all Priority 0 work and any resulting source/configuration changes.
 
 - [x] Exact-head marker-only verification protocol is documented in `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
-- [x] Current RC1 hardening source has a green exact-head automated baseline through PR #27.
+- [x] Current RC1 hardening source has a green exact-head automated baseline through PR #28.
 - [ ] After Priority 0 blockers are complete, branch from the exact intended production-release commit.
 - [ ] Trigger the complete GitHub Actions matrix.
 - [ ] Require green formatting/core tests, Android, Windows, iOS simulator, Mac Catalyst, CodeQL, and Dependency Audit.
@@ -147,14 +148,19 @@ Completed hardening now includes:
 - [x] async non-blocking source contracts;
 - [x] logging-privacy source contracts;
 - [x] global/UI/startup/reminder exception-log privacy regression contracts;
-- [x] existing reminder recurrence/time-zone/SQLite/encryption/backup/report integration coverage.
+- [x] deterministic reminder recurrence/window/date/state contracts;
+- [x] selected-weekday/cycle/every-N-hours validation boundaries;
+- [x] DST spring-forward invalid-time and fall-back ambiguous-time planner coverage for a representative time zone;
+- [x] WAL snapshot creation/content/integrity/pre-cancellation coverage;
+- [x] app-lock cryptographic/source security contracts and verifier-buffer clearing;
+- [x] existing encryption/backup/report integration coverage.
 
 Still useful later when stable target infrastructure exists:
 
 - [ ] Add platform UI automation on real/emulated targets.
 - [ ] Add deeper notification permission denial/retry state-transition automation where platform APIs can be reliably driven.
-- [ ] Add additional daylight-saving gap/overlap zones.
-- [ ] Add randomized/fuzz-style schedule-planner recurrence-boundary coverage.
+- [ ] Add daylight-saving gap/overlap coverage for additional representative time zones beyond the existing America/New_York cases.
+- [ ] Add randomized/property/fuzz-style schedule-planner recurrence-boundary coverage.
 - [ ] Add backup compatibility fixtures across future schema versions.
 - [ ] Add file-corruption and low-storage target failure-path tests.
 - [ ] Expand semantic/accessibility XAML contract coverage where meaningful without replacing manual assistive-technology testing.
