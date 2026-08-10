@@ -19,6 +19,11 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
     {
+        if (!logger.IsEnabled(LogLevel.Critical))
+        {
+            return;
+        }
+
         var exceptionType = args.ExceptionObject is Exception exception
             ? exception.GetType().FullName
             : args.ExceptionObject?.GetType().FullName;
@@ -31,11 +36,13 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs args)
     {
-        var exceptionType = args.Exception.GetType().FullName ?? "Unknown";
-
-        logger.LogError(
-            "An unobserved CareNest task exception occurred. Type={ExceptionType}.",
-            exceptionType);
+        if (logger.IsEnabled(LogLevel.Error))
+        {
+            var exceptionType = args.Exception.GetType().FullName ?? "Unknown";
+            logger.LogError(
+                "An unobserved CareNest task exception occurred. Type={ExceptionType}.",
+                exceptionType);
+        }
 
         args.SetObserved();
     }
