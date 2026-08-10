@@ -17,12 +17,17 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - No diagnosis, treatment recommendation, dosage calculation/inference, medication-interaction checking or clinical risk scoring is introduced.
 - Medicine strength and instruction values remain opaque user-entered text.
 - As-needed schedules do not automatically create reminders.
-- Paused/completed/archived medicines and disabled schedules do not automatically materialize reminders.
+- Archived profiles, paused/completed/archived medicines and disabled schedules do not automatically materialize reminders.
 - Daily, selected-weekday, cycle, custom-range and every-N-hours behavior is derived only from explicit user-entered schedule values.
 - Planning windows remain half-open (`fromUtc` inclusive, `toUtc` exclusive) so adjacent rebuild windows do not duplicate boundary occurrences.
+- Planner window start/end and reminder rebuild overrides require actual UTC `DateTime` values.
 - Duplicate explicit clock times do not create duplicate occurrence identities.
+- Reminder ownership is verified across profile → medicine → schedule → persisted schedule-time relationships before materialization.
 - Invalid daylight-saving spring-forward local times do not cause CareNest to invent an alternate reminder time.
 - Ambiguous daylight-saving fall-back local times remain deterministic across rebuilds.
+- Representative DST gap/overlap coverage spans North America, Europe and Australia when those identifiers exist on the test host.
+- Deterministic property-style recurrence tests use fixed seeds/explicit synthetic schedules and remain reproducible.
+- Snooze actions require an explicit future UTC timestamp before persistence or platform scheduling.
 - Notification permission is not requested during onboarding; it is requested at the first explicit reminder-capable action.
 - Stock changes use only user-configured values.
 - Medical/reminder limitations remain visible in onboarding and About.
@@ -54,7 +59,9 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - Mac Catalyst Release build passes.
 - Release evidence artifacts are generated for the exact final release commit.
 
-The latest RC1 hardening source baseline is `69c4dd9319f7dc47edea1786e683f7d90c656e1e`, verified by PR #28 with CI #220 / `31378000135`, CodeQL #220 / `31378000143`, Dependency Audit #8 / `31378000134`, formatting, 37 unit tests, 13 integration tests, 51 UI-contract tests, and all four platform Release builds green. That baseline is automated evidence only; the final public release still needs a fresh exact promoted-commit evidence run after all release blockers are cleared.
+The previously verified RC1 hardening baseline was `69c4dd9319f7dc47edea1786e683f7d90c656e1e`, verified by PR #28 with CI #220 / `31378000135`, CodeQL #220 / `31378000143`, Dependency Audit #8 / `31378000134`, formatting, 37 unit tests, 13 integration tests, 51 UI-contract tests, and all four platform Release builds green.
+
+New reminder ownership/UTC/snooze/DST/property hardening after that baseline requires a fresh exact-head verification before it replaces the baseline in release evidence. Automated green status remains necessary but not sufficient for final public release.
 
 ## Manual evidence
 
