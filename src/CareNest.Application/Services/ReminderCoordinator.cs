@@ -69,10 +69,13 @@ public sealed class ReminderCoordinator(
             }
             catch (Exception ex)
             {
-                var exceptionType = ex.GetType().FullName ?? "Unknown";
-                logger.LogWarning(
-                    "Reminder scheduling failed. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
-                    exceptionType);
+                if (logger.IsEnabled(LogLevel.Warning))
+                {
+                    var exceptionType = ex.GetType().FullName ?? "Unknown";
+                    logger.LogWarning(
+                        "Reminder scheduling failed. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
+                        exceptionType);
+                }
             }
         }
     }
@@ -253,10 +256,13 @@ public sealed class ReminderCoordinator(
             }
             catch (Exception ex)
             {
-                var exceptionType = ex.GetType().FullName ?? "Unknown";
-                logger.LogWarning(
-                    "Low-stock reminder scheduling failed. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
-                    exceptionType);
+                if (logger.IsEnabled(LogLevel.Warning))
+                {
+                    var exceptionType = ex.GetType().FullName ?? "Unknown";
+                    logger.LogWarning(
+                        "Low-stock reminder scheduling failed. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
+                        exceptionType);
+                }
             }
         }
     }
