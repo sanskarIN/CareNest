@@ -12,7 +12,10 @@ CareNest is an open-source, local-first health organizer built with .NET MAUI an
 - Multiple local profiles with optional app lock.
 - User-defined medicine schedules without dosage inference.
 - Reminder lifecycle: scheduled, snoozed, taken, skipped, delayed, and missed.
-- Deterministic reminder materialization with explicit date/time/time-zone boundaries and no invented DST-gap replacement times.
+- Deterministic reminder materialization with explicit entity-ownership, date/time/time-zone, UTC-window, and DST boundaries.
+- Invalid DST-gap times are not replaced with guessed reminder times.
+- Archived profiles and inactive medicine states do not automatically materialize reminders.
+- Snooze timestamps must be explicit future UTC values before platform scheduling.
 - Appointment planning and history.
 - Encrypted local health-document vault.
 - Stock/refill tracking based only on user-entered quantities.
@@ -21,7 +24,7 @@ CareNest is an open-source, local-first health organizer built with .NET MAUI an
 - Light, dark, system theme and accessibility-ready layouts.
 - Android, iOS, Mac Catalyst, and Windows targets.
 - Privacy-aware developer diagnostics and exception-log redaction contracts.
-- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-boundary, and snapshot-integrity quality gates.
+- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-integrity, randomized-recurrence, and snapshot-integrity quality gates.
 
 ## Technology
 
@@ -82,28 +85,30 @@ For Windows, iOS simulator, and Mac Catalyst commands, use [`docs/setup/DEVELOPM
 
 CareNest never chooses a medicine dose or infers how frequently a medicine should be used. Reminder occurrences are derived only from explicit user-entered schedule values.
 
-The exact planner invariants—half-open planning windows, stable occurrence keys, duplicate-time deduplication, state/date boundaries, cycle/every-N-hours rules, and daylight-saving gap/overlap handling—are documented in [`docs/testing/REMINDER_SCHEDULING_CONTRACT.md`](docs/testing/REMINDER_SCHEDULING_CONTRACT.md).
+The exact planner invariants—entity ownership, UTC planning windows, half-open boundaries, stable occurrence keys, duplicate-time deduplication, state/date boundaries, selected-weekday/cycle/every-N-hours rules, snooze UTC requirements, and daylight-saving gap/overlap handling—are documented in [`docs/testing/REMINDER_SCHEDULING_CONTRACT.md`](docs/testing/REMINDER_SCHEDULING_CONTRACT.md).
 
-A local clock time that does not exist during a daylight-saving spring-forward gap is not silently replaced with a guessed alternative time.
+A local clock time that does not exist during a daylight-saving spring-forward gap is not silently replaced with a guessed alternative time. Automated property-style tests use a fixed seed and synthetic user-entered schedules so recurrence-boundary checks are reproducible and non-clinical.
 
 ## Verified automated quality baseline
 
-Exact source head `69c4dd9319f7dc47edea1786e683f7d90c656e1e` passed the latest hardening verification through PR #28:
+Exact source head `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` passed the latest hardening verification through marker-only PR #30:
 
-- CareNest CI #220 / `31378000135` — success;
+- CareNest CI #248 / `31382194805` — success;
 - platform-neutral formatting — success;
-- 37 unit tests — passed;
+- 74 unit tests — passed;
 - 13 integration tests — passed;
-- 51 UI-contract/policy tests — passed;
-- 101 total core automated tests — passed;
+- 54 UI-contract/policy tests — passed;
+- 141 total core automated tests — passed;
 - Android Release — success;
 - Windows Release — success;
 - iOS simulator Release — success;
 - Mac Catalyst Release — success;
-- CodeQL #220 / `31378000143` — success;
-- Dependency Audit #8 / `31378000134` — success.
+- CodeQL #248 / `31382194687` — success;
+- Dependency Audit #10 / `31382194683` — success.
 
-That automated evidence is necessary but not sufficient for final `1.0.0` publication. Manual device/accessibility/notification testing, current store-policy review, signing/package work, and the tracked SQLite dependency-risk decision remain production gates.
+PR #29 / CI #246 is intentionally recorded as a superseded verification: it exposed CA2263 in a new non-generic `Enum.IsDefined` call. The code was corrected on `main` and reverified through PR #30 rather than suppressing the analyzer.
+
+That automated evidence is necessary but not sufficient for final `1.0.0` publication. Manual device/accessibility/notification testing, current store-policy review, signing/package work, final Release Evidence for the promoted commit, and the tracked SQLite dependency-risk decision remain production gates.
 
 See [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/releases/RELEASE_CHECKLIST.md`](docs/releases/RELEASE_CHECKLIST.md), and [`docs/releases/QUALITY_GATE.md`](docs/releases/QUALITY_GATE.md).
 
