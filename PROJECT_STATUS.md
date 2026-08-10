@@ -21,7 +21,7 @@
 - Branding vector sources and store guidance.
 - Initial release implementation merged to `main` through PR #3.
 - SQLite result-producing PRAGMAs for WAL mode, busy timeout and WAL checkpoint are handled correctly through scalar reads.
-- WAL-backed backup snapshot regression coverage is included.
+- WAL-backed backup snapshot regression coverage now verifies snapshot creation, committed-data preservation, integrity, and cancellation-before-copy behavior.
 - MAUI per-target CI restore/build isolation is implemented without propagating app target frameworks into referenced `net10.0` projects.
 - Android notification integration has explicit API-level guards and nullability checks.
 - Apple verification uses a macOS 26 runner compatible with the current .NET 10 Apple workload.
@@ -44,6 +44,12 @@
 - `docs/security/LOGGING_PRIVACY.md` documents and automated tests enforce the diagnostic redaction boundary.
 - `docs/releases/QUALITY_GATE.md`, `SECURITY_RELEASE_REVIEW.md`, `RELEASE_EVIDENCE.md`, `RELEASE_NOTES_TEMPLATE.md`, and `VERIFICATION_BRANCH_PROTOCOL.md` define reproducible promotion/evidence requirements.
 - An earlier recovery-history audit restored every valid BMC/dependency/release-gate file that existed in the previously green source baseline.
+- Medicine schedule validation tests now cover explicit interval/start-time rules, selected weekdays, cycle on/off values, date ordering, clock ranges, and invalid time-zone identifiers.
+- Reminder planner tests now cover daily, selected-weekday, cycle, custom date range, every-N-hours, follow-up, disabled, paused, completed, archived, and as-needed behavior.
+- Reminder planner boundary tests protect half-open planning windows, duplicate-time deduplication, stable occurrence identity, chronological ordering, DST gaps, and deterministic DST overlaps.
+- `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` records the deterministic non-clinical scheduling contract and explicitly states CareNest never invents an alternate time for an invalid spring-forward local time.
+- App-lock verification now clears both derived and retrieved verifier buffers after checks; contract tests protect salted PBKDF2-HMAC-SHA256, fixed-time comparison, no plaintext PIN persistence, verifier clearing, lock-material deletion, and PIN policy.
+- Security/threat-model documentation explicitly describes app lock as a local privacy barrier rather than whole-database/device encryption and records residual weak-PIN/device-compromise risk.
 
 ## Security dependency status
 
@@ -59,44 +65,42 @@ An attempted `2.1.12` bundle pin was rejected because that version is not availa
 
 ## Current fully verified source head
 
-Exact production source head verified through PR #27:
+Exact source head verified through PR #28:
 
-`8417513db36c72b0ec2cfaccadb6ac47ba361f11`
+`69c4dd9319f7dc47edea1786e683f7d90c656e1e`
 
 Verification marker head:
 
-`aefd53869b7eaf54815de446fc83373c7977d04d`
+`a1362b551749762ae816e8b4366c8f1eb97538fa`
 
-The marker changed only `build/verification/rc1-hardening-20260810-4.txt`. PR #27 was closed without merge after the full matrix succeeded.
+The marker changed only `build/verification/rc1-reminder-applock-hardening-20260810.txt`. PR #28 was closed without merge after the full matrix succeeded.
 
 Automated evidence:
 
-- CareNest CI run #200 / `31375336226`: **success**.
+- CareNest CI run #220 / `31378000135`: **success**.
 - Platform-neutral formatting gate: **success**.
-- Unit tests: **15 passed, 0 failed, 0 skipped**.
-- Integration tests: **11 passed, 0 failed, 0 skipped**.
-- UI-contract/policy tests: **46 passed, 0 failed, 0 skipped**.
-- Total automated test cases in the core job: **72 passed, 0 failed, 0 skipped**.
+- Unit tests: **37 passed, 0 failed, 0 skipped**.
+- Integration tests: **13 passed, 0 failed, 0 skipped**.
+- UI-contract/policy tests: **51 passed, 0 failed, 0 skipped**.
+- Total automated test cases in the core job: **101 passed, 0 failed, 0 skipped**.
 - Android Release build: **success**.
 - Windows Release build: **success**.
 - iOS simulator Release build: **success**.
 - Mac Catalyst Release build: **success**.
-- CodeQL run #200 / `31375336083`: **success**.
-- Dependency Audit run #7 / `31375336088`: **success**.
+- CodeQL run #220 / `31378000143`: **success**.
+- Dependency Audit run #8 / `31378000134`: **success**.
 
-The final source verification followed three superseded verification passes that intentionally exposed and corrected real issues instead of weakening the gates:
+The preceding exact-head baseline was PR #27 / source head `8417513db36c72b0ec2cfaccadb6ac47ba361f11`, which passed CI #200, CodeQL #200, Dependency Audit #7, formatting, 15 unit tests, 11 integration tests, 46 UI-contract tests, and all four platform builds. PR #28 supersedes that automated source baseline because it includes the additional reminder/snapshot/app-lock hardening described above.
 
-- PR #24 / CI #175: found CA1873 eager exception-metadata logging and CA1861 test-allocation analyzer failures; CodeQL succeeded.
-- PR #25 / CI #190: formatting, unit and integration tests passed; Dependency Audit #5 and CodeQL #190 passed; UI-contract execution found path-normalization, generated-file scanning and existing StartupCoordinator exception-object logging issues; MAUI builds also confirmed explicit logger-level guards were required.
-- PR #26 / CI #198: Dependency Audit #6 and CodeQL #198 passed; formatting, unit and integration tests passed; UI compilation found one remaining nullable project-reference filename contract error.
-- PR #27 / CI #200: all automated gates passed.
+Earlier superseded verification PRs #24–#26 intentionally exposed and drove fixes for analyzer, privacy-logging, path-normalization, generated-source scanning, and nullable-contract problems instead of weakening quality gates.
 
-Later status/changelog/handoff documentation commits after verified source head `8417513...` do not change runtime/test/product source and are not represented as a separate platform-verification head.
+Documentation-only status/changelog/handoff commits after source head `69c4dd...` do not change the runtime/test source that passed PR #28 and are not represented as separate platform-verification heads.
 
 ## Release blockers that remain real
 
 - Complete manual device/emulator matrix on Android, Windows, iOS/iPadOS, and Mac Catalyst.
 - Complete manual screen-reader, large-text, keyboard, contrast, and reduced-motion checks.
+- Manually verify notification permission denied/granted, Android exact-alarm/battery/reboot/time/time-zone behavior, and real-device reminder delivery limitations.
 - Verify current Apple App Store and Google Play policy for the external voluntary project-support link before submission.
 - Prepare signing identities/credentials outside Git.
 - Build and inspect signed release packages on appropriately provisioned hosts.
