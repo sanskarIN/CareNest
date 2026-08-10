@@ -57,6 +57,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<AppStateService>();
         builder.Services.AddSingleton<StartupCoordinator>();
         builder.Services.AddSingleton<SafeUiErrorService>();
+        builder.Services.AddSingleton<GlobalExceptionHandler>();
 
         RegisterViewModels(builder.Services);
         RegisterViews(builder.Services);
