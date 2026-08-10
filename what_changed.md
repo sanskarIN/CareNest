@@ -27,7 +27,9 @@ Reminder delivery limitations are surfaced rather than hidden. Notification perm
 
 CareNest tells users to follow qualified professional instructions and to contact local emergency services in an emergency rather than rely on CareNest.
 
-The new reminder hardening in this continuation does **not** add clinical interpretation. It protects deterministic handling of the schedule values that users enter. In particular, an invalid local clock time during a daylight-saving spring-forward gap is not silently moved to another time by the planner. CareNest does not invent a replacement reminder time.
+The reminder hardening continuations do **not** add clinical interpretation. They protect deterministic handling of the schedule values that users enter. In particular, an invalid local clock time during a daylight-saving spring-forward gap is not silently moved to another time by the planner. CareNest does not invent a replacement reminder time.
+
+The latest ownership/UTC hardening also does not infer medical intent: it validates that the local profile, medicine, schedule, and persisted schedule-time objects passed to the planner belong together, requires planner/rebuild timestamps to be actual UTC values, and requires snooze to be an explicit future UTC time before persistence/platform scheduling.
 
 Buy Me a Coffee support is voluntary project support only. It does not unlock app functionality, medical advice, priority health support, different reminder behavior, emergency assistance, a CareNest account, or access to local CareNest data. The funding destination is an external trust boundary opened only after explicit user action.
 
@@ -47,11 +49,17 @@ The release-candidate source on `main` includes:
 - active, paused, completed, and archived medicine states;
 - daily, selected-weekday, specific-time, every-N-hours, cycle, custom-date-range, and as-needed schedule behavior;
 - deterministic and idempotent reminder occurrence materialization;
+- planner entity-ownership validation across local profile → medicine → schedule → persisted schedule-time relationships;
+- defensive archived-profile suppression inside the planner;
+- actual-UTC planner-window validation;
 - half-open reminder-planning windows to avoid boundary duplication;
 - duplicate user-entered clock-time deduplication by stable occurrence identity;
 - deterministic daylight-saving overlap handling;
+- representative multi-zone daylight-saving gap/overlap regression coverage;
 - explicit no-invented-time behavior for invalid daylight-saving gap local times;
+- deterministic fixed-seed property-style recurrence-boundary coverage;
 - scheduled, snoozed, taken, skipped, delayed, and missed reminder states;
+- future-UTC snooze validation before persistence/platform notification scheduling;
 - follow-up reminders and quiet hours;
 - medication log and edit history;
 - appointment organization with notes, attachments, reminders, and explicit calendar export;
@@ -79,7 +87,7 @@ The release-candidate source on `main` includes:
 - GitHub funding metadata;
 - custom CareNest BMC vector artwork plus original compact project-support badge;
 - adaptive app icon, splash, standard mark, light mark, dark mark, and monochrome mark assets;
-- unit, integration, UI-contract, repository-policy, architecture, ViewModel, data-model, branding/localization, async-safety, logging-privacy, app-lock-security, reminder-boundary, and snapshot-integrity tests;
+- unit, integration, UI-contract, repository-policy, architecture, ViewModel, data-model, branding/localization, async-safety, logging-privacy, app-lock-security, reminder-boundary, reminder-ownership, UTC/snooze, deterministic-property, DST-matrix, and snapshot-integrity tests;
 - GitHub Actions cross-platform CI;
 - platform-neutral formatting gate;
 - CodeQL analysis;
@@ -317,7 +325,7 @@ Completed in the earlier 2026-08-10 continuation:
 
 ## Phase 7 — reminder-boundary, WAL-snapshot and app-lock memory hardening
 
-Completed in the latest continuation:
+Completed:
 
 - expanded medicine schedule validation boundaries;
 - cycle-schedule planner behavior coverage;
@@ -337,6 +345,27 @@ Completed in the latest continuation:
 - deterministic reminder scheduling contract documentation;
 - test-plan expansion;
 - exact-head PR #28 verification with 101/101 core tests green and all four platform builds green.
+
+## Phase 8 — reminder ownership, UTC, snooze, property and multi-zone DST hardening
+
+Completed in the current continuation:
+
+- reminder planner null/ownership validation for supplied profile, medicine, schedule, and times;
+- persisted schedule-time ownership validation while still allowing intentionally unbound editor times before persistence;
+- defensive archived-profile suppression inside the planner;
+- schedule validation rejects unrecognized `ScheduleKind` values;
+- selected-weekday validation rejects unsupported bits outside the seven weekday positions;
+- time-zone identifiers are trimmed and validated;
+- planner `fromUtc`/`toUtc` require `DateTimeKind.Utc`;
+- coordinator rebuild overrides require UTC;
+- snooze requires an explicit future UTC timestamp before persistence/platform scheduling;
+- deterministic fixed-seed recurrence property tests added;
+- property tests cover arbitrary half-open windows, occurrence uniqueness/order, cycle on/off matrices, all supported weekday masks, and representative every-N-hours intervals;
+- representative DST invalid/ambiguous coverage expanded to `America/New_York`, `Europe/Berlin`, and `Australia/Sydney` when those zones are available on the host;
+- reminder scheduling contract, test plan, ADR decisions, quality gate, security review, roadmap, README, changelog, project status, release checklist, and this handoff aligned to the new behavior;
+- first exact-head verification PR #29 correctly exposed CA2263 in the newly added non-generic enum-validation call;
+- the analyzer finding was fixed in source rather than suppressed;
+- fresh marker-only PR #30 verified the corrected exact head with 141/141 core tests and all platform/security/dependency gates green.
 
 ---
 
@@ -751,9 +780,9 @@ PR #27 closed without merge and became the superseded pre-Phase-7 automated sour
 
 ---
 
-# Latest continuation — detailed commit record
+# Reminder/snapshot/app-lock hardening continuation — detailed commit record
 
-The latest user continuation requested full work, maximum logical commits, and an updated handoff. The work was split into separate commits so each behavior/security change remains independently reviewable.
+The continuation requested full work, maximum logical commits, and an updated handoff. The work was split into separate commits so each behavior/security change remains independently reviewable.
 
 ## 1. Medicine schedule validation boundaries
 
@@ -943,26 +972,9 @@ Created:
 
 `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`
 
-The contract documents:
+The contract documents explicit-user-input-only scheduling, no dose/frequency inference, no automatic as-needed occurrences, half-open planning windows, stable occurrence identity, duplicate-time deduplication, chronological output ordering, daily/custom date boundaries, selected weekdays, cycle on/off behavior, every-N-hours explicit inputs, follow-up separation, disabled/inactive medicine suppression, DST gap no-invented-time behavior, DST overlap determinism, and delivery limitations.
 
-- explicit-user-input-only scheduling;
-- no dose/frequency inference;
-- no automatic as-needed occurrences;
-- half-open planning window;
-- stable occurrence identity;
-- duplicate-time deduplication;
-- chronological output ordering;
-- daily/custom date boundaries;
-- selected weekday mask behavior;
-- cycle on/off behavior;
-- every-N-hours explicit starting-time/interval behavior;
-- follow-up occurrence separation;
-- disabled/paused/completed/archived suppression;
-- DST gap no-invented-time behavior;
-- DST overlap deterministic offset behavior;
-- reminder delivery limitations remain separate from deterministic planner logic.
-
-## 12. Test-plan expansion and verification source freeze
+## 12. Test-plan expansion and PR #28 source freeze
 
 Commit:
 
@@ -1004,13 +1016,8 @@ The PR changed only the verification marker beyond the exact source head. After 
 
 ## CareNest CI #220
 
-Run ID:
-
-`31378000135`
-
-Final conclusion:
-
-**success**
+Run ID: `31378000135`  
+Final conclusion: **success**
 
 Core job evidence:
 
@@ -1027,42 +1034,456 @@ Platform evidence:
 - iOS simulator Release build: **success**;
 - Mac Catalyst Release build: **success**.
 
-## CodeQL #220
-
-Run ID:
-
-`31378000143`
-
-Final conclusion:
-
-**success**
-
-## Dependency Audit #8
-
-Run ID:
-
-`31378000134`
-
-Final conclusion:
-
-**success**
+CodeQL #220 / `31378000143`: **success**.  
+Dependency Audit #8 / `31378000134`: **success**.
 
 The dependency audit remains compatible with the repository's explicit narrow SQLite advisory suppression. A green Dependency Audit does not mean `GHSA-2m69-gcr7-jv3q` is fixed; the dependency risk register remains authoritative and open.
 
-## PR #28 result
+PR #28 became the superseded pre-Phase-8 source baseline.
 
-For source head `69c4dd...`:
+---
+
+# Phase 8 continuation — complete detailed commit record
+
+The current continuation was intentionally split into separate logical commits to keep behavior, validation, tests, and documentation independently reviewable.
+
+## 1. Planner entity-ownership enforcement
+
+Commit:
+
+`0f22de1240d28c8011c3c4f41d0a084211706a8d` — `fix: enforce reminder planner entity ownership`
+
+Updated:
+
+`src/CareNest.Application/Services/ReminderPlanner.cs`
+
+Behavior added:
+
+- explicit null checks for supplied medicine, schedule, times, and profile;
+- schedule `MedicineId` must match the supplied medicine `Id`;
+- medicine `ProfileId` must match the supplied profile `Id`;
+- a persisted `ScheduleTime` with a nonblank `MedicineScheduleId` must match the supplied schedule `Id`;
+- unbound editor `ScheduleTime` values remain allowed before persistence;
+- ownership mismatch throws instead of silently materializing an occurrence under another local entity.
+
+This is a data-integrity boundary. It does not introduce networking, medical interpretation, or cross-profile sharing.
+
+## 2. Schedule enum, weekday-mask, and time-zone validation
+
+Commit:
+
+`098644c73d7025142ef29f213933f01e8ba52959` — `fix: validate schedule enum and weekday mask`
+
+Updated:
+
+`src/CareNest.Domain/Rules/MedicineRules.cs`
+
+Behavior added:
+
+- unrecognized `ScheduleKind` values are rejected;
+- selected-weekday schedules reject bits outside the seven supported weekday positions;
+- blank time-zone identifiers are rejected;
+- valid time-zone identifiers are trimmed before `TimeZoneInfo` lookup;
+- existing interval/cycle/date/time/follow-up validation remains intact.
+
+The first implementation used the non-generic `Enum.IsDefined(Type, object)` overload. Later exact-head CI correctly exposed CA2263; that analyzer finding is recorded below and was fixed without suppression.
+
+## 3. Planner ownership regression tests
+
+Commit:
+
+`e565c90cfc89fedb72127be520f71110e1307c11` — `test: cover reminder planner ownership boundaries`
+
+Created:
+
+`tests/CareNest.UnitTests/ReminderPlannerOwnershipTests.cs`
+
+Coverage:
+
+- reject a schedule belonging to another medicine;
+- reject a medicine belonging to another profile;
+- reject a persisted time belonging to another schedule;
+- accept a persisted time belonging to the supplied schedule;
+- accept an intentionally unbound editor time;
+- verify produced occurrence IDs remain tied to the supplied valid graph.
+
+## 4. Schedule-validation hardening tests
+
+Commit:
+
+`0c838901d3d90e37c23d29f77de49864e9cac080` — `test: cover schedule validation hardening`
+
+Created:
+
+`tests/CareNest.UnitTests/ScheduleValidationHardeningTests.cs`
+
+Coverage:
+
+- unknown schedule enum rejected;
+- unsupported weekday-mask bit 7 rejected;
+- mixed valid/unsupported masks rejected;
+- negative mask rejected;
+- all seven supported weekday bits accepted;
+- blank and whitespace-only time zones rejected;
+- valid time-zone identifiers surrounded by whitespace are trimmed and accepted.
+
+## 5. UTC planner-window enforcement
+
+Commit:
+
+`d505b76d178f71cd01ecb6bd7d3daac2f01e76ef` — `fix: require UTC reminder planning windows`
+
+Updated:
+
+`src/CareNest.Application/Services/ReminderPlanner.cs`
+
+Behavior:
+
+- `fromUtc.Kind` must equal `DateTimeKind.Utc`;
+- `toUtc.Kind` must equal `DateTimeKind.Utc`;
+- local/unspecified values are rejected instead of silently reinterpreting their clock ticks as UTC;
+- after validation, `TimeZoneInfo.ConvertTimeFromUtc` uses the actual validated UTC values directly;
+- half-open window semantics remain unchanged.
+
+## 6. UTC planner-window tests
+
+Commit:
+
+`d222f9855b7ceb65cf1209886e51385ad22af064` — `test: cover UTC reminder planning window contract`
+
+Created:
+
+`tests/CareNest.UnitTests/ReminderPlannerUtcWindowTests.cs`
+
+Coverage:
+
+- local-kind start rejected;
+- unspecified-kind start rejected;
+- local-kind end rejected;
+- unspecified-kind end rejected;
+- valid UTC window still includes `fromUtc` and excludes `toUtc`.
+
+## 7. Deterministic recurrence property coverage
+
+Commit:
+
+`c4be9647b1393d3d978a8bc10643c3cfb3ccf91d` — `test: add deterministic recurrence property coverage`
+
+Created:
+
+`tests/CareNest.UnitTests/ReminderPlannerPropertyTests.cs`
+
+Coverage uses fixed random seed `20260810` so failures are reproducible.
+
+Tests include:
+
+- 64 deterministic randomized daily planning windows;
+- every produced occurrence must satisfy `ScheduledUtc >= fromUtc` and `ScheduledUtc < toUtc`;
+- occurrence keys remain unique in each build result;
+- returned occurrences remain chronologically ordered;
+- cycle on/off matrices for on-days 1–5 × off-days 1–5 match explicit calendar arithmetic;
+- every valid selected-weekday mask from 1 through 127 emits only selected days;
+- every-N-hours values 1, 2, 3, 6, 8, 12, 24, 48, and 168 preserve exact elapsed UTC spacing.
+
+All values are synthetic explicit schedule inputs. The tests do not infer treatment frequency or dosage.
+
+## 8. Multi-zone DST gap/overlap matrix
+
+Commit:
+
+`72b4f18c6580164b50dbce5f5b70a512cb82da07` — `test: expand DST gap and overlap coverage`
+
+Created:
+
+`tests/CareNest.UnitTests/ReminderPlannerDstMatrixTests.cs`
+
+Representative zone IDs:
+
+- `America/New_York`;
+- `Europe/Berlin`;
+- `Australia/Sydney`.
+
+For each available/valid host zone, the test scans 2026 for an invalid and ambiguous local time:
+
+- invalid spring-forward local time must not be materialized;
+- ambiguous fall-back local time must produce exactly one occurrence for that local time;
+- repeated builds must produce the same `ScheduledUtc` and `OccurrenceKey` for the ambiguous time.
+
+Hosts missing a named time zone return from that individual case rather than inventing replacement zone behavior.
+
+## 9. Coordinator UTC rebuild and future-UTC snooze validation
+
+Commit:
+
+`d2250615b4937846b363b3fe6873fc9d64c958eb` — `fix: validate snooze timestamps before scheduling`
+
+Updated:
+
+`src/CareNest.Application/Services/ReminderCoordinator.cs`
+
+Behavior:
+
+- a supplied `RebuildAsync(fromUtc)` override must be UTC;
+- `HandleOccurrenceAsync` obtains one authoritative current UTC time from `TimeProvider` for the state transition;
+- snooze still requires a non-null explicit timestamp;
+- snooze timestamp must have `DateTimeKind.Utc`;
+- snooze timestamp must be strictly later than current UTC time;
+- invalid snooze values fail before occurrence persistence or platform notification scheduling;
+- validated snooze timestamp is used for occurrence state and notification request;
+- existing privacy-redacted logging remains unchanged.
+
+## 10. Coordinator snooze/UTC contracts
+
+Commit:
+
+`5e7a2a1f6fd83a31ba2a57622e0865e6b0df5815` — `test: protect reminder coordinator UTC and snooze guards`
+
+Created:
+
+`tests/CareNest.UiTests/ReminderCoordinatorSafetyContractTests.cs`
+
+Source-contract coverage protects:
+
+- rebuild UTC-kind check;
+- non-null snooze requirement;
+- snooze UTC-kind check;
+- snooze future-time check;
+- use of validated snooze timestamp for persisted occurrence and notification scheduling.
+
+## 11. Archived-profile defense in depth
+
+Commit:
+
+`ede2cd0790fcfc52547157b751ff09d148af32bc` — `fix: suppress reminders for archived profiles`
+
+Updated:
+
+`src/CareNest.Application/Services/ReminderPlanner.cs`
+
+The coordinator already skipped archived profiles before invoking the planner. This adds a second defensive gate so a future direct planner caller cannot automatically materialize occurrences for an archived profile.
+
+## 12. Archived-profile planner test
+
+Commit:
+
+`c8896cf41e72ebaf7a995c1020ddfcd965250998` — `test: cover archived profile reminder suppression`
+
+Created:
+
+`tests/CareNest.UnitTests/ReminderPlannerArchivedProfileTests.cs`
+
+The test supplies an otherwise valid active medicine/daily schedule for an archived profile and requires an empty occurrence result.
+
+## 13. Reminder scheduling contract expansion
+
+Commit:
+
+`1439dd7f6208c5f5a9b202cc9b4da498c1cdada6` — `docs: harden reminder scheduling contract`
+
+Updated:
+
+`docs/testing/REMINDER_SCHEDULING_CONTRACT.md`
+
+Now documents:
+
+- entity ownership validation;
+- archived-profile suppression;
+- actual UTC planner windows;
+- selected-weekday supported bits;
+- explicit future-UTC snooze handling;
+- UTC rebuild override;
+- representative multi-zone DST matrix;
+- deterministic fixed-seed property coverage;
+- continued non-clinical/no-inference boundary.
+
+## 14. Test-plan expansion
+
+Commit:
+
+`864b41f1838485ea89a9ef7b03e4da0964cc274e` — `docs: expand reminder integrity test plan`
+
+Updated:
+
+`docs/testing/TEST_PLAN.md`
+
+The test plan now explicitly includes ownership checks, UTC-kind validation, representative multi-zone DST behavior, fixed-seed property coverage, snooze future-UTC requirements, and archived-profile suppression in addition to the previously recorded snapshot/app-lock/reminder tests.
+
+## 15. Architectural decisions
+
+Commit:
+
+`94af97c0af62661a0eadb3644db6d865e06efc1b` — `docs: record reminder ownership and UTC decisions`
+
+Added ADR-summary decisions:
+
+- reminder ownership is validated before materialization;
+- planner/rebuild/snooze timestamps use explicit UTC contracts;
+- randomized recurrence coverage must remain reproducible and non-clinical.
+
+## 16. Quality-gate expansion before verification
+
+Commit:
+
+`04057299fe6d13012734ba235e6fa92604753948` — `docs: add reminder ownership and UTC quality gates`
+
+Updated:
+
+`docs/releases/QUALITY_GATE.md`
+
+This commit became the first Phase-8 exact-head verification base and recorded the new ownership, UTC, snooze, DST, property, and archived-profile automated gates.
+
+---
+
+# PR #29 — superseded exact-head verification that exposed CA2263
+
+Verification branch:
+
+`ci/carenest-rc1-ownership-utc-dst-hardening-20260810`
+
+Source head:
+
+`04057299fe6d13012734ba235e6fa92604753948`
+
+Marker head:
+
+`16e303a1fe285faee35743bb8207c4aa8c63d335`
+
+Marker file:
+
+`build/verification/rc1-ownership-utc-dst-hardening-20260810.txt`
+
+Pull request:
+
+`#29 — Verify reminder ownership, UTC, snooze, and DST hardening`
+
+PR URL:
+
+`https://github.com/sanskarIN/CareNest/pull/29`
+
+The PR diff was verified as marker-only.
+
+CareNest CI #246 / run `31382027314` exposed a real analyzer/compile problem on the newly added schedule enum validation:
+
+- CA2263: the non-generic `Enum.IsDefined(Type, object)` overload should be replaced by the generic overload;
+- the finding appeared during Apple compilation under the repository warnings-as-errors policy;
+- the quality gate was not weakened and the analyzer was not suppressed;
+- PR #29 was closed without merge and explicitly marked superseded;
+- its marker never entered `main`;
+- PR #29 is **not** green release evidence.
+
+---
+
+# CA2263 correction
+
+Commit:
+
+`c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` — `fix: use generic schedule enum validation`
+
+Updated:
+
+`src/CareNest.Domain/Rules/MedicineRules.cs`
+
+Change:
+
+- replaced `Enum.IsDefined(typeof(ScheduleKind), schedule.Kind)` with `Enum.IsDefined(schedule.Kind)`;
+- behavior remains the same: unrecognized schedule enum values are rejected;
+- the implementation now satisfies the enabled .NET analyzer instead of adding a suppression.
+
+This commit became the exact corrected Phase-8 source head used for fresh verification.
+
+---
+
+# PR #30 — corrected exact-head ownership/UTC/snooze/DST verification
+
+Verification branch:
+
+`ci/carenest-rc1-ownership-utc-dst-hardening-20260810-2`
+
+Exact verified source head:
+
+`c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`
+
+Verification marker head:
+
+`59016b7e2b13d5ac1c93cf0db973f275c6e7eb19`
+
+Marker file:
+
+`build/verification/rc1-ownership-utc-dst-hardening-20260810-2.txt`
+
+Pull request:
+
+`#30 — Reverify reminder ownership, UTC, snooze, and DST hardening`
+
+PR URL:
+
+`https://github.com/sanskarIN/CareNest/pull/30`
+
+The PR changed exactly one marker file beyond `main`. It was closed **without merge** after the complete matrix succeeded.
+
+## CareNest CI #248
+
+Run ID:
+
+`31382194805`
+
+Final conclusion:
+
+**success**
+
+Core job evidence from job `93434630410`:
+
+- platform-neutral formatting: **success**;
+- `CareNest.UnitTests`: **74 passed, 0 failed, 0 skipped**;
+- `CareNest.IntegrationTests`: **13 passed, 0 failed, 0 skipped**;
+- `CareNest.UiTests`: **54 passed, 0 failed, 0 skipped**;
+- total automated core test cases: **141 passed, 0 failed, 0 skipped**.
+
+Platform job evidence:
+
+- Android Release job `93434630440`: **success**;
+- Windows Release job `93434630484`: **success**;
+- Apple job `93434630334`: **success**;
+- iOS simulator Release: **success**;
+- Mac Catalyst Release: **success**.
+
+## CodeQL #248
+
+Run ID:
+
+`31382194687`
+
+Final conclusion:
+
+**success**
+
+## Dependency Audit #10
+
+Run ID:
+
+`31382194683`
+
+Final conclusion:
+
+**success**
+
+The audit result does not change the open status of `GHSA-2m69-gcr7-jv3q`; the narrow suppression remains a visibility mechanism rather than a vulnerability fix.
+
+## PR #30 result
+
+For exact source head `c61f3c31...`:
 
 - formatting green;
-- 101/101 automated tests green;
+- 141/141 core automated tests green;
 - Android green;
 - Windows green;
 - iOS simulator green;
 - Mac Catalyst green;
 - CodeQL green;
-- Dependency Audit green.
+- Dependency Audit green;
+- marker closed without merge.
 
-No final `1.0.0` production tag/store submission is claimed from this automated evidence alone.
+This supersedes PR #28 as the latest exact automated source baseline.
 
 ---
 
@@ -1077,8 +1498,13 @@ No final `1.0.0` production tag/store submission is claimed from this automated 
 - reminder/status terminology;
 - About support/safety boundaries;
 - schedule state/date/cycle/every-N-hours boundaries;
+- planner entity ownership;
+- planner UTC window semantics;
+- rebuild UTC override contract;
+- future-UTC snooze validation;
 - planner window/dedup/order invariants;
-- daylight-saving gap/overlap behavior.
+- representative multi-zone daylight-saving gap/overlap behavior;
+- deterministic property-style recurrence boundaries.
 
 ## Architecture
 
@@ -1096,7 +1522,9 @@ No final `1.0.0` production tag/store submission is claimed from this automated 
 - no clinical risk scoring;
 - opaque strength/instruction fields;
 - explicit user-entered stock change;
-- invalid local clock times do not cause inferred alternate reminder times.
+- invalid local clock times do not cause inferred alternate reminder times;
+- ownership mismatches fail rather than silently materializing reminder data under another local entity;
+- local/unspecified time values are not silently reinterpreted as UTC planner/rebuild/snooze values.
 
 ## Privacy/security
 
@@ -1132,7 +1560,8 @@ No final `1.0.0` production tag/store submission is claimed from this automated 
 - resource keys remain present;
 - architecture references remain portable;
 - platform-neutral formatting enforced;
-- cross-platform MAUI Release builds enforced.
+- cross-platform MAUI Release builds enforced;
+- analyzers remain active and real findings such as CA2263 are fixed rather than hidden.
 
 These preventive controls do not replace manual application behavior, security, accessibility, store-policy, or device testing.
 
@@ -1163,7 +1592,9 @@ These preventive controls do not replace manual application behavior, security, 
 - reminder scheduling failures do not log occurrence/medicine IDs;
 - low-stock reminder scheduling failures do not expose health-record identifiers;
 - full exceptions/messages/stack traces are not passed;
-- safe exception type metadata is evaluated only when Warning logging is enabled.
+- safe exception type metadata is evaluated only when Warning logging is enabled;
+- rebuild override timestamps are required to be UTC;
+- snooze values are validated before state persistence/platform scheduling.
 
 ## StartupCoordinator
 
@@ -1211,13 +1642,20 @@ The current planner contract is documented in `docs/testing/REMINDER_SCHEDULING_
 Rules include:
 
 - schedules originate only from explicit user input;
+- the supplied schedule must belong to the supplied medicine;
+- the supplied medicine must belong to the supplied profile;
+- persisted schedule times must belong to the supplied schedule;
+- intentionally unbound editor times remain supported before persistence;
+- archived profiles produce no automatic occurrences;
 - reminder occurrence keys are stable/deterministic;
 - rebuilds are idempotent;
+- planner windows require actual UTC values;
 - windows include `fromUtc` and exclude `toUtc`;
 - duplicate clock times collapse to one stable occurrence;
 - output is chronological;
 - daily/custom date boundaries are enforced;
-- selected weekdays use only selected mask values;
+- selected weekdays use only the seven supported mask bits;
+- unknown schedule kinds are rejected;
 - cycles use only explicit on/off days;
 - every-N-hours uses explicit start time/interval;
 - as-needed produces no automatic occurrences;
@@ -1225,7 +1663,10 @@ Rules include:
 - paused/completed/archived medicines produce no automatic occurrences;
 - invalid spring-forward local times are not silently shifted;
 - ambiguous fall-back local times produce a deterministic occurrence;
+- representative North America/Europe/Australia DST transitions are covered when available;
 - future reminders are rebuilt at startup;
+- explicit rebuild overrides must be UTC;
+- snooze requires a future UTC timestamp;
 - overdue occurrences are reconciled;
 - Android responds to reboot/time/time-zone rebuild signals;
 - stored schedule times are not silently rewritten after time-zone changes;
@@ -1239,7 +1680,7 @@ Rules include:
 - stock estimates explicitly warn users to check actual supply;
 - reminder scheduling failures are privacy-redacted in logs.
 
-These are organizational scheduling rules, not treatment or dosage advice.
+Deterministic property tests use a fixed seed and explicit synthetic inputs. These are organizational scheduling rules, not treatment or dosage advice.
 
 ---
 
@@ -1247,7 +1688,7 @@ These are organizational scheduling rules, not treatment or dosage advice.
 
 `SqliteDatabase.CreateSnapshotAsync` uses the existing SQLite WAL checkpoint path before copying the database snapshot.
 
-Automated regression evidence now checks more than file creation:
+Automated regression evidence checks:
 
 - WAL mode enabled;
 - busy timeout configured;
@@ -1277,19 +1718,23 @@ This does not replace the required manual clean-install encrypted backup/restore
 - iOS simulator Release build;
 - Mac Catalyst Release build.
 
+Latest verified source head `c61f3c31...` passed CI #248 / `31382194805`.
+
 ## CodeQL
 
-CodeQL is an independent security-analysis workflow and passed PR #28.
+CodeQL is an independent security-analysis workflow and passed PR #30 through CodeQL #248 / `31382194687`.
 
 ## Dependency Audit
 
-`.github/workflows/dependency-review.yml` audits platform-neutral and Android MAUI dependency graphs using NuGet audit mode and passed PR #28.
+`.github/workflows/dependency-review.yml` audits platform-neutral and Android MAUI dependency graphs using NuGet audit mode and passed PR #30 through Dependency Audit #10 / `31382194683`.
+
+The green audit does not mean the tracked SQLitePCLRaw advisory is fixed.
 
 ## Production Release Gate
 
 `.github/workflows/release-gate.yml` intentionally blocks final production release while the dependency risk register has an open production risk, release checklist items remain incomplete, required release documents are missing, or source tests fail.
 
-It is expected that final `1.0.0` remains blocked today because manual/store/signing/SQLite-risk decisions are not complete.
+It is expected that final `1.0.0` remains blocked because manual/store/signing/SQLite-risk decisions are not complete.
 
 ## Release Evidence
 
@@ -1305,6 +1750,8 @@ It is expected that final `1.0.0` remains blocked today because manual/store/sig
 - The encrypted backup payload carries document key material needed for portable restore without storing it in plaintext.
 - App-lock PINs are not stored directly; a salted PBKDF2-HMAC-SHA256 verifier is stored through secure platform storage.
 - App-lock verification uses fixed-time comparison and clears verifier buffers after checks.
+- Reminder entity ownership is validated before materialization to fail closed on inconsistent local object graphs.
+- Planner/rebuild/snooze time-kind contracts reject silent local/unspecified-to-UTC reinterpretation.
 - No API keys, signing keys, certificates, passwords, or production secrets are committed.
 - No analytics/telemetry client is part of v1.
 - No CareNest backend/cloud sync/account system/automatic upload exists in v1.
@@ -1325,6 +1772,11 @@ It is expected that final `1.0.0` remains blocked today because manual/store/sig
 - No diagnosis/treatment/dosage decisions: enforced through scope, domain behavior, UI text, policy tests, and documentation.
 - Reminder recovery: startup rebuild plus Android boot/time/time-zone integration implemented.
 - Deterministic reminder boundaries/DST behavior: implemented and contract tested.
+- Planner entity ownership: implemented and unit tested.
+- Archived-profile planner suppression: implemented and unit tested.
+- UTC planner/rebuild/snooze boundaries: implemented and contract tested.
+- Deterministic randomized/property recurrence boundaries: implemented with a fixed reproducible seed.
+- Representative multi-zone DST gap/overlap coverage: implemented when host zone IDs are available.
 - Permission/battery limitations: surfaced.
 - Profile export/delete: implemented.
 - Document export/delete: implemented.
@@ -1336,7 +1788,7 @@ It is expected that final `1.0.0` remains blocked today because manual/store/sig
 - Local caregiver mode: implemented without silent sharing.
 - Theme/accessibility/localization readiness: implemented.
 - App-lock privacy barrier: implemented with verifier-memory hardening and explicit limitations.
-- Automated quality gate: source head `69c4dd...` passed formatting, 101 tests, Android/Windows/iOS/Mac, CodeQL, and Dependency Audit.
+- Automated quality gate: exact source head `c61f3c31...` passed formatting, 141 tests, Android/Windows/iOS/Mac, CodeQL, and Dependency Audit.
 - Voluntary funding: implemented without changing CareNest health behavior or local-data access.
 - Branding variants: adaptive/splash/standard/light/dark/monochrome/support artwork present and contract tested.
 - Release evidence/provenance process: workflow/docs present; final public-release evidence run intentionally remains pending until production blockers are cleared.
@@ -1370,7 +1822,7 @@ Automated exact-head verification is green, but public `1.0.0` remains intention
 1. Complete `docs/releases/MANUAL_TEST_MATRIX.md` across Android, Windows, iOS/iPadOS, and Mac Catalyst on representative real/emulated targets.
 2. Manually verify notification permission denied/granted flows.
 3. Manually verify Android exact-alarm/battery/reboot/time/time-zone behavior on representative devices.
-4. Manually verify real-target reminder behavior including the documented limitations.
+4. Manually verify real-target reminder behavior including documented limitations and snooze behavior against actual platform notification scheduling.
 5. Manually verify document import/export/delete.
 6. Manually verify calendar export.
 7. Manually verify encrypted backup/restore on a clean installation/release build.
@@ -1417,8 +1869,6 @@ These are not missing RC1 core features; they are additional quality improvement
 
 - platform UI automation on stable real/emulated target infrastructure;
 - deeper notification-permission denial/retry state-transition automation;
-- DST gap/overlap coverage for additional representative time zones beyond the existing America/New_York cases;
-- randomized/property/fuzz-style schedule-planner recurrence-boundary tests;
 - backup compatibility fixtures across future schema versions;
 - file-corruption and low-storage target failure-path tests;
 - expanded semantic/accessibility XAML contracts while retaining manual assistive-technology testing;
@@ -1426,6 +1876,8 @@ These are not missing RC1 core features; they are additional quality improvement
 - artifact attestations/provenance where supported;
 - GitHub Dependency Review action if repository Dependency Graph becomes available;
 - protected signed-artifact workflow after signing identities are provisioned securely.
+
+The earlier roadmap items for additional representative DST zones and deterministic randomized/property recurrence-boundary tests are now complete in Phase 8 and have been removed from the future-work list.
 
 ---
 
@@ -1460,51 +1912,102 @@ Manual target-device tests, signing identities, current store-policy decisions, 
 
 ---
 
-# Documentation-only commits after the latest verified source head
+# Documentation-only commits after PR #28 source head
 
-Exact verified runtime/test/source head:
+Exact PR #28 verified runtime/test/source head:
 
 `69c4dd9319f7dc47edea1786e683f7d90c656e1e`
 
-After PR #28 completed green, the following documentation-only commits recorded and aligned evidence without changing the runtime/test source that passed CI #220:
+After PR #28 completed green, documentation-only commits aligned the status/evidence before Phase 8 source work began:
 
-- `7262b7c8f4e62b569d590d7ceaeaedbb2a2f4b5a` — `docs: record green reminder and app-lock hardening baseline` (`PROJECT_STATUS.md`);
-- `4be7d0496b0a04a0e595e54b25f490a11ee3a79a` — `docs: record PR28 automated release evidence` (`docs/releases/RELEASE_CHECKLIST.md`);
-- `928c4d3a141cc844edb62dbc5cb45896d607a2c0` — `docs: record reminder snapshot and app-lock hardening` (`CHANGELOG.md`);
-- `c1631cbf6816aeda952074d5f21007d0ca848350` — `docs: record deterministic reminder and app-lock memory decisions` (`DECISIONS.md`);
-- `cffec1df155efe824cc93e36b86be154950001b1` — `docs: align next steps with PR28 hardening evidence` (`docs/releases/NEXT_STEPS.md`);
-- `26914b553b26fa0ff6986b23a8846de13999ff36` — `docs: link deterministic scheduling and PR28 quality baseline` (`README.md`);
-- `b729a117feb5381f6574e8b018cdcdc4dd04f1fb` — `docs: add reminder snapshot and app-lock quality gates` (`docs/releases/QUALITY_GATE.md`);
-- `044c0f91bfde15b1f85474656e2ca9faedb05085` — `docs: expand app-lock and snapshot security release review` (`docs/releases/SECURITY_RELEASE_REVIEW.md`).
+- `7262b7c8f4e62b569d590d7ceaeaedbb2a2f4b5a` — `docs: record green reminder and app-lock hardening baseline`;
+- `4be7d0496b0a04a0e595e54b25f490a11ee3a79a` — `docs: record PR28 automated release evidence`;
+- `928c4d3a141cc844edb62dbc5cb45896d607a2c0` — `docs: record reminder snapshot and app-lock hardening`;
+- `c1631cbf6816aeda952074d5f21007d0ca848350` — `docs: record deterministic reminder and app-lock memory decisions`;
+- `cffec1df155efe824cc93e36b86be154950001b1` — `docs: align next steps with PR28 hardening evidence`;
+- `26914b553b26fa0ff6986b23a8846de13999ff36` — `docs: link deterministic scheduling and PR28 quality baseline`;
+- `b729a117feb5381f6574e8b018cdcdc4dd04f1fb` — `docs: add reminder snapshot and app-lock quality gates`;
+- `044c0f91bfde15b1f85474656e2ca9faedb05085` — `docs: expand app-lock and snapshot security release review`.
 
-This `what_changed.md` update is also documentation-only. These later documentation commits are not represented as separate platform-build verification heads.
+These commits did not change the PR #28 verified runtime/test source.
+
+---
+
+# Phase 8 commits before the final source freeze
+
+Runtime/test/documentation commits included:
+
+- `0f22de1240d28c8011c3c4f41d0a084211706a8d` — planner ownership enforcement;
+- `098644c73d7025142ef29f213933f01e8ba52959` — schedule enum/weekday/time-zone validation;
+- `e565c90cfc89fedb72127be520f71110e1307c11` — ownership tests;
+- `0c838901d3d90e37c23d29f77de49864e9cac080` — validation hardening tests;
+- `d505b76d178f71cd01ecb6bd7d3daac2f01e76ef` — UTC planner windows;
+- `d222f9855b7ceb65cf1209886e51385ad22af064` — UTC window tests;
+- `c4be9647b1393d3d978a8bc10643c3cfb3ccf91d` — deterministic recurrence property tests;
+- `72b4f18c6580164b50dbce5f5b70a512cb82da07` — multi-zone DST tests;
+- `d2250615b4937846b363b3fe6873fc9d64c958eb` — coordinator UTC/snooze validation;
+- `5e7a2a1f6fd83a31ba2a57622e0865e6b0df5815` — coordinator safety contracts;
+- `ede2cd0790fcfc52547157b751ff09d148af32bc` — archived-profile suppression;
+- `c8896cf41e72ebaf7a995c1020ddfcd965250998` — archived-profile test;
+- `1439dd7f6208c5f5a9b202cc9b4da498c1cdada6` — scheduling contract expansion;
+- `864b41f1838485ea89a9ef7b03e4da0964cc274e` — test-plan expansion;
+- `94af97c0af62661a0eadb3644db6d865e06efc1b` — ownership/UTC ADR decisions;
+- `04057299fe6d13012734ba235e6fa92604753948` — quality gate expansion and PR #29 source freeze;
+- `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` — CA2263 correction and final PR #30 source freeze.
+
+The exact final source/test/documentation head used by PR #30 is `c61f3c31...`.
+
+---
+
+# Documentation-only commits after the latest verified source head
+
+Exact latest verified runtime/test/source head:
+
+`c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`
+
+After PR #30 completed green, the following documentation-only commits recorded/aligned the new evidence without changing the runtime/test source that passed CI #248:
+
+- `a3a55404f0703f2614a89db86cbb48feaf5dc69f` — `docs: promote verified reminder ownership hardening baseline` (`PROJECT_STATUS.md`);
+- `d64a4a84c43d81078928ec70accd3c1cb3f69284` — `docs: record green reminder ownership verification evidence` (`docs/releases/RELEASE_CHECKLIST.md`);
+- `03f44fb07276e2ce7daa161f9875916bba0bf2a5` — `docs: advance verified reminder hardening roadmap` (`docs/releases/NEXT_STEPS.md`);
+- `c56188ba007a1e22dae8072622fbda6621d2d709` — `docs: promote green reminder integrity quality baseline` (`docs/releases/QUALITY_GATE.md`);
+- `8c62e626db219c2fe90e61adc832f62f08fe68f2` — `docs: extend reminder integrity security review` (`docs/releases/SECURITY_RELEASE_REVIEW.md`);
+- `5af5d12d7b5a617bdbd9414bffd754a7e10d038b` — `docs: publish verified reminder integrity baseline` (`README.md`);
+- `9f43bbe4c1f6369a50bf366b30e5839b4714868d` — `docs: record verified reminder ownership and UTC hardening` (`CHANGELOG.md`).
+
+This `what_changed.md` commit is documentation-only as well. A final compare is performed after this handoff update so the repository can prove that every commit after exact source head `c61f3c31...` changes documentation only.
 
 ---
 
 # Current repository state
 
 - Complete CareNest `1.0.0-rc.1` source remains on `main`.
-- Latest exact verified runtime/test/source head is `69c4dd9319f7dc47edea1786e683f7d90c656e1e`.
-- Verification PR #28 is closed without merge.
-- Verification marker head `a1362b551749762ae816e8b4366c8f1eb97538fa` did not enter `main`.
-- CareNest CI #220 / `31378000135`: **success**.
-- CodeQL #220 / `31378000143`: **success**.
-- Dependency Audit #8 / `31378000134`: **success**.
+- Latest exact verified runtime/test/source head is `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`.
+- Superseded verification PR #29 is closed without merge and is not green evidence.
+- PR #29 correctly exposed CA2263 in the new non-generic enum-validation call.
+- The CA2263 finding was fixed on `main` instead of suppressed.
+- Final Phase-8 verification PR #30 is closed without merge.
+- PR #30 marker head `59016b7e2b13d5ac1c93cf0db973f275c6e7eb19` did not enter `main`.
+- CareNest CI #248 / `31382194805`: **success**.
+- CodeQL #248 / `31382194687`: **success**.
+- Dependency Audit #10 / `31382194683`: **success**.
 - Platform-neutral formatting: **success**.
-- Unit tests: **37/37 passed**.
+- Unit tests: **74/74 passed**.
 - Integration tests: **13/13 passed**.
-- UI-contract/policy tests: **51/51 passed**.
-- Total core automated test cases: **101/101 passed**.
+- UI-contract/policy tests: **54/54 passed**.
+- Total core automated test cases: **141/141 passed**.
 - Android Release: **success**.
 - Windows Release: **success**.
 - iOS simulator Release: **success**.
 - Mac Catalyst Release: **success**.
-- Deterministic reminder planner schedule/date/state/window/DST/dedup/order coverage is active.
+- Planner entity ownership, UTC windows, archived-profile suppression, stable half-open boundaries, dedup/order, explicit recurrence patterns, and multi-zone DST behavior are automated and documented.
+- Reminder coordinator rebuild/snooze UTC boundaries are protected by runtime validation/source contracts.
+- Deterministic fixed-seed recurrence property coverage is active.
 - WAL snapshot committed-content/integrity/cancellation regression coverage is active.
 - App-lock verifier-memory clearing is implemented and source-contract protected.
 - App lock remains explicitly documented as a local privacy barrier, not whole-database/device encryption.
 - Global/UI/startup/reminder exception logging is privacy-redacted and analyzer-compliant.
-- Repository policy, architecture, ViewModel, data-model, branding, async, logging privacy, and app-lock security contracts are active.
+- Repository policy, architecture, ViewModel, data-model, branding, async, logging privacy, app-lock security, reminder-integrity, and coordinator-safety contracts are active.
 - Dependency Audit, Release Gate, Release Evidence, CI, CodeQL, and Dependabot configuration are present.
 - README/SUPPORT/About funding surfaces and both CareNest support artwork variants are present.
 - The Buy Me a Coffee URL remains `https://buymeacoffee.com/sanskarIN`, voluntary, external, and non-entitlement based.
