@@ -1,0 +1,84 @@
+name: CareNest Release Evidence
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  evidence:
+    name: Core release evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Prepare evidence directory
+        shell: bash
+        run: mkdir -p artifacts/test-results artifacts/dependencies
+
+      - name: Record source and toolchain identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD > artifacts/commit-sha.txt
+          git status --porcelain=v1 > artifacts/git-status.txt
+          dotnet --info > artifacts/dotnet-info.txt
+          printf '%s\n' "${GITHUB_REF}" > artifacts/github-ref.txt
+
+      - name: Run unit tests with TRX evidence
+        run: >-
+          dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj
+          --configuration Release
+          --logger "trx;LogFileName=unit.trx"
+          --results-directory artifacts/test-results
+          --nologo
+
+      - name: Run integration tests with TRX evidence
+        run: >-
+          dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj
+          --configuration Release
+          --logger "trx;LogFileName=integration.trx"
+          --results-directory artifacts/test-results
+          --nologo
+
+      - name: Run UI contract tests with TRX evidence
+        run: >-
+          dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj
+          --configuration Release
+          --logger "trx;LogFileName=ui-contract.trx"
+          --results-directory artifacts/test-results
+          --nologo
+
+      - name: Capture transitive dependency inventories
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list src/CareNest.Shared/CareNest.Shared.csproj package --include-transitive --format json > artifacts/dependencies/shared.json
+          dotnet list src/CareNest.Domain/CareNest.Domain.csproj package --include-transitive --format json > artifacts/dependencies/domain.json
+          dotnet list src/CareNest.Application/CareNest.Application.csproj package --include-transitive --format json > artifacts/dependencies/application.json
+          dotnet list src/CareNest.Infrastructure/CareNest.Infrastructure.csproj package --include-transitive --format json > artifacts/dependencies/infrastructure.json
+
+      - name: Record evidence checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          find artifacts -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > artifacts/SHA256SUMS
+
+      - name: Upload immutable run evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: carenest-release-evidence-${{ github.sha }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
