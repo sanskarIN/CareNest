@@ -16,6 +16,11 @@ public sealed class ReminderCoordinator(
     public async Task RebuildAsync(DateTime? fromUtc = null, CancellationToken cancellationToken = default)
     {
         var now = fromUtc ?? timeProvider.GetUtcNow().UtcDateTime;
+        if (now.Kind != DateTimeKind.Utc)
+        {
+            throw new ArgumentException("Reminder rebuild start must be UTC.", nameof(fromUtc));
+        }
+
         var horizon = now.AddDays(AppConstants.ReminderHorizonDays);
 
         var schedules = await repository.GetEnabledSchedulesAsync(cancellationToken);
@@ -89,14 +94,28 @@ public sealed class ReminderCoordinator(
     {
         var occurrence = await repository.GetOccurrenceAsync(occurrenceId, cancellationToken)
             ?? throw new InvalidOperationException("Reminder occurrence was not found.");
+        var now = timeProvider.GetUtcNow().UtcDateTime;
 
-        if (newState == ReminderState.Snoozed && snoozedUntilUtc is null)
+        if (newState == ReminderState.Snoozed)
         {
-            throw new ArgumentException("Snooze requires an explicit future time.", nameof(snoozedUntilUtc));
+            if (snoozedUntilUtc is null)
+            {
+                throw new ArgumentException("Snooze requires an explicit future time.", nameof(snoozedUntilUtc));
+            }
+
+            if (snoozedUntilUtc.Value.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("Snooze time must be UTC.", nameof(snoozedUntilUtc));
+            }
+
+            if (snoozedUntilUtc.Value <= now)
+            {
+                throw new ArgumentOutOfRangeException(nameof(snoozedUntilUtc), "Snooze time must be in the future.");
+            }
         }
 
         occurrence.State = newState;
-        occurrence.StateChangedUtc = timeProvider.GetUtcNow().UtcDateTime;
+        occurrence.StateChangedUtc = now;
         occurrence.SnoozedUntilUtc = newState == ReminderState.Snoozed ? snoozedUntilUtc : null;
         await repository.SaveOccurrenceAsync(occurrence, cancellationToken);
 
