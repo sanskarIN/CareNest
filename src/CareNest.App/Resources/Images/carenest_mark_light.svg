@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">CareNest light mark</title>
+  <desc id="desc">CareNest shield and nest mark intended for light application surfaces.</desc>
+  <rect width="512" height="512" rx="112" fill="#F5FAF8"/>
+  <path d="M256 80c78 0 142 48 166 116-7 113-67 194-166 236-99-42-159-123-166-236C114 128 178 80 256 80Z" fill="#365A4E"/>
+  <path d="M155 252c40-54 162-54 202 0-21 63-60 111-101 137-41-26-80-74-101-137Z" fill="#F5FAF8"/>
+  <path d="M185 252c38 22 104 22 142 0" fill="none" stroke="#365A4E" stroke-width="18" stroke-linecap="round"/>
+  <rect x="202" y="151" width="108" height="86" rx="18" fill="#FFFFFF"/>
+  <path d="M222 177h68M224 205l17 16 45-45" fill="none" stroke="#365A4E" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
