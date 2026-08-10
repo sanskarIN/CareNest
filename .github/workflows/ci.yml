@@ -17,12 +17,28 @@ jobs:
   core-tests:
     name: Core tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
+      - name: Verify platform-neutral formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          projects=(
+            src/CareNest.Shared/CareNest.Shared.csproj
+            src/CareNest.Domain/CareNest.Domain.csproj
+            src/CareNest.Application/CareNest.Application.csproj
+            src/CareNest.Infrastructure/CareNest.Infrastructure.csproj
+            tests/CareNest.UnitTests/CareNest.UnitTests.csproj
+            tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj
+            tests/CareNest.UiTests/CareNest.UiTests.csproj
+          )
+          for project in "${projects[@]}"; do
+            dotnet format "$project" --verify-no-changes --verbosity minimal
+          done
       - name: Restore and test unit tests
         run: dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj --configuration Release --nologo
       - name: Restore and test integration tests
