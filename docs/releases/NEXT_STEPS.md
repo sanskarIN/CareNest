@@ -4,22 +4,24 @@ This document tracks work after the source-complete `1.0.0-rc.1` milestone. It i
 
 ## Automated hardening baseline completed
 
-Exact source head `69c4dd9319f7dc47edea1786e683f7d90c656e1e` passed through marker-only verification PR #28:
+Exact source head `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` passed through marker-only verification PR #30:
 
-- CareNest CI #220 / `31378000135`;
+- CareNest CI #248 / `31382194805`;
 - platform-neutral formatting;
-- 37 unit tests;
+- 74 unit tests;
 - 13 integration tests;
-- 51 UI-contract/policy tests;
-- 101 total core automated tests;
+- 54 UI-contract/policy tests;
+- 141 total core automated tests;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
 - Mac Catalyst Release;
-- CodeQL #220 / `31378000143`;
-- Dependency Audit #8 / `31378000134`.
+- CodeQL #248 / `31382194687`;
+- Dependency Audit #10 / `31382194683`.
 
-This baseline includes deterministic reminder scheduling boundaries, daylight-saving gap/overlap coverage, WAL snapshot content/cancellation coverage, and app-lock verifier-buffer hardening. It does not complete the production-release blockers below.
+This baseline includes all prior reminder/snapshot/app-lock hardening plus reminder entity-ownership validation, archived-profile suppression, explicit UTC planner/rebuild/snooze contracts, recognized schedule-kind and weekday-mask validation, deterministic fixed-seed recurrence property coverage, and representative multi-zone DST gap/overlap coverage.
+
+PR #29 was intentionally superseded rather than accepted: CI #246 exposed CA2263 in a newly added non-generic `Enum.IsDefined` call. `main` was corrected with the generic overload and PR #30 reran the complete exact-head matrix successfully. This automated baseline does not complete the production-release blockers below.
 
 ## Priority 0 — production-release blockers
 
@@ -45,6 +47,7 @@ Automated CI proves compilation/contracts, but it does not replace real-device b
 - [ ] Windows 11: fresh install, navigation, in-process notification limitation messaging, document picker/share, backup/restore, keyboard navigation, theme changes.
 - [ ] iPhone/iPad: fresh install, notification permission flow, notification delivery, backup/restore, document picker/share, app lock, Dynamic Type/VoiceOver checks.
 - [ ] macOS/Mac Catalyst: fresh install, notifications, file operations, keyboard navigation, backup/restore, theme changes.
+- [ ] Verify snooze behavior against actual platform notification scheduling, including rejection/handling of invalid or stale input paths at the UI/platform boundary.
 - [ ] Verify large-interface mode, reduced motion, screen-reader labels, focus order, contrast, and text scaling on representative devices.
 - [ ] Verify all medical-safety disclaimers remain visible and no workflow implies diagnosis, dosage calculation, treatment recommendations, or guaranteed reminder delivery.
 
@@ -100,7 +103,7 @@ Automated repository policy tests reject common committed signing/secret file ty
 The current hardening head has a green exact-head matrix, but the final production-candidate verification must happen **after** all Priority 0 work and any resulting source/configuration changes.
 
 - [x] Exact-head marker-only verification protocol is documented in `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
-- [x] Current RC1 hardening source has a green exact-head automated baseline through PR #28.
+- [x] Current RC1 hardening source has a green exact-head automated baseline through PR #30.
 - [ ] After Priority 0 blockers are complete, branch from the exact intended production-release commit.
 - [ ] Trigger the complete GitHub Actions matrix.
 - [ ] Require green formatting/core tests, Android, Windows, iOS simulator, Mac Catalyst, CodeQL, and Dependency Audit.
@@ -150,7 +153,13 @@ Completed hardening now includes:
 - [x] global/UI/startup/reminder exception-log privacy regression contracts;
 - [x] deterministic reminder recurrence/window/date/state contracts;
 - [x] selected-weekday/cycle/every-N-hours validation boundaries;
-- [x] DST spring-forward invalid-time and fall-back ambiguous-time planner coverage for a representative time zone;
+- [x] recognized schedule-kind and supported weekday-mask validation;
+- [x] planner ownership validation for profile/medicine/schedule/persisted schedule-time relationships;
+- [x] archived-profile suppression at the planner boundary;
+- [x] UTC-kind validation for planner windows and rebuild overrides;
+- [x] future-UTC snooze validation before persistence/platform scheduling;
+- [x] daylight-saving gap/overlap coverage for representative North America, Europe and Australia zones when available;
+- [x] deterministic randomized/property-style schedule recurrence-boundary coverage with a fixed seed;
 - [x] WAL snapshot creation/content/integrity/pre-cancellation coverage;
 - [x] app-lock cryptographic/source security contracts and verifier-buffer clearing;
 - [x] existing encryption/backup/report integration coverage.
@@ -159,8 +168,6 @@ Still useful later when stable target infrastructure exists:
 
 - [ ] Add platform UI automation on real/emulated targets.
 - [ ] Add deeper notification permission denial/retry state-transition automation where platform APIs can be reliably driven.
-- [ ] Add daylight-saving gap/overlap coverage for additional representative time zones beyond the existing America/New_York cases.
-- [ ] Add randomized/property/fuzz-style schedule-planner recurrence-boundary coverage.
 - [ ] Add backup compatibility fixtures across future schema versions.
 - [ ] Add file-corruption and low-storage target failure-path tests.
 - [ ] Expand semantic/accessibility XAML contract coverage where meaningful without replacing manual assistive-technology testing.
@@ -172,7 +179,7 @@ Completed:
 - [x] Dependency Audit workflow for pull requests.
 - [x] Release Gate workflow blocks unresolved tracked dependency risk and incomplete release checklist.
 - [x] Release Evidence workflow records exact source/ref/toolchain/test/dependency/checksum evidence.
-- [x] Exact-head marker-only verification protocol documented and proven through multiple verification cycles.
+- [x] Exact-head marker-only verification protocol documented and proven through multiple verification cycles, including analyzer-failure supersession rather than stale evidence reuse.
 - [x] Platform-neutral formatting enforced in CI.
 - [x] CodeQL and multi-platform build matrix remain required automated gates.
 
