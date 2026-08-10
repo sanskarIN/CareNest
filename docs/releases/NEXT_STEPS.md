@@ -1,24 +1,44 @@
 # CareNest Next Steps
 
-This document tracks the work to consider after the source-complete `1.0.0-rc.1` milestone. It intentionally separates release blockers from optional future versions so unfinished future ideas are not confused with missing RC1 implementation.
+This document tracks work after the source-complete `1.0.0-rc.1` milestone. It intentionally separates release blockers from completed hardening and optional future versions so unfinished future ideas are not confused with missing RC1 implementation.
+
+## Automated hardening baseline completed
+
+Exact source head `8417513db36c72b0ec2cfaccadb6ac47ba361f11` passed:
+
+- CareNest CI #200 / `31375336226`;
+- platform-neutral formatting;
+- 15 unit tests;
+- 11 integration tests;
+- 46 UI-contract/policy tests;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release;
+- CodeQL #200 / `31375336083`;
+- Dependency Audit #7 / `31375336088`.
+
+This automated baseline does not complete the production-release blockers below.
 
 ## Priority 0 — production-release blockers
 
-These items should be completed before promoting the release candidate to a public production release.
+These items must be completed before promoting the release candidate to a public production release.
 
 ### 1. Resolve the open SQLite dependency advisory
 
-- [ ] Re-check the current `sqlite-net-pcl` / `SQLitePCLRaw` dependency graph against NuGet audit.
-- [ ] Upgrade to a compatible patched native SQLite package path when one is actually available.
-- [ ] Remove the narrow `NuGetAuditSuppress` entry after the dependency graph no longer resolves the affected package/advisory.
-- [ ] Run unit, integration, UI-contract, Android, Windows, iOS simulator, Mac Catalyst, and CodeQL verification again.
-- [ ] Update `docs/security/DEPENDENCY_RISK_REGISTER.md` with the exact resolution and evidence.
+- [x] Re-check the current `sqlite-net-pcl` / `SQLitePCLRaw` dependency graph through the repository Dependency Audit workflow.
+- [ ] Upgrade to a compatible patched native SQLite package path when one is actually available, or adopt a separately verified replacement provider/path.
+- [ ] Remove the narrow `NuGetAuditSuppress` entry only after the dependency graph no longer resolves the affected package/advisory.
+- [ ] Run unit, integration, UI-contract, Android, Windows, iOS simulator, Mac Catalyst, CodeQL and Dependency Audit verification again after any SQLite dependency/provider change.
+- [ ] Update `docs/security/DEPENDENCY_RISK_REGISTER.md` with the exact final resolution/decision and evidence.
 
-**Done when:** no unresolved high-severity dependency advisory remains in the release dependency graph and CI is green without the temporary audit exception.
+**Current state:** `GHSA-2m69-gcr7-jv3q` remains open for SQLitePCLRaw native `2.1.11`. The attempted `2.1.12` bundle path was unavailable. The narrow audit suppression is not a vulnerability fix.
+
+**Done when:** the release dependency path has an acceptable documented resolution/decision and the applicable regression/verification gates are green.
 
 ### 2. Run manual device and accessibility smoke testing
 
-Automated CI proves compilation and contracts, but it does not replace real-device behavior testing.
+Automated CI proves compilation/contracts, but it does not replace real-device behavior testing.
 
 - [ ] Android phone: fresh install, onboarding, notification permission denied/granted, exact/inexact alarm behavior, reboot rebuild, time-zone change, battery-optimization diagnostics, document import/export, encrypted backup/restore, app lock.
 - [ ] Windows 11: fresh install, navigation, in-process notification limitation messaging, document picker/share, backup/restore, keyboard navigation, theme changes.
@@ -27,11 +47,13 @@ Automated CI proves compilation and contracts, but it does not replace real-devi
 - [ ] Verify large-interface mode, reduced motion, screen-reader labels, focus order, contrast, and text scaling on representative devices.
 - [ ] Verify all medical-safety disclaimers remain visible and no workflow implies diagnosis, dosage calculation, treatment recommendations, or guaranteed reminder delivery.
 
+Use `docs/releases/MANUAL_TEST_MATRIX.md` as the evidence record.
+
 **Done when:** the release checklist has device-specific evidence for every supported platform and no release-blocking defect remains.
 
 ### 3. Verify current app-store policy for the voluntary support link
 
-CareNest now exposes `https://buymeacoffee.com/sanskarIN` as an optional project-support link and also publishes it through GitHub funding metadata.
+CareNest exposes `https://buymeacoffee.com/sanskarIN` as optional project support and also publishes it through GitHub funding metadata.
 
 Store rules for external funding/payment links can change. Before submitting a store build:
 
@@ -39,7 +61,9 @@ Store rules for external funding/payment links can change. Before submitting a s
 - [ ] Verify the current Google Play rules for external project-support/donation links.
 - [ ] Confirm the link is presented only as voluntary project support.
 - [ ] Confirm no medical feature, health functionality, reminder behavior, support priority, or premium entitlement is unlocked by contributing.
-- [ ] If a store disallows the in-app external support link, conditionally hide/remove that button for the affected store build while retaining the repository funding link where permitted.
+- [ ] If a store disallows the in-app external support link, conditionally hide/remove that button for the affected store build while retaining repository funding links where permitted.
+
+Automated tests already protect the fixed URL and voluntary/no-health-entitlement wording; they cannot determine current store policy.
 
 **Done when:** store-review guidance for every distribution channel is documented and the shipped UI complies with that channel's current rules.
 
@@ -52,11 +76,13 @@ Store rules for external funding/payment links can change. Before submitting a s
 - [ ] Verify application identifiers, version numbers, display names, icons, splash assets, capabilities, and package metadata per platform.
 - [ ] Document certificate/key backup and rotation procedures.
 
+Automated repository policy tests reject common committed signing/secret file types, but credentials themselves must be provisioned externally.
+
 **Done when:** reproducible signed release artifacts can be produced without placing private signing material in Git.
 
 ### 5. Finish store listing and privacy disclosures
 
-- [ ] Produce final screenshots for phone/tablet/desktop targets.
+- [ ] Produce final screenshots for phone/tablet/desktop targets using fictional data only.
 - [ ] Produce required store icon, feature graphic, promotional graphic, and platform-specific screenshots.
 - [ ] Write concise and long descriptions that match actual functionality.
 - [ ] Complete privacy/data-safety questionnaires from the implemented local-first behavior rather than marketing assumptions.
@@ -68,79 +94,107 @@ Store rules for external funding/payment links can change. Before submitting a s
 
 ## Priority 1 — release promotion
 
-### 6. Create a final release verification branch
+### 6. Create the final production-candidate verification branch
 
-After all Priority 0 blockers are complete:
+The current hardening head has a green exact-head matrix, but the final production-candidate verification must happen **after** all Priority 0 work and any resulting source/configuration changes.
 
-- [ ] Branch from the exact intended release commit.
+- [x] Exact-head marker-only verification protocol is documented in `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
+- [x] Current RC1 hardening source has a green exact-head automated baseline through PR #27.
+- [ ] After Priority 0 blockers are complete, branch from the exact intended production-release commit.
 - [ ] Trigger the complete GitHub Actions matrix.
-- [ ] Require green core tests, Android, Windows, iOS simulator, Mac Catalyst, and CodeQL.
-- [ ] Capture the workflow run IDs in `what_changed.md` and the release notes.
-- [ ] Do not merge verification-only marker files into `main`.
+- [ ] Require green formatting/core tests, Android, Windows, iOS simulator, Mac Catalyst, CodeQL, and Dependency Audit.
+- [ ] Run `CareNest Release Evidence` for the exact promoted commit.
+- [ ] Capture workflow run IDs in `what_changed.md`, `PROJECT_STATUS.md`, release checklist, and release notes.
+- [ ] Close verification-only marker PR without merging its marker file.
 
 ### 7. Promote version metadata
 
-- [ ] Decide whether the first public version is `1.0.0` or another pre-release build.
+- [ ] Decide final first public version (`1.0.0` or another pre-release).
 - [ ] Update app version/build values consistently for Android, Apple, and Windows targets.
 - [ ] Update `CHANGELOG.md` and release notes.
-- [ ] Update `PROJECT_STATUS.md` from release-candidate status to the actual shipped status.
+- [ ] Update `PROJECT_STATUS.md` from release-candidate status to actual shipped status.
 - [ ] Create an annotated Git tag from the exact verified commit.
 
 ### 8. Build and archive release artifacts
 
-- [ ] Android: generate the intended signed AAB/APK artifact.
-- [ ] iOS: archive the signed app for App Store/TestFlight distribution.
-- [ ] Mac Catalyst: create the intended signed/notarized package if distributed outside the Mac App Store, or the store-ready archive if using the store.
-- [ ] Windows: create the intended signed MSIX/package.
+- [ ] Android: generate intended signed AAB/APK artifact.
+- [ ] iOS: archive signed app for App Store/TestFlight distribution.
+- [ ] Mac Catalyst: create intended signed/notarized package or store-ready archive.
+- [ ] Windows: create intended signed MSIX/package.
 - [ ] Generate SHA-256 checksums for directly distributed artifacts.
-- [ ] Keep release artifacts and provenance metadata separate from source-control secrets.
+- [ ] Keep release artifacts/provenance separate from source-control secrets.
 
 ## Priority 2 — post-release quality
 
-### 9. Establish a release-feedback loop without hidden telemetry
+### 9. Establish release-feedback loop without hidden telemetry
 
-- [ ] Use GitHub Issues and the support email for explicit user-submitted bug reports.
-- [ ] Keep sanitized diagnostics export opt-in and user-controlled.
-- [ ] Add a structured bug-report template asking for app version, OS version, time zone, notification permission state, and reproduction steps while explicitly telling users not to attach medical documents or sensitive health details.
-- [ ] Triage crashes and reminder reliability reports by platform and version.
-- [ ] Publish patch releases for confirmed defects.
+- [x] Use GitHub Issues and support email for explicit user-submitted bug reports.
+- [x] Privacy-safe structured bug report form exists under `.github/ISSUE_TEMPLATE/bug_report.yml`.
+- [x] Bug form requests version/platform/OS/time-zone/notification state/reproduction steps while warning users not to attach medical documents, credentials, backups, or private health information.
+- [x] Sanitized diagnostics export remains opt-in/user-controlled in the application design.
+- [ ] Triage real crashes/reminder reliability reports by platform/version after public release.
+- [ ] Publish patch releases for confirmed defects after release.
 
 ### 10. Expand automated coverage
 
-- [ ] Add platform UI automation where stable device/emulator infrastructure is available.
-- [ ] Add tests for notification permission denial/retry state transitions.
-- [ ] Add tests for daylight-saving gaps/overlaps across additional time zones.
-- [ ] Add randomized/fuzz-style schedule-planner tests for recurrence boundaries.
-- [ ] Add backup compatibility fixtures across schema versions.
-- [ ] Add file-corruption and low-storage failure-path tests.
-- [ ] Add accessibility contract checks for important XAML pages.
+Completed hardening now includes:
+
+- [x] repository safety/completeness policy contracts;
+- [x] architecture dependency contracts;
+- [x] ViewModel boundary contracts;
+- [x] required data-model safety contracts;
+- [x] branding/localization resource contracts;
+- [x] async non-blocking source contracts;
+- [x] logging-privacy source contracts;
+- [x] global/UI/startup/reminder exception-log privacy regression contracts;
+- [x] existing reminder recurrence/time-zone/SQLite/encryption/backup/report integration coverage.
+
+Still useful later when stable target infrastructure exists:
+
+- [ ] Add platform UI automation on real/emulated targets.
+- [ ] Add deeper notification permission denial/retry state-transition automation where platform APIs can be reliably driven.
+- [ ] Add additional daylight-saving gap/overlap zones.
+- [ ] Add randomized/fuzz-style schedule-planner recurrence-boundary coverage.
+- [ ] Add backup compatibility fixtures across future schema versions.
+- [ ] Add file-corruption and low-storage target failure-path tests.
+- [ ] Expand semantic/accessibility XAML contract coverage where meaningful without replacing manual assistive-technology testing.
 
 ### 11. Improve release engineering
 
-- [ ] Cache supported workloads/packages in CI where this does not make verification stale or unsafe.
-- [ ] Produce signed artifacts only from protected release workflows.
-- [ ] Add dependency-review automation for pull requests.
+Completed:
+
+- [x] Dependency Audit workflow for pull requests.
+- [x] Release Gate workflow blocks unresolved tracked dependency risk and incomplete release checklist.
+- [x] Release Evidence workflow records exact source/ref/toolchain/test/dependency/checksum evidence.
+- [x] Exact-head marker-only verification protocol documented and proven through multiple verification cycles.
+- [x] Platform-neutral formatting enforced in CI.
+- [x] CodeQL and multi-platform build matrix remain required automated gates.
+
+Remaining optional/production improvements:
+
+- [ ] Cache supported workloads/packages where this does not make verification stale or unsafe.
+- [ ] Produce signed artifacts only from a protected release workflow after signing is configured.
+- [ ] Add GitHub Dependency Review action if/when repository Dependency Graph is enabled; current NuGet Dependency Audit is the available gate.
 - [ ] Add SBOM generation for release artifacts.
 - [ ] Add artifact attestations/provenance where supported by the chosen distribution pipeline.
-- [ ] Add a release workflow that fails if the dependency risk register contains an unresolved production blocker.
 
 ## Priority 3 — CareNest 1.x enhancements
 
-These should preserve the local-first, non-diagnostic design unless a later architecture decision explicitly changes that boundary.
+These preserve the local-first, non-diagnostic boundary unless a future architecture decision explicitly expands infrastructure while retaining safety constraints.
 
 ### 12. Localization
 
 - [ ] Move remaining hard-coded UI strings into resources.
 - [ ] Add locale-aware date/time formatting while keeping machine-readable exports invariant where required.
-- [ ] Start with languages selected from actual user demand.
+- [ ] Add languages based on actual user demand.
 - [ ] Add right-to-left layout testing before shipping an RTL locale.
 
 ### 13. Reminder usability
 
-- [ ] Add clearer upcoming-reminder grouping and filtering.
+- [ ] Add clearer upcoming-reminder grouping/filtering.
 - [ ] Add safe duplicate-schedule detection without inferring clinical intent.
 - [ ] Add optional user-entered labels/colors for schedules.
-- [ ] Improve explanation of operating-system delivery limitations per platform.
+- [ ] Improve explanation of OS delivery limitations per platform.
 - [ ] Preserve explicit user-entered times and never silently calculate dosage.
 
 ### 14. Document organization
@@ -152,28 +206,28 @@ These should preserve the local-first, non-diagnostic design unless a later arch
 
 ### 15. Backup usability
 
-- [ ] Add clearer backup-age status and reminders.
-- [ ] Add optional local backup-history metadata without storing the backup password.
+- [ ] Add clearer backup-age status/reminders.
+- [ ] Add optional local backup-history metadata without storing backup password.
 - [ ] Add restore-preview metadata that remains non-sensitive.
-- [ ] Add migration fixtures for every future schema version.
+- [ ] Add migration fixtures for each future schema version.
 
 ## Priority 4 — separately reviewed future versions
 
-The following are intentionally not part of the current local-only release and require new threat modeling, privacy design, authentication design, abuse analysis, and explicit user consent before implementation.
+The following are intentionally not part of current local-only release and require new threat modeling, privacy design, authentication design, abuse analysis, and explicit user consent before implementation.
 
 ### Optional encrypted synchronization
 
-Consider only after a separate architecture/security review:
+Consider only after separate architecture/security review:
 
 - end-to-end encrypted multi-device synchronization;
 - user-controlled backup destination integrations;
-- conflict handling and recovery;
-- key rotation and device revocation;
-- clear offline behavior and deletion semantics.
+- conflict handling/recovery;
+- key rotation/device revocation;
+- clear offline/deletion semantics.
 
 ### Optional remote caregiver collaboration
 
-Consider only with explicit invitation/consent and revocation controls:
+Consider only with explicit invitation/consent/revocation controls:
 
 - no silent sharing;
 - per-profile/per-data-category permissions;
@@ -186,8 +240,8 @@ Consider only with explicit invitation/consent and revocation controls:
 If accounts are ever added, define first:
 
 - what data must remain local;
-- what data, if any, leaves the device;
-- account deletion and export behavior;
+- what data, if any, leaves device;
+- account deletion/export behavior;
 - encryption/key ownership;
 - recovery model;
 - breach-response process;
@@ -199,27 +253,30 @@ Current voluntary support URL:
 
 `https://buymeacoffee.com/sanskarIN`
 
-Funding should remain separate from health behavior. Contributions must not change CareNest's medical-safety boundary, silently enable data sharing, or imply that paying users receive medical advice.
+Funding remains separate from health behavior. Contributions must not change CareNest's medical-safety boundary, silently enable data sharing, imply medical advice, change reminder priority, or provide access to local user data.
 
 Potential sustainable project paths to consider later:
 
 - voluntary sponsorship/donations;
-- paid convenience features that do not alter medical claims or core safety behavior, only after store-policy review;
-- paid support for organizations without access to user medical data unless explicitly and separately designed;
-- consulting/custom-development work linked from the maintainer profile rather than embedding sensitive service workflows into CareNest.
+- paid convenience features that do not alter medical claims/core safety behavior, only after store-policy review;
+- paid organizational support without access to user medical data unless separately designed and consented;
+- consulting/custom-development work linked from maintainer profile rather than embedding sensitive service workflows into CareNest.
 
-## Definition of done for a public `1.0.0`
+## Definition of done for public `1.0.0`
 
-CareNest should be promoted from release candidate only when all of the following are true:
+CareNest should be promoted from release candidate only when all applicable items are true:
 
-- [ ] no known unresolved production-blocking dependency vulnerability remains;
-- [ ] complete automated test/build/CodeQL matrix is green on the exact release commit;
+- [ ] no unresolved production-blocking dependency risk remains without an explicit approved resolution/decision;
+- [ ] complete automated formatting/test/build/CodeQL/Dependency Audit matrix is green on the exact final release commit;
+- [ ] `CareNest Release Evidence` is generated for the exact promoted commit;
 - [ ] manual supported-platform smoke tests are complete;
-- [ ] notification limitations are verified and documented;
+- [ ] notification limitations are manually verified/documented;
 - [ ] backup/restore is tested on clean installations;
 - [ ] accessibility checks are complete;
-- [ ] store policy review is complete, including the external voluntary-support link;
+- [ ] store policy review is complete, including external voluntary-support link;
 - [ ] signing keys/certificates are secured outside Git;
 - [ ] privacy/data-safety disclosures match actual behavior;
-- [ ] release notes/changelog/status documents are updated;
-- [ ] signed release artifacts are archived with reproducible version/provenance information.
+- [ ] release notes/changelog/status/handoff documents are updated;
+- [ ] signed release artifacts are archived with exact version/provenance information.
+
+Current automated RC1 hardening is green, but those remaining manual/security/distribution conditions intentionally keep final `1.0.0` publication blocked.
