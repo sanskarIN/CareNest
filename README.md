@@ -12,6 +12,7 @@ CareNest is an open-source, local-first health organizer built with .NET MAUI an
 - Multiple local profiles with optional app lock.
 - User-defined medicine schedules without dosage inference.
 - Reminder lifecycle: scheduled, snoozed, taken, skipped, delayed, and missed.
+- Deterministic reminder materialization with explicit date/time/time-zone boundaries and no invented DST-gap replacement times.
 - Appointment planning and history.
 - Encrypted local health-document vault.
 - Stock/refill tracking based only on user-entered quantities.
@@ -20,7 +21,7 @@ CareNest is an open-source, local-first health organizer built with .NET MAUI an
 - Light, dark, system theme and accessibility-ready layouts.
 - Android, iOS, Mac Catalyst, and Windows targets.
 - Privacy-aware developer diagnostics and exception-log redaction contracts.
-- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, and logging-privacy quality gates.
+- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-boundary, and snapshot-integrity quality gates.
 
 ## Technology
 
@@ -77,23 +78,32 @@ The `CareNestTargetFramework` property intentionally narrows the multi-target MA
 
 For Windows, iOS simulator, and Mac Catalyst commands, use [`docs/setup/DEVELOPMENT.md`](docs/setup/DEVELOPMENT.md).
 
+## Deterministic reminder scheduling
+
+CareNest never chooses a medicine dose or infers how frequently a medicine should be used. Reminder occurrences are derived only from explicit user-entered schedule values.
+
+The exact planner invariants—half-open planning windows, stable occurrence keys, duplicate-time deduplication, state/date boundaries, cycle/every-N-hours rules, and daylight-saving gap/overlap handling—are documented in [`docs/testing/REMINDER_SCHEDULING_CONTRACT.md`](docs/testing/REMINDER_SCHEDULING_CONTRACT.md).
+
+A local clock time that does not exist during a daylight-saving spring-forward gap is not silently replaced with a guessed alternative time.
+
 ## Verified automated quality baseline
 
-Exact source head `8417513db36c72b0ec2cfaccadb6ac47ba361f11` passed the final hardening verification through PR #27:
+Exact source head `69c4dd9319f7dc47edea1786e683f7d90c656e1e` passed the latest hardening verification through PR #28:
 
-- CareNest CI #200 / `31375336226` — success;
+- CareNest CI #220 / `31378000135` — success;
 - platform-neutral formatting — success;
-- 15 unit tests — passed;
-- 11 integration tests — passed;
-- 46 UI-contract/policy tests — passed;
+- 37 unit tests — passed;
+- 13 integration tests — passed;
+- 51 UI-contract/policy tests — passed;
+- 101 total core automated tests — passed;
 - Android Release — success;
 - Windows Release — success;
 - iOS simulator Release — success;
 - Mac Catalyst Release — success;
-- CodeQL #200 / `31375336083` — success;
-- Dependency Audit #7 / `31375336088` — success.
+- CodeQL #220 / `31378000143` — success;
+- Dependency Audit #8 / `31378000134` — success.
 
-That automated evidence is necessary but not sufficient for final `1.0.0` publication. Manual device/accessibility testing, current store-policy review, signing/package work, and the tracked SQLite dependency-risk decision remain production gates.
+That automated evidence is necessary but not sufficient for final `1.0.0` publication. Manual device/accessibility/notification testing, current store-policy review, signing/package work, and the tracked SQLite dependency-risk decision remain production gates.
 
 See [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/releases/RELEASE_CHECKLIST.md`](docs/releases/RELEASE_CHECKLIST.md), and [`docs/releases/QUALITY_GATE.md`](docs/releases/QUALITY_GATE.md).
 
@@ -102,6 +112,8 @@ See [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/releases/RELEASE_CHECKLIST.
 Read [`PRIVACY.md`](PRIVACY.md), [`SECURITY.md`](SECURITY.md), the threat model in [`docs/security/THREAT_MODEL.md`](docs/security/THREAT_MODEL.md), the logging privacy contract in [`docs/security/LOGGING_PRIVACY.md`](docs/security/LOGGING_PRIVACY.md), and the dependency risk register in [`docs/security/DEPENDENCY_RISK_REGISTER.md`](docs/security/DEPENDENCY_RISK_REGISTER.md).
 
 The current release has no automatic cloud sync and no silent caregiver sharing. Known dependency advisories are not represented as fixed merely because CI contains a narrowly scoped audit exception; the dependency risk register is the source of truth for those open items.
+
+The optional app lock is a local privacy barrier. CareNest does not claim that app lock transparently encrypts the whole SQLite database or replaces device-level authentication/security.
 
 ## Release engineering
 
