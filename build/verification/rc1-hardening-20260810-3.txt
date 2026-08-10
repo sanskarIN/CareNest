@@ -1,0 +1,6 @@
+CareNest exact-head hardening verification marker #3.
+
+Production main source head: 853d3d8254fd0b30a386a42d2d1fde316bc46a43
+Date: 2026-08-10
+Includes explicit logger level guards, privacy-safe startup logging, cross-platform architecture-path normalization, committed-source-only repository/logging scans, restored release/dependency/BMC files, and prior hardening work.
+This marker is verification-only and must not be merged into main.
