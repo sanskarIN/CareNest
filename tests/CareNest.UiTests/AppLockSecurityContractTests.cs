@@ -12,7 +12,15 @@ public sealed class AppLockSecurityContractTests
         Assert.Contains("210_000", source, StringComparison.Ordinal);
         Assert.Contains("HashAlgorithmName.SHA256", source, StringComparison.Ordinal);
         Assert.Contains("CryptographicOperations.FixedTimeEquals", source, StringComparison.Ordinal);
-        Assert.Contains("CryptographicOperations.ZeroMemory", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AppLock_VerificationClearsDerivedAndStoredVerifierBuffers()
+    {
+        var source = RepositoryLocator.Read("src", "CareNest.App", "Services", "AppLockService.cs");
+
+        Assert.Contains("CryptographicOperations.ZeroMemory(actual)", source, StringComparison.Ordinal);
+        Assert.Contains("CryptographicOperations.ZeroMemory(expected)", source, StringComparison.Ordinal);
     }
 
     [Fact]
