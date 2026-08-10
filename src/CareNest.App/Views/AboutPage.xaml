@@ -34,13 +34,34 @@
         </VerticalStackLayout>
       </Border>
 
+      <Border Style="{StaticResource Card}" SemanticProperties.Description="Voluntary project support for CareNest">
+        <VerticalStackLayout Spacing="12">
+          <ImageButton Source="carenest_support.svg"
+                       HeightRequest="108"
+                       Aspect="AspectFit"
+                       BackgroundColor="Transparent"
+                       Command="{Binding SupportProjectCommand}"
+                       SemanticProperties.Description="Support CareNest on Buy Me a Coffee" />
+          <Label Text="Support CareNest on Buy Me a Coffee" Style="{StaticResource SectionTitle}" HorizontalTextAlignment="Center" />
+          <Label Text="Help continued open-source development, testing, accessibility work, documentation, and platform maintenance." HorizontalTextAlignment="Center" />
+          <Button Text="☕ Buy Me a Coffee — sanskarIN"
+                  Command="{Binding SupportProjectCommand}"
+                  SemanticProperties.Description="Open the CareNest Buy Me a Coffee support page" />
+          <Label Text="https://buymeacoffee.com/sanskarIN"
+                 HorizontalTextAlignment="Center"
+                 FontAttributes="Bold"
+                 Style="{StaticResource MutedText}" />
+          <Label Text="Project support is voluntary and does not unlock medical advice, premium health features, different reminder behavior, or access to user health data."
+                 HorizontalTextAlignment="Center"
+                 Style="{StaticResource MutedText}" />
+        </VerticalStackLayout>
+      </Border>
+
       <Border Style="{StaticResource Card}">
         <VerticalStackLayout Spacing="10">
           <Label Text="Open source and support" Style="{StaticResource SectionTitle}" />
           <Button Text="GitHub repository" Command="{Binding OpenRepositoryCommand}" />
           <Button Text="Creator profile" Command="{Binding OpenCreatorCommand}" Style="{StaticResource SecondaryButton}" />
-          <Button Text="Support CareNest on Buy Me a Coffee" Command="{Binding SupportProjectCommand}" Style="{StaticResource SecondaryButton}" />
-          <Label Text="Project support is voluntary and does not unlock medical advice, premium health features, or different reminder behavior." Style="{StaticResource MutedText}" />
           <Button Text="Business: sanskarin@outlook.in" Command="{Binding BusinessEmailCommand}" Style="{StaticResource SecondaryButton}" />
           <Button Text="Support: supportramsandesh@gmail.com" Command="{Binding SupportEmailCommand}" Style="{StaticResource SecondaryButton}" />
           <Button Text="Privacy policy" Command="{Binding PrivacyCommand}" Style="{StaticResource SecondaryButton}" />
