@@ -1,0 +1,6 @@
+CareNest corrected exact-head hardening verification marker.
+
+Production main source head: 15f3b94f9a5a02ffc5090290b7de06a5cd006996
+Date: 2026-08-10
+Includes restored dependency/release/BMC files, logging analyzer fixes, repository policy tests, architecture/data-model/ViewModel/branding contracts, release evidence workflow and privacy hardening.
+This marker is verification-only and must not be merged into main.
