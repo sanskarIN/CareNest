@@ -76,7 +76,7 @@ public sealed class ArchitectureBoundaryTests
             .Select(node => (string?)node.Attribute("Include"))
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Select(value => value!.Replace('\\', '/'))
-            .Select(Path.GetFileNameWithoutExtension)
+            .Select(value => Path.GetFileNameWithoutExtension(value) ?? throw new InvalidDataException($"ProjectReference path has no file name: {value}"))
             .ToArray();
     }
 }
