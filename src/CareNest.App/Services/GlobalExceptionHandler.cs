@@ -31,9 +31,11 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs args)
     {
+        var exceptionType = args.Exception.GetType().FullName ?? "Unknown";
+
         logger.LogError(
             "An unobserved CareNest task exception occurred. Type={ExceptionType}.",
-            args.Exception.GetType().FullName ?? "Unknown");
+            exceptionType);
 
         args.SetObserved();
     }
