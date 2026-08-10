@@ -66,6 +66,94 @@ public sealed class ReminderPlannerTests
     }
 
     [Fact]
+    public void CycleSchedule_UsesOnlyExplicitOnAndOffDays()
+    {
+        var (medicine, profile, schedule) = CreateDaily();
+        schedule.Kind = ScheduleKind.Cycle;
+        schedule.StartDate = new DateTime(2026, 8, 10);
+        medicine.StartDate = schedule.StartDate;
+        schedule.CycleOnDays = 2;
+        schedule.CycleOffDays = 1;
+
+        var result = _planner.BuildOccurrences(
+            medicine,
+            schedule,
+            new[] { new ScheduleTime { Hour = 9, Minute = 0 } },
+            profile,
+            Utc(2026, 8, 10),
+            Utc(2026, 8, 16));
+
+        var activeDates = result.Select(x => x.LocalScheduledTime.Date).ToArray();
+        var expected = new[]
+        {
+            new DateTime(2026, 8, 10),
+            new DateTime(2026, 8, 11),
+            new DateTime(2026, 8, 13),
+            new DateTime(2026, 8, 14)
+        };
+        Assert.Equal(expected, activeDates);
+    }
+
+    [Fact]
+    public void CustomDateRange_StopsAtUserEnteredScheduleEndDate()
+    {
+        var (medicine, profile, schedule) = CreateDaily();
+        schedule.Kind = ScheduleKind.CustomDateRange;
+        schedule.StartDate = new DateTime(2026, 8, 10);
+        schedule.EndDate = new DateTime(2026, 8, 11);
+        medicine.StartDate = schedule.StartDate;
+
+        var result = _planner.BuildOccurrences(
+            medicine,
+            schedule,
+            new[] { new ScheduleTime { Hour = 9, Minute = 0 } },
+            profile,
+            Utc(2026, 8, 9),
+            Utc(2026, 8, 14));
+
+        Assert.Equal(2, result.Count);
+        Assert.All(result, occurrence => Assert.InRange(occurrence.LocalScheduledTime.Date, schedule.StartDate, schedule.EndDate.Value));
+    }
+
+    [Fact]
+    public void MedicineEndDate_StopsOccurrencesAtUserEnteredBoundary()
+    {
+        var (medicine, profile, schedule) = CreateDaily();
+        medicine.EndDate = new DateTime(2026, 8, 11);
+
+        var result = _planner.BuildOccurrences(
+            medicine,
+            schedule,
+            new[] { new ScheduleTime { Hour = 9, Minute = 0 } },
+            profile,
+            Utc(2026, 8, 10),
+            Utc(2026, 8, 14));
+
+        Assert.Equal(2, result.Count);
+        Assert.Equal(new DateTime(2026, 8, 11), result[^1].LocalScheduledTime.Date);
+    }
+
+    [Theory]
+    [InlineData(MedicineState.Paused)]
+    [InlineData(MedicineState.Completed)]
+    [InlineData(MedicineState.Archived)]
+    public void NonActiveMedicine_DoesNotCreateOccurrences(MedicineState state)
+    {
+        var (medicine, profile, schedule) = CreateDaily();
+        medicine.State = state;
+
+        var result = _planner.BuildOccurrences(
+            medicine,
+            schedule,
+            new[] { new ScheduleTime { Hour = 9, Minute = 0 } },
+            profile,
+            Utc(2026, 8, 10),
+            Utc(2026, 8, 11));
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
     public void EveryNHours_UsesOnlyExplicitInterval()
     {
         var (medicine, profile, schedule) = CreateDaily();
@@ -124,7 +212,6 @@ public sealed class ReminderPlannerTests
         Assert.Empty(result);
     }
 
-
     [Fact]
     public void RebuildingSameWindow_ProducesStableOccurrenceKeys()
     {
@@ -142,12 +229,8 @@ public sealed class ReminderPlannerTests
     [Fact]
     public void AmbiguousLocalTime_SelectsDeterministicOccurrence()
     {
-        TimeZoneInfo zone;
-        try
-        {
-            zone = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
-        }
-        catch (TimeZoneNotFoundException)
+        var zone = TryFindZone("America/New_York");
+        if (zone is null)
         {
             return;
         }
@@ -167,6 +250,31 @@ public sealed class ReminderPlannerTests
 
         Assert.Single(result);
         Assert.Equal(new DateTime(2026, 11, 1, 1, 30, 0), result[0].LocalScheduledTime);
+    }
+
+    [Fact]
+    public void InvalidSpringForwardLocalTime_DoesNotInventReplacementTime()
+    {
+        var zone = TryFindZone("America/New_York");
+        if (zone is null)
+        {
+            return;
+        }
+
+        var (medicine, profile, schedule) = CreateDaily();
+        schedule.TimeZoneId = zone.Id;
+        schedule.StartDate = new DateTime(2026, 3, 8);
+        medicine.StartDate = schedule.StartDate;
+
+        var result = _planner.BuildOccurrences(
+            medicine,
+            schedule,
+            new[] { new ScheduleTime { Hour = 2, Minute = 30 } },
+            profile,
+            Utc(2026, 3, 8),
+            Utc(2026, 3, 9));
+
+        Assert.Empty(result);
     }
 
     private static (Medicine, PersonProfile, MedicineSchedule) CreateDaily()
@@ -195,4 +303,16 @@ public sealed class ReminderPlannerTests
 
     private static DateTime Utc(int year, int month, int day) =>
         DateTime.SpecifyKind(new DateTime(year, month, day), DateTimeKind.Utc);
+
+    private static TimeZoneInfo? TryFindZone(string id)
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(id);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return null;
+        }
+    }
 }
