@@ -17,7 +17,7 @@ Watermark: `Made by the Sanskar`
 
 ---
 
-## Safety boundary implemented
+# Safety boundary implemented
 
 CareNest remains a local-first organizational application. It does not diagnose conditions, determine dosage, infer doses, recommend treatment, perform medication-interaction checking, create clinical risk scores, replace a doctor/pharmacist, or provide emergency services.
 
@@ -27,11 +27,13 @@ Reminder delivery limitations are surfaced rather than hidden. Notification perm
 
 CareNest tells users to follow qualified professional instructions and to contact local emergency services in an emergency rather than rely on CareNest.
 
+The new reminder hardening in this continuation does **not** add clinical interpretation. It protects deterministic handling of the schedule values that users enter. In particular, an invalid local clock time during a daylight-saving spring-forward gap is not silently moved to another time by the planner. CareNest does not invent a replacement reminder time.
+
 Buy Me a Coffee support is voluntary project support only. It does not unlock app functionality, medical advice, priority health support, different reminder behavior, emergency assistance, a CareNest account, or access to local CareNest data. The funding destination is an external trust boundary opened only after explicit user action.
 
 ---
 
-## Product scope implemented
+# Product scope implemented
 
 The release-candidate source on `main` includes:
 
@@ -45,6 +47,10 @@ The release-candidate source on `main` includes:
 - active, paused, completed, and archived medicine states;
 - daily, selected-weekday, specific-time, every-N-hours, cycle, custom-date-range, and as-needed schedule behavior;
 - deterministic and idempotent reminder occurrence materialization;
+- half-open reminder-planning windows to avoid boundary duplication;
+- duplicate user-entered clock-time deduplication by stable occurrence identity;
+- deterministic daylight-saving overlap handling;
+- explicit no-invented-time behavior for invalid daylight-saving gap local times;
 - scheduled, snoozed, taken, skipped, delayed, and missed reminder states;
 - follow-up reminders and quiet hours;
 - medication log and edit history;
@@ -59,6 +65,7 @@ The release-candidate source on `main` includes:
 - manual password-encrypted backup/restore;
 - schema-versioned restore validation and rollback behavior;
 - portable recovery of encrypted document data through the encrypted backup payload;
+- WAL-backed database snapshot creation with committed-content/integrity/cancellation regression coverage;
 - system/light/dark theme handling;
 - large-interface and reduced-motion preferences;
 - notification diagnostics;
@@ -72,7 +79,7 @@ The release-candidate source on `main` includes:
 - GitHub funding metadata;
 - custom CareNest BMC vector artwork plus original compact project-support badge;
 - adaptive app icon, splash, standard mark, light mark, dark mark, and monochrome mark assets;
-- unit, integration, UI-contract, repository-policy, architecture, ViewModel, data-model, branding/localization, async-safety, and logging-privacy tests;
+- unit, integration, UI-contract, repository-policy, architecture, ViewModel, data-model, branding/localization, async-safety, logging-privacy, app-lock-security, reminder-boundary, and snapshot-integrity tests;
 - GitHub Actions cross-platform CI;
 - platform-neutral formatting gate;
 - CodeQL analysis;
@@ -82,6 +89,7 @@ The release-candidate source on `main` includes:
 - Dependabot configuration;
 - privacy-safe structured bug report form;
 - architecture, security, privacy, testing, setup, troubleshooting, release, BMC, and store documentation;
+- deterministic reminder scheduling contract documentation;
 - Bash and PowerShell release-preflight scripts;
 - manual cross-platform release test matrix;
 - store-submission checklist;
@@ -90,7 +98,7 @@ The release-candidate source on `main` includes:
 
 ---
 
-## Repository structure
+# Repository structure
 
 The requested multi-project solution separation is present:
 
@@ -261,7 +269,7 @@ Original phase label:
 
 ## Phase 5 — funding/support presentation and release-preparation hardening
 
-Completed before the current privacy/policy continuation:
+Completed:
 
 - centralized `AppConstants.FundingUrl`;
 - in-app Buy Me a Coffee command;
@@ -282,7 +290,7 @@ Completed before the current privacy/policy continuation:
 
 ## Phase 6 — privacy logging, repository policy and production evidence hardening
 
-Completed in the 2026-08-10 continuation:
+Completed in the earlier 2026-08-10 continuation:
 
 - platform-neutral formatting verification in CI;
 - repository safety/completeness policy tests;
@@ -305,7 +313,30 @@ Completed in the 2026-08-10 continuation:
 - exact-head verification-branch protocol;
 - restoration of missing valid files discovered during repository-history audit;
 - four exact-head verification passes, with every discovered failure corrected rather than suppressed;
-- final fully green automated verification at PR #27.
+- fully green automated verification at PR #27.
+
+## Phase 7 — reminder-boundary, WAL-snapshot and app-lock memory hardening
+
+Completed in the latest continuation:
+
+- expanded medicine schedule validation boundaries;
+- cycle-schedule planner behavior coverage;
+- custom date-range and medicine end-date planner coverage;
+- paused/completed/archived medicine suppression coverage;
+- invalid daylight-saving spring-forward local-time coverage;
+- deterministic daylight-saving fall-back overlap coverage retained;
+- half-open planner-window coverage;
+- duplicate explicit clock-time deduplication coverage;
+- chronological occurrence ordering coverage;
+- committed WAL-snapshot content verification;
+- snapshot SQLite integrity verification;
+- pre-cancelled snapshot no-output-file regression coverage;
+- app-lock security source contracts;
+- runtime app-lock verifier-memory clearing;
+- app-lock residual-risk/security documentation;
+- deterministic reminder scheduling contract documentation;
+- test-plan expansion;
+- exact-head PR #28 verification with 101/101 core tests green and all four platform builds green.
 
 ---
 
@@ -432,7 +463,7 @@ Earlier hardening also corrected:
 
 # Previous green funding-enabled baseline
 
-Before the 2026-08-10 hardening continuation, the last fully green baseline was source head:
+Before the 2026-08-10 hardening continuation, the fully green funding-enabled baseline was source head:
 
 `52abe54cfc771c411b78332d78217a5876ebc4c8`
 
@@ -449,59 +480,37 @@ Verification PR #21 recorded:
 - CodeQL #114 / `31302769108`: success;
 - Dependency Audit #4 / `31302769112`: success.
 
-This baseline became important during the repository-history recovery audit described below.
+This baseline later became important during the repository-history recovery audit.
 
 ---
 
-# 2026-08-10 continuation — complete hardening record
+# 2026-08-10 privacy/policy continuation — complete hardening record
 
-## 1. Platform-neutral formatting gate
+## Platform-neutral formatting gate
 
 Commit:
 
 - `a63bd413ed0e1760e3391552962ca19128be93eb` — `ci: verify formatting for platform-neutral projects`.
 
-The core CI job now verifies formatting separately for:
+The core CI job verifies formatting separately for Shared, Domain, Application, Infrastructure, UnitTests, IntegrationTests, and UiTests. The MAUI app remains in platform-specific jobs because the core runner does not install every MAUI target workload.
 
-- `CareNest.Shared`;
-- `CareNest.Domain`;
-- `CareNest.Application`;
-- `CareNest.Infrastructure`;
-- `CareNest.UnitTests`;
-- `CareNest.IntegrationTests`;
-- `CareNest.UiTests`.
-
-The MAUI app is intentionally excluded from this platform-neutral formatting loop because the local/core runner does not install every MAUI target workload. Cross-platform MAUI compilation remains a separate Android/Windows/Apple gate.
-
-Final PR #27 evidence confirms the formatting gate passes.
-
-## 2. Repository safety/completeness policy tests
+## Repository safety/completeness policy tests
 
 Initial commit:
 
 - `3e3e70779b4156ffcf5daa34c79f113511db84fc` — `test: enforce repository safety and completeness policies`.
 
-The tests protect against:
+The tests protect against runtime TODO/FIXME/NotImplemented placeholders, runtime network/telemetry client introduction, named diagnosis/dosage/treatment/interaction/risk-scoring feature regressions, common secret/signing files, and accidental deletion of required governance/security/release files.
 
-- runtime `TODO` implementation markers;
-- runtime `FIXME` markers;
-- `NotImplementedException` placeholders;
-- runtime `System.Net.Http`/`HttpClient` introduction;
-- gRPC client introduction;
-- analytics/telemetry client introduction;
-- named diagnosis/dosage/treatment/interaction/risk-scoring feature regressions;
-- common signing/secret files such as `.p12`, `.pfx`, `.jks`, `.keystore`, `.env`, and mobile service credential files;
-- accidental deletion of required governance, CI, security, and release files.
+The first source scan was too broad and included generated `obj` files. CI exposed that false positive. The test was fixed to inspect committed source and ignore `bin`, `obj`, and `.git` segments.
 
-The first runtime source scan was too broad and included SDK-generated `obj` files. CI correctly exposed that false positive. The test was fixed to inspect committed workspace source and ignore generated `bin`, `obj`, and `.git` segments.
-
-Final commit for that correction:
+Correction:
 
 - `ed84c0998c38b87f03c5474a3522b4357d45c073` — `test: scope repository policy scans to committed source`.
 
-## 3. Additional CareNest branding variants
+## Additional CareNest branding variants
 
-Added original vector variants required by the branding/release prompt:
+Added original vector variants:
 
 - `8404ba13bb94ea06fcc0c41bf1b5e787e555a667` — monochrome CareNest system icon;
 - `c998f0108770d4399e734fe0ba7efd3c852b4b17` — light CareNest mark variant;
@@ -509,428 +518,495 @@ Added original vector variants required by the branding/release prompt:
 
 The original app icon, foreground adaptive icon, splash, standard CareNest mark, compact support badge, and custom BMC artwork remain present.
 
-## 4. Branding/localization contracts
+## Branding/localization contracts
 
 Initial commit:
 
 - `7cc58c93ca0e65c71e59d049c5b22826c18070b3` — branding/localization contract tests.
 
-Coverage validates:
+Coverage validates MAUI adaptive icon declaration, foreground icon, splash, MAUI image resources, SVG well-formedness, English safety/branding resource keys, BMC destination/artwork consistency, clickable About support artwork, and voluntary-support copy.
 
-- MAUI adaptive icon declaration;
-- foreground icon resource;
-- splash declaration;
-- MAUI image resources;
-- XML/SVG well-formedness of required branding files;
-- English safety/branding resource keys;
-- BMC support destination and artwork consistency;
-- clickable support artwork in About;
-- explicit BMC URL and voluntary-support copy.
-
-After restoring the original compact support badge and About card, coverage was expanded by:
+Expanded after restoration:
 
 - `15f3b94f9a5a02ffc5090290b7de06a5cd006996` — `test: expand restored support branding contracts`.
 
-## 5. ViewModel boundary contracts
+## ViewModel boundary contracts
 
 Initial commit:
 
-- `b47ba485c2b8edb77d19c01140b7adaac02c152d` — ViewModel contract coverage.
+- `b47ba485c2b8edb77d19c01140b7adaac02c152d`.
 
-The first version incorrectly treated `ObservableViewModel` ICommand adapter helpers as ordinary ViewModel command bodies. Those adapters legitimately require `async void` because they implement ICommand `Execute` semantics. The rule was narrowed to concrete ViewModels:
+The first version incorrectly treated internal ICommand adapters as ordinary ViewModel bodies. The rule was narrowed to concrete ViewModels:
 
 - `303d89606f746c9480bbcb19cb018c7e1a7d98e0` — `test: scope async-void rule to concrete ViewModels`.
 
-Current contracts assert:
+Current contracts assert concrete ViewModels do not use `async void`, do not use `Task.Run` to hide blocking work, do not reach directly into SQLite persistence, do not create network clients, use centralized public constants in About, do not request notification permission during onboarding, and preserve explicit as-needed/no-reminder behavior.
 
-- concrete ViewModels do not use `async void`;
-- concrete ViewModels do not use `Task.Run` to hide blocking work;
-- ViewModels do not reach directly into `SQLiteAsyncConnection`/`SqliteDatabase` persistence;
-- ViewModels do not construct network clients;
-- About uses centralized public constants;
-- onboarding does not request notification permission;
-- schedule editing preserves explicit `AsNeeded` no-reminder behavior and requests notification permission only in reminder-capable flows.
-
-## 6. Architecture-boundary contracts
+## Architecture-boundary contracts
 
 Initial commit:
 
-- `f5a8827d86023d50a57254d97dec36895b25eb64` — architecture boundary tests.
+- `f5a8827d86023d50a57254d97dec36895b25eb64`.
 
-Contracts enforce:
+Contracts enforce Shared/Domain/Application/Infrastructure dependency direction, no MAUI in platform-neutral layers, and the MAUI app as composition root.
 
-- Shared has no project dependencies;
-- Domain depends only on Shared;
-- Application depends only on Domain + Shared;
-- Infrastructure depends only on Application + Domain + Shared;
-- platform-neutral projects do not reference MAUI;
-- the MAUI app is the runtime composition root.
+CI exposed Windows-style project-reference separators and a nullable filename return. Corrections:
 
-CI then exposed two test-quality issues and both were fixed:
+- `182533922f491f5c122e9cacd6f0c8c12d43c493` — cross-platform separator normalization;
+- `8417513db36c72b0ec2cfaccadb6ac47ba361f11` — explicit non-null project-reference filename contract.
 
-- Windows-style project-reference backslashes needed normalization on Linux;
-- `Path.GetFileNameWithoutExtension` needed an explicit non-null contract under nullable analysis.
+That source became the PR #27 exact-head baseline.
 
-Corrections:
-
-- `182533922f491f5c122e9cacd6f0c8c12d43c493` — cross-platform project-reference separator normalization;
-- `8417513db36c72b0ec2cfaccadb6ac47ba361f11` — `test: make project reference names explicitly non-null`.
-
-That final commit is the exact runtime/test source head verified green by PR #27.
-
-## 7. Required data-model contracts
+## Required data-model contracts
 
 Commit:
 
-- `d1a0c5682b8e1f0919e95459488d367d88746806` — required CareNest data-model contracts.
+- `d1a0c5682b8e1f0919e95459488d367d88746806`.
 
-Coverage requires the prompt-defined domain entities, including:
+Coverage requires the prompt-defined domain entities and protects medicine strength/instructions as strings/opaque text plus explicit user-stored stock change values.
 
-- `PersonProfile`;
-- `Medicine`;
-- `MedicineSchedule`;
-- `ScheduleTime`;
-- `ReminderOccurrence`;
-- `MedicationLogEntry`;
-- `Appointment`;
-- `CareDocument`;
-- `Tag`;
-- `DocumentTag`;
-- `StockAdjustment`;
-- `EmergencyContact`;
-- `AppSetting`;
-- `BackupMetadata`;
-- `AuditEntry`.
-
-It also protects the critical safety rule that medicine strength and instructions remain strings/opaque text and that stock changes are explicit user-stored values rather than inferred dosage behavior.
-
-## 8. Privacy-aware global exception observer
-
-The prompt requested privacy-aware logging and global exception handling. An explicit global observer was not yet wired, so this continuation added it.
+## Privacy-aware global exception observer
 
 Commits:
 
 - `aaad2e1e3abc8ff99d63e177c377d62027402fab` — add `GlobalExceptionHandler`;
-- `37f93bcf273655af8c6cf1b900fe5ccd792d1795` — register the observer in dependency injection;
-- `01fb02620472b882f3d620b291b6adb6bbf2deaf` — attach it during app construction;
+- `37f93bcf273655af8c6cf1b900fe5ccd792d1795` — dependency-injection registration;
+- `01fb02620472b882f3d620b291b6adb6bbf2deaf` — attach during app construction;
 - `915f4a45dc687eed1be7506292568782d2ceff3f` — global exception privacy contracts.
 
-Current behavior:
+Behavior: attach once with `Interlocked.Exchange`, observe app-domain unhandled and task-scheduler unobserved exceptions, mark unobserved task exceptions observed after safe logging, and avoid messages/stack/full exception objects.
 
-- attaches once using `Interlocked.Exchange`;
-- observes `AppDomain.CurrentDomain.UnhandledException`;
-- observes `TaskScheduler.UnobservedTaskException`;
-- marks unobserved task exceptions observed after safe logging;
-- does not log exception messages;
-- does not log stack traces;
-- does not pass full exception objects to the logger;
-- logs only low-sensitivity category/type metadata.
+## UI error logging privacy fix
 
-## 9. UI error logging privacy fix
-
-Existing `SafeUiErrorService` passed a full exception object to the structured logger. Full exception objects can include messages and paths, which is inappropriate for a privacy-sensitive organizer.
+Existing `SafeUiErrorService` passed a full exception object to the structured logger.
 
 Commits:
 
-- `bba6615a224b87aec31f5c033fe2b214595c193f` — `security: redact exception details from UI error logs`;
+- `bba6615a224b87aec31f5c033fe2b214595c193f` — redact exception details;
 - `a95936d0bcd665531b6a78326bcd8726271a471f` — regression coverage.
 
-Current UI error behavior:
-
-- user sees only caller-supplied safe UI text;
-- logger receives only safe exception type/category metadata;
-- no message/stack/full exception is passed.
-
-## 10. Async non-blocking policy contracts
+## Async non-blocking policy contracts
 
 Commit:
 
-- `907e5a71796a15b78dec75e26b6af00ba692257c` — async non-blocking runtime source tests.
+- `907e5a71796a15b78dec75e26b6af00ba692257c`.
 
-Runtime source policy prevents common synchronous task-blocking patterns such as:
+Runtime source policy rejects common `.GetAwaiter().GetResult()`, `.Wait()`, `Thread.Sleep`, `Task.WaitAll`, `Task.WaitAny`, and common `.Result` blocking patterns.
 
-- `.GetAwaiter().GetResult()`;
-- `.Wait()`;
-- `Thread.Sleep`;
-- `Task.WaitAll`;
-- `Task.WaitAny`;
-- common `.Result` blocking patterns.
+## Release Evidence workflow
 
-This complements compiler/analyzer and code-review discipline rather than replacing runtime device testing.
+The repository includes `.github/workflows/release-evidence.yml` plus `docs/releases/RELEASE_EVIDENCE.md`, `QUALITY_GATE.md`, `SECURITY_RELEASE_REVIEW.md`, `RELEASE_NOTES_TEMPLATE.md`, and `VERIFICATION_BRANCH_PROTOCOL.md`.
 
-## 11. Release Evidence workflow
+The workflow records exact source/ref/toolchain identity, TRX test evidence, transitive dependency inventories, SHA-256 checksums, and an Actions artifact for the eventual final promoted commit. It has not been falsely represented as final-public-release approval.
 
-Commit:
-
-- `9b5abf8ed7cf1a11b6e613db4f2af00ba692257c` was planned in the continuation record; the actual repository workflow commit is the `ci: add reproducible release evidence workflow` commit in current history.
-
-The workflow at `.github/workflows/release-evidence.yml` is manual/tag-triggered and records:
-
-- exact Git SHA;
-- Git ref;
-- .NET runtime/SDK information;
-- unit-test TRX;
-- integration-test TRX;
-- UI-contract-test TRX;
-- transitive dependency inventories for platform-neutral projects;
-- SHA-256 checksums;
-- uploaded run artifact with 30-day retention.
-
-Supporting documentation:
-
-- `docs/releases/RELEASE_EVIDENCE.md`;
-- `docs/releases/QUALITY_GATE.md`;
-- `docs/releases/SECURITY_RELEASE_REVIEW.md`;
-- `docs/releases/RELEASE_NOTES_TEMPLATE.md`;
-- `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
-
-The workflow has **not** been falsely marked as a completed final-release artifact run. It is intended for the exact commit that will eventually be promoted after the remaining production blockers are cleared.
-
-## 12. Reminder logging privacy hardening
-
-Existing reminder scheduling catch paths could pass full exception objects and identify reminder/medicine records through structured log properties.
+## Reminder logging privacy hardening
 
 Commits:
 
-- `3e05f6ccd5965c29eaaa11b9cff5ba018a585a2a` — redact reminder exception details and record IDs;
+- `3e05f6ccd5965c29eaaa11b9cff5ba018a585a2a` — redact reminder exception details/record IDs;
 - `f07a0dede776bbfca16163a26b1a99a35ee7694b` — reminder logging privacy tests.
 
-Final behavior logs only exception type/category metadata when Warning logging is enabled.
-
-## 13. Logging privacy source policy
+## Logging privacy source policy
 
 Commit:
 
-- `28b5e220ac661123abceb576c28218b36846bb12` — structured logger exception-object source policy.
+- `28b5e220ac661123abceb576c28218b36846bb12`.
 
-The initial scanner also saw generated source after builds. It was corrected to scan committed runtime source only:
+Generated-source scanning was corrected by:
 
 - `853d3d8254fd0b30a386a42d2d1fde316bc46a43` — committed-source-only logging privacy scan.
 
-This is a preventive text/source policy and does not grant permission to log sensitive content merely because a string pattern passes the check.
+## Logger eager-argument analyzer fixes
 
-## 14. Privacy/security documentation for logging
+GitHub MAUI compilation surfaced CA1873. Explicit log-level guards were added instead of suppressing the quality rule:
 
-Commits/files added or updated:
+- `8209ed49eeaee5bd2341e4f5a108f126f7c73d06` — GlobalExceptionHandler guards;
+- `ebb5e1b66e574552dddab3fe3252cd230fc175f8` — SafeUiErrorService guard;
+- `850355e618d206ef1276ede5b28c5c925f47a9d1` — reminder logging guards.
 
-- `PRIVACY.md` now states exception logging records safe categories/type names and intentionally excludes full exception objects/messages/stack traces/user-entered health text/file paths;
-- `docs/security/LOGGING_PRIVACY.md` defines allowed and prohibited log data;
-- `SECURITY.md` links and enforces that diagnostic boundary.
-
-## 15. Logger eager-argument analyzer fixes
-
-GitHub MAUI compilation surfaced CA1873 because even safe exception-type lookup should not be eagerly evaluated when the corresponding log level is disabled.
-
-Intermediate precomputation commits existed, but CI correctly demonstrated that explicit level guards were still required.
-
-Final fixes:
-
-- `8209ed49eeaee5bd2341e4f5a108f126f7c73d06` — explicit Critical/Error `ILogger.IsEnabled` guards in `GlobalExceptionHandler`;
-- `ebb5e1b66e574552dddab3fe3252cd230fc175f8` — explicit Error guard in `SafeUiErrorService`;
-- `850355e618d206ef1276ede5b28c5c925f47a9d1` — explicit Warning guards in reminder logging.
-
-The quality gate was not weakened or suppressed; runtime code was changed to satisfy it.
-
-## 16. Existing StartupCoordinator privacy issue discovered by new tests
-
-The new logging policy discovered that `StartupCoordinator` still used the full-exception overload for non-fatal reminder recovery logging.
+## Existing StartupCoordinator privacy issue found by new policy
 
 Fix:
 
 - `78657718aab236456bb95a33e5f57c00649f9c73` — `security: redact startup recovery exception logging`.
 
-Startup recovery now follows the same privacy boundary as the global/UI/reminder paths.
+## Repository-history recovery audit
 
-## 17. Repository-history recovery audit
+A compare against previously green source head `52abe54...` found an earlier repository ref recovery had not replayed nine valid files/changes. All nine were restored:
 
-A compare against the previously green source head `52abe54...` found that an earlier repository ref recovery had not replayed nine valid later files/changes.
-
-Rather than accepting silent regression, this continuation restored all nine:
-
-1. `.github/ISSUE_TEMPLATE/bug_report.yml` — privacy-safe structured bug report;
-2. `.github/workflows/dependency-review.yml` — Dependency Audit;
-3. `.github/workflows/release-gate.yml` — production Release Gate;
-4. `README.md` — highlighted BMC support presentation;
-5. `SUPPORT.md` — highlighted BMC support presentation;
+1. privacy-safe structured bug report;
+2. Dependency Audit workflow;
+3. production Release Gate workflow;
+4. highlighted BMC README presentation;
+5. highlighted SUPPORT presentation;
 6. `docs/releases/BMC_HIGHLIGHT.md`;
 7. `docs/releases/BMC_HIGHLIGHT_RELEASE_CHECK.md`;
-8. `src/CareNest.App/Resources/Images/carenest_support.svg` — original compact CareNest support badge;
-9. `src/CareNest.App/Views/AboutPage.xaml` — highlighted clickable in-app support card.
+8. compact `carenest_support.svg`;
+9. highlighted clickable in-app About support card.
 
-Restoration commits include:
+Restoration commits:
 
-- `1fd80561509524dd4dd6d25bc6a3658f3c681cd2` — privacy-safe bug report restoration;
-- `2d55eadc86aee43a3c930044a4bb8d98e38e941b` — Dependency Audit restoration;
-- `d39f74779d89747293d4a829d1c38299af865b8c` — Release Gate restoration;
-- `bff9138503d1cdfd950dcf8beb98726cef35dc2d` — BMC README restoration;
-- `6f699f1708a8a49cfc118a88b29fbf357b0b067b` — SUPPORT restoration;
-- `ad0d92a7c62341503258cabc587ab96cb2a112d1` — compact support badge restoration;
-- `c18a83f1b44cb3ef43b4559bd7abd09eb3f1415a` — highlighted About support-card restoration;
-- `d5a4ae9cd01fc8d2ba0a6ee59f088058f6d6920a` — BMC highlight guide restoration;
-- `df10abc5758490850d282ab3e085db90bcab0e26` — BMC release review restoration.
+- `1fd80561509524dd4dd6d25bc6a3658f3c681cd2`;
+- `2d55eadc86aee43a3c930044a4bb8d98e38e941b`;
+- `d39f74779d89747293d4a829d1c38299af865b8c`;
+- `bff9138503d1cdfd950dcf8beb98726cef35dc2d`;
+- `6f699f1708a8a49cfc118a88b29fbf357b0b067b`;
+- `ad0d92a7c62341503258cabc587ab96cb2a112d1`;
+- `c18a83f1b44cb3ef43b4559bd7abd09eb3f1415a`;
+- `d5a4ae9cd01fc8d2ba0a6ee59f088058f6d6920a`;
+- `df10abc5758490850d282ab3e085db90bcab0e26`.
 
-A subsequent compare no longer showed those historical files as missing. The current repository preserves the prior valid funding/dependency/release work plus the new hardening.
-
-## 18. BMC/support current state
+## BMC/support current state
 
 Current support URL:
 
 `https://buymeacoffee.com/sanskarIN`
 
-Support surfaces include:
-
-- centralized `AppConstants.FundingUrl`;
-- clickable compact `carenest_support.svg` in README;
-- highlighted README text link;
-- highlighted SUPPORT page;
-- clickable `ImageButton` in the in-app About card;
-- dedicated BMC button in About;
-- explicit visible BMC URL in About;
-- `.github/FUNDING.yml`;
-- `BUY_ME_A_COFFEE.md` using the larger custom artwork;
-- `docs/SUPPORT_CARENEST.md`;
-- BMC highlight/release guidance.
+Support surfaces include centralized `AppConstants.FundingUrl`, clickable compact badge in README, highlighted README/SUPPORT links, clickable About `ImageButton`, dedicated About button, visible URL, `.github/FUNDING.yml`, `BUY_ME_A_COFFEE.md`, `docs/SUPPORT_CARENEST.md`, and BMC release guidance.
 
 The original CareNest support badge is not represented as an official Buy Me a Coffee trademark/logo asset. CareNest does not append health data to the support URL.
 
 ---
 
-# Exact-head verification protocol used
+# Exact-head verification protocol
 
-Verification branches are short-lived and exist only to trigger PR workflows for an exact `main` source head.
-
-Protocol followed:
+Protocol used throughout hardening:
 
 1. finish intended source/test changes on `main`;
 2. create a branch from the exact source SHA;
 3. add one marker file under `build/verification/`;
-4. open PR to `main`;
+4. open a PR to `main`;
 5. verify the PR diff is marker-only;
 6. run CI/CodeQL/Dependency Audit;
-7. if a real failure appears, fix `main`, close the stale marker PR without merge, and create a new exact-head marker PR;
+7. if a real failure appears, fix `main`, close the stale marker PR without merge, and recreate exact-head verification;
 8. once all gates pass, record evidence;
 9. close the marker PR without merge.
 
-This ensures marker files never become production source and prevents stale CI results from being represented as evidence for a newer head.
+This prevents verification markers from entering production source and prevents stale CI evidence from being attributed to a newer source head.
 
 ---
 
-# 2026-08-10 verification sequence
+# Privacy/policy verification sequence
 
-## PR #24 — first hardening verification
+## PR #24
 
-Source head:
-
-`47234b65c2060e0417a7e7cd6b005d286594df3a`
-
-Verification marker head:
-
-`45260933d286a60b6d0de66d9f0fddc225bbdf48`
-
-Results:
+Source head: `47234b65c2060e0417a7e7cd6b005d286594df3a`  
+Marker head: `45260933d286a60b6d0de66d9f0fddc225bbdf48`
 
 - CodeQL #175: success;
 - CareNest CI #175: failure.
 
-Real findings:
+Findings: CA1873 eager exception metadata and CA1861 test allocation guidance. Source/tests were corrected. PR #24 closed without merge.
 
-- CA1873 eager exception-metadata argument evaluation in the new global logger path;
-- CA1861 analyzer guidance in architecture test expectation arrays;
-- source/test issues were corrected on `main`.
+## PR #25
 
-PR #24 was closed without merge as superseded.
-
-## PR #25 — second hardening verification
-
-Exact source head:
-
-`15f3b94f9a5a02ffc5090290b7de06a5cd006996`
-
-Verification marker head:
-
-`450e83d38d9febfbd1d9988b33ed84467dc71737`
-
-Results:
+Source head: `15f3b94f9a5a02ffc5090290b7de06a5cd006996`  
+Marker head: `450e83d38d9febfbd1d9988b33ed84467dc71737`
 
 - Dependency Audit #5 / `31374433350`: success;
 - CodeQL #190 / `31374433235`: success;
-- platform-neutral formatting: success;
-- unit tests: 15 passed;
-- integration tests: 11 passed;
-- UI-contract execution reached 46 tests: 41 passed, 5 failed;
+- formatting: success;
+- 15 unit tests passed;
+- 11 integration tests passed;
+- UI-contract run: 41 passed, 5 failed;
 - CareNest CI #190 / `31374433469`: failure.
 
-The five UI/policy failures were actionable:
+Findings: Linux project-reference separator handling, StartupCoordinator full-exception logging, generated `obj` source scan false positive, and required logger guards. All fixed. PR #25 closed without merge.
 
-1. Domain dependency path comparison failed because Windows-style backslashes were not normalized on Linux;
-2. Application dependency path comparison had the same problem;
-3. Infrastructure dependency path comparison had the same problem;
-4. logging privacy source policy discovered `StartupCoordinator` still passed a full exception object to the logger;
-5. repository network/telemetry source scan included generated `obj/...GlobalUsings.g.cs`, creating a false positive for `System.Net.Http`.
+## PR #26
 
-MAUI compilation also confirmed CA1873 required explicit `ILogger.IsEnabled(...)` guards, not only precomputed type strings.
-
-Every finding was fixed on `main`; PR #25 was closed without merge.
-
-## PR #26 — third hardening verification
-
-Exact source head:
-
-`853d3d8254fd0b30a386a42d2d1fde316bc46a43`
-
-Verification marker head:
-
-`d7c8c19b014f3cfece50a88f6b1c616c6a9fe354`
-
-Results:
+Source head: `853d3d8254fd0b30a386a42d2d1fde316bc46a43`  
+Marker head: `d7c8c19b014f3cfece50a88f6b1c616c6a9fe354`
 
 - Dependency Audit #6 / `31374928518`: success;
 - CodeQL #198 / `31374928520`: success;
 - formatting: success;
-- unit tests: 15 passed;
-- integration tests: 11 passed;
-- UI test project compile: one nullable contract error;
+- 15 unit tests passed;
+- 11 integration tests passed;
+- UI project compile found one nullable contract error;
 - CareNest CI #198 / `31374928536`: failure.
 
-Remaining issue:
+Fix: `8417513db36c72b0ec2cfaccadb6ac47ba361f11` explicit non-null project-reference filename contract. PR #26 closed without merge.
 
-`Path.GetFileNameWithoutExtension` is nullable under the project’s nullable analysis and the architecture helper returned `string?[]` where `string[]` was required.
+## PR #27
 
-Fix:
+Exact source head: `8417513db36c72b0ec2cfaccadb6ac47ba361f11`  
+Marker head: `aefd53869b7eaf54815de446fc83373c7977d04d`  
+Marker file: `build/verification/rc1-hardening-20260810-4.txt`
 
-- `8417513db36c72b0ec2cfaccadb6ac47ba361f11` — explicit non-null project-reference filename contract.
+- CareNest CI #200 / `31375336226`: success;
+- formatting: success;
+- UnitTests: 15 passed;
+- IntegrationTests: 11 passed;
+- UiTests: 46 passed;
+- total: 72 passed;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL #200 / `31375336083`: success;
+- Dependency Audit #7 / `31375336088`: success.
 
-PR #26 was closed without merge.
+PR #27 closed without merge and became the superseded pre-Phase-7 automated source baseline.
 
-## PR #27 — final exact-head hardening verification
+---
 
-Exact verified production source head:
+# Latest continuation — detailed commit record
 
-`8417513db36c72b0ec2cfaccadb6ac47ba361f11`
+The latest user continuation requested full work, maximum logical commits, and an updated handoff. The work was split into separate commits so each behavior/security change remains independently reviewable.
+
+## 1. Medicine schedule validation boundaries
+
+Commit:
+
+`951caa1aefad6374b1ae2a440a9886a26e48a920` — `test: expand medicine schedule validation boundaries`
+
+Updated:
+
+`tests/CareNest.UnitTests/MedicineRulesTests.cs`
+
+New/expanded coverage:
+
+- every-N-hours requires an explicit interval;
+- every-N-hours requires exactly one explicit starting clock time;
+- as-needed remains valid without automatic times;
+- selected-weekday schedules require at least one selected day;
+- cycle schedules require explicit positive on-days and off-days;
+- end date before start date is rejected;
+- hour values below 0 or above 23 are rejected;
+- minute values below 0 or above 59 are rejected;
+- unknown time-zone identifiers are rejected;
+- medicine strength/instruction text remains unchanged/opaque;
+- negative user stock change remains rejected.
+
+No clinical frequency recommendation is introduced. The tests only validate user-entered configuration shape.
+
+## 2. Reminder recurrence/date/state/DST hardening
+
+Commit:
+
+`7893812a61a380fe95e176e0519cb9ed27e00411` — `test: harden reminder recurrence and boundary coverage`
+
+Updated:
+
+`tests/CareNest.UnitTests/ReminderPlannerTests.cs`
+
+New/expanded coverage includes:
+
+- explicit 2-days-on/1-day-off cycle schedule behavior;
+- custom date-range schedule stop boundary;
+- medicine end-date stop boundary;
+- paused medicine creates no automatic occurrences;
+- completed medicine creates no automatic occurrences;
+- archived medicine creates no automatic occurrences;
+- invalid spring-forward local time produces no invented replacement reminder;
+- ambiguous fall-back local time remains deterministic;
+- existing daily/multi-time/as-needed/selected-weekday/every-N-hours/follow-up/disabled/stable-key behavior retained.
+
+The spring-forward test uses a representative `America/New_York` transition when available on the runner. If a local 02:30 does not exist, the planner produces no occurrence for that invalid local time instead of moving it to another time.
+
+## 3. Initial app-lock cryptographic source contracts
+
+Commit:
+
+`6c962f39ac2873f5b17dbcb653b260ce850839e3` — `test: enforce CareNest app-lock cryptographic contract`
+
+Created:
+
+`tests/CareNest.UiTests/AppLockSecurityContractTests.cs`
+
+Contracts protect:
+
+- cryptographic random salt generation;
+- PBKDF2 key derivation;
+- configured 210,000 iterations;
+- SHA-256 hash algorithm;
+- fixed-time verifier comparison;
+- no direct plaintext PIN persistence through the secret store;
+- removal of enabled/salt/verifier values when app lock is disabled;
+- numeric six-to-thirty-two-digit PIN policy.
+
+These source contracts supplement, rather than replace, target-device secure-storage/app-lock testing.
+
+## 4. WAL snapshot committed-content verification
+
+Commit:
+
+`4f839b377018fc33f6699e3b3e5a3e9b9621ce53` — `test: verify WAL snapshot preserves committed profile data`
+
+Updated:
+
+`tests/CareNest.IntegrationTests/DatabaseMigrationTests.cs`
+
+The test now:
+
+1. creates a local test store;
+2. commits a profile record;
+3. creates a WAL-backed snapshot through production snapshot code;
+4. opens the copied SQLite file read-only;
+5. queries for the exact committed profile ID/name;
+6. runs `PRAGMA integrity_check` on the copied database;
+7. requires the record count to be one and integrity result to be `ok`;
+8. closes and deletes the temporary snapshot.
+
+This is stronger than asserting only that a copied file exists and has nonzero length.
+
+## 5. Snapshot pre-cancellation behavior
+
+Commit:
+
+`a176fe68cba190a467203add09229855cf4392d1` — `test: verify snapshot cancellation leaves no output file`
+
+Added integration coverage that passes an already-cancelled token to `CreateSnapshotAsync`, requires `OperationCanceledException`, and verifies no output file is left behind.
+
+## 6. App-lock verifier memory hardening
+
+Commit:
+
+`c0ad7a7022fce7d8312af4dbc40fa6a384a10f60` — `security: clear app-lock verifier after PIN checks`
+
+Updated runtime file:
+
+`src/CareNest.App/Services/AppLockService.cs`
+
+Previous behavior already cleared the freshly derived `actual` verifier. The verifier bytes read from secure storage as `expected` remained in managed memory after comparison.
+
+Current behavior:
+
+- if secure-storage salt is absent but a verifier was retrieved, the retrieved verifier is zeroed before returning false;
+- after a normal comparison, both `actual` and `expected` byte arrays are cleared in a `finally` block;
+- fixed-time comparison remains in place;
+- random salt/PBKDF2/SHA-256 behavior remains unchanged;
+- PIN policy remains unchanged;
+- no plaintext PIN persistence is added.
+
+This improves managed-memory hygiene but does not claim protection against a compromised operating system, memory dump with arbitrary timing, rooted/jailbroken device, or weak user PIN.
+
+## 7. Verifier-zeroing contract
+
+Commit:
+
+`a1df017060c8ad60ab3ce968a6737039c3ff12ee` — `test: require verifier zeroing after app-lock checks`
+
+App-lock source contracts now explicitly require both:
+
+- `CryptographicOperations.ZeroMemory(actual)`;
+- `CryptographicOperations.ZeroMemory(expected)`.
+
+## 8. Planner window/dedup/order invariants
+
+Commit:
+
+`f4e287efa5774b92b2ea8a699a4fbc407da7848e` — `test: cover reminder window and deduplication invariants`
+
+Created:
+
+`tests/CareNest.UnitTests/ReminderPlannerBoundaryTests.cs`
+
+Coverage protects:
+
+- planning window is half-open: `fromUtc` included, `toUtc` excluded;
+- duplicate explicit user clock times collapse to one occurrence/key;
+- returned occurrences are chronological even if clock-time inputs are out of order.
+
+The half-open rule is particularly important for adjacent rebuild windows because an occurrence exactly on the boundary belongs to only one window.
+
+## 9. App-lock threat-model clarification
+
+Commit:
+
+`7d05765226f684cba34c920ae6b8559fd665ca4a` — `docs: clarify app-lock residual risk and verifier handling`
+
+Updated `docs/security/THREAT_MODEL.md` to add:
+
+- explicit app-lock PIN guessing threat;
+- random salt/PBKDF2/fixed-time/verifier-zeroing controls;
+- residual weak-PIN/offline-guessing risk on compromised devices/secret stores;
+- explicit statement that app lock is a local privacy barrier, not whole-database/device encryption;
+- security-review triggers for biometric bypass/recovery and remote PIN recovery.
+
+## 10. SECURITY.md app-lock limitation
+
+Commit:
+
+`640cb6ccac0dae2638d40dabf196fcbb9db721fd` — `docs: document CareNest app-lock security limits`
+
+Aligned root security policy with the threat model and verifier handling.
+
+## 11. Deterministic reminder scheduling contract
+
+Commit:
+
+`692e8b37fb58d5fda966e06a7f8170ba033fa288` — `docs: define deterministic CareNest reminder scheduling contract`
+
+Created:
+
+`docs/testing/REMINDER_SCHEDULING_CONTRACT.md`
+
+The contract documents:
+
+- explicit-user-input-only scheduling;
+- no dose/frequency inference;
+- no automatic as-needed occurrences;
+- half-open planning window;
+- stable occurrence identity;
+- duplicate-time deduplication;
+- chronological output ordering;
+- daily/custom date boundaries;
+- selected weekday mask behavior;
+- cycle on/off behavior;
+- every-N-hours explicit starting-time/interval behavior;
+- follow-up occurrence separation;
+- disabled/paused/completed/archived suppression;
+- DST gap no-invented-time behavior;
+- DST overlap deterministic offset behavior;
+- reminder delivery limitations remain separate from deterministic planner logic.
+
+## 12. Test-plan expansion and verification source freeze
+
+Commit:
+
+`69c4dd9319f7dc47edea1786e683f7d90c656e1e` — `docs: expand automated schedule and snapshot test plan`
+
+Updated `docs/testing/TEST_PLAN.md` to record the new schedule validation/planner, snapshot, and app-lock coverage and link to the deterministic scheduling contract.
+
+This commit became the exact source/test/documentation head used as the PR #28 verification base.
+
+---
+
+# PR #28 — exact-head reminder/snapshot/app-lock verification
 
 Verification branch:
 
-`ci/carenest-rc1-hardening-verification-20260810-4`
+`ci/carenest-rc1-reminder-applock-hardening-20260810`
+
+Exact verified source head:
+
+`69c4dd9319f7dc47edea1786e683f7d90c656e1e`
 
 Verification marker head:
 
-`aefd53869b7eaf54815de446fc83373c7977d04d`
+`a1362b551749762ae816e8b4366c8f1eb97538fa`
 
-Marker-only changed file:
+Marker-only file:
 
-`build/verification/rc1-hardening-20260810-4.txt`
+`build/verification/rc1-reminder-applock-hardening-20260810.txt`
 
-PR:
+Pull request:
 
-`#27 — Verify CareNest exact-head hardening after CI fixes`
+`#28 — Verify CareNest reminder, snapshot, and app-lock hardening`
 
-PR #27 was closed **without merge** after the full automated matrix succeeded.
+PR URL:
 
-### CareNest CI #200
+`https://github.com/sanskarIN/CareNest/pull/28`
+
+The PR changed only the verification marker beyond the exact source head. After all workflows completed successfully, PR #28 was closed **without merge**.
+
+## CareNest CI #220
 
 Run ID:
 
-`31375336226`
+`31378000135`
 
 Final conclusion:
 
@@ -938,52 +1014,47 @@ Final conclusion:
 
 Core job evidence:
 
-- platform-neutral formatting: passed;
-- `CareNest.UnitTests`: **15 passed, 0 failed, 0 skipped**;
-- `CareNest.IntegrationTests`: **11 passed, 0 failed, 0 skipped**;
-- `CareNest.UiTests`: **46 passed, 0 failed, 0 skipped**;
-- total automated test cases in core job: **72 passed, 0 failed, 0 skipped**.
+- platform-neutral formatting: **success**;
+- `CareNest.UnitTests`: **37 passed, 0 failed, 0 skipped**;
+- `CareNest.IntegrationTests`: **13 passed, 0 failed, 0 skipped**;
+- `CareNest.UiTests`: **51 passed, 0 failed, 0 skipped**;
+- total automated core test cases: **101 passed, 0 failed, 0 skipped**.
 
-Platform build evidence:
+Platform evidence:
 
-- Android Release: **success**;
-- Windows Release: **success**;
-- iOS simulator Release: **success**;
-- Mac Catalyst Release: **success**.
+- Android Release build: **success**;
+- Windows Release build: **success**;
+- iOS simulator Release build: **success**;
+- Mac Catalyst Release build: **success**.
 
-### CodeQL #200
+## CodeQL #220
 
 Run ID:
 
-`31375336083`
+`31378000143`
 
 Final conclusion:
 
 **success**
 
-### Dependency Audit #7
+## Dependency Audit #8
 
 Run ID:
 
-`31375336088`
+`31378000134`
 
 Final conclusion:
 
 **success**
 
-Dependency Audit includes:
+The dependency audit remains compatible with the repository's explicit narrow SQLite advisory suppression. A green Dependency Audit does not mean `GHSA-2m69-gcr7-jv3q` is fixed; the dependency risk register remains authoritative and open.
 
-- platform-neutral NuGet audit restores;
-- Android MAUI workload installation;
-- MAUI app dependency graph audit;
-- explicit documentation that GitHub Dependency Review action is not currently used because the repository Dependency Graph is not enabled.
+## PR #28 result
 
-### Final automated state
-
-For exact source head `8417513...`:
+For source head `69c4dd...`:
 
 - formatting green;
-- 72/72 automated tests green;
+- 101/101 automated tests green;
 - Android green;
 - Windows green;
 - iOS simulator green;
@@ -991,22 +1062,23 @@ For exact source head `8417513...`:
 - CodeQL green;
 - Dependency Audit green.
 
-No final production tag or store release is claimed from this evidence alone.
+No final `1.0.0` production tag/store submission is claimed from this automated evidence alone.
 
 ---
 
-# Current automated policy coverage
-
-The `CareNest.UiTests` project now includes contracts/policies across these areas:
+# Current automated policy and safety coverage
 
 ## Critical product flows
 
 - onboarding safety/local-first text;
-- profile deletion/export behavior contracts;
+- profile deletion/export contracts;
 - medicine/schedule UI contracts;
-- as-needed behavior;
+- as-needed no-automatic-reminder behavior;
 - reminder/status terminology;
-- About support/safety boundaries.
+- About support/safety boundaries;
+- schedule state/date/cycle/every-N-hours boundaries;
+- planner window/dedup/order invariants;
+- daylight-saving gap/overlap behavior.
 
 ## Architecture
 
@@ -1023,7 +1095,8 @@ The `CareNest.UiTests` project now includes contracts/policies across these area
 - no interaction checker;
 - no clinical risk scoring;
 - opaque strength/instruction fields;
-- explicit user-entered stock change.
+- explicit user-entered stock change;
+- invalid local clock times do not cause inferred alternate reminder times.
 
 ## Privacy/security
 
@@ -1031,8 +1104,25 @@ The `CareNest.UiTests` project now includes contracts/policies across these area
 - no common signing/private-key file types;
 - no committed runtime telemetry/network client introduction;
 - required privacy/security/release files exist;
-- BMC link is fixed and explicit;
-- no implicit notification permission request in onboarding.
+- BMC link is fixed/explicit;
+- no implicit notification permission request during onboarding;
+- app-lock PIN is not directly persisted;
+- app-lock verifier uses PBKDF2-HMAC-SHA256 and fixed-time comparison;
+- derived/retrieved verifier buffers are cleared after verification paths;
+- disabling app lock removes lock material;
+- app-lock security limitation is explicit.
+
+## Persistence/backup
+
+- SQLite migration/integrity checks;
+- WAL mode and busy timeout;
+- WAL checkpoint result handling;
+- snapshot file creation;
+- snapshot committed-record content;
+- copied-snapshot integrity;
+- pre-cancelled snapshot leaves no output;
+- encrypted backup restore/wrong-password/tamper behavior;
+- encrypted document round-trip/tamper behavior.
 
 ## Engineering quality
 
@@ -1040,9 +1130,11 @@ The `CareNest.UiTests` project now includes contracts/policies across these area
 - no common synchronous task-blocking patterns;
 - branding SVGs remain well-formed;
 - resource keys remain present;
-- architecture references remain portable across operating systems.
+- architecture references remain portable;
+- platform-neutral formatting enforced;
+- cross-platform MAUI Release builds enforced.
 
-These tests are preventive controls. They do not replace manual application behavior, security, accessibility, store-policy, or device testing.
+These preventive controls do not replace manual application behavior, security, accessibility, store-policy, or device testing.
 
 ---
 
@@ -1059,7 +1151,7 @@ These tests are preventive controls. They do not replace manual application beha
 
 - registered in DI;
 - attached during application construction;
-- idempotent attachment through `Interlocked.Exchange`;
+- idempotent attachment with `Interlocked.Exchange`;
 - observes unhandled application-domain exceptions;
 - observes unobserved task exceptions;
 - logs only type/category metadata;
@@ -1068,19 +1160,105 @@ These tests are preventive controls. They do not replace manual application beha
 
 ## ReminderCoordinator
 
-- reminder scheduling failures no longer log occurrence IDs or medicine IDs;
-- low-stock reminder scheduling failures no longer expose health-record identifiers;
+- reminder scheduling failures do not log occurrence/medicine IDs;
+- low-stock reminder scheduling failures do not expose health-record identifiers;
 - full exceptions/messages/stack traces are not passed;
 - safe exception type metadata is evaluated only when Warning logging is enabled.
 
 ## StartupCoordinator
 
-- non-fatal reminder recovery no longer passes a full exception object;
+- non-fatal reminder recovery does not pass a full exception object;
 - logs only safe exception type metadata when Warning is enabled.
 
 ## Documentation
 
-`docs/security/LOGGING_PRIVACY.md` explicitly prohibits logging medicine/profile data, appointment notes, document data/paths, reminder notes, PIN/backup secrets, keys, raw health-record identifiers, full exception objects/messages/stack traces, and URLs containing user data.
+`docs/security/LOGGING_PRIVACY.md` explicitly prohibits medicine/profile data, appointment notes, document data/paths, reminder notes, PIN/backup secrets, keys, raw health-record identifiers, full exception objects/messages/stack traces, and URLs containing user data.
+
+---
+
+# App-lock security implementation and limitations
+
+App lock remains optional and local.
+
+Current implementation properties:
+
+- no plaintext PIN persistence;
+- numeric 6–32 digit PIN policy;
+- random 16-byte salt;
+- PBKDF2-HMAC-SHA256 verifier derivation;
+- 210,000 derivation iterations;
+- secure platform secret-store persistence of salt/verifier/enabled state;
+- fixed-time verifier comparison;
+- derived verifier buffer zeroing;
+- retrieved verifier buffer zeroing after verification paths;
+- lock material removed when disabled.
+
+Explicit limitations:
+
+- app lock is not whole-database encryption;
+- app lock is not device encryption;
+- app lock does not replace device-level authentication;
+- weak numeric PINs have limited entropy;
+- a compromised/rooted/jailbroken device or compromised secure store remains outside the protection promise;
+- future biometric recovery/bypass or remote PIN recovery requires a separate security review.
+
+---
+
+# Deterministic reminder reliability rules
+
+The current planner contract is documented in `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`.
+
+Rules include:
+
+- schedules originate only from explicit user input;
+- reminder occurrence keys are stable/deterministic;
+- rebuilds are idempotent;
+- windows include `fromUtc` and exclude `toUtc`;
+- duplicate clock times collapse to one stable occurrence;
+- output is chronological;
+- daily/custom date boundaries are enforced;
+- selected weekdays use only selected mask values;
+- cycles use only explicit on/off days;
+- every-N-hours uses explicit start time/interval;
+- as-needed produces no automatic occurrences;
+- disabled schedules produce no automatic occurrences;
+- paused/completed/archived medicines produce no automatic occurrences;
+- invalid spring-forward local times are not silently shifted;
+- ambiguous fall-back local times produce a deterministic occurrence;
+- future reminders are rebuilt at startup;
+- overdue occurrences are reconciled;
+- Android responds to reboot/time/time-zone rebuild signals;
+- stored schedule times are not silently rewritten after time-zone changes;
+- notification permission denial is surfaced;
+- exact-alarm/battery limitations are surfaced on Android;
+- iOS/Mac Catalyst use OS-managed local notifications;
+- Windows fallback limitations are reported rather than hidden;
+- quiet hours are user-controlled;
+- follow-up reminders are user-controlled;
+- stock changes after Taken use only user-configured quantity change;
+- stock estimates explicitly warn users to check actual supply;
+- reminder scheduling failures are privacy-redacted in logs.
+
+These are organizational scheduling rules, not treatment or dosage advice.
+
+---
+
+# WAL snapshot/backup reliability rules
+
+`SqliteDatabase.CreateSnapshotAsync` uses the existing SQLite WAL checkpoint path before copying the database snapshot.
+
+Automated regression evidence now checks more than file creation:
+
+- WAL mode enabled;
+- busy timeout configured;
+- full WAL checkpoint result consumed;
+- nonempty snapshot file created;
+- a committed profile record is present in the copied database;
+- copied database passes `PRAGMA integrity_check`;
+- a pre-cancelled operation throws cancellation;
+- pre-cancelled operation does not leave a snapshot output file.
+
+This does not replace the required manual clean-install encrypted backup/restore test on final packaged builds.
 
 ---
 
@@ -1088,9 +1266,9 @@ These tests are preventive controls. They do not replace manual application beha
 
 ## CI
 
-`.github/workflows/ci.yml` currently verifies:
+`.github/workflows/ci.yml` verifies:
 
-- formatting of platform-neutral projects/tests;
+- platform-neutral formatting;
 - unit tests;
 - integration tests;
 - UI-contract/policy tests;
@@ -1101,28 +1279,21 @@ These tests are preventive controls. They do not replace manual application beha
 
 ## CodeQL
 
-CodeQL remains an independent security-analysis workflow and passed on final exact-head verification.
+CodeQL is an independent security-analysis workflow and passed PR #28.
 
 ## Dependency Audit
 
-`.github/workflows/dependency-review.yml` is restored and green. It audits platform-neutral and Android MAUI dependency graphs using NuGet audit mode.
+`.github/workflows/dependency-review.yml` audits platform-neutral and Android MAUI dependency graphs using NuGet audit mode and passed PR #28.
 
 ## Production Release Gate
 
-`.github/workflows/release-gate.yml` is restored. It intentionally blocks public release while:
+`.github/workflows/release-gate.yml` intentionally blocks final production release while the dependency risk register has an open production risk, release checklist items remain incomplete, required release documents are missing, or source tests fail.
 
-- the dependency risk register contains an open production risk;
-- release checklist items remain incomplete;
-- required release documents are missing;
-- source tests fail.
-
-It is acceptable and intentional for this gate to block final `1.0.0` today because manual/store/signing/SQLite decisions are still incomplete.
+It is expected that final `1.0.0` remains blocked today because manual/store/signing/SQLite-risk decisions are not complete.
 
 ## Release Evidence
 
-`.github/workflows/release-evidence.yml` can be manually or tag triggered to produce source/toolchain/test/dependency/checksum evidence for the eventual promoted commit.
-
-It is not a substitute for platform CI or manual target testing.
+`.github/workflows/release-evidence.yml` can be manually or tag-triggered to produce source/toolchain/test/dependency/checksum evidence for the eventual promoted commit. It has not been falsely marked as final release evidence for a public package.
 
 ---
 
@@ -1132,7 +1303,8 @@ It is not a substitute for platform CI or manual target testing.
 - Document encryption uses authenticated AES-256-GCM primitives rather than custom cryptography.
 - Backups use password-derived authenticated encryption and a schema-versioned format.
 - The encrypted backup payload carries document key material needed for portable restore without storing it in plaintext.
-- App-lock PINs are not stored directly; a salted password-derived verifier is stored through secure platform storage.
+- App-lock PINs are not stored directly; a salted PBKDF2-HMAC-SHA256 verifier is stored through secure platform storage.
+- App-lock verification uses fixed-time comparison and clears verifier buffers after checks.
 - No API keys, signing keys, certificates, passwords, or production secrets are committed.
 - No analytics/telemetry client is part of v1.
 - No CareNest backend/cloud sync/account system/automatic upload exists in v1.
@@ -1146,43 +1318,25 @@ It is not a substitute for platform CI or manual target testing.
 
 ---
 
-# Reminder reliability rules implemented
-
-- schedules originate only from explicit user input;
-- reminder occurrence keys are stable/deterministic;
-- rebuilds are idempotent;
-- future reminders are rebuilt at startup;
-- overdue occurrences are reconciled;
-- Android responds to reboot/time/time-zone rebuild signals;
-- stored schedule times are not silently rewritten after time-zone changes;
-- notification permission denial is surfaced;
-- exact-alarm/battery limitations are surfaced on Android;
-- iOS/Mac Catalyst use OS-managed local notifications;
-- Windows fallback limitations are reported rather than hidden;
-- quiet hours are user-controlled;
-- follow-up reminders are user-controlled;
-- stock changes after Taken use only user-configured quantity change;
-- stock estimates explicitly warn users to check actual supply;
-- reminder scheduling failures are now privacy-redacted in logs.
-
----
-
 # Acceptance-criteria mapping
 
 - No account/network required: implemented.
 - No CareNest backend/login/cloud sync: implemented for v1.
 - No diagnosis/treatment/dosage decisions: enforced through scope, domain behavior, UI text, policy tests, and documentation.
 - Reminder recovery: startup rebuild plus Android boot/time/time-zone integration implemented.
+- Deterministic reminder boundaries/DST behavior: implemented and contract tested.
 - Permission/battery limitations: surfaced.
 - Profile export/delete: implemented.
 - Document export/delete: implemented.
 - Logs exclude health-document contents and raw sensitive exception details: implemented and contract tested.
 - Medical limitations in onboarding/About: implemented.
 - Manual encrypted backup/restore: implemented with version/integrity validation and rollback handling.
+- WAL-backed snapshot content/integrity/cancellation: regression tested.
 - No automatic cloud upload: implemented by architecture.
 - Local caregiver mode: implemented without silent sharing.
 - Theme/accessibility/localization readiness: implemented.
-- Automated quality gate: exact hardening source head passed formatting/core tests/Android/Windows/iOS/Mac/CodeQL/Dependency Audit.
+- App-lock privacy barrier: implemented with verifier-memory hardening and explicit limitations.
+- Automated quality gate: source head `69c4dd...` passed formatting, 101 tests, Android/Windows/iOS/Mac, CodeQL, and Dependency Audit.
 - Voluntary funding: implemented without changing CareNest health behavior or local-data access.
 - Branding variants: adaptive/splash/standard/light/dark/monochrome/support artwork present and contract tested.
 - Release evidence/provenance process: workflow/docs present; final public-release evidence run intentionally remains pending until production blockers are cleared.
@@ -1216,19 +1370,20 @@ Automated exact-head verification is green, but public `1.0.0` remains intention
 1. Complete `docs/releases/MANUAL_TEST_MATRIX.md` across Android, Windows, iOS/iPadOS, and Mac Catalyst on representative real/emulated targets.
 2. Manually verify notification permission denied/granted flows.
 3. Manually verify Android exact-alarm/battery/reboot/time/time-zone behavior on representative devices.
-4. Manually verify document import/export/delete.
-5. Manually verify calendar export.
-6. Manually verify encrypted backup/restore on clean installation/release build.
-7. Manually verify cold-start app lock.
-8. Complete screen-reader, large-text, keyboard, contrast, and reduced-motion accessibility review.
-9. Review current Apple App Store and Google Play policy for the external voluntary support link.
-10. Conditionally remove/hide the in-app external support action for a distribution channel if current rules require it.
-11. Prepare signing identities/credentials outside Git.
-12. Build/inspect signed packages on fully provisioned hosts.
-13. Complete store screenshots, listing text, privacy/data-safety disclosures, support/privacy/terms/security links, and package identity checks.
-14. Resolve or make an explicit production release decision for the open SQLitePCLRaw advisory.
-15. Run `CareNest Release Evidence` for the exact commit ultimately promoted to public `1.0.0`.
-16. Create final release notes/tag/GitHub release only after all applicable gates are complete.
+4. Manually verify real-target reminder behavior including the documented limitations.
+5. Manually verify document import/export/delete.
+6. Manually verify calendar export.
+7. Manually verify encrypted backup/restore on a clean installation/release build.
+8. Manually verify cold-start app lock.
+9. Complete screen-reader, large-text, keyboard, contrast, and reduced-motion accessibility review.
+10. Review current Apple App Store and Google Play policy for the external voluntary support link.
+11. Conditionally remove/hide the in-app external support action for a distribution channel if current rules require it.
+12. Prepare signing identities/credentials outside Git.
+13. Build/inspect signed packages on fully provisioned hosts.
+14. Complete store screenshots, listing text, privacy/data-safety disclosures, support/privacy/terms/security links, and package identity checks.
+15. Resolve or make an explicit production release decision for the open SQLitePCLRaw advisory.
+16. Run `CareNest Release Evidence` for the exact commit ultimately promoted to public `1.0.0`.
+17. Create final release notes/tag/GitHub release only after all applicable gates are complete.
 
 No manual item above is marked complete merely because the automated matrix is green.
 
@@ -1256,6 +1411,24 @@ The medical decision boundary is not a roadmap item to remove.
 
 ---
 
+# Future automated hardening still worth considering
+
+These are not missing RC1 core features; they are additional quality improvements for later iterations:
+
+- platform UI automation on stable real/emulated target infrastructure;
+- deeper notification-permission denial/retry state-transition automation;
+- DST gap/overlap coverage for additional representative time zones beyond the existing America/New_York cases;
+- randomized/property/fuzz-style schedule-planner recurrence-boundary tests;
+- backup compatibility fixtures across future schema versions;
+- file-corruption and low-storage target failure-path tests;
+- expanded semantic/accessibility XAML contracts while retaining manual assistive-technology testing;
+- SBOM generation for release artifacts;
+- artifact attestations/provenance where supported;
+- GitHub Dependency Review action if repository Dependency Graph becomes available;
+- protected signed-artifact workflow after signing identities are provisioned securely.
+
+---
+
 # Commit identity note
 
 The requested maintainer Git identity remains documented/configured through repository setup scripts:
@@ -1271,7 +1444,7 @@ Relevant setup files include:
 - `build/scripts/setup-git.ps1`;
 - `docs/setup/DEVELOPMENT.md`.
 
-The connected GitHub write API used in this chat does not expose author/committer email parameters for file update/create operations. Connector-created commits therefore use the authenticated GitHub identity. This repository does not falsely claim the connector forced `sanskarin@outlook.in` into those commit objects.
+The connected GitHub write API used in this chat does not expose author/committer email parameters for contents-API create/update operations. Connector-created commits therefore use the authenticated GitHub identity. This repository does not falsely claim the connector forced `sanskarin@outlook.in` into those commit objects.
 
 Local/future maintainer commits can use the requested address through the provided setup scripts.
 
@@ -1287,46 +1460,54 @@ Manual target-device tests, signing identities, current store-policy decisions, 
 
 ---
 
-# Documentation-only commits after verified source head
+# Documentation-only commits after the latest verified source head
 
-Exact verified runtime/test source head:
+Exact verified runtime/test/source head:
 
-`8417513db36c72b0ec2cfaccadb6ac47ba361f11`
+`69c4dd9319f7dc47edea1786e683f7d90c656e1e`
 
-After PR #27 completed green, the following documentation-only commits recorded the evidence without changing runtime/test/product source:
+After PR #28 completed green, the following documentation-only commits recorded and aligned evidence without changing the runtime/test source that passed CI #220:
 
-- `fa8b78cb6ffbb41242cbc1d95f7fd696a8303fd5` — `docs: record green exact-head rc1 hardening verification` (`PROJECT_STATUS.md`);
-- `212f92b3dbe07e2d8d5bce63af0d1c14059237ce` — `docs: record green rc1 hardening release evidence` (`RELEASE_CHECKLIST.md`);
-- `d682e2e58c06c6e4c47c875a892f35a1353fb569` — `docs: record rc1 privacy and release hardening changes` (`CHANGELOG.md`);
-- `a02fca94b98657bf6010d76821cd3eab0b9db408` — `docs: link verified CareNest quality and release evidence` (`README.md`).
+- `7262b7c8f4e62b569d590d7ceaeaedbb2a2f4b5a` — `docs: record green reminder and app-lock hardening baseline` (`PROJECT_STATUS.md`);
+- `4be7d0496b0a04a0e595e54b25f490a11ee3a79a` — `docs: record PR28 automated release evidence` (`docs/releases/RELEASE_CHECKLIST.md`);
+- `928c4d3a141cc844edb62dbc5cb45896d607a2c0` — `docs: record reminder snapshot and app-lock hardening` (`CHANGELOG.md`);
+- `c1631cbf6816aeda952074d5f21007d0ca848350` — `docs: record deterministic reminder and app-lock memory decisions` (`DECISIONS.md`);
+- `cffec1df155efe824cc93e36b86be154950001b1` — `docs: align next steps with PR28 hardening evidence` (`docs/releases/NEXT_STEPS.md`);
+- `26914b553b26fa0ff6986b23a8846de13999ff36` — `docs: link deterministic scheduling and PR28 quality baseline` (`README.md`);
+- `b729a117feb5381f6574e8b018cdcdc4dd04f1fb` — `docs: add reminder snapshot and app-lock quality gates` (`docs/releases/QUALITY_GATE.md`);
+- `044c0f91bfde15b1f85474656e2ca9faedb05085` — `docs: expand app-lock and snapshot security release review` (`docs/releases/SECURITY_RELEASE_REVIEW.md`).
 
-These commits do not alter the exact runtime/test source that passed CI #200. They are not represented as if each had a separate cross-platform build.
+This `what_changed.md` update is also documentation-only. These later documentation commits are not represented as separate platform-build verification heads.
 
 ---
 
 # Current repository state
 
 - Complete CareNest `1.0.0-rc.1` source remains on `main`.
-- Exact verified runtime/test source head is `8417513db36c72b0ec2cfaccadb6ac47ba361f11`.
-- Final exact-head verification PR #27 is closed without merge.
-- CareNest CI #200 / `31375336226`: success.
-- CodeQL #200 / `31375336083`: success.
-- Dependency Audit #7 / `31375336088`: success.
-- Platform-neutral formatting: success.
-- Unit tests: 15/15 passed.
-- Integration tests: 11/11 passed.
-- UI-contract/policy tests: 46/46 passed.
-- Total core test cases: 72/72 passed.
-- Android Release: success.
-- Windows Release: success.
-- iOS simulator Release: success.
-- Mac Catalyst Release: success.
+- Latest exact verified runtime/test/source head is `69c4dd9319f7dc47edea1786e683f7d90c656e1e`.
+- Verification PR #28 is closed without merge.
+- Verification marker head `a1362b551749762ae816e8b4366c8f1eb97538fa` did not enter `main`.
+- CareNest CI #220 / `31378000135`: **success**.
+- CodeQL #220 / `31378000143`: **success**.
+- Dependency Audit #8 / `31378000134`: **success**.
+- Platform-neutral formatting: **success**.
+- Unit tests: **37/37 passed**.
+- Integration tests: **13/13 passed**.
+- UI-contract/policy tests: **51/51 passed**.
+- Total core automated test cases: **101/101 passed**.
+- Android Release: **success**.
+- Windows Release: **success**.
+- iOS simulator Release: **success**.
+- Mac Catalyst Release: **success**.
+- Deterministic reminder planner schedule/date/state/window/DST/dedup/order coverage is active.
+- WAL snapshot committed-content/integrity/cancellation regression coverage is active.
+- App-lock verifier-memory clearing is implemented and source-contract protected.
+- App lock remains explicitly documented as a local privacy barrier, not whole-database/device encryption.
 - Global/UI/startup/reminder exception logging is privacy-redacted and analyzer-compliant.
-- Repository policy, architecture, ViewModel, data-model, branding, async, and logging privacy contracts are active.
-- Restored Dependency Audit and Release Gate workflows are present.
-- Release Evidence workflow and release-quality/security/provenance documentation are present.
-- Previously missing valid BMC/release/dependency files discovered during recovery audit have been restored.
+- Repository policy, architecture, ViewModel, data-model, branding, async, logging privacy, and app-lock security contracts are active.
+- Dependency Audit, Release Gate, Release Evidence, CI, CodeQL, and Dependabot configuration are present.
 - README/SUPPORT/About funding surfaces and both CareNest support artwork variants are present.
+- The Buy Me a Coffee URL remains `https://buymeacoffee.com/sanskarIN`, voluntary, external, and non-entitlement based.
 - The SQLitePCLRaw advisory remains explicitly open and is not claimed fixed.
-- Final public `1.0.0` tagging/publication remains gated on manual device/accessibility testing, current store-policy review, signing/store preparation, Release Evidence generation for the eventual promoted commit, and the SQLite dependency-risk decision/resolution.
+- Final public `1.0.0` tagging/publication remains gated on manual device/accessibility/notification testing, current store-policy review, signing/store preparation, final Release Evidence for the exact promoted commit, and the SQLite dependency-risk decision/resolution.
 - Cloud sync, remote caregiver collaboration, accounts/server storage, diagnosis, treatment advice, dosage calculation/inference, interaction checking, and clinical risk scoring remain deferred/out of scope.
