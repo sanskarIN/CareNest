@@ -30,7 +30,11 @@ Backups are manual, user-initiated, and encrypted with a password. Users choose 
 
 ## Diagnostics
 
-Logs are designed not to contain document contents, lock PINs, backup passwords, or full sensitive notes. Developer schedule inspection uses redacted labels.
+Logs are designed not to contain document contents, lock PINs, backup passwords, full sensitive notes, medicine/profile names, or raw health-record identifiers. Developer schedule inspection uses redacted labels.
+
+CareNest error logging records a safe exception type/category where needed for troubleshooting but intentionally does not pass full exception objects, exception messages, stack traces, user-entered record text, or file/document paths to the application logger. Global unhandled-exception observation follows the same redaction boundary.
+
+This privacy boundary reduces accidental disclosure through diagnostics; it does not make public logs an appropriate place for health information. Users and maintainers should still review diagnostic exports before sharing them.
 
 ## Deletion
 
