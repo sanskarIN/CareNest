@@ -1,4 +1,5 @@
 using CareNest.Domain.Entities;
+using SQLite;
 
 namespace CareNest.IntegrationTests;
 
@@ -42,6 +43,48 @@ public sealed class DatabaseMigrationTests
         }
         finally
         {
+            if (File.Exists(snapshotPath))
+            {
+                File.Delete(snapshotPath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Snapshot_FromWalDatabase_PreservesCommittedProfileData()
+    {
+        await using var store = await TestStore.CreateAsync();
+        var profile = new PersonProfile { Name = "Snapshot contents", IsPrimary = true };
+        await store.Repository.SaveProfileAsync(profile);
+
+        var snapshotPath = Path.Combine(
+            Path.GetTempPath(),
+            $"carenest-snapshot-content-{Guid.NewGuid():N}.db");
+
+        SQLiteAsyncConnection? snapshot = null;
+        try
+        {
+            await store.Database.CreateSnapshotAsync(snapshotPath);
+            snapshot = new SQLiteAsyncConnection(
+                snapshotPath,
+                SQLiteOpenFlags.ReadOnly | SQLiteOpenFlags.FullMutex);
+
+            var count = await snapshot.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM PersonProfile WHERE Id = ? AND Name = ?;",
+                profile.Id,
+                profile.Name);
+            var integrity = await snapshot.ExecuteScalarAsync<string>("PRAGMA integrity_check;");
+
+            Assert.Equal(1, count);
+            Assert.Equal("ok", integrity, ignoreCase: true);
+        }
+        finally
+        {
+            if (snapshot is not null)
+            {
+                await snapshot.CloseAsync();
+            }
+
             if (File.Exists(snapshotPath))
             {
                 File.Delete(snapshotPath);
