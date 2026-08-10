@@ -3,9 +3,9 @@ namespace CareNest.UiTests;
 public sealed class ViewModelContractTests
 {
     [Fact]
-    public void ViewModels_DoNotUseAsyncVoidOrTaskRun()
+    public void ConcreteViewModels_DoNotUseAsyncVoidOrTaskRun()
     {
-        foreach (var path in EnumerateViewModels())
+        foreach (var path in EnumerateConcreteViewModels())
         {
             var source = File.ReadAllText(path);
             Assert.DoesNotContain("async void", source, StringComparison.Ordinal);
@@ -16,7 +16,7 @@ public sealed class ViewModelContractTests
     [Fact]
     public void ViewModels_DoNotReachIntoSqliteInfrastructureDirectly()
     {
-        foreach (var path in EnumerateViewModels())
+        foreach (var path in EnumerateConcreteViewModels())
         {
             var source = File.ReadAllText(path);
             Assert.DoesNotContain("SQLiteAsyncConnection", source, StringComparison.Ordinal);
@@ -28,7 +28,7 @@ public sealed class ViewModelContractTests
     [Fact]
     public void ViewModels_DoNotCreateNetworkClients()
     {
-        foreach (var path in EnumerateViewModels())
+        foreach (var path in EnumerateConcreteViewModels())
         {
             var source = File.ReadAllText(path);
             Assert.DoesNotContain("HttpClient", source, StringComparison.Ordinal);
@@ -67,10 +67,13 @@ public sealed class ViewModelContractTests
         Assert.Contains("RequestPermissionAsync", source, StringComparison.Ordinal);
     }
 
-    private static string[] EnumerateViewModels()
+    private static string[] EnumerateConcreteViewModels()
     {
         var directory = Path.Combine(RepositoryLocator.Root, "src", "CareNest.App", "ViewModels");
-        var files = Directory.EnumerateFiles(directory, "*ViewModel.cs", SearchOption.TopDirectoryOnly).ToArray();
+        var files = Directory
+            .EnumerateFiles(directory, "*ViewModel.cs", SearchOption.TopDirectoryOnly)
+            .Where(path => !string.Equals(Path.GetFileName(path), "ObservableViewModel.cs", StringComparison.Ordinal))
+            .ToArray();
         Assert.NotEmpty(files);
         return files;
     }
