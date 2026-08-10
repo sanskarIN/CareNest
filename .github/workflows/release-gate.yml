@@ -1,0 +1,60 @@
+name: Release Gate
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  policy-and-risk-gate:
+    name: Policy and risk gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+      - name: Block unresolved production dependency risks
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -Eq '^[-*] \*\*Status:\*\* Open' docs/security/DEPENDENCY_RISK_REGISTER.md; then
+            echo 'Production release blocked: dependency risk register contains an open risk.'
+            exit 1
+          fi
+      - name: Require release checklist evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -Eq '^- \[ \]' docs/releases/RELEASE_CHECKLIST.md; then
+            echo 'Production release blocked: release checklist still contains incomplete items.'
+            exit 1
+          fi
+      - name: Confirm required release documents
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s CHANGELOG.md
+          test -s PROJECT_STATUS.md
+          test -s docs/releases/RELEASE_CHECKLIST.md
+          test -s docs/releases/NEXT_STEPS.md
+          test -s docs/security/DEPENDENCY_RISK_REGISTER.md
+
+  release-source-tests:
+    name: Release source tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Unit tests
+        run: dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj --configuration Release --nologo
+      - name: Integration tests
+        run: dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj --configuration Release --nologo
+      - name: UI contract tests
+        run: dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj --configuration Release --nologo
