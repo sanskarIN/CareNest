@@ -1,0 +1,5 @@
+CareNest verification marker
+
+Base source head: 69c4dd9319f7dc47edea1786e683f7d90c656e1e
+Scope: reminder schedule validation/boundaries, WAL snapshot integrity/cancellation, app-lock verifier zeroing/contracts, security/testing documentation.
+This marker must not be merged.
