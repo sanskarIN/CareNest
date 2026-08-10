@@ -69,7 +69,9 @@ public sealed class ReminderCoordinator(
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Reminder scheduling failed for occurrence {OccurrenceId}. No health details were logged.", occurrence.Id);
+                logger.LogWarning(
+                    "Reminder scheduling failed. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
+                    ex.GetType().FullName ?? "Unknown");
             }
         }
     }
@@ -190,7 +192,6 @@ public sealed class ReminderCoordinator(
             .ToArray();
     }
 
-
     private async Task ApplyUserConfiguredStockChangeAsync(
         string medicineId,
         string logEntryId,
@@ -251,7 +252,9 @@ public sealed class ReminderCoordinator(
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Low-stock reminder scheduling failed for medicine record {MedicineId}.", medicineId);
+                logger.LogWarning(
+                    "Low-stock reminder scheduling failed. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
+                    ex.GetType().FullName ?? "Unknown");
             }
         }
     }
@@ -308,5 +311,4 @@ public sealed class ReminderCoordinator(
         bool Persistent,
         bool PlaySound,
         bool Vibrate);
-
 }
