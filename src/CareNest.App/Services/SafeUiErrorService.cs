@@ -9,8 +9,8 @@ public sealed class SafeUiErrorService(ILogger<SafeUiErrorService> logger)
         if (exception is not null)
         {
             logger.LogError(
-                exception,
-                "CareNest operation failed. Sensitive user fields are intentionally excluded from this log message.");
+                "CareNest operation failed. ExceptionType={ExceptionType}. Sensitive exception details are not logged.",
+                exception.GetType().FullName ?? "Unknown");
         }
 
         var windows = Microsoft.Maui.Controls.Application.Current?.Windows;
