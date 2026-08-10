@@ -1,0 +1,6 @@
+CareNest exact-head verification marker.
+
+Source head: c61f3c31c4ba33419c7b348fc8ee63a58eaa637b
+Supersedes PR #29 after CA2263 was corrected with the generic Enum.IsDefined overload.
+Scope: reminder ownership validation, UTC planning/rebuild/snooze contracts, archived-profile suppression, schedule validation hardening, deterministic property recurrence tests, expanded DST matrix tests, and aligned test/quality documentation.
+This marker is verification-only and must not be merged into main.
