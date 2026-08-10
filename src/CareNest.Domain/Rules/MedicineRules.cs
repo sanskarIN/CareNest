@@ -41,7 +41,7 @@ public static class MedicineRules
     {
         Guard.NotBlank(schedule.MedicineId, nameof(schedule.MedicineId), 64);
 
-        if (!Enum.IsDefined(typeof(ScheduleKind), schedule.Kind))
+        if (!Enum.IsDefined(schedule.Kind))
         {
             throw new ArgumentOutOfRangeException(nameof(schedule), "Schedule type is not recognized.");
         }
