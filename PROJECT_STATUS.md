@@ -21,7 +21,7 @@
 - Branding vector sources and store guidance.
 - Initial release implementation merged to `main` through PR #3.
 - SQLite result-producing PRAGMAs for WAL mode, busy timeout and WAL checkpoint are handled correctly through scalar reads.
-- WAL-backed backup snapshot regression coverage now verifies snapshot creation, committed-data preservation, integrity, and cancellation-before-copy behavior.
+- WAL-backed backup snapshot regression coverage verifies snapshot creation, committed-data preservation, integrity, and cancellation-before-copy behavior.
 - MAUI per-target CI restore/build isolation is implemented without propagating app target frameworks into referenced `net10.0` projects.
 - Android notification integration has explicit API-level guards and nullability checks.
 - Apple verification uses a macOS 26 runner compatible with the current .NET 10 Apple workload.
@@ -44,11 +44,16 @@
 - `docs/security/LOGGING_PRIVACY.md` documents and automated tests enforce the diagnostic redaction boundary.
 - `docs/releases/QUALITY_GATE.md`, `SECURITY_RELEASE_REVIEW.md`, `RELEASE_EVIDENCE.md`, `RELEASE_NOTES_TEMPLATE.md`, and `VERIFICATION_BRANCH_PROTOCOL.md` define reproducible promotion/evidence requirements.
 - An earlier recovery-history audit restored every valid BMC/dependency/release-gate file that existed in the previously green source baseline.
-- Medicine schedule validation tests now cover explicit interval/start-time rules, selected weekdays, cycle on/off values, date ordering, clock ranges, and invalid time-zone identifiers.
-- Reminder planner tests now cover daily, selected-weekday, cycle, custom date range, every-N-hours, follow-up, disabled, paused, completed, archived, and as-needed behavior.
-- Reminder planner boundary tests protect half-open planning windows, duplicate-time deduplication, stable occurrence identity, chronological ordering, DST gaps, and deterministic DST overlaps.
-- `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` records the deterministic non-clinical scheduling contract and explicitly states CareNest never invents an alternate time for an invalid spring-forward local time.
-- App-lock verification now clears both derived and retrieved verifier buffers after checks; contract tests protect salted PBKDF2-HMAC-SHA256, fixed-time comparison, no plaintext PIN persistence, verifier clearing, lock-material deletion, and PIN policy.
+- Medicine schedule validation covers explicit interval/start-time rules, selected weekdays, cycle on/off values, date ordering, clock ranges, recognized schedule enum values, supported weekday-mask bits, and trimmed/valid time-zone identifiers.
+- Reminder planning validates profile → medicine → schedule → persisted schedule-time ownership before materializing occurrences, while allowing intentionally unbound editor times before persistence.
+- Archived profiles are suppressed defensively inside the planner in addition to the coordinator's archive filter.
+- Reminder planning windows require actual UTC `DateTime` values and remain half-open (`fromUtc` inclusive, `toUtc` exclusive).
+- Reminder coordinator rebuild overrides require UTC, and snooze actions require an explicit future UTC timestamp before persistence/platform scheduling.
+- Reminder planner tests cover daily, selected-weekday, cycle, custom date range, every-N-hours, follow-up, disabled, archived-profile, paused, completed, archived-medicine, and as-needed behavior.
+- Deterministic property-style recurrence coverage uses a fixed seed and verifies arbitrary half-open windows, stable uniqueness/order, all supported weekday masks, cycle matrices, and representative every-N-hours intervals.
+- DST gap/overlap coverage now exercises representative North America, Europe, and Australia zones when available on the test host; invalid local times are not replaced with invented reminder times and ambiguous times remain deterministic.
+- `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` records the deterministic non-clinical scheduling, ownership, UTC, snooze, state, window, and DST contracts.
+- App-lock verification clears both derived and retrieved verifier buffers after checks; contract tests protect salted PBKDF2-HMAC-SHA256, fixed-time comparison, no plaintext PIN persistence, verifier clearing, lock-material deletion, and PIN policy.
 - Security/threat-model documentation explicitly describes app lock as a local privacy barrier rather than whole-database/device encryption and records residual weak-PIN/device-compromise risk.
 
 ## Security dependency status
@@ -65,36 +70,38 @@ An attempted `2.1.12` bundle pin was rejected because that version is not availa
 
 ## Current fully verified source head
 
-Exact source head verified through PR #28:
+Exact source head verified through PR #30:
 
-`69c4dd9319f7dc47edea1786e683f7d90c656e1e`
+`c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`
 
 Verification marker head:
 
-`a1362b551749762ae816e8b4366c8f1eb97538fa`
+`59016b7e2b13d5ac1c93cf0db973f275c6e7eb19`
 
-The marker changed only `build/verification/rc1-reminder-applock-hardening-20260810.txt`. PR #28 was closed without merge after the full matrix succeeded.
+The marker changed only `build/verification/rc1-ownership-utc-dst-hardening-20260810-2.txt`. PR #30 was closed without merge after the full matrix succeeded.
 
 Automated evidence:
 
-- CareNest CI run #220 / `31378000135`: **success**.
+- CareNest CI run #248 / `31382194805`: **success**.
 - Platform-neutral formatting gate: **success**.
-- Unit tests: **37 passed, 0 failed, 0 skipped**.
+- Unit tests: **74 passed, 0 failed, 0 skipped**.
 - Integration tests: **13 passed, 0 failed, 0 skipped**.
-- UI-contract/policy tests: **51 passed, 0 failed, 0 skipped**.
-- Total automated test cases in the core job: **101 passed, 0 failed, 0 skipped**.
+- UI-contract/policy tests: **54 passed, 0 failed, 0 skipped**.
+- Total automated test cases in the core job: **141 passed, 0 failed, 0 skipped**.
 - Android Release build: **success**.
 - Windows Release build: **success**.
 - iOS simulator Release build: **success**.
 - Mac Catalyst Release build: **success**.
-- CodeQL run #220 / `31378000143`: **success**.
-- Dependency Audit run #8 / `31378000134`: **success**.
+- CodeQL run #248 / `31382194687`: **success**.
+- Dependency Audit run #10 / `31382194683`: **success**.
 
-The preceding exact-head baseline was PR #27 / source head `8417513db36c72b0ec2cfaccadb6ac47ba361f11`, which passed CI #200, CodeQL #200, Dependency Audit #7, formatting, 15 unit tests, 11 integration tests, 46 UI-contract tests, and all four platform builds. PR #28 supersedes that automated source baseline because it includes the additional reminder/snapshot/app-lock hardening described above.
+PR #29 / source head `04057299fe6d13012734ba235e6fa92604753948` was intentionally superseded after CI #246 exposed analyzer error CA2263 in the newly added non-generic `Enum.IsDefined(Type, object)` call. The quality gate was not weakened: `main` was corrected in commit `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` to use generic `Enum.IsDefined(schedule.Kind)`, then a new marker-only PR #30 was created from that exact corrected head and passed the complete matrix.
+
+The preceding fully green baseline was PR #28 / source head `69c4dd9319f7dc47edea1786e683f7d90c656e1e`, which passed CI #220, CodeQL #220, Dependency Audit #8, formatting, 37 unit tests, 13 integration tests, 51 UI-contract tests, and all four platform builds. PR #30 supersedes that automated source baseline because it includes the additional ownership/UTC/snooze/DST/property hardening.
 
 Earlier superseded verification PRs #24–#26 intentionally exposed and drove fixes for analyzer, privacy-logging, path-normalization, generated-source scanning, and nullable-contract problems instead of weakening quality gates.
 
-Documentation-only status/changelog/handoff commits after source head `69c4dd...` do not change the runtime/test source that passed PR #28 and are not represented as separate platform-verification heads.
+Documentation-only status/changelog/handoff commits after source head `c61f3c31...` do not change the runtime/test source that passed PR #30 and are not represented as separate platform-verification heads.
 
 ## Release blockers that remain real
 
