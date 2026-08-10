@@ -18,6 +18,12 @@ public sealed class ReminderPlanner
         DateTime fromUtc,
         DateTime toUtc)
     {
+        ArgumentNullException.ThrowIfNull(medicine);
+        ArgumentNullException.ThrowIfNull(schedule);
+        ArgumentNullException.ThrowIfNull(times);
+        ArgumentNullException.ThrowIfNull(profile);
+
+        ValidateOwnership(medicine, schedule, times, profile);
         MedicineRules.ValidateSchedule(schedule, times);
 
         if (!schedule.Enabled ||
@@ -75,6 +81,38 @@ public sealed class ReminderPlanner
             .Select(x => x.First())
             .OrderBy(x => x.ScheduledUtc)
             .ToArray();
+    }
+
+    private static void ValidateOwnership(
+        Medicine medicine,
+        MedicineSchedule schedule,
+        IReadOnlyCollection<ScheduleTime> times,
+        PersonProfile profile)
+    {
+        if (!string.Equals(schedule.MedicineId, medicine.Id, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "The reminder schedule does not belong to the supplied medicine record.",
+                nameof(schedule));
+        }
+
+        if (!string.Equals(medicine.ProfileId, profile.Id, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "The medicine record does not belong to the supplied local profile.",
+                nameof(profile));
+        }
+
+        foreach (var time in times)
+        {
+            if (!string.IsNullOrWhiteSpace(time.MedicineScheduleId) &&
+                !string.Equals(time.MedicineScheduleId, schedule.Id, StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    "A reminder time belongs to a different schedule.",
+                    nameof(times));
+            }
+        }
     }
 
     private static void BuildIntervalOccurrences(
