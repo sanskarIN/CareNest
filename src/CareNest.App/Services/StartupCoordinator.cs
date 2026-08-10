@@ -38,9 +38,13 @@ public sealed class StartupCoordinator(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(
-                ex,
-                "Reminder recovery encountered a non-fatal error. No health details were logged.");
+            if (logger.IsEnabled(LogLevel.Warning))
+            {
+                var exceptionType = ex.GetType().FullName ?? "Unknown";
+                logger.LogWarning(
+                    "Reminder recovery encountered a non-fatal error. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
+                    exceptionType);
+            }
         }
 
         if (!await appState.IsOnboardingCompleteAsync(cancellationToken))
