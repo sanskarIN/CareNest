@@ -8,9 +8,10 @@ public sealed class SafeUiErrorService(ILogger<SafeUiErrorService> logger)
     {
         if (exception is not null)
         {
+            var exceptionType = exception.GetType().FullName ?? "Unknown";
             logger.LogError(
                 "CareNest operation failed. ExceptionType={ExceptionType}. Sensitive exception details are not logged.",
-                exception.GetType().FullName ?? "Unknown");
+                exceptionType);
         }
 
         var windows = Microsoft.Maui.Controls.Application.Current?.Windows;
