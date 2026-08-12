@@ -111,7 +111,8 @@ CareNest is a local-first .NET MAUI family health organizer. It is an organizati
 
 - [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current release status and real blockers.
 - [`../CHANGELOG.md`](../CHANGELOG.md) — version/change history.
-- [`../what_changed.md`](../what_changed.md) — detailed implementation/handoff/commit/verification record.
+- [`../what_changed.md`](../what_changed.md) — active detailed continuation handoff.
+- [`history/what_changed_full_through_phase8.md`](history/what_changed_full_through_phase8.md) — exact preserved full pre-documentation handoff containing the complete earlier implementation/hardening/verification record.
 - [`../DECISIONS.md`](../DECISIONS.md) — engineering decisions.
 
 ## Current automated baseline
