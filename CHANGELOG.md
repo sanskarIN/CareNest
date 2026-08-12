@@ -2,7 +2,26 @@
 
 All notable changes follow Keep a Changelog principles and semantic versioning.
 
-## [Unreleased] - 2026-08-10
+## [Unreleased] - 2026-08-12
+
+### Documentation
+
+- Added `docs/README.md` as the canonical CareNest documentation hub.
+- Added complete end-user documentation in `docs/USER_GUIDE.md` and feature-by-feature behavior/contracts in `docs/FEATURE_REFERENCE.md`.
+- Added `docs/REPORTS_AND_EXPORTS.md` for JSON/PDF/CSV/document/calendar export semantics and privacy boundaries.
+- Added `docs/GLOSSARY.md` for shared product/engineering terminology.
+- Added end-to-end application-flow, service-boundary, data-storage/export, encrypted backup/restore, encrypted document-vault, and platform-notification architecture references under `docs/architecture/`.
+- Expanded `docs/architecture/ARCHITECTURE.md` and `DATABASE_SCHEMA.md` from concise overviews into complete architecture/schema/WAL/migration references.
+- Added `docs/privacy/PRIVACY_MODEL.md` and expanded `docs/privacy/DATA_LIFECYCLE.md` to document local-first storage, outbound boundaries, OS/external-copy limitations, backup/export/deletion behavior, and future-network review requirements.
+- Added `docs/security/SECURITY_MODEL.md` to consolidate trust boundaries, SQLite/document/backup/app-lock protection, logging, dependency, CI, secret-management, and residual-risk rules.
+- Added `docs/design/ACCESSIBILITY.md`; expanded the design system, localization architecture, and store-asset guidance with accessibility, responsive-layout, safety wording, localization/RTL, screenshot, privacy, and distribution requirements.
+- Expanded `docs/setup/DEVELOPMENT.md` and `TROUBLESHOOTING.md`, and added `PLATFORM_SETUP.md` plus `MAINTAINER_OPERATIONS.md` for Android/Windows/iOS/Mac Catalyst setup, Git identity, CI, dependency, signing, troubleshooting, and release operations.
+- Added `docs/testing/TESTING_GUIDE.md` covering the unit/integration/UI-contract suites, current 141-test verified baseline, formatting, reminder/property/DST/WAL/app-lock/security contracts, platform builds, CodeQL, Dependency Audit, and manual testing.
+- Added `docs/releases/RELEASE_PROCESS.md` covering the complete production release lifecycle from scope freeze through exact-head verification, manual matrix, accessibility, store-policy review, signing, Release Evidence, tagging, and hotfixes.
+- Added `docs/DOCUMENTATION_STANDARDS.md` and `docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md` to define documentation evidence/maintenance rules and inventory the completed documentation package without marking manual production work complete.
+- Expanded `CONTRIBUTING.md` with architecture, medical-safety, privacy, security, reminder, schema, dependency, test, accessibility, documentation, and exact-head verification contribution rules.
+- Updated root `README.md`, `PROJECT_STATUS.md`, and `DECISIONS.md` to link/record the complete documentation package while keeping the exact runtime/test source baseline at `c61f3c31...`.
+- The documentation pass is intentionally Markdown-only and does not claim a new runtime/platform verification baseline beyond PR #30.
 
 ### Added
 
@@ -24,7 +43,7 @@ All notable changes follow Keep a Changelog principles and semantic versioning.
 - Reminder entity-ownership tests covering profile → medicine → schedule → persisted schedule-time relationships plus intentionally unbound editor times.
 - Reminder coordinator contract tests protecting UTC rebuild overrides and explicit future-UTC snooze validation.
 - Deterministic fixed-seed property-style recurrence tests covering arbitrary half-open windows, cycle on/off matrices, all supported weekday masks, stable uniqueness/order, and representative every-N-hours intervals.
-- Representative multi-zone DST gap/overlap coverage for North America, Europe, and Australia when those time-zone identifiers are available on the test host.
+- Representative multi-zone DST gap/overlap coverage for North America, Europe, Australia, and New Zealand when those time-zone identifiers are available on the test host.
 - `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` documenting deterministic, non-clinical schedule materialization, ownership, UTC, snooze, state, and DST rules.
 - WAL snapshot integration coverage that opens the copied database read-only, verifies committed profile content, and executes `PRAGMA integrity_check`.
 - Snapshot cancellation regression coverage ensuring a pre-cancelled request creates no output file.
@@ -59,7 +78,7 @@ All notable changes follow Keep a Changelog principles and semantic versioning.
 
 ### Verification
 
-Latest exact production source head verified: `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`.
+Latest exact production runtime/test source head verified: `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`.
 
 Verification PR #30 used marker head `59016b7e2b13d5ac1c93cf0db973f275c6e7eb19`, changed only `build/verification/rc1-ownership-utc-dst-hardening-20260810-2.txt`, and was closed without merge after success.
 
