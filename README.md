@@ -53,13 +53,39 @@ docs/
 build/scripts/
 ```
 
+## Documentation
+
+The complete documentation hub is [`docs/README.md`](docs/README.md).
+
+Key references:
+
+- [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — complete user guide.
+- [`docs/FEATURE_REFERENCE.md`](docs/FEATURE_REFERENCE.md) — feature-by-feature behavior and boundaries.
+- [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) — full architecture.
+- [`docs/architecture/APPLICATION_FLOWS.md`](docs/architecture/APPLICATION_FLOWS.md) — runtime flows.
+- [`docs/architecture/DATABASE_SCHEMA.md`](docs/architecture/DATABASE_SCHEMA.md) — schema/entities/migrations/WAL.
+- [`docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — Android/iOS/Mac/Windows notification behavior and limitations.
+- [`docs/architecture/DOCUMENT_VAULT.md`](docs/architecture/DOCUMENT_VAULT.md) — encrypted document-vault model.
+- [`docs/architecture/BACKUP_AND_RESTORE.md`](docs/architecture/BACKUP_AND_RESTORE.md) — encrypted backup/restore model.
+- [`docs/REPORTS_AND_EXPORTS.md`](docs/REPORTS_AND_EXPORTS.md) — JSON/PDF/CSV/document/calendar export contracts.
+- [`docs/privacy/PRIVACY_MODEL.md`](docs/privacy/PRIVACY_MODEL.md) — complete privacy architecture.
+- [`docs/security/SECURITY_MODEL.md`](docs/security/SECURITY_MODEL.md) — security architecture and limitations.
+- [`docs/design/ACCESSIBILITY.md`](docs/design/ACCESSIBILITY.md) — accessibility specification.
+- [`docs/testing/TESTING_GUIDE.md`](docs/testing/TESTING_GUIDE.md) — automated/manual testing guide.
+- [`docs/setup/PLATFORM_SETUP.md`](docs/setup/PLATFORM_SETUP.md) — cross-platform development setup.
+- [`docs/setup/MAINTAINER_OPERATIONS.md`](docs/setup/MAINTAINER_OPERATIONS.md) — maintainer/CI/release operations.
+- [`docs/releases/RELEASE_PROCESS.md`](docs/releases/RELEASE_PROCESS.md) — end-to-end release process.
+- [`docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md`](docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md) — documentation inventory and operational gates.
+- [`docs/DOCUMENTATION_STANDARDS.md`](docs/DOCUMENTATION_STANDARDS.md) — documentation accuracy/evidence rules.
+
 ## Quick start
 
-Prerequisites, platform setup, and the full target-specific command set are in [`docs/setup/DEVELOPMENT.md`](docs/setup/DEVELOPMENT.md).
+Prerequisites, platform setup, and the full target-specific command set are in [`docs/setup/DEVELOPMENT.md`](docs/setup/DEVELOPMENT.md) and [`docs/setup/PLATFORM_SETUP.md`](docs/setup/PLATFORM_SETUP.md).
 
 Build and test the platform-neutral layers first:
 
 ```bash
+dotnet build src/CareNest.Shared/CareNest.Shared.csproj -c Release
 dotnet build src/CareNest.Domain/CareNest.Domain.csproj -c Release
 dotnet build src/CareNest.Application/CareNest.Application.csproj -c Release
 dotnet build src/CareNest.Infrastructure/CareNest.Infrastructure.csproj -c Release
@@ -91,7 +117,7 @@ A local clock time that does not exist during a daylight-saving spring-forward g
 
 ## Verified automated quality baseline
 
-Exact source head `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` passed the latest hardening verification through marker-only PR #30:
+Exact runtime/test source head `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` passed the latest hardening verification through marker-only PR #30:
 
 - CareNest CI #248 / `31382194805` — success;
 - platform-neutral formatting — success;
@@ -108,20 +134,23 @@ Exact source head `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` passed the latest h
 
 PR #29 / CI #246 is intentionally recorded as a superseded verification: it exposed CA2263 in a new non-generic `Enum.IsDefined` call. The code was corrected on `main` and reverified through PR #30 rather than suppressing the analyzer.
 
+Documentation-only commits after `c61f3c31...` do not change the runtime/test source represented by that evidence and are not a separate platform-verification baseline.
+
 That automated evidence is necessary but not sufficient for final `1.0.0` publication. Manual device/accessibility/notification testing, current store-policy review, signing/package work, final Release Evidence for the promoted commit, and the tracked SQLite dependency-risk decision remain production gates.
 
-See [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/releases/RELEASE_CHECKLIST.md`](docs/releases/RELEASE_CHECKLIST.md), and [`docs/releases/QUALITY_GATE.md`](docs/releases/QUALITY_GATE.md).
+See [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/releases/RELEASE_CHECKLIST.md`](docs/releases/RELEASE_CHECKLIST.md), [`docs/releases/QUALITY_GATE.md`](docs/releases/QUALITY_GATE.md), and [`docs/releases/RELEASE_PROCESS.md`](docs/releases/RELEASE_PROCESS.md).
 
 ## Privacy and security
 
-Read [`PRIVACY.md`](PRIVACY.md), [`SECURITY.md`](SECURITY.md), the threat model in [`docs/security/THREAT_MODEL.md`](docs/security/THREAT_MODEL.md), the logging privacy contract in [`docs/security/LOGGING_PRIVACY.md`](docs/security/LOGGING_PRIVACY.md), and the dependency risk register in [`docs/security/DEPENDENCY_RISK_REGISTER.md`](docs/security/DEPENDENCY_RISK_REGISTER.md).
+Read [`PRIVACY.md`](PRIVACY.md), [`SECURITY.md`](SECURITY.md), [`docs/privacy/PRIVACY_MODEL.md`](docs/privacy/PRIVACY_MODEL.md), [`docs/security/SECURITY_MODEL.md`](docs/security/SECURITY_MODEL.md), the threat model in [`docs/security/THREAT_MODEL.md`](docs/security/THREAT_MODEL.md), the logging privacy contract in [`docs/security/LOGGING_PRIVACY.md`](docs/security/LOGGING_PRIVACY.md), and the dependency risk register in [`docs/security/DEPENDENCY_RISK_REGISTER.md`](docs/security/DEPENDENCY_RISK_REGISTER.md).
 
-The current release has no automatic cloud sync and no silent caregiver sharing. Known dependency advisories are not represented as fixed merely because CI contains a narrowly scoped audit exception; the dependency risk register is the source of truth for those open items.
+The current release has no automatic CareNest cloud sync and no silent caregiver sharing. Known dependency advisories are not represented as fixed merely because CI contains a narrowly scoped audit exception; the dependency risk register is the source of truth for those open items.
 
 The optional app lock is a local privacy barrier. CareNest does not claim that app lock transparently encrypts the whole SQLite database or replaces device-level authentication/security.
 
 ## Release engineering
 
+- [`docs/releases/RELEASE_PROCESS.md`](docs/releases/RELEASE_PROCESS.md) — end-to-end production release process.
 - [`docs/releases/RELEASE_CHECKLIST.md`](docs/releases/RELEASE_CHECKLIST.md) — automated and manual promotion checklist.
 - [`docs/releases/RELEASE_EVIDENCE.md`](docs/releases/RELEASE_EVIDENCE.md) — exact source/toolchain/test/dependency evidence process.
 - [`docs/releases/SECURITY_RELEASE_REVIEW.md`](docs/releases/SECURITY_RELEASE_REVIEW.md) — pre-release security review.
@@ -137,7 +166,7 @@ The optional app lock is a local privacy barrier. CareNest does not claim that a
 
 CareNest is open source. If you want to voluntarily support continued development, the link above helps fund design, testing, documentation, accessibility work, platform maintenance, and future releases.
 
-Project support does not unlock medical advice, premium health behavior, different reminder behavior, or access to user health data.
+Project support does not unlock medical advice, premium health behavior, different reminder behavior, support priority, or access to user health data.
 
 ## Next steps
 
@@ -156,4 +185,4 @@ The release-candidate promotion checklist, production blockers, manual device te
 
 Licensed under the Apache License 2.0. See [`LICENSE`](LICENSE).
 
-Contributions are welcome. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) and the code of conduct.
+Contributions are welcome. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md), [`docs/setup/DEVELOPMENT.md`](docs/setup/DEVELOPMENT.md), and the code of conduct.
