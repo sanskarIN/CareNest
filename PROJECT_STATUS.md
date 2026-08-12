@@ -51,10 +51,14 @@
 - Reminder coordinator rebuild overrides require UTC, and snooze actions require an explicit future UTC timestamp before persistence/platform scheduling.
 - Reminder planner tests cover daily, selected-weekday, cycle, custom date range, every-N-hours, follow-up, disabled, archived-profile, paused, completed, archived-medicine, and as-needed behavior.
 - Deterministic property-style recurrence coverage uses a fixed seed and verifies arbitrary half-open windows, stable uniqueness/order, all supported weekday masks, cycle matrices, and representative every-N-hours intervals.
-- DST gap/overlap coverage now exercises representative North America, Europe, and Australia zones when available on the test host; invalid local times are not replaced with invented reminder times and ambiguous times remain deterministic.
+- DST gap/overlap coverage exercises representative North America, Europe, Australia, and New Zealand zones when available on the test host; invalid local times are not replaced with invented reminder times and ambiguous times remain deterministic.
 - `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` records the deterministic non-clinical scheduling, ownership, UTC, snooze, state, window, and DST contracts.
 - App-lock verification clears both derived and retrieved verifier buffers after checks; contract tests protect salted PBKDF2-HMAC-SHA256, fixed-time comparison, no plaintext PIN persistence, verifier clearing, lock-material deletion, and PIN policy.
 - Security/threat-model documentation explicitly describes app lock as a local privacy barrier rather than whole-database/device encryption and records residual weak-PIN/device-compromise risk.
+- Complete documentation hub exists at `docs/README.md` with user, feature, architecture, database, service-boundary, application-flow, notification/platform, encrypted document-vault, backup/restore, reports/exports, privacy, security, accessibility, localization, setup, troubleshooting, maintainer, testing, release, glossary, and documentation-governance references.
+- Existing architecture/schema/design/development/troubleshooting/localization/store/data-lifecycle/contribution documents have been expanded into full references rather than left as short placeholders/overviews.
+- `docs/DOCUMENTATION_STANDARDS.md` defines implementation-evidence, safety, privacy, dependency-risk, manual-evidence, and documentation-only-source-baseline rules.
+- `docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md` inventories the complete documentation set while explicitly preserving manual/store/signing/dependency/release blockers as incomplete operational work.
 
 ## Security dependency status
 
@@ -70,7 +74,7 @@ An attempted `2.1.12` bundle pin was rejected because that version is not availa
 
 ## Current fully verified source head
 
-Exact source head verified through PR #30:
+Exact runtime/test source head verified through PR #30:
 
 `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`
 
@@ -101,7 +105,29 @@ The preceding fully green baseline was PR #28 / source head `69c4dd9319f7dc47ede
 
 Earlier superseded verification PRs #24–#26 intentionally exposed and drove fixes for analyzer, privacy-logging, path-normalization, generated-source scanning, and nullable-contract problems instead of weakening quality gates.
 
-Documentation-only status/changelog/handoff commits after source head `c61f3c31...` do not change the runtime/test source that passed PR #30 and are not represented as separate platform-verification heads.
+The comprehensive documentation pass after source head `c61f3c31...` changes Markdown documentation only. It does not change runtime/test/project/workflow/package/platform source and therefore does not replace the PR #30 runtime baseline. A source-to-head compare is required/recorded in the detailed handoff before this documentation pass is treated as complete.
+
+## Documentation status
+
+The current documentation set covers:
+
+- end-user behavior and limitations;
+- complete feature reference;
+- architecture, service boundaries, application flows, database schema;
+- encrypted document vault;
+- data storage/export/deletion;
+- encrypted backup/restore;
+- notification/platform behavior;
+- reports/exports;
+- privacy model/data lifecycle;
+- security architecture/threat model/logging/dependency risk;
+- design system/accessibility/localization/store assets;
+- development/platform setup/troubleshooting/maintainer operations;
+- testing strategy/reminder contract;
+- release process/quality/security/manual/store/evidence/verification procedures;
+- terminology, contribution rules, support/funding, and documentation maintenance standards.
+
+Documentation completeness does not mean production release readiness. Operational/manual blockers below remain real.
 
 ## Release blockers that remain real
 
@@ -125,8 +151,8 @@ Documentation-only status/changelog/handoff commits after source head `c61f3c31.
 
 ## Environment limitation
 
-The local execution container used for repository assembly does not include the `dotnet` command or MAUI workloads. Local restore, formatting, compilation, emulator/device smoke tests, signing, and store packaging therefore cannot be truthfully claimed as executed inside that container. GitHub-hosted CI is the authoritative automated build/test verification surface for this delivery.
+The local execution container used for repository assembly does not include the `dotnet` command or MAUI workloads. Local restore, formatting, compilation, emulator/device smoke tests, signing, and store packaging therefore cannot be truthfully claimed as executed inside that container. GitHub-hosted CI is the authoritative automated build/test verification surface for the runtime/test baseline.
 
 Manual device checks, accessibility checks, signing, store-policy review and store packaging remain separate release activities and are not marked complete unless they are actually performed.
 
-See `what_changed.md` for the detailed implementation, recovery, hardening and verification record.
+See `docs/README.md` for the documentation hub and `what_changed.md` for the detailed implementation, recovery, hardening, documentation, and verification record.
