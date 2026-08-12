@@ -1,77 +1,230 @@
-# Development Setup
+# CareNest Development Setup
 
-## Required
+This is the primary development setup for CareNest `1.0.0-rc.1`. For platform-specific details, also read `docs/setup/PLATFORM_SETUP.md`.
 
-- .NET 10 SDK with the .NET MAUI workload for the platform you build.
-- Visual Studio 2026 or compatible IDE on Windows, or current supported Visual Studio Code/Rider tooling.
-- Android SDK/JDK for Android.
-- Xcode compatible with the installed .NET iOS/Mac Catalyst workload on macOS.
-- Windows App SDK prerequisites for Windows.
+## Repository
 
-Install the full MAUI workload when the machine is intended to build every supported target available on that operating system:
+```bash
+git clone https://github.com/sanskarIN/CareNest.git
+cd CareNest
+```
+
+Default branch: `main`.
+
+## Required toolchain
+
+Core requirements:
+
+- Git;
+- .NET 10 SDK;
+- .NET MAUI workload(s) for target platforms being built;
+- NuGet restore access;
+- platform SDK/tooling for each intended target.
+
+Platform tooling:
+
+- Android: Android SDK/JDK + MAUI Android workload;
+- iOS/Mac Catalyst: compatible macOS + Xcode + Apple MAUI workload;
+- Windows: Windows App SDK/MAUI prerequisites on a supported Windows development host.
+
+Use the exact project target frameworks/toolchain expected by the current branch if a later release changes them.
+
+## Inspect the environment
+
+```bash
+git --version
+dotnet --info
+dotnet workload list
+```
+
+For Apple hosts also record:
+
+```bash
+xcodebuild -version
+```
+
+## Git maintainer identity
+
+Requested local identity:
+
+```bash
+git config user.email "sanskarin@outlook.in"
+git config user.name "Sanskar"
+```
+
+Repository helper scripts:
+
+```bash
+build/scripts/setup-git.sh
+```
+
+PowerShell:
+
+```powershell
+./build/scripts/setup-git.ps1
+```
+
+## Solution structure
+
+```text
+src/
+  CareNest.Shared/
+  CareNest.Domain/
+  CareNest.Application/
+  CareNest.Infrastructure/
+  CareNest.App/
+
+tests/
+  CareNest.UnitTests/
+  CareNest.IntegrationTests/
+  CareNest.UiTests/
+```
+
+See `docs/architecture/ARCHITECTURE.md` for responsibilities/dependency direction.
+
+## Install MAUI workloads
+
+Full MAUI workload when the machine is intended to build every platform available on that operating system:
 
 ```bash
 dotnet workload install maui
+```
+
+Narrow host examples:
+
+```bash
+dotnet workload install maui-android
+dotnet workload install maui-ios
+dotnet workload install maui-maccatalyst
+```
+
+Install only supported workloads for the host OS.
+
+## Restore strategy
+
+Start with platform-neutral projects:
+
+```bash
+dotnet restore src/CareNest.Shared/CareNest.Shared.csproj
+dotnet restore src/CareNest.Domain/CareNest.Domain.csproj
+dotnet restore src/CareNest.Application/CareNest.Application.csproj
+dotnet restore src/CareNest.Infrastructure/CareNest.Infrastructure.csproj
+```
+
+The full solution can be restored on a fully provisioned host:
+
+```bash
 dotnet restore CareNest.sln
 ```
 
-For narrower CI/development machines, install only the required workload, for example `maui-android`, `maui-ios`, or `maui-maccatalyst`.
+On a target-limited host, prefer the target-specific MAUI commands below rather than forcing unrelated workloads.
 
-## Build
-
-Build the platform-neutral layers first:
+## Platform-neutral build
 
 ```bash
+dotnet build src/CareNest.Shared/CareNest.Shared.csproj -c Release
 dotnet build src/CareNest.Domain/CareNest.Domain.csproj -c Release
 dotnet build src/CareNest.Application/CareNest.Application.csproj -c Release
 dotnet build src/CareNest.Infrastructure/CareNest.Infrastructure.csproj -c Release
 ```
 
-CareNest is a multi-target MAUI app. The `CareNestTargetFramework` property intentionally narrows the app project before restore, so a runner does not need unrelated platform workloads and the selected target does not leak into referenced `net10.0` libraries.
+This is the fastest way to separate shared source issues from platform workload/toolchain issues.
 
-Android:
+## Why `CareNestTargetFramework` is required
+
+CareNest.App is multi-targeted. Supplying a global `TargetFrameworks` value can leak the app target into referenced `net10.0` projects.
+
+The repository uses `CareNestTargetFramework` to narrow only the MAUI app before restore/build.
+
+Pattern:
 
 ```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f net10.0-android -c Release \
+  -f <tfm> -c Release \
+  -p:CareNestTargetFramework=<tfm>
+```
+
+## Android build
+
+Install:
+
+```bash
+dotnet workload install maui-android
+```
+
+Build:
+
+```bash
+dotnet build src/CareNest.App/CareNest.App.csproj \
+  -f net10.0-android \
+  -c Release \
   -p:CareNestTargetFramework=net10.0-android
 ```
 
-Windows:
+## Windows build
+
+Target framework:
+
+`net10.0-windows10.0.19041.0`
+
+Build:
 
 ```powershell
 dotnet build src/CareNest.App/CareNest.App.csproj `
-  -f net10.0-windows10.0.19041.0 -c Release `
+  -f net10.0-windows10.0.19041.0 `
+  -c Release `
   -p:CareNestTargetFramework=net10.0-windows10.0.19041.0
 ```
 
-iOS simulator:
+## iOS simulator build
+
+Install:
+
+```bash
+dotnet workload install maui-ios
+```
+
+Build example for Apple-silicon simulator:
 
 ```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f net10.0-ios -c Release \
+  -f net10.0-ios \
+  -c Release \
   -p:CareNestTargetFramework=net10.0-ios \
   -p:RuntimeIdentifier=iossimulator-arm64
 ```
 
-Mac Catalyst:
+Use a RID compatible with your host/simulator.
+
+## Mac Catalyst build
+
+Install:
+
+```bash
+dotnet workload install maui-maccatalyst
+```
+
+Build:
 
 ```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f net10.0-maccatalyst -c Release \
+  -f net10.0-maccatalyst \
+  -c Release \
   -p:CareNestTargetFramework=net10.0-maccatalyst
 ```
 
-Supported platform targets:
+## Apple Xcode compatibility
 
-- `net10.0-android`
-- `net10.0-ios`
-- `net10.0-maccatalyst`
-- `net10.0-windows10.0.19041.0`
+The GitHub-hosted Apple CI uses a macOS 26 runner compatible with the current .NET 10 Apple workload.
 
-The current GitHub-hosted Apple verification uses a macOS 26 runner because the .NET 10 Apple workload installed by CI requires a matching current Xcode toolchain. If a local workload reports an Xcode-version mismatch, update/select a supported Xcode version rather than bypassing the workload compatibility check.
+If local build reports an Xcode-version mismatch:
 
-## Tests
+- inspect installed workload version;
+- inspect selected Xcode version;
+- install/select a supported Xcode version;
+- do not suppress/bypass the workload compatibility check as a release strategy.
+
+## Run tests
 
 ```bash
 dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj -c Release
@@ -79,13 +232,149 @@ dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c 
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
-## Git identity for maintainer
+Current exact source baseline verified through PR #30:
+
+- UnitTests: 74;
+- IntegrationTests: 13;
+- UiTests: 54;
+- total: 141.
+
+See `docs/testing/TESTING_GUIDE.md`.
+
+## Formatting
+
+CI verifies platform-neutral formatting project by project.
+
+Examples:
 
 ```bash
-git config user.email "sanskarin@outlook.in"
-git config user.name "Sanskar"
+dotnet format src/CareNest.Domain/CareNest.Domain.csproj --verify-no-changes
+dotnet format tests/CareNest.UnitTests/CareNest.UnitTests.csproj --verify-no-changes
 ```
+
+For a full local preflight use the repository release-preflight script when the host is provisioned.
+
+## Release preflight
+
+Bash:
+
+```bash
+build/scripts/release-preflight.sh
+```
+
+PowerShell:
+
+```powershell
+./build/scripts/release-preflight.ps1
+```
+
+See the script and `docs/releases/RELEASE_PROCESS.md` for target configuration and expectations.
+
+## Running/debugging the MAUI app
+
+Use an IDE or `dotnet` command appropriate to the target platform.
+
+When debugging reminder behavior:
+
+- use synthetic medicine/profile data;
+- confirm selected schedule time zone;
+- confirm notification permission/capability;
+- do not assume OS delivery from planner occurrence generation alone;
+- use developer diagnostics/reminder rebuild tools where available.
+
+## Local data during development
+
+Development installs can create local SQLite/encrypted document/app-lock state.
+
+Do not copy real user health data into development fixtures.
+
+Use fictional/synthetic records for tests/screenshots/reproduction.
+
+## Dependency management
+
+Package versions are centrally managed in `Directory.Packages.props` where applicable.
+
+Run dependency audit after package changes.
+
+### SQLite warning
+
+The current dependency graph tracks `GHSA-2m69-gcr7-jv3q` for SQLitePCLRaw native `2.1.11`.
+
+The exact `NuGetAuditSuppress` entry is not remediation.
+
+Before changing the SQLite provider/bundle chain, follow:
+
+`docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
+
+## Analyzer policy
+
+CI promotes applicable analyzer findings to build failures.
+
+Historical exact-head verification intentionally exposed real analyzer defects such as CA2263/CA1873 rather than broadly suppressing them.
+
+If an analyzer fails:
+
+1. understand the finding;
+2. fix source when legitimate;
+3. scope advisory-only exceptions narrowly when the rule is non-correctness guidance;
+4. never hide security/correctness issues with blanket suppression.
+
+## Architecture rules for contributors
+
+- UI/ViewModels do not issue SQL directly.
+- Platform-neutral projects do not reference MAUI.
+- Runtime source does not add network/telemetry clients casually in local-first v1.
+- Reminder planner remains platform-neutral/deterministic.
+- Secrets remain outside normal settings/database where secure secret storage is required.
+- Medicine strength/instruction text remains opaque.
+- No diagnosis/treatment/dosage/interaction/risk-scoring feature is introduced.
+
+Architecture contracts enforce many of these rules.
+
+## Documentation
+
+Start at:
+
+`docs/README.md`
+
+When a behavior changes, update the relevant user/architecture/security/testing/release documents in the same work.
 
 ## Do not commit
 
-Signing keys, certificates, keystores, passwords, exported backups, real documents, SQLite databases, or real user health data.
+Never commit:
+
+- signing keys/certificates/keystores;
+- `.p12` / `.pfx` private signing files;
+- API/service credentials;
+- passwords;
+- app-lock PINs;
+- exported CareNest backups;
+- real user health documents;
+- real SQLite user databases;
+- decrypted temporary health documents;
+- secret `.env` files.
+
+Repository policy tests detect common secret/signing patterns but do not replace human review.
+
+## Troubleshooting
+
+See `docs/setup/TROUBLESHOOTING.md`.
+
+Useful first commands:
+
+```bash
+dotnet --info
+dotnet workload list
+dotnet workload repair
+git status
+```
+
+If platform-neutral tests pass while one platform fails, investigate that platform workload/SDK/project source rather than assuming shared application logic is broken.
+
+## Exact-head verification
+
+Major runtime/test changes that need a new verified baseline follow the marker-only protocol in:
+
+`docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
+
+Verification markers must not be merged into `main`.
