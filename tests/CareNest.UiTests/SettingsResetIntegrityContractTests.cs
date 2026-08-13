@@ -87,4 +87,45 @@ public sealed class SettingsResetIntegrityContractTests
             source,
             StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void TestReminder_StopsBeforePlatformNotificationWhenPermissionIsNotGranted()
+    {
+        var source = RepositoryLocator.Read(
+            "src",
+            "CareNest.App",
+            "ViewModels",
+            "SettingsViewModel.cs");
+
+        var methodStart = source.IndexOf(
+            "private async Task TestReminderAsync()",
+            StringComparison.Ordinal);
+        Assert.True(methodStart >= 0, "TestReminderAsync must remain present.");
+
+        var methodEnd = source.IndexOf(
+            "private async Task RebuildRemindersAsync()",
+            methodStart,
+            StringComparison.Ordinal);
+        Assert.True(methodEnd > methodStart, "TestReminderAsync must end before reminder rebuild logic.");
+
+        var methodSource = source[methodStart..methodEnd];
+        var diagnostics = methodSource.IndexOf(
+            "await notifications.GetDiagnosticsAsync();",
+            StringComparison.Ordinal);
+        var permissionRequest = methodSource.IndexOf(
+            "!await notifications.RequestPermissionAsync()",
+            StringComparison.Ordinal);
+        var permissionFailure = methodSource.IndexOf(
+            "throw new InvalidOperationException(\"Notification permission was not granted.\");",
+            StringComparison.Ordinal);
+        var showTest = methodSource.IndexOf(
+            "await notifications.ShowTestAsync();",
+            StringComparison.Ordinal);
+
+        Assert.True(diagnostics >= 0, "Test notification flow must inspect current permission state.");
+        Assert.True(permissionRequest > diagnostics, "Permission must be requested only after current state is inspected.");
+        Assert.True(permissionFailure > permissionRequest, "An unsuccessful permission request must stop the test-notification flow.");
+        Assert.True(showTest > permissionFailure, "The platform test notification may be requested only after permission succeeds.");
+        Assert.Contains("!diagnostics.PermissionGranted &&", methodSource, StringComparison.Ordinal);
+    }
 }
