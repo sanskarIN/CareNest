@@ -1,0 +1,6 @@
+CareNest exact-head verification marker
+
+Source head: 8a28bbf30692b2b0e98ec801dac1531d50d65db1
+Scope: corrected appointment/service/document/backup hardening after CA1861 test-source fix.
+
+This marker exists only to trigger pull-request verification and must not be merged into main.
