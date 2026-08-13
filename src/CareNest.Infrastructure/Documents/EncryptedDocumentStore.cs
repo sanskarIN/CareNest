@@ -20,59 +20,66 @@ public sealed class EncryptedDocumentStore(
     {
         options.EnsureDirectories();
         var key = await GetOrCreateKeyAsync(cancellationToken);
-        var encryptedFileName = $"{Guid.NewGuid():N}.cndoc";
-        var outputPath = Path.Combine(options.DocumentDirectory, encryptedFileName);
-        var tempPlain = Path.Combine(options.WorkingDirectory, $"{Guid.NewGuid():N}.import");
-        Directory.CreateDirectory(options.WorkingDirectory);
-
-        long size;
-        string hash;
         try
         {
-            await using (var temp = File.Create(tempPlain))
-            using (var hasher = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
+            var encryptedFileName = $"{Guid.NewGuid():N}.cndoc";
+            var outputPath = Path.Combine(options.DocumentDirectory, encryptedFileName);
+            var tempPlain = Path.Combine(options.WorkingDirectory, $"{Guid.NewGuid():N}.import");
+            Directory.CreateDirectory(options.WorkingDirectory);
+
+            long size;
+            string hash;
+            try
             {
-                var buffer = new byte[64 * 1024];
-                size = 0;
-                while (true)
+                await using (var temp = File.Create(tempPlain))
+                using (var hasher = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
                 {
-                    var read = await source.ReadAsync(buffer, cancellationToken);
-                    if (read == 0)
+                    var buffer = new byte[64 * 1024];
+                    size = 0;
+                    while (true)
                     {
-                        break;
-                    }
+                        var read = await source.ReadAsync(buffer, cancellationToken);
+                        if (read == 0)
+                        {
+                            break;
+                        }
 
-                    size += read;
-                    if (size > 512L * 1024 * 1024)
-                    {
-                        throw new InvalidDataException("Document exceeds the 512 MB safety limit.");
-                    }
+                        size += read;
+                        if (size > 512L * 1024 * 1024)
+                        {
+                            throw new InvalidDataException("Document exceeds the 512 MB safety limit.");
+                        }
 
-                    hasher.AppendData(buffer, 0, read);
-                    await temp.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+                        hasher.AppendData(buffer, 0, read);
+                        await temp.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+                    }
+                    hash = Convert.ToHexString(hasher.GetHashAndReset()).ToLowerInvariant();
                 }
-                hash = Convert.ToHexString(hasher.GetHashAndReset()).ToLowerInvariant();
-            }
 
-            await using var plain = File.OpenRead(tempPlain);
-            await using var encrypted = File.Create(outputPath);
-            await Security.ChunkedAead.EncryptAsync(plain, encrypted, key, Magic, Aad, cancellationToken);
-            return new StoredDocument(encryptedFileName, size, hash, 1);
-        }
-        catch
-        {
-            if (File.Exists(outputPath))
-            {
-                File.Delete(outputPath);
+                await using var plain = File.OpenRead(tempPlain);
+                await using var encrypted = File.Create(outputPath);
+                await Security.ChunkedAead.EncryptAsync(plain, encrypted, key, Magic, Aad, cancellationToken);
+                return new StoredDocument(encryptedFileName, size, hash, 1);
             }
-            throw;
+            catch
+            {
+                if (File.Exists(outputPath))
+                {
+                    File.Delete(outputPath);
+                }
+                throw;
+            }
+            finally
+            {
+                if (File.Exists(tempPlain))
+                {
+                    File.Delete(tempPlain);
+                }
+            }
         }
         finally
         {
-            if (File.Exists(tempPlain))
-            {
-                File.Delete(tempPlain);
-            }
+            CryptographicOperations.ZeroMemory(key);
         }
     }
 
@@ -86,8 +93,15 @@ public sealed class EncryptedDocumentStore(
         }
 
         var key = await GetOrCreateKeyAsync(cancellationToken);
-        await using var source = File.OpenRead(path);
-        await Security.ChunkedAead.DecryptAsync(source, destination, key, Magic, Aad, cancellationToken);
+        try
+        {
+            await using var source = File.OpenRead(path);
+            await Security.ChunkedAead.DecryptAsync(source, destination, key, Magic, Aad, cancellationToken);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(key);
+        }
     }
 
     public Task DeleteAsync(string encryptedFileName, CancellationToken cancellationToken = default)
@@ -139,6 +153,11 @@ public sealed class EncryptedDocumentStore(
         if (existing is { Length: 32 })
         {
             return existing;
+        }
+
+        if (existing is not null)
+        {
+            CryptographicOperations.ZeroMemory(existing);
         }
 
         var key = RandomNumberGenerator.GetBytes(32);
