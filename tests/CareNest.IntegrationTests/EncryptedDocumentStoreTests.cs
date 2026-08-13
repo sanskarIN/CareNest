@@ -17,6 +17,7 @@ public sealed class EncryptedDocumentStoreTests
 
         var stored = await store.Documents.ImportAsync(input, "report.txt", "text/plain");
 
+        Assert.Equal(2, stored.EncryptionVersion);
         var raw = await File.ReadAllBytesAsync(Path.Combine(store.Options.DocumentDirectory, stored.EncryptedFileName));
         Assert.DoesNotContain("private test document bytes", Encoding.UTF8.GetString(raw));
 
