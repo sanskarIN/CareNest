@@ -23,6 +23,7 @@ public sealed class DocumentService(
     {
         Guard.NotBlank(profileId, nameof(profileId), 64);
         title = Guard.NotBlank(title, nameof(title), 180);
+        ArgumentNullException.ThrowIfNull(file);
 
         await using var source = await file.OpenReadAsync(cancellationToken);
         var stored = await documentStore.ImportAsync(source, file.FileName, file.ContentType, cancellationToken);
@@ -43,9 +44,11 @@ public sealed class DocumentService(
             UpdatedUtc = timeProvider.GetUtcNow().UtcDateTime
         };
 
+        var recordSaved = false;
         try
         {
             await repository.SaveDocumentAsync(document, cancellationToken);
+            recordSaved = true;
             await repository.AddAuditEntryAsync(new AuditEntry
             {
                 EntityType = nameof(CareDocument),
@@ -56,9 +59,38 @@ public sealed class DocumentService(
             }, cancellationToken);
             return document;
         }
-        catch
+        catch (Exception importFailure)
         {
-            await documentStore.DeleteAsync(stored.EncryptedFileName, CancellationToken.None);
+            var cleanupFailures = new List<Exception>();
+
+            if (recordSaved)
+            {
+                try
+                {
+                    await repository.DeleteDocumentAsync(document.Id, CancellationToken.None);
+                }
+                catch (Exception cleanupFailure)
+                {
+                    cleanupFailures.Add(cleanupFailure);
+                }
+            }
+
+            try
+            {
+                await documentStore.DeleteAsync(stored.EncryptedFileName, CancellationToken.None);
+            }
+            catch (Exception cleanupFailure)
+            {
+                cleanupFailures.Add(cleanupFailure);
+            }
+
+            if (cleanupFailures.Count > 0)
+            {
+                throw new AggregateException(
+                    "Document import failed and rollback could not fully clean the local record or encrypted payload.",
+                    new[] { importFailure }.Concat(cleanupFailures));
+            }
+
             throw;
         }
     }
