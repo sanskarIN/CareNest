@@ -1,0 +1,6 @@
+CareNest exact-head verification marker
+
+Source head: 4f5f9abe9d702fa33d6aba3f15c113febfebf95e
+Scope: authenticated chunked AEAD stream termination v2, legacy v1 decrypt compatibility, document encryption metadata v2, plus previously green service/document/backup hardening.
+
+This marker exists only to trigger pull-request verification and must not be merged into main.
