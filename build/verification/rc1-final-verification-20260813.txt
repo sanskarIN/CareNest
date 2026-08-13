@@ -1,0 +1,6 @@
+CareNest verification marker only.
+Exact source head: 3b19ce08f509f27aca823469abc5b8a03ed2465a
+Scope: verified Settings architecture plus local-data lifecycle hardening and lifecycle contract.
+Do not merge this marker into main.
+Required gates: formatting, unit, integration, UI-contract, Android Release, Windows Release, iOS simulator Release, Mac Catalyst Release, CodeQL, Dependency Audit.
+Tracked SQLitePCLRaw advisory remains an open release decision.
