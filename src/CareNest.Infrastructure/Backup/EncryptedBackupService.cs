@@ -46,76 +46,92 @@ public sealed class EncryptedBackupService(
                 : [];
 
             var documentKey = await secretStore.GetBytesAsync(SecretKeys.DocumentMasterKey, cancellationToken);
-            if (storedDocuments.Length > 0 && documentKey is not { Length: 32 })
+            try
             {
-                throw new InvalidOperationException("The document encryption key is unavailable, so a complete backup cannot be created.");
+                if (storedDocuments.Length > 0 && documentKey is not { Length: 32 })
+                {
+                    throw new InvalidOperationException("The document encryption key is unavailable, so a complete backup cannot be created.");
+                }
+
+                var manifest = new BackupManifest(
+                    AppConstants.BackupFormatVersion,
+                    schema,
+                    timeProvider.GetUtcNow().UtcDateTime,
+                    appVersion,
+                    storedDocuments.Length);
+
+                using (var zip = ZipFile.Open(archive, ZipArchiveMode.Create))
+                {
+                    zip.CreateEntryFromFile(snapshot, "database/carenest.db", CompressionLevel.Optimal);
+
+                    var manifestEntry = zip.CreateEntry("manifest.json", CompressionLevel.Optimal);
+                    await using (var manifestStream = manifestEntry.Open())
+                    {
+                        await JsonSerializer.SerializeAsync(manifestStream, manifest, cancellationToken: cancellationToken);
+                    }
+
+                    if (documentKey is { Length: 32 })
+                    {
+                        var keyEntry = zip.CreateEntry("secrets/document-master-key.bin", CompressionLevel.NoCompression);
+                        await using var keyStream = keyEntry.Open();
+                        await keyStream.WriteAsync(documentKey, cancellationToken);
+                    }
+
+                    foreach (var documentPath in storedDocuments)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        zip.CreateEntryFromFile(
+                            documentPath,
+                            $"documents/{Path.GetFileName(documentPath)}",
+                            CompressionLevel.NoCompression);
+                    }
+                }
+
+                var salt = RandomNumberGenerator.GetBytes(SaltSize);
+                var key = Rfc2898DeriveBytes.Pbkdf2(
+                    password,
+                    salt,
+                    Iterations,
+                    HashAlgorithmName.SHA256,
+                    32);
+
+                try
+                {
+                    await destination.WriteAsync(Magic, cancellationToken);
+                    await destination.WriteAsync(new byte[] { 1 }, cancellationToken);
+                    await destination.WriteAsync(salt, cancellationToken);
+
+                    await using var archiveStream = File.OpenRead(archive);
+                    await Security.ChunkedAead.EncryptAsync(
+                        archiveStream,
+                        destination,
+                        key,
+                        PayloadMagic,
+                        Aad,
+                        cancellationToken);
+                }
+                finally
+                {
+                    CryptographicOperations.ZeroMemory(key);
+                    CryptographicOperations.ZeroMemory(salt);
+                }
+
+                await repository.CreateBackupMetadataAsync(new BackupMetadata
+                {
+                    FormatVersion = AppConstants.BackupFormatVersion,
+                    SchemaVersion = schema,
+                    CreatedAtUtc = manifest.CreatedUtc,
+                    AppVersion = appVersion,
+                    DestinationHint = "User-selected destination"
+                }, cancellationToken);
             }
-
-            var manifest = new BackupManifest(
-                AppConstants.BackupFormatVersion,
-                schema,
-                timeProvider.GetUtcNow().UtcDateTime,
-                appVersion,
-                storedDocuments.Length);
-
-            using (var zip = ZipFile.Open(archive, ZipArchiveMode.Create))
+            finally
             {
-                zip.CreateEntryFromFile(snapshot, "database/carenest.db", CompressionLevel.Optimal);
-
-                var manifestEntry = zip.CreateEntry("manifest.json", CompressionLevel.Optimal);
-                await using (var manifestStream = manifestEntry.Open())
+                if (documentKey is not null)
                 {
-                    await JsonSerializer.SerializeAsync(manifestStream, manifest, cancellationToken: cancellationToken);
-                }
-
-                if (documentKey is { Length: 32 })
-                {
-                    var keyEntry = zip.CreateEntry("secrets/document-master-key.bin", CompressionLevel.NoCompression);
-                    await using var keyStream = keyEntry.Open();
-                    await keyStream.WriteAsync(documentKey, cancellationToken);
-                }
-
-                foreach (var documentPath in storedDocuments)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    zip.CreateEntryFromFile(
-                        documentPath,
-                        $"documents/{Path.GetFileName(documentPath)}",
-                        CompressionLevel.NoCompression);
+                    CryptographicOperations.ZeroMemory(documentKey);
                 }
             }
-
-            var salt = RandomNumberGenerator.GetBytes(SaltSize);
-            var key = Rfc2898DeriveBytes.Pbkdf2(
-                password,
-                salt,
-                Iterations,
-                HashAlgorithmName.SHA256,
-                32);
-
-            await destination.WriteAsync(Magic, cancellationToken);
-            await destination.WriteAsync(new byte[] { 1 }, cancellationToken);
-            await destination.WriteAsync(salt, cancellationToken);
-
-            await using var archiveStream = File.OpenRead(archive);
-            await Security.ChunkedAead.EncryptAsync(
-                archiveStream,
-                destination,
-                key,
-                PayloadMagic,
-                Aad,
-                cancellationToken);
-
-            CryptographicOperations.ZeroMemory(key);
-
-            await repository.CreateBackupMetadataAsync(new BackupMetadata
-            {
-                FormatVersion = AppConstants.BackupFormatVersion,
-                SchemaVersion = schema,
-                CreatedAtUtc = manifest.CreatedUtc,
-                AppVersion = appVersion,
-                DestinationHint = "User-selected destination"
-            }, cancellationToken);
         }
         finally
         {
@@ -188,7 +204,7 @@ public sealed class EncryptedBackupService(
 
             if (Directory.Exists(restoredDocs))
             {
-                foreach (var file in Directory.EnumerateFiles(restoredDocs, "*.cndoc"))
+                foreach (var file in Directory.EnumerateFiles(restoredDocs, "*.cndoc", SearchOption.TopDirectoryOnly))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     File.Copy(file, Path.Combine(stagedDocs, Path.GetFileName(file)), overwrite: true);
@@ -323,6 +339,7 @@ public sealed class EncryptedBackupService(
         finally
         {
             CryptographicOperations.ZeroMemory(key);
+            CryptographicOperations.ZeroMemory(salt);
         }
     }
 
@@ -344,31 +361,12 @@ public sealed class EncryptedBackupService(
                 cancellationToken: cancellationToken);
         }
 
-        if (manifest is null ||
-            manifest.FormatVersion != AppConstants.BackupFormatVersion)
+        if (manifest is null)
         {
-            throw new InvalidDataException("Backup format is unsupported.");
+            throw new InvalidDataException("Backup manifest is invalid.");
         }
 
-        if (zip.GetEntry("database/carenest.db") is null)
-        {
-            throw new InvalidDataException("Backup database is missing.");
-        }
-
-        var documentEntries = zip.Entries.Count(x =>
-            x.FullName.StartsWith("documents/", StringComparison.Ordinal) &&
-            !x.FullName.EndsWith("/", StringComparison.Ordinal));
-
-        if (documentEntries != manifest.DocumentCount)
-        {
-            throw new InvalidDataException("Backup document manifest does not match the archive.");
-        }
-
-        var keyEntry = zip.GetEntry("secrets/document-master-key.bin");
-        if (manifest.DocumentCount > 0 && (keyEntry is null || keyEntry.Length != 32))
-        {
-            throw new InvalidDataException("Backup document encryption key is missing or invalid.");
-        }
+        BackupArchiveValidator.ValidateTopology(zip, manifest);
 
         if (extract)
         {
