@@ -1,6 +1,6 @@
 # CareNest Testing Guide
 
-CareNest uses layered automated tests plus required manual release verification. A green automated matrix is necessary evidence but does not prove real-device notification delivery, accessibility, signing, or store compliance.
+CareNest uses layered automated tests plus required manual release verification. A green automated matrix is necessary evidence but does not prove real-device notification delivery, accessibility, signing, store compliance, or resolution of an explicitly tracked dependency risk.
 
 ## Test projects
 
@@ -13,9 +13,11 @@ Primary purpose:
 - schedule recurrence/date/state boundaries;
 - ownership integrity;
 - UTC/time-zone/DST semantics;
-- property-style deterministic recurrence invariants.
+- property-style deterministic recurrence invariants;
+- direct application-service behavior using deterministic test doubles;
+- profile/medicine/appointment/document/backup-reminder orchestration without MAUI or SQLite.
 
-Current verified PR #30 baseline: **74 passed**.
+Current verified PR #33 baseline: **106 passed**.
 
 ### `tests/CareNest.IntegrationTests`
 
@@ -25,11 +27,12 @@ Primary purpose:
 - relationship cleanup;
 - WAL configuration;
 - snapshot content/integrity/cancellation;
-- encrypted document round-trip/tamper behavior;
-- encrypted backup restore/wrong-password/tamper behavior;
+- encrypted document round-trip/tamper/key-buffer behavior;
+- chunked AEAD framing/truncation/legacy compatibility;
+- encrypted backup restore/wrong-password/tamper/topology/key-buffer behavior;
 - report/export integration.
 
-Current verified PR #30 baseline: **13 passed**.
+Current verified PR #33 baseline: **30 passed**.
 
 ### `tests/CareNest.UiTests`
 
@@ -46,13 +49,14 @@ Coverage includes:
 - branding/localization/support surfaces;
 - async non-blocking source policies;
 - logging-privacy contracts;
-- app-lock cryptographic/source contracts.
+- app-lock cryptographic/source contracts;
+- reminder coordinator UTC/snooze safety contracts.
 
-Current verified PR #30 baseline: **54 passed**.
+Current verified PR #33 baseline: **54 passed**.
 
 ### Verified total
 
-PR #30 exact source head `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` passed **141 core tests** with 0 failed / 0 skipped.
+PR #33 exact source head `4f5f9abe9d702fa33d6aba3f15c113febfebf95e` passed **190 core tests** with 0 failed / 0 skipped.
 
 Documentation-only commits after that source head do not alter the verified runtime/test source.
 
@@ -79,6 +83,8 @@ dotnet format tests/CareNest.UiTests/CareNest.UiTests.csproj --verify-no-changes
 ```
 
 CI treats applicable correctness/security analyzer findings as blocking rather than suppressing real failures.
+
+PR #31 demonstrated that rule in this continuation: formatting passed, but unit-test compilation exposed CA1861 in a new profile-cleanup assertion. The test source was corrected on `main`; PR #31 was closed unmerged and superseded rather than weakening the analyzer policy.
 
 ## Reminder planner test strategy
 
@@ -130,6 +136,61 @@ Domain validation tests cover:
 
 Tests validate configuration shape, not clinical suitability.
 
+## Application-service tests
+
+The unit suite now directly tests the platform-neutral services instead of relying only on repository/UI-contract coverage.
+
+### Profile service
+
+- new profile → Created audit;
+- existing profile → Updated audit;
+- update timestamp comes from deterministic UTC `TimeProvider`;
+- profile cascade deletion coordinates encrypted document/profile-photo cleanup;
+- deletion audit is recorded without embedding health content in the safe summary.
+
+### Medicine service
+
+- create/update audit distinction;
+- reminder rebuild after medicine changes;
+- schedule persistence and future-occurrence invalidation;
+- schedule rebuild after save;
+- stock adjustment uses only explicit stored/user-entered quantities;
+- a change that would produce negative estimated stock fails before persistence;
+- medicine cascade delete triggers reminder rebuild.
+
+### Appointment service
+
+- `StartsUtc` must be actual `DateTimeKind.Utc`;
+- local/unspecified values are rejected instead of relabeled with `DateTime.SpecifyKind`;
+- time-zone identifiers are trimmed/validated;
+- reminder due time derives from the explicit stored UTC instant and user-entered lead minutes;
+- denied permission followed by a rejected permission request produces no platform schedule;
+- permission-granted response allows scheduling;
+- background/rebuild path does not prompt and does not schedule while permission is denied;
+- a stored non-UTC appointment fails closed during rebuild;
+- delete cancels the platform reminder before deleting the record.
+
+### Document service
+
+- encrypted metadata is persisted only after an encrypted payload exists;
+- database-save failure removes the encrypted payload;
+- audit failure after a database save rolls back both the database record and encrypted payload;
+- cleanup failure is surfaced together with the original import failure rather than silently hidden;
+- explicit export uses a safe leaf filename and records an Exported audit action;
+- delete is idempotent for missing records.
+
+### Backup reminder coordinator
+
+- disabled reminder setting cancels the existing reminder;
+- background sync does not request permission;
+- denied permission produces no schedule;
+- an explicitly requested but still denied permission produces no schedule;
+- next reminder derives from the last successful backup or current UTC time;
+- overdue reminder is moved to a near-future time instead of scheduling in the past;
+- sound/vibration preferences are honored.
+
+Reusable deterministic test doubles live under `tests/CareNest.UnitTests/TestDoubles/`.
+
 ## Reminder coordinator contract coverage
 
 Source/UI-contract tests protect:
@@ -143,7 +204,7 @@ Source/UI-contract tests protect:
 
 ## SQLite integration strategy
 
-Integration tests should use isolated temporary storage and clean up files.
+Integration tests use isolated temporary storage and clean up files.
 
 Key invariants:
 
@@ -157,6 +218,35 @@ Key invariants:
 - copied snapshot passes SQLite integrity check;
 - pre-cancelled snapshot leaves no output file.
 
+## Chunked AEAD framing tests
+
+CareNest uses a shared chunked AES-256-GCM stream helper for document and backup payload protection.
+
+New writes use framing version 2. Tests protect:
+
+- multi-chunk v2 round-trip;
+- each data chunk authenticated with counter/length-bound AAD;
+- final zero-length record authenticated using the next chunk counter;
+- a valid authenticated prefix cannot be made to look complete merely by substituting a terminal from a later counter;
+- bytes after the terminal record are rejected;
+- 32-byte AES-256 key requirement;
+- legacy v1 stream remains readable for backward compatibility.
+
+Important compatibility statement: v2 protects newly encrypted streams. Existing v1 ciphertext is not retroactively rewritten or described as receiving v2 terminal authentication.
+
+## Encrypted document tests
+
+Tests cover:
+
+- encrypt/store/decrypt round-trip;
+- tamper/authentication failure;
+- new encrypted document metadata records stream encryption version 2;
+- caller-owned copies of the 32-byte document master key are cleared after import/export where managed-memory control permits;
+- generated key buffer is cleared if secret-store persistence fails;
+- separation from unencrypted normal document persistence.
+
+Manual target-device file picker/share/delete behavior remains separately required.
+
 ## Backup tests
 
 Backup tests cover:
@@ -165,23 +255,25 @@ Backup tests cover:
 - correct-password restore;
 - wrong-password rejection;
 - tamper rejection;
-- protected portability of required recovery material.
+- protected portability of required recovery material;
+- caller-owned document-key copy clearing after backup use;
+- password-derived encryption key/salt clearing after crypto paths;
+- strict decrypted-archive topology before extraction;
+- duplicate entry rejection;
+- nested document-entry rejection;
+- non-`.cndoc` document-entry rejection;
+- unexpected entry rejection;
+- manifest document-count consistency;
+- valid 32-byte document-key requirement when documents exist;
+- invalid schema/document-count metadata rejection.
 
-Future schema versions should add compatibility fixtures for historical formats.
+The backup package/container format version is distinct from the internal chunked AEAD framing version. The package can remain compatible while its encrypted payload framing evolves.
 
-## Encrypted document tests
-
-Tests cover:
-
-- encrypt/store/decrypt round-trip;
-- tamper/authentication failure;
-- separation from unencrypted normal document persistence.
-
-Manual target-device file picker/share/delete behavior remains separately required.
+Future schema versions should add compatibility fixtures for historical backup package formats.
 
 ## Reporting tests
 
-Tests should verify:
+Tests verify:
 
 - expected output type/content contract;
 - privacy/non-clinical disclaimer presence;
@@ -284,13 +376,15 @@ CodeQL runs separately from the build/test matrix.
 
 A successful CodeQL run is required automated evidence for the exact source baseline used in a release decision.
 
+PR #33: CodeQL #332 / `31691592435` — success.
+
 ## Dependency Audit
 
 Dependency Audit checks platform-neutral and MAUI dependency graphs.
 
-Current tracked SQLitePCLRaw advisory remains explicitly open even when the workflow succeeds under the narrow exact advisory suppression.
+PR #33: Dependency Audit #13 / `31691592302` — success.
 
-Do not interpret workflow success as a vulnerability fix.
+The tracked SQLitePCLRaw advisory remains explicitly open even when the workflow succeeds under the narrow exact advisory suppression. Do not interpret workflow success as a vulnerability fix.
 
 ## Exact-head verification protocol
 
@@ -310,28 +404,55 @@ For major source hardening:
 
 See `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
 
-## Current exact verified source evidence
+## Verification sequence for this continuation
 
-PR #30 verified source head:
+### PR #31 — superseded
 
-`c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`
+Source `8e2607f287ca5777d9edbab445042f96c6bcfcec`.
+
+Formatting passed, but unit-test compilation exposed CA1861 in a new constant-array assertion. The test was corrected on `main`; PR #31 was closed without merge and is not release evidence.
+
+### PR #32 — service/document/backup hardening green baseline
+
+Source `8a28bbf30692b2b0e98ec801dac1531d50d65db1`.
+
+- CareNest CI #326 / `31690726676`: success;
+- unit 106;
+- integration 26;
+- UI 54;
+- total 186;
+- four Release platform builds: success;
+- CodeQL #326 / `31690726675`: success;
+- Dependency Audit #12 / `31690726700`: success.
+
+PR #32 was marker-only and closed without merge.
+
+### PR #33 — current exact baseline
+
+Source:
+
+`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
+
+Marker:
+
+`62a0050a2622e12a31d00842778af0bc96355482`
 
 Evidence:
 
-- CareNest CI #248 / `31382194805`: success;
+- CareNest CI #332 / `31691592300`: success;
 - formatting: success;
-- UnitTests: 74 passed;
-- IntegrationTests: 13 passed;
-- UiTests: 54 passed;
-- total: 141 passed;
+- UnitTests: **106 passed**;
+- IntegrationTests: **30 passed**;
+- UiTests: **54 passed**;
+- total: **190 passed**;
 - Android Release: success;
 - Windows Release: success;
 - iOS simulator Release: success;
 - Mac Catalyst Release: success;
-- CodeQL #248 / `31382194687`: success;
-- Dependency Audit #10 / `31382194683`: success.
+- CodeQL #332 / `31691592435`: success;
+- Dependency Audit #13 / `31691592302`: success.
 
-PR #30 was closed without merging the verification marker.
+PR #33 changed only the verification marker beyond the exact source and was closed without merge.
 
 ## Manual release testing
 
@@ -340,11 +461,12 @@ Automated tests do not complete final release verification.
 Use `docs/releases/MANUAL_TEST_MATRIX.md` for:
 
 - onboarding/profile/medicine/schedule/log flows;
-- permission denied/granted;
+- appointment permission denied/granted and reminder behavior;
 - real notification behavior/limitations;
 - Android alarm/battery/reboot/time-zone behavior;
 - document import/export/delete;
 - calendar export;
+- encrypted document v1/v2 real-target read/write behavior where historical fixtures are available;
 - backup/restore on clean install;
 - app-lock cold start;
 - accessibility;
@@ -381,8 +503,9 @@ Reminder/time-zone tests should use explicit dates/time zones/fixed time provide
 Still valuable for later versions:
 
 - full target UI automation on stable emulator/device infrastructure;
-- notification permission state automation;
-- future schema backup compatibility fixtures;
+- notification permission state automation on real/emulated platform APIs;
+- historical backup-package fixtures across future schema/package versions;
+- retained legacy encrypted-document v1 fixture tests from a released build once a canonical fixture exists;
 - corruption/low-storage filesystem failure injection;
 - deeper accessibility semantics checks;
 - signed-artifact smoke tests after signing infrastructure exists;
