@@ -48,9 +48,30 @@ Imported document payloads use authenticated encryption with .NET cryptographic 
 Design properties:
 
 - document payloads are separate from structured metadata;
-- a per-installation random encryption key is stored through platform secure storage;
-- encrypted document round-trip/tamper tests are part of the integration suite;
+- a per-installation random 32-byte encryption key is stored through platform secure storage;
+- new payloads use chunked AES-256-GCM framing version 2;
+- each chunk authenticates counter and length through AAD;
+- v2 includes an authenticated terminal record bound to the next chunk counter;
+- trailing data after the terminal is rejected;
+- legacy framing v1 remains readable so existing local files are not made inaccessible;
+- encrypted document round-trip/tamper/truncation/trailing-data tests are part of the integration suite;
 - decrypted/exported copies leave the CareNest vault boundary after explicit export/share.
+
+Security limitation: v2 does not retroactively rewrite or strengthen already-existing v1 ciphertext. Legacy v1 read compatibility remains a deliberate compatibility tradeoff until an explicit migration policy exists.
+
+## Document import consistency
+
+Document import spans two local persistence surfaces: encrypted filesystem payload and SQLite metadata/audit state.
+
+Controls:
+
+- encrypted payload is created before metadata is committed;
+- database-save failure removes the new encrypted payload;
+- audit failure after metadata save attempts to remove both the metadata record and encrypted payload;
+- rollback cleanup is not cancelled merely because the original user operation has become cancelled;
+- incomplete rollback is surfaced as an aggregate failure rather than silently hidden.
+
+This is compensating cleanup, not a claim of a single cross-filesystem/SQLite ACID transaction. Process termination or OS failure can still interrupt cleanup and therefore remains a manual/recovery consideration.
 
 ## Backup protection
 
@@ -58,13 +79,35 @@ Manual backups use:
 
 - user password;
 - PBKDF2-HMAC-SHA256 password-based key derivation;
-- AES-GCM authenticated encryption;
-- versioned format metadata;
-- authentication/tamper checks;
-- wrong-password rejection;
-- protected document-recovery key material inside the encrypted payload.
+- random salt;
+- AES-256-GCM authenticated chunk encryption;
+- versioned application package metadata;
+- chunked AEAD framing v2 for new encrypted payloads;
+- wrong-password/tamper/truncation/trailing-data rejection;
+- protected document-recovery key material inside the encrypted payload;
+- strict decrypted ZIP topology validation before extraction.
+
+Allowed archive files are limited to the manifest, database, optional/required document key, and top-level `.cndoc` document entries. Duplicate, nested, unexpected, count-mismatched, or invalid-key layouts fail validation.
 
 The backup password is not recoverable through a CareNest backend because no such backend exists in v1.
+
+## Sensitive buffer handling
+
+Where application code owns mutable key-material buffers, CareNest clears them with `CryptographicOperations.ZeroMemory` after use where practical.
+
+Current examples include:
+
+- app-lock derived/retrieved verifier buffers;
+- caller-owned document-master-key copies after import/export;
+- generated document key if secret-store persistence fails;
+- backup password-derived AES key and salt;
+- copied document master keys during backup creation/restore;
+- chunked AEAD plaintext/ciphertext/tag/nonce/AAD working buffers.
+
+Limitations:
+
+- managed-memory zeroing reduces lifetime of known caller-owned buffers;
+- it does not prove erasure of copies inside the runtime, OS, platform secure store, crash dumps, swap, hardware, or a compromised process/device.
 
 ## App-lock protection
 
@@ -86,7 +129,7 @@ Limitations:
 - a compromised secure store/OS can defeat the intended boundary;
 - app lock does not replace device-level authentication/security.
 
-## Notification protection
+## Notification protection and time integrity
 
 CareNest minimizes notification payload sensitivity.
 
@@ -94,6 +137,13 @@ CareNest minimizes notification payload sensitivity.
 - document contents/private free-text are not intended in notification requests;
 - platform notification systems control final storage/display/delivery;
 - user device lock-screen preview settings remain important.
+
+Time/permission integrity controls now also include:
+
+- appointment `StartsUtc` must be actual `DateTimeKind.Utc`;
+- local/unspecified appointment ticks are rejected instead of silently relabeled;
+- denied notification permission is not treated as successful appointment scheduling;
+- background/rebuild paths do not repeatedly prompt and do not schedule while permission remains denied.
 
 ## Reminder integrity protections
 
@@ -201,9 +251,13 @@ Repository automation includes:
 - no runtime network/telemetry client policy;
 - logging privacy source contracts;
 - app-lock cryptographic source contracts;
+- direct application-service tests;
 - backup/document encryption integration tests;
+- strict backup topology tests;
+- chunked AEAD v2 truncation/trailing-data/legacy-v1 tests;
+- sensitive caller-buffer hygiene tests;
 - SQLite migration/integrity tests;
-- reminder ownership/time/state contracts;
+- reminder/appointment ownership/time/state/permission contracts;
 - warnings-as-errors CI posture for correctness/security analyzers except explicitly documented advisory exceptions.
 
 ## Source hygiene
@@ -218,7 +272,9 @@ Runtime source avoids common synchronous task-blocking patterns.
 
 Cancellation-aware operations are used where appropriate for I/O/application workflows.
 
-This improves reliability and reduces UI-thread/deadlock risk but is not itself a confidentiality mechanism.
+Security-sensitive cleanup sometimes intentionally uses non-cancelled cleanup after the main operation has failed so cancellation cannot knowingly strand a newly created encrypted payload/metadata record.
+
+This improves reliability and consistency but is not itself a confidentiality guarantee against process termination.
 
 ## Backup/restore attack considerations
 
@@ -226,12 +282,17 @@ Threats include:
 
 - tampered backup;
 - wrong password;
+- encrypted-stream prefix truncation;
+- trailing data;
 - malicious/unsupported format version;
+- duplicate/unexpected/nested archive entries;
+- manifest/document-count mismatch;
+- invalid/missing document key;
 - partial/corrupt SQLite snapshot;
 - leaked backup file/password;
 - insecure destination.
 
-Controls include authenticated encryption, format/version validation, snapshot integrity checks, and manual release restore testing.
+Controls include authenticated encryption, v2 authenticated stream termination for new writes, strict archive topology validation, format/version validation, snapshot integrity checks, rollback handling, buffer hygiene, and manual release restore testing.
 
 ## Export attack considerations
 
@@ -240,6 +301,7 @@ Exports intentionally create copies outside the CareNest protected boundary.
 Risks:
 
 - plaintext CSV/PDF/JSON exposure;
+- decrypted document export exposure;
 - insecure share destination;
 - cloud synchronization by destination app;
 - retained historical copies after local deletion.
@@ -261,13 +323,31 @@ Residual risks outside CareNest's guarantee include:
 
 Device-level encryption, secure lock screen, OS updates, and trusted software remain part of the overall security posture.
 
+## Latest automated security baseline
+
+Exact runtime/test source:
+
+`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
+
+Marker-only PR #33 completed successfully and was closed without merge.
+
+- CareNest CI #332 / `31691592300`: success;
+- 190 core tests passed;
+- Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- CodeQL #332 / `31691592435`: success;
+- Dependency Audit #13 / `31691592302`: success.
+
+The Dependency Audit result does not close the tracked SQLitePCLRaw advisory.
+
 ## Security release review
 
 Before final public promotion:
 
-- rerun CodeQL/Dependency Audit for exact source;
+- rerun CodeQL/Dependency Audit for exact promoted source;
 - review threat model;
 - review logging privacy;
+- review v1/v2 encrypted-stream compatibility plan;
+- review strict backup topology assumptions;
 - review dependency risk;
 - complete `docs/releases/SECURITY_RELEASE_REVIEW.md`;
 - verify no real secrets were committed;
