@@ -161,7 +161,15 @@ public sealed class EncryptedDocumentStore(
         }
 
         var key = RandomNumberGenerator.GetBytes(32);
-        await secretStore.SetBytesAsync(SecretKeys.DocumentMasterKey, key, cancellationToken);
-        return key;
+        try
+        {
+            await secretStore.SetBytesAsync(SecretKeys.DocumentMasterKey, key, cancellationToken);
+            return key;
+        }
+        catch
+        {
+            CryptographicOperations.ZeroMemory(key);
+            throw;
+        }
     }
 }
