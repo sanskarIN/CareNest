@@ -55,6 +55,21 @@ public sealed class EncryptedBackupTests
     }
 
     [Fact]
+    public async Task Backup_ClearsCopiedDocumentMasterKeyBufferAfterUse()
+    {
+        await using var store = await TestStore.CreateAsync();
+        await using var source = new MemoryStream(Encoding.UTF8.GetBytes("document requiring key backup"));
+        _ = await store.Documents.ImportAsync(source, "report.txt", "text/plain");
+
+        await using var backup = new MemoryStream();
+        await store.Backups.CreateEncryptedBackupAsync(backup, "correct password", "test");
+
+        var copiedKey = Assert.IsType<byte[]>(store.Secrets.LastReturnedBytes);
+        Assert.Equal(32, copiedKey.Length);
+        Assert.All(copiedKey, value => Assert.Equal(0, value));
+    }
+
+    [Fact]
     public async Task WrongPassword_DoesNotInspectBackup()
     {
         await using var store = await TestStore.CreateAsync();
