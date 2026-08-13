@@ -2,6 +2,88 @@
 
 All notable changes follow Keep a Changelog principles and semantic versioning.
 
+## [Unreleased] - 2026-08-13
+
+### Added
+
+- Reusable platform-neutral test doubles for repository, deterministic time, reminder coordination, notifications, and encrypted document storage.
+- Direct `ProfileService` tests for create/update audits, UTC touch timestamps, cascading encrypted-document/profile-photo cleanup, and deletion audit behavior.
+- Direct `MedicineService` tests for create/update audits, reminder rebuilds, schedule persistence/future-occurrence invalidation, explicit stock adjustments, negative estimated-stock rejection, and cascade deletion.
+- Direct `AppointmentService` tests for UTC scheduling, denied/granted notification permission behavior, rebuild behavior without permission prompts, non-UTC stored-data rejection, and reminder cancellation/deletion.
+- Direct `DocumentService` tests for encrypted import metadata, save/audit failure rollback, safe temporary export filenames, export audits, and idempotent deletion.
+- Direct `BackupReminderCoordinator` tests for disabled reminders, denied permission behavior, no background permission prompts, current/last-backup scheduling, overdue recovery, and sound/vibration preferences.
+- `BackupArchiveValidator` with strict allowlisted backup ZIP topology checks.
+- Integration coverage for duplicate/unexpected/nested/non-`.cndoc` backup entries, manifest count mismatches, invalid/missing document-key material, and invalid schema/document-count metadata.
+- Integration coverage that caller-owned document-master-key copies are cleared after document/backup cryptographic operations where managed-memory control permits.
+- Direct `ChunkedAead` integration tests for version-2 multi-chunk round-trip, authenticated-terminal prefix-truncation rejection, trailing-data rejection, and legacy version-1 read compatibility.
+
+### Changed
+
+- Appointment start timestamps now require explicit `DateTimeKind.Utc`; local/unspecified values are rejected instead of being relabeled with `DateTime.SpecifyKind`.
+- Appointment time-zone identifiers are trimmed and validated separately from the explicit UTC start instant.
+- Appointment save-time notification scheduling now stops when a permission request remains denied.
+- Appointment reminder rebuild does not prompt for notification permission and does not schedule while permission remains denied.
+- Document import now uses compensating rollback across SQLite metadata and encrypted payload storage when save/audit steps fail.
+- Rollback cleanup for a failed document import uses non-cancelled cleanup attempts so a cancelled main operation does not knowingly strand the newly created artifacts.
+- Encrypted document master-key copies are zeroed after import/export paths where application-owned mutable buffers are available.
+- Newly generated document-key material is cleared if secret-store persistence fails.
+- Backup creation/restore now clears caller-owned document-key copies, password-derived AES key material, and salt buffers after use where practical.
+- Backup inspection/restore validates strict archive topology before extraction; path-containment validation remains as defense in depth.
+- New encrypted document and backup payload streams use chunked AEAD framing **version 2** with an authenticated terminal record.
+- The chunked encrypted-stream reader rejects bytes after the terminal record.
+- Existing chunked framing version 1 remains decryptable for backward compatibility; historical v1 ciphertext is not represented as retroactively upgraded.
+- Newly imported encrypted document metadata records encryption stream version `2`.
+- Shared chunked AEAD working buffers are cleared where managed-memory control permits.
+
+### Fixed
+
+- Removed silent appointment clock-kind reinterpretation that could turn local/unspecified ticks into a different UTC reminder instant.
+- Prevented appointment services from attempting platform scheduling after notification permission remains denied.
+- Prevented normal document-import audit failures from leaving a database record pointing to an encrypted payload that rollback already removed.
+- Added explicit aggregate failure reporting when document import rollback itself cannot fully clean both local persistence surfaces.
+- Prevented decrypted backup archives with duplicate, unexpected, nested, or manifest-inconsistent entries from reaching the extraction/replacement stage.
+- Prevented new chunked encrypted streams from accepting a chunk-boundary authenticated prefix as a complete stream through an unauthenticated terminator; v2 now authenticates termination against the next chunk counter and zero length.
+- Corrected CA1861 exposed by verification PR #31 in a newly added profile-service test assertion instead of suppressing the analyzer.
+
+### Security
+
+- New encrypted-stream framing v2 authenticates the terminal record and binds it to the next chunk counter/zero plaintext length.
+- V2 rejects prefix truncation and trailing data while retaining v1 decryption compatibility for existing data.
+- Backup topology is allowlisted to `manifest.json`, `database/carenest.db`, optional/required `secrets/document-master-key.bin`, and top-level `documents/*.cndoc` files.
+- Document-bearing backups require a valid 32-byte document master key before restore proceeds.
+- Known mutable caller-owned verifier/key/salt/nonce/AAD/tag/plain/cipher buffers are cleared after use where practical; this is not represented as erasure of every runtime/OS/secure-store copy.
+- `GHSA-2m69-gcr7-jv3q` remains explicitly open for the SQLitePCLRaw `2.1.11` dependency path. Successful Dependency Audit runs do not claim remediation.
+
+### Verification
+
+Latest exact runtime/test source head verified:
+
+`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
+
+Verification PR #33 used marker head `62a0050a2622e12a31d00842778af0bc96355482`, changed only `build/verification/rc1-aead-v2-hardening-20260813.txt`, and was closed without merge after success.
+
+- CareNest CI #332 / `31691592300`: success.
+- Platform-neutral formatting: success.
+- Unit tests: **106 passed, 0 failed, 0 skipped**.
+- Integration tests: **30 passed, 0 failed, 0 skipped**.
+- UI-contract/policy tests: **54 passed, 0 failed, 0 skipped**.
+- Total core automated tests: **190 passed, 0 failed, 0 skipped**.
+- Android Release: success.
+- Windows Release: success.
+- iOS simulator Release: success.
+- Mac Catalyst Release: success.
+- CodeQL #332 / `31691592435`: success.
+- Dependency Audit #13 / `31691592302`: success.
+
+Verification sequence for this continuation:
+
+- PR #31 verified source `8e2607f287ca5777d9edbab445042f96c6bcfcec`; formatting passed, but unit-test compilation exposed CA1861 in a new constant-array assertion. The test was fixed on `main`, PR #31 was closed without merge, and the analyzer was not suppressed.
+- PR #32 verified corrected source `8a28bbf30692b2b0e98ec801dac1531d50d65db1` with 106 unit + 26 integration + 54 UI = 186 tests, all four platform builds, CodeQL #326, and Dependency Audit #12 green.
+- Later authenticated-stream-v2 source changes required new exact-head PR #33 instead of reusing PR #32 evidence.
+- PR #33 is the current exact automated baseline.
+
+Public production promotion remains blocked on manual device/accessibility/notification/document/backup checks, current store-policy review, signing/store preparation, final Release Evidence for the exact promoted commit, and an explicit decision/resolution for the open SQLite dependency risk.
+
 ## [Unreleased] - 2026-08-12
 
 ### Documentation
@@ -78,35 +160,12 @@ All notable changes follow Keep a Changelog principles and semantic versioning.
 
 ### Verification
 
-Latest exact production runtime/test source head verified: `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`.
-
-Verification PR #30 used marker head `59016b7e2b13d5ac1c93cf0db973f275c6e7eb19`, changed only `build/verification/rc1-ownership-utc-dst-hardening-20260810-2.txt`, and was closed without merge after success.
-
-- CareNest CI #248 / `31382194805`: success.
-- Platform-neutral formatting: success.
-- Unit tests: 74 passed, 0 failed, 0 skipped.
-- Integration tests: 13 passed, 0 failed, 0 skipped.
-- UI-contract/policy tests: 54 passed, 0 failed, 0 skipped.
-- Total core automated tests: 141 passed, 0 failed, 0 skipped.
-- Android Release: success.
-- Windows Release: success.
-- iOS simulator Release: success.
-- Mac Catalyst Release: success.
-- CodeQL #248 / `31382194687`: success.
-- Dependency Audit #10 / `31382194683`: success.
-
-PR #29 / source head `04057299fe6d13012734ba235e6fa92604753948` was a superseded marker-only verification. CI #246 / `31382027314` exposed CA2263 in the new schedule-kind validation. `main` was corrected in commit `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`, PR #29 was closed without merge, and PR #30 reran the complete matrix on that exact corrected source head.
-
-The previous green source baseline was PR #28 / source head `69c4dd9319f7dc47edea1786e683f7d90c656e1e` with 101 core tests and all automated platform/security gates green. PR #30 supersedes that baseline after the additional ownership/UTC/snooze/DST/property hardening.
-
-Earlier superseded verification PRs #24–#26 exposed and drove fixes for analyzer, privacy-logging, path-normalization, generated-source scanning, and nullable-contract problems instead of weakening those gates.
+Exact production runtime/test source head for that continuation: `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` through PR #30, later superseded by the 2026-08-13 PR #33 baseline above.
 
 ### Security
 
-- `GHSA-2m69-gcr7-jv3q` remains explicitly open for the SQLitePCLRaw `2.1.11` dependency path. This continuation does not claim it fixed.
-- The exact advisory suppression remains narrowly scoped and is still governed by `docs/security/DEPENDENCY_RISK_REGISTER.md` and `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
-- Reminder ownership validation fails closed on inconsistent local entity relationships; it does not transmit data or add a server/account dependency.
-- App-lock verifier memory handling is hardened, but app lock remains a local privacy barrier and does not claim protection against a compromised/rooted/jailbroken device or weak-PIN offline guessing.
+- `GHSA-2m69-gcr7-jv3q` remains explicitly open for the SQLitePCLRaw `2.1.11` dependency path.
+- The exact advisory suppression remains narrowly scoped and is governed by `docs/security/DEPENDENCY_RISK_REGISTER.md` and `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
 - Public production promotion remains blocked on an explicit dependency-risk decision/resolution plus manual device/accessibility/store/signing work and final release evidence.
 
 ## [1.0.0-rc.1] - 2026-08-09
