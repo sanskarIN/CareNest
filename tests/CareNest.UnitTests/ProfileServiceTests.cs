@@ -8,6 +8,8 @@ namespace CareNest.UnitTests;
 public sealed class ProfileServiceTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 13, 9, 30, 0, TimeSpan.Zero);
+    private static readonly string[] ExpectedDeletedFiles =
+        ["doc-1.cndoc", "doc-2.cndoc", "profile-photo.cndoc"];
 
     [Fact]
     public async Task SaveAsync_NewProfile_PersistsCreatedAuditAndUtcTouch()
@@ -65,9 +67,7 @@ public sealed class ProfileServiceTests
         await service.DeleteAsync(profile.Id);
 
         Assert.Equal(profile.Id, repository.DeletedProfileId);
-        Assert.Equal(
-            new[] { "doc-1.cndoc", "doc-2.cndoc", "profile-photo.cndoc" },
-            documentStore.DeletedFiles);
+        Assert.Equal(ExpectedDeletedFiles, documentStore.DeletedFiles);
         var audit = Assert.Single(repository.AuditEntries);
         Assert.Equal(AuditAction.Deleted, audit.Action);
         Assert.Equal(profile.Id, audit.EntityId);
