@@ -16,15 +16,19 @@ CareNest is an open-source, local-first health organizer built with .NET MAUI an
 - Invalid DST-gap times are not replaced with guessed reminder times.
 - Archived profiles and inactive medicine states do not automatically materialize reminders.
 - Snooze timestamps must be explicit future UTC values before platform scheduling.
-- Appointment planning and history.
-- Encrypted local health-document vault.
+- Appointment `StartsUtc` must be explicit UTC; local/unspecified clock values are rejected rather than relabeled.
+- Appointment scheduling stops safely when notification permission remains denied; rebuild does not repeatedly prompt.
+- Encrypted local health-document vault with compensating import rollback across metadata/payload storage.
+- New encrypted document/backup payload streams use authenticated chunked AEAD framing v2; legacy v1 remains readable for compatibility.
+- Strict decrypted-backup archive topology validation before extraction.
+- Sensitive caller-owned verifier/key/salt/crypto buffers are cleared where managed-memory control permits.
 - Stock/refill tracking based only on user-entered quantities.
 - Per-profile JSON export plus PDF/CSV reports with privacy and clinical-limit warnings.
 - Manual password-encrypted backup/restore, including portable recovery of locally encrypted documents.
 - Light, dark, system theme and accessibility-ready layouts.
 - Android, iOS, Mac Catalyst, and Windows targets.
 - Privacy-aware developer diagnostics and exception-log redaction contracts.
-- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-integrity, randomized-recurrence, and snapshot-integrity quality gates.
+- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-integrity, direct-service, backup-topology, authenticated-stream, randomized-recurrence, and snapshot-integrity quality gates.
 
 ## Technology
 
@@ -64,14 +68,15 @@ Key references:
 - [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) — full architecture.
 - [`docs/architecture/APPLICATION_FLOWS.md`](docs/architecture/APPLICATION_FLOWS.md) — runtime flows.
 - [`docs/architecture/DATABASE_SCHEMA.md`](docs/architecture/DATABASE_SCHEMA.md) — schema/entities/migrations/WAL.
-- [`docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — Android/iOS/Mac/Windows notification behavior and limitations.
-- [`docs/architecture/DOCUMENT_VAULT.md`](docs/architecture/DOCUMENT_VAULT.md) — encrypted document-vault model.
-- [`docs/architecture/BACKUP_AND_RESTORE.md`](docs/architecture/BACKUP_AND_RESTORE.md) — encrypted backup/restore model.
+- [`docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — Android/iOS/Mac/Windows notification behavior, appointment UTC contract, and permission limitations.
+- [`docs/architecture/DOCUMENT_VAULT.md`](docs/architecture/DOCUMENT_VAULT.md) — encrypted document-vault v1/v2 framing, rollback, and key-handling model.
+- [`docs/architecture/BACKUP_AND_RESTORE.md`](docs/architecture/BACKUP_AND_RESTORE.md) — encrypted backup/restore, strict topology, and v1/v2 compatibility model.
 - [`docs/REPORTS_AND_EXPORTS.md`](docs/REPORTS_AND_EXPORTS.md) — JSON/PDF/CSV/document/calendar export contracts.
 - [`docs/privacy/PRIVACY_MODEL.md`](docs/privacy/PRIVACY_MODEL.md) — complete privacy architecture.
 - [`docs/security/SECURITY_MODEL.md`](docs/security/SECURITY_MODEL.md) — security architecture and limitations.
+- [`docs/security/THREAT_MODEL.md`](docs/security/THREAT_MODEL.md) — current threat/control/residual-risk model.
 - [`docs/design/ACCESSIBILITY.md`](docs/design/ACCESSIBILITY.md) — accessibility specification.
-- [`docs/testing/TESTING_GUIDE.md`](docs/testing/TESTING_GUIDE.md) — automated/manual testing guide.
+- [`docs/testing/TESTING_GUIDE.md`](docs/testing/TESTING_GUIDE.md) — automated/manual testing guide and verification history.
 - [`docs/setup/PLATFORM_SETUP.md`](docs/setup/PLATFORM_SETUP.md) — cross-platform development setup.
 - [`docs/setup/MAINTAINER_OPERATIONS.md`](docs/setup/MAINTAINER_OPERATIONS.md) — maintainer/CI/release operations.
 - [`docs/releases/RELEASE_PROCESS.md`](docs/releases/RELEASE_PROCESS.md) — end-to-end release process.
@@ -115,28 +120,44 @@ The exact planner invariants—entity ownership, UTC planning windows, half-open
 
 A local clock time that does not exist during a daylight-saving spring-forward gap is not silently replaced with a guessed alternative time. Automated property-style tests use a fixed seed and synthetic user-entered schedules so recurrence-boundary checks are reproducible and non-clinical.
 
+## Encrypted stream compatibility
+
+CareNest's shared chunked AES-256-GCM framing now writes version **2** for new encrypted document/backup payload streams.
+
+V2 authenticates a terminal record bound to the next chunk counter and zero length, so a valid chunk prefix cannot be accepted as a complete new stream merely by ending at a chunk boundary. The reader also rejects trailing data after the terminal.
+
+Legacy framing version 1 remains readable to avoid making existing local CareNest data inaccessible. Existing v1 ciphertext is not represented as retroactively upgraded to v2. See the document-vault, backup, security, and threat-model documentation for the exact boundary.
+
 ## Verified automated quality baseline
 
-Exact runtime/test source head `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` passed the latest hardening verification through marker-only PR #30:
+Exact runtime/test source head:
 
-- CareNest CI #248 / `31382194805` — success;
+`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
+
+Marker-only PR #33 passed the complete automated matrix and was closed without merging its marker:
+
+- CareNest CI #332 / `31691592300` — success;
 - platform-neutral formatting — success;
-- 74 unit tests — passed;
-- 13 integration tests — passed;
-- 54 UI-contract/policy tests — passed;
-- 141 total core automated tests — passed;
+- **106 unit tests** — passed;
+- **30 integration tests** — passed;
+- **54 UI-contract/policy tests** — passed;
+- **190 total core automated tests** — passed;
 - Android Release — success;
 - Windows Release — success;
 - iOS simulator Release — success;
 - Mac Catalyst Release — success;
-- CodeQL #248 / `31382194687` — success;
-- Dependency Audit #10 / `31382194683` — success.
+- CodeQL #332 / `31691592435` — success;
+- Dependency Audit #13 / `31691592302` — success.
 
-PR #29 / CI #246 is intentionally recorded as a superseded verification: it exposed CA2263 in a new non-generic `Enum.IsDefined` call. The code was corrected on `main` and reverified through PR #30 rather than suppressing the analyzer.
+Verification sequence:
 
-Documentation-only commits after `c61f3c31...` do not change the runtime/test source represented by that evidence and are not a separate platform-verification baseline.
+- PR #31 exposed CA1861 in newly added test source and was closed unmerged after the test was fixed instead of suppressing the analyzer.
+- PR #32 then passed the corrected service/document/backup source at 186 tests.
+- Later AEAD-v2 source changes required fresh PR #33, which is the current exact automated source baseline.
 
-That automated evidence is necessary but not sufficient for final `1.0.0` publication. Manual device/accessibility/notification testing, current store-policy review, signing/package work, final Release Evidence for the promoted commit, and the tracked SQLite dependency-risk decision remain production gates.
+Documentation-only commits after `4f5f9abe...` do not change the runtime/test source represented by PR #33 and are not a separate platform-verification baseline.
+
+That automated evidence is necessary but not sufficient for final `1.0.0` publication. Manual device/accessibility/notification/document/backup testing, legacy-v1 fixture checks where available, current store-policy review, signing/package work, final Release Evidence for the promoted commit, and the tracked SQLite dependency-risk decision remain production gates.
 
 See [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/releases/RELEASE_CHECKLIST.md`](docs/releases/RELEASE_CHECKLIST.md), [`docs/releases/QUALITY_GATE.md`](docs/releases/QUALITY_GATE.md), and [`docs/releases/RELEASE_PROCESS.md`](docs/releases/RELEASE_PROCESS.md).
 
