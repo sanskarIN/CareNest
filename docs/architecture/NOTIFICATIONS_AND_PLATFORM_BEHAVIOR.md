@@ -1,17 +1,17 @@
 # CareNest Notifications and Platform Behavior
 
-This document explains how deterministic reminder occurrences relate to platform notification delivery on Android, iOS, Mac Catalyst, and Windows.
+This document explains how deterministic reminder occurrences and other user-configured reminder-capable features relate to platform notification delivery on Android, iOS, Mac Catalyst, and Windows.
 
 ## Core distinction
 
 CareNest separates two concepts:
 
-1. **Reminder occurrence materialization** — deterministic application logic based on explicit user-entered schedules.
+1. **Application reminder intent/materialization** — deterministic application logic based on explicit user-entered values.
 2. **Notification delivery** — operating-system behavior subject to platform permissions/policies/capabilities.
 
-A successfully materialized occurrence does not guarantee that the OS will display a notification.
+A successfully materialized reminder/appointment does not guarantee that the OS will display a notification.
 
-## Common notification flow
+## Common medicine-reminder flow
 
 ```text
 Explicit user schedule
@@ -32,9 +32,37 @@ Permission is requested when the user explicitly creates/saves/enables reminder-
 
 If permission is denied:
 
-- schedule data can still be saved;
+- local organizational data can still be saved;
 - CareNest reports that notifications are not currently permitted;
+- application services do not treat denial as successful scheduling;
+- background/rebuild paths do not repeatedly prompt for notification permission;
 - the user can review notification diagnostics/settings.
+
+## Appointment reminder contract
+
+Appointments use a separate application-service path from medicine `ReminderOccurrence` materialization.
+
+The stored appointment start field is named `StartsUtc` and now has an explicit runtime/domain contract:
+
+- `StartsUtc.Kind` must be `DateTimeKind.Utc`;
+- local or unspecified `DateTime` values are rejected;
+- CareNest does not relabel local/unspecified clock ticks with `DateTime.SpecifyKind` and treat them as UTC;
+- the user-selected `TimeZoneId` is trimmed and validated separately for presentation/intent context;
+- reminder due time is calculated only from the validated explicit UTC start instant and the user-entered `ReminderMinutesBefore` value.
+
+This prevents a clock-kind mistake from silently becoming a different appointment reminder instant.
+
+### Appointment permission behavior
+
+When an explicit appointment save needs a future notification and diagnostics report permission denied:
+
+1. CareNest may request permission because the user has just performed a reminder-capable action;
+2. if the permission request remains denied, the appointment record stays saved locally but no platform notification schedule is attempted;
+3. a later rebuild/synchronization does **not** trigger another permission prompt and does not attempt scheduling while permission remains denied.
+
+Deleting an appointment cancels its CareNest platform notification registration before the appointment record is deleted.
+
+A stored non-UTC appointment encountered during reminder rebuild fails closed instead of being silently reinterpreted.
 
 ## Notification content privacy
 
@@ -56,19 +84,19 @@ Users still control OS lock-screen preview settings.
 
 Quiet hours are a user-controlled notification policy.
 
-If an occurrence is due inside configured quiet hours, supported scheduling may be suppressed according to the implementation.
+If an occurrence/reminder is due inside configured quiet hours, supported scheduling may be suppressed according to the implementation.
 
-Quiet hours do not rewrite the underlying user-entered medicine schedule.
+Quiet hours do not rewrite underlying user-entered schedules or appointment start values.
 
 ## Follow-ups
 
-Follow-up reminders are separate deterministic occurrences created from explicit user-configured follow-up minutes.
+Follow-up medicine reminders are separate deterministic occurrences created from explicit user-configured follow-up minutes.
 
 They have their own occurrence identity and do not change the original scheduled time.
 
 ## Snooze
 
-A snoozed occurrence requires an explicit future UTC timestamp.
+A snoozed medicine occurrence requires an explicit future UTC timestamp.
 
 Coordinator validation rejects:
 
@@ -83,18 +111,21 @@ After valid snooze:
 
 ## Rebuild behavior
 
-CareNest rebuilds/recovers future reminder registrations at appropriate application/platform recovery points.
+CareNest rebuilds/recovers supported future notification registrations at appropriate application/platform recovery points.
 
 Reasons include:
 
 - app startup;
-- schedule changes;
+- medicine schedule changes;
+- appointment synchronization;
 - supported boot/restart events;
 - time/time-zone changes;
 - explicit diagnostic/rebuild actions;
 - restore/recovery flows.
 
-Occurrence identity is deterministic to avoid duplicate application records for the same user schedule instance.
+Medicine occurrence identity is deterministic to avoid duplicate application records for the same user schedule instance.
+
+Rebuild paths must not turn a denied notification permission into an implicit new permission prompt.
 
 # Android
 
@@ -116,8 +147,9 @@ Modern Android notification permission state can block notification display.
 
 The app should:
 
-- request at explicit reminder-capable action;
-- handle denial without losing schedule data;
+- request at an explicit reminder-capable action;
+- handle denial without losing local organizational data;
+- avoid treating denial as a successful schedule;
 - expose diagnostics.
 
 ## Battery optimization
@@ -134,9 +166,9 @@ Android receiver/integration handles supported system events such as:
 - time changes;
 - time-zone changes.
 
-The goal is to rebuild future registrations from stored schedule intent.
+The goal is to rebuild future registrations from stored explicit user intent.
 
-Stored schedule times are not silently rewritten to the new device zone.
+Stored schedule/appointment intent is not silently rewritten because the device zone changed.
 
 ## Force-stop
 
@@ -149,6 +181,8 @@ CareNest must not claim to defeat force-stop behavior.
 Required checks include:
 
 - permission denied/granted;
+- appointment save with denied/granted permission;
+- rebuild while permission is denied;
 - exact/inexact capability;
 - battery optimization;
 - reboot;
@@ -166,7 +200,7 @@ CareNest uses iOS local notification APIs through the platform notification impl
 
 iOS user permission controls whether CareNest can present local notifications.
 
-Denial does not delete the user's stored schedule intent.
+Denial does not delete stored schedule/appointment intent and should not be treated as a successful schedule.
 
 ## Delivery limitations
 
@@ -181,7 +215,7 @@ CareNest cannot guarantee delivery during:
 
 ## Rebuild
 
-Application startup/recovery can rebuild supported future reminder registrations from persisted occurrences/schedules.
+Application startup/recovery can rebuild supported future registrations from persisted CareNest data without repeatedly prompting for permission.
 
 ## iOS manual tests
 
@@ -189,6 +223,7 @@ Verify:
 
 - first permission request timing;
 - denied/granted states;
+- appointment denied/granted reminder behavior;
 - local notification scheduling;
 - app restart;
 - time-zone change behavior;
@@ -202,6 +237,7 @@ Mac Catalyst uses Apple local notification APIs under Mac Catalyst platform beha
 Manual tests should cover:
 
 - notification permission;
+- appointment permission-denied behavior;
 - delivery while application state changes;
 - window/app restart;
 - time-zone handling;
@@ -223,15 +259,16 @@ The app exposes this limitation through diagnostics/documentation rather than pr
 Verify:
 
 - in-process/open-app reminder behavior;
+- appointment reminder behavior;
 - diagnostic wording;
 - no misleading background-delivery promise;
 - app restart behavior;
 - time-zone handling;
 - keyboard/accessibility interaction with reminder screens.
 
-# Time-zone and DST behavior
+# Time-zone and UTC behavior
 
-Platform notification registration receives UTC occurrence times produced from the deterministic planner.
+Medicine platform notification registration receives UTC occurrence times produced from the deterministic planner.
 
 Planner rules are platform-neutral:
 
@@ -239,13 +276,15 @@ Planner rules are platform-neutral:
 - invalid spring-forward local time creates no invented replacement occurrence;
 - ambiguous fall-back local time resolves deterministically;
 - UTC planning window is half-open;
-- stored local intent is not rewritten because device zone changed.
+- stored local schedule intent is not rewritten because device zone changed.
 
-Platform APIs receive the resulting occurrence time; delivery remains OS-dependent.
+Appointments already persist an explicit UTC instant. The domain/service layer verifies `DateTimeKind.Utc`; it does not infer a UTC instant from local or unspecified ticks.
+
+Platform APIs receive the resulting UTC time; delivery remains OS-dependent.
 
 ## Missed/overdue reconciliation
 
-CareNest can reconcile overdue scheduled occurrences into Missed organizational state according to application logic.
+CareNest can reconcile overdue scheduled medicine occurrences into Missed organizational state according to application logic.
 
 A Missed state is local organizational history, not a clinical assessment of adherence or harm.
 
@@ -261,13 +300,13 @@ A test reminder/diagnostic action can verify that the platform path works in the
 
 Success of one test does not guarantee future delivery under different permission/battery/background states.
 
-## Release evidence
+## Automated evidence
 
-Automated CI verifies platform source compilation.
+Exact source `4f5f9abe9d702fa33d6aba3f15c113febfebf95e` passed PR #33 verification, including direct appointment service/permission/UTC tests and all four Release platform builds.
 
-It does **not** prove real notification delivery.
+Automated platform compilation does **not** prove real notification delivery.
 
-Final production release requires manual evidence in `docs/releases/MANUAL_TEST_MATRIX.md`.
+Final production release still requires manual evidence in `docs/releases/MANUAL_TEST_MATRIX.md`.
 
 ## Troubleshooting
 
@@ -276,6 +315,7 @@ See `docs/setup/TROUBLESHOOTING.md`.
 ## Related documents
 
 - `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`
+- `docs/testing/TESTING_GUIDE.md`
 - `docs/architecture/APPLICATION_FLOWS.md`
 - `docs/USER_GUIDE.md`
 - `docs/releases/MANUAL_TEST_MATRIX.md`
