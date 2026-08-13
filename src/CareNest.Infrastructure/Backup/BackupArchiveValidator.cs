@@ -97,8 +97,8 @@ internal static class BackupArchiveValidator
 
         var fileName = fullName[DocumentsPrefix.Length..];
         return fileName.Length > 0 &&
-               !fileName.Contains('/', StringComparison.Ordinal) &&
-               !fileName.Contains('\\', StringComparison.Ordinal) &&
+               !fileName.Contains('/') &&
+               !fileName.Contains('\\') &&
                fileName.EndsWith(".cndoc", StringComparison.OrdinalIgnoreCase) &&
                string.Equals(Path.GetFileName(fileName), fileName, StringComparison.Ordinal);
     }
