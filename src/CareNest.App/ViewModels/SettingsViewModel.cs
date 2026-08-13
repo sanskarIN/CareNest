@@ -18,6 +18,7 @@ public sealed class SettingsViewModel : ViewModelBase
     private readonly IUserDialogService dialogs;
     private readonly IFileShareService fileShare;
     private readonly IDocumentStore documentStore;
+    private readonly ISecretStore secretStore;
     private readonly ILogger<SettingsViewModel> logger;
     private bool isLoaded;
     private bool appLockEnabled;
@@ -47,6 +48,7 @@ public sealed class SettingsViewModel : ViewModelBase
         IUserDialogService dialogs,
         IFileShareService fileShare,
         IDocumentStore documentStore,
+        ISecretStore secretStore,
         ILogger<SettingsViewModel> logger,
         SafeUiErrorService errors)
         : base(errors)
@@ -60,6 +62,7 @@ public sealed class SettingsViewModel : ViewModelBase
         this.dialogs = dialogs;
         this.fileShare = fileShare;
         this.documentStore = documentStore;
+        this.secretStore = secretStore;
         this.logger = logger;
 
         RefreshCommand = AsyncCommand(LoadAsync);
@@ -410,6 +413,11 @@ public sealed class SettingsViewModel : ViewModelBase
         {
             await documentStore.DeleteAsync(file);
         }
+
+        // Keep the document key until payload cleanup succeeds so a failed file deletion
+        // remains recoverable on retry. After cleanup, remove the final document-vault secret.
+        await secretStore.RemoveAsync(SecretKeys.DocumentMasterKey);
+        AppLockEnabled = false;
 
         await navigation.NavigateAsync("//onboarding");
     }
