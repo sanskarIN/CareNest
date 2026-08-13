@@ -24,6 +24,9 @@ Complete this review against the exact commit proposed for a public release.
 - [ ] Unknown schedule kinds and unsupported weekday-mask bits are rejected rather than silently interpreted.
 - [ ] Planner windows and coordinator rebuild overrides require UTC timestamps.
 - [ ] Snooze requires an explicit future UTC timestamp before persistence or platform scheduling.
+- [ ] Appointment `StartsUtc` requires `DateTimeKind.Utc`; local/unspecified clock values are not relabeled as UTC.
+- [ ] Appointment notification scheduling stops when permission remains denied.
+- [ ] Background appointment rebuild does not repeatedly request notification permission.
 - [ ] Invalid daylight-saving local times are not silently replaced with inferred alternative reminder times.
 - [ ] Ambiguous daylight-saving times remain deterministic across repeated rebuilds.
 - [ ] Reminder delivery limitations remain visible and are not represented as guaranteed.
@@ -36,9 +39,27 @@ Complete this review against the exact commit proposed for a public release.
 - [ ] App-lock verification clears derived and retrieved verifier byte buffers on verification paths where managed-memory control permits.
 - [ ] Disabling app lock removes the enabled flag, salt and verifier from the secret store.
 - [ ] App lock is documented as a local privacy barrier and not whole-database/device encryption.
-- [ ] Encrypted document storage still uses authenticated platform-supported .NET cryptography.
-- [ ] Backup encryption/tamper/wrong-password tests pass.
+- [ ] New encrypted document payloads use AES-256-GCM chunked framing v2.
+- [ ] New encrypted backup payload streams use chunked framing v2.
+- [ ] V2 terminal record is authenticated against the next chunk counter/zero length.
+- [ ] V2 tests reject chunk-boundary prefix truncation.
+- [ ] Encrypted-stream reader rejects trailing bytes after terminal.
+- [ ] Legacy framing-v1 decryption remains intentional/documented for compatibility.
+- [ ] Existing v1 ciphertext is not represented as retroactively upgraded.
+- [ ] New document metadata records encryption stream version 2.
+- [ ] Caller-owned document/backup key buffers are cleared after use where practical.
+- [ ] Backup password-derived key/salt buffers are cleared after crypto paths where practical.
+- [ ] Chunked AEAD work buffers are cleared where managed-memory control permits.
 - [ ] Cryptographic keys/passwords are not written to diagnostics.
+
+## Document-vault consistency
+
+- [ ] Database-save failure during document import removes the just-created encrypted payload.
+- [ ] Audit failure after document metadata save attempts rollback of both metadata and encrypted payload.
+- [ ] Import rollback cleanup does not become intentionally cancelled with the original failed operation.
+- [ ] Incomplete rollback is surfaced rather than silently hidden.
+- [ ] Explicit document export constrains output to a safe leaf filename.
+- [ ] Delete of a missing document record remains idempotent.
 
 ## Logging and diagnostics
 
@@ -58,6 +79,12 @@ Complete this review against the exact commit proposed for a public release.
 - [ ] Copied WAL snapshot passes SQLite integrity checking.
 - [ ] Pre-cancelled snapshot operation leaves no output file.
 - [ ] Restore integrity/tamper validation passes.
+- [ ] Decrypted backup archive topology is validated before extraction.
+- [ ] Duplicate backup entries are rejected.
+- [ ] Unexpected/nested/non-`.cndoc` document entries are rejected.
+- [ ] Manifest document count must match archive contents.
+- [ ] Document-bearing backups require a valid 32-byte document master key.
+- [ ] Extraction still enforces destination-root path containment.
 - [ ] The repository does not claim whole-database encryption at rest.
 
 ## Dependency security
@@ -80,22 +107,33 @@ Complete this review against the exact commit proposed for a public release.
 
 ## Current RC1 automated reference
 
-For comparison during the next final-release review, source head `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` passed marker-only PR #30 with:
+Latest exact automated runtime/test baseline:
 
-- CareNest CI #248 / `31382194805` — success;
+`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
+
+Marker-only PR #33 used marker head `62a0050a2622e12a31d00842778af0bc96355482` and was closed without merge after success.
+
+Evidence:
+
+- CareNest CI #332 / `31691592300` — success;
 - platform-neutral formatting — success;
-- 74 unit tests — passed;
-- 13 integration tests — passed;
+- 106 unit tests — passed;
+- 30 integration tests — passed;
 - 54 UI-contract/policy tests — passed;
-- 141 total core tests — passed;
+- **190 total core tests — passed**;
 - Android Release — success;
 - Windows Release — success;
 - iOS simulator Release — success;
 - Mac Catalyst Release — success;
-- CodeQL #248 / `31382194687` — success;
-- Dependency Audit #10 / `31382194683` — success.
+- CodeQL #332 / `31691592435` — success;
+- Dependency Audit #13 / `31691592302` — success.
 
-PR #29 / CI #246 is retained as a superseded failure record because it exposed CA2263 in a new non-generic `Enum.IsDefined` call. The source was fixed on `main` and reverified through PR #30 rather than weakening the analyzer policy. This reference does not pre-approve a later production commit and does not resolve the open SQLite dependency risk or manual/distribution gates.
+Verification history retained for auditability:
+
+- PR #31 was superseded after CA1861 was exposed in new test source; the analyzer finding was fixed instead of suppressed.
+- PR #32 verified the corrected service/document/backup hardening at 186 tests before the later AEAD-v2 source changes required PR #33.
+
+This reference does not pre-approve a later production commit and does not resolve the open SQLite dependency risk or manual/distribution gates.
 
 ## Approval record
 
@@ -108,6 +146,8 @@ CareNest CI run:
 CodeQL run:
 Dependency Audit run:
 Release Evidence run:
+Chunked AEAD framing decision:
+Legacy v1 compatibility decision:
 SQLite advisory decision:
 Open security blockers:
 Approved for signing/package creation: yes/no
