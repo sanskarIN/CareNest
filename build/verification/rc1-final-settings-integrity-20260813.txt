@@ -1,0 +1,6 @@
+CareNest verification marker only.
+Exact source head: 218db7e9ce7e6890fece430e909fa22c364634b1
+Scope: full reset data ordering, document master-key cleanup, settings test-notification permission gate.
+Do not merge this marker into main.
+Required gates: formatting, unit, integration, UI-contract, Android Release, Windows Release, iOS simulator Release, Mac Catalyst Release, CodeQL, Dependency Audit.
+Tracked SQLitePCLRaw advisory remains an open release decision.
