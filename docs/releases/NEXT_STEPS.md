@@ -4,24 +4,40 @@ This document tracks work after the source-complete `1.0.0-rc.1` milestone. It i
 
 ## Automated hardening baseline completed
 
-Exact source head `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` passed through marker-only verification PR #30:
+Exact runtime/test source head `4f5f9abe9d702fa33d6aba3f15c113febfebf95e` passed marker-only verification PR #33:
 
-- CareNest CI #248 / `31382194805`;
+- CareNest CI #332 / `31691592300`;
 - platform-neutral formatting;
-- 74 unit tests;
-- 13 integration tests;
-- 54 UI-contract/policy tests;
-- 141 total core automated tests;
+- **106 unit tests**;
+- **30 integration tests**;
+- **54 UI-contract/policy tests**;
+- **190 total core automated tests**;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
 - Mac Catalyst Release;
-- CodeQL #248 / `31382194687`;
-- Dependency Audit #10 / `31382194683`.
+- CodeQL #332 / `31691592435`;
+- Dependency Audit #13 / `31691592302`.
 
-This baseline includes all prior reminder/snapshot/app-lock hardening plus reminder entity-ownership validation, archived-profile suppression, explicit UTC planner/rebuild/snooze contracts, recognized schedule-kind and weekday-mask validation, deterministic fixed-seed recurrence property coverage, and representative multi-zone DST gap/overlap coverage.
+This baseline includes all previous reminder/snapshot/app-lock/privacy hardening plus:
 
-PR #29 was intentionally superseded rather than accepted: CI #246 exposed CA2263 in a newly added non-generic `Enum.IsDefined` call. `main` was corrected with the generic overload and PR #30 reran the complete exact-head matrix successfully. This automated baseline does not complete the production-release blockers below.
+- appointment explicit-UTC and notification-permission fail-safe behavior;
+- direct platform-neutral application-service tests;
+- document-import rollback across SQLite/encrypted-payload storage;
+- caller-owned document/backup key-buffer hygiene;
+- strict backup archive topology validation;
+- chunked AEAD framing v2 for new encrypted document/backup payload streams;
+- authenticated v2 terminal record and trailing-data rejection;
+- legacy chunked framing v1 read compatibility;
+- new encrypted document metadata stream version 2.
+
+Verification history:
+
+- PR #31 was intentionally superseded after CA1861 was exposed in a new test assertion; the test was fixed instead of suppressing the analyzer.
+- PR #32 passed the corrected service/document/backup source at 186 tests.
+- Later AEAD-v2 source changes required PR #33; PR #33 is now the latest exact automated runtime/test baseline.
+
+This automated baseline does not complete the production-release blockers below.
 
 ## Priority 0 — production-release blockers
 
@@ -35,43 +51,49 @@ These items must be completed before promoting the release candidate to a public
 - [ ] Run unit, integration, UI-contract, Android, Windows, iOS simulator, Mac Catalyst, CodeQL and Dependency Audit verification again after any SQLite dependency/provider change.
 - [ ] Update `docs/security/DEPENDENCY_RISK_REGISTER.md` with the exact final resolution/decision and evidence.
 
-**Current state:** `GHSA-2m69-gcr7-jv3q` remains open for SQLitePCLRaw native `2.1.11`. The attempted `2.1.12` bundle path was unavailable. The narrow audit suppression is not a vulnerability fix.
+**Current state:** `GHSA-2m69-gcr7-jv3q` remains open for SQLitePCLRaw native `2.1.11`. The narrow audit suppression is not a vulnerability fix.
 
-**Done when:** the release dependency path has an acceptable documented resolution/decision and the applicable regression/verification gates are green.
-
-### 2. Run manual device and accessibility smoke testing
+### 2. Run manual device, encrypted-data, and accessibility smoke testing
 
 Automated CI proves compilation/contracts, but it does not replace real-device behavior testing.
 
-- [ ] Android phone: fresh install, onboarding, notification permission denied/granted, exact/inexact alarm behavior, reboot rebuild, time-zone change, battery-optimization diagnostics, document import/export, encrypted backup/restore, app lock.
-- [ ] Windows 11: fresh install, navigation, in-process notification limitation messaging, document picker/share, backup/restore, keyboard navigation, theme changes.
-- [ ] iPhone/iPad: fresh install, notification permission flow, notification delivery, backup/restore, document picker/share, app lock, Dynamic Type/VoiceOver checks.
-- [ ] macOS/Mac Catalyst: fresh install, notifications, file operations, keyboard navigation, backup/restore, theme changes.
-- [ ] Verify snooze behavior against actual platform notification scheduling, including rejection/handling of invalid or stale input paths at the UI/platform boundary.
+- [ ] Android phone: fresh install, onboarding, notification permission denied/granted, appointment permission denied/granted, exact/inexact alarm behavior, reboot rebuild, time-zone change, battery diagnostics, v2 document import/export, v2 encrypted backup/restore, app lock.
+- [ ] Windows 11: fresh install, navigation, in-process notification limitation messaging, appointment reminder behavior, document picker/share, backup/restore, keyboard navigation, theme changes.
+- [ ] iPhone/iPad: fresh install, notification permission flow, appointment reminder permission behavior, notification delivery, backup/restore, document picker/share, app lock, Dynamic Type/VoiceOver checks.
+- [ ] macOS/Mac Catalyst: fresh install, notifications, appointment reminders, file operations, keyboard navigation, backup/restore, theme changes.
+- [ ] Verify snooze behavior against actual platform notification scheduling.
 - [ ] Verify large-interface mode, reduced motion, screen-reader labels, focus order, contrast, and text scaling on representative devices.
 - [ ] Verify all medical-safety disclaimers remain visible and no workflow implies diagnosis, dosage calculation, treatment recommendations, or guaranteed reminder delivery.
 
 Use `docs/releases/MANUAL_TEST_MATRIX.md` as the evidence record.
 
-**Done when:** the release checklist has device-specific evidence for every supported platform and no release-blocking defect remains.
+### 3. Verify encrypted-data backward compatibility with canonical fixtures
 
-### 3. Verify current app-store policy for the voluntary support link
+New encrypted streams use framing v2 while the reader retains v1 compatibility.
+
+- [ ] Preserve/create a canonical encrypted document generated by a historical released/verified v1 build using synthetic data.
+- [ ] Verify that canonical v1 encrypted document opens/exports correctly in the intended production build.
+- [ ] Preserve/create a canonical backup payload generated by a historical released/verified v1 framing path using synthetic data.
+- [ ] Verify that canonical v1 backup can still be inspected/restored by the intended production build.
+- [ ] Verify new v2 encrypted document import/export in packaged target builds.
+- [ ] Verify new v2 encrypted backup create/inspect/restore in packaged target builds.
+- [ ] Do not remove v1 read support until an explicit migration/deprecation plan is reviewed and historical compatibility evidence exists.
+
+Automated tests already prove a handcrafted legacy-v1 stream remains decryptable and that v2 rejects truncation/trailing data. Canonical historical fixtures are still useful release evidence because they exercise real previously generated file bytes rather than a test-only fixture builder.
+
+### 4. Verify current app-store policy for the voluntary support link
 
 CareNest exposes `https://buymeacoffee.com/sanskarIN` as optional project support and also publishes it through GitHub funding metadata.
 
-Store rules for external funding/payment links can change. Before submitting a store build:
+Store rules can change. Before submitting a store build:
 
-- [ ] Verify the current Apple App Store rules for external project-support/donation links.
-- [ ] Verify the current Google Play rules for external project-support/donation links.
+- [ ] Verify current Apple App Store rules for external project-support/donation links.
+- [ ] Verify current Google Play rules for external project-support/donation links.
 - [ ] Confirm the link is presented only as voluntary project support.
 - [ ] Confirm no medical feature, health functionality, reminder behavior, support priority, or premium entitlement is unlocked by contributing.
 - [ ] If a store disallows the in-app external support link, conditionally hide/remove that button for the affected store build while retaining repository funding links where permitted.
 
-Automated tests already protect the fixed URL and voluntary/no-health-entitlement wording; they cannot determine current store policy.
-
-**Done when:** store-review guidance for every distribution channel is documented and the shipped UI complies with that channel's current rules.
-
-### 4. Prepare production signing and package identity
+### 5. Prepare production signing and package identity
 
 - [ ] Create Android signing key/keystore outside the repository and store secrets securely.
 - [ ] Configure Android release signing in CI/release tooling without committing credentials.
@@ -80,30 +102,23 @@ Automated tests already protect the fixed URL and voluntary/no-health-entitlemen
 - [ ] Verify application identifiers, version numbers, display names, icons, splash assets, capabilities, and package metadata per platform.
 - [ ] Document certificate/key backup and rotation procedures.
 
-Automated repository policy tests reject common committed signing/secret file types, but credentials themselves must be provisioned externally.
-
-**Done when:** reproducible signed release artifacts can be produced without placing private signing material in Git.
-
-### 5. Finish store listing and privacy disclosures
+### 6. Finish store listing and privacy disclosures
 
 - [ ] Produce final screenshots for phone/tablet/desktop targets using fictional data only.
 - [ ] Produce required store icon, feature graphic, promotional graphic, and platform-specific screenshots.
 - [ ] Write concise and long descriptions that match actual functionality.
-- [ ] Complete privacy/data-safety questionnaires from the implemented local-first behavior rather than marketing assumptions.
-- [ ] Confirm no analytics/telemetry claim is made unless analytics are actually added later with explicit consent and privacy review.
+- [ ] Complete privacy/data-safety questionnaires from implemented local-first behavior rather than marketing assumptions.
 - [ ] Publish links to `PRIVACY.md`, `TERMS.md`, `SECURITY.md`, and support information.
-- [ ] Re-check medical/health-category policy wording for each target store.
-
-**Done when:** store metadata accurately describes the binary being submitted and matches CareNest's privacy/safety boundaries.
+- [ ] Re-check health-category policy wording for each target store.
 
 ## Priority 1 — release promotion
 
-### 6. Create the final production-candidate verification branch
+### 7. Create the final production-candidate verification branch
 
 The current hardening head has a green exact-head matrix, but the final production-candidate verification must happen **after** all Priority 0 work and any resulting source/configuration changes.
 
 - [x] Exact-head marker-only verification protocol is documented in `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
-- [x] Current RC1 hardening source has a green exact-head automated baseline through PR #30.
+- [x] Current RC1 hardening source has a green exact-head automated baseline through PR #33.
 - [ ] After Priority 0 blockers are complete, branch from the exact intended production-release commit.
 - [ ] Trigger the complete GitHub Actions matrix.
 - [ ] Require green formatting/core tests, Android, Windows, iOS simulator, Mac Catalyst, CodeQL, and Dependency Audit.
@@ -111,7 +126,7 @@ The current hardening head has a green exact-head matrix, but the final producti
 - [ ] Capture workflow run IDs in `what_changed.md`, `PROJECT_STATUS.md`, release checklist, and release notes.
 - [ ] Close verification-only marker PR without merging its marker file.
 
-### 7. Promote version metadata
+### 8. Promote version metadata
 
 - [ ] Decide final first public version (`1.0.0` or another pre-release).
 - [ ] Update app version/build values consistently for Android, Apple, and Windows targets.
@@ -119,7 +134,7 @@ The current hardening head has a green exact-head matrix, but the final producti
 - [ ] Update `PROJECT_STATUS.md` from release-candidate status to actual shipped status.
 - [ ] Create an annotated Git tag from the exact verified commit.
 
-### 8. Build and archive release artifacts
+### 9. Build and archive release artifacts
 
 - [ ] Android: generate intended signed AAB/APK artifact.
 - [ ] iOS: archive signed app for App Store/TestFlight distribution.
@@ -130,16 +145,16 @@ The current hardening head has a green exact-head matrix, but the final producti
 
 ## Priority 2 — post-release quality
 
-### 9. Establish release-feedback loop without hidden telemetry
+### 10. Establish release-feedback loop without hidden telemetry
 
 - [x] Use GitHub Issues and support email for explicit user-submitted bug reports.
 - [x] Privacy-safe structured bug report form exists under `.github/ISSUE_TEMPLATE/bug_report.yml`.
 - [x] Bug form requests version/platform/OS/time-zone/notification state/reproduction steps while warning users not to attach medical documents, credentials, backups, or private health information.
 - [x] Sanitized diagnostics export remains opt-in/user-controlled in the application design.
-- [ ] Triage real crashes/reminder reliability reports by platform/version after public release.
+- [ ] Triage real crashes/reminder/encrypted-data reliability reports by platform/version after public release.
 - [ ] Publish patch releases for confirmed defects after release.
 
-### 10. Expand automated coverage
+### 11. Expand automated coverage
 
 Completed hardening now includes:
 
@@ -153,26 +168,30 @@ Completed hardening now includes:
 - [x] global/UI/startup/reminder exception-log privacy regression contracts;
 - [x] deterministic reminder recurrence/window/date/state contracts;
 - [x] selected-weekday/cycle/every-N-hours validation boundaries;
-- [x] recognized schedule-kind and supported weekday-mask validation;
-- [x] planner ownership validation for profile/medicine/schedule/persisted schedule-time relationships;
-- [x] archived-profile suppression at the planner boundary;
-- [x] UTC-kind validation for planner windows and rebuild overrides;
-- [x] future-UTC snooze validation before persistence/platform scheduling;
-- [x] daylight-saving gap/overlap coverage for representative North America, Europe and Australia zones when available;
-- [x] deterministic randomized/property-style schedule recurrence-boundary coverage with a fixed seed;
+- [x] planner ownership validation and archived-profile suppression;
+- [x] UTC-kind validation for planner/rebuild/snooze boundaries;
+- [x] DST gap/overlap coverage for representative North America, Europe, Australia and New Zealand zones when available;
+- [x] deterministic randomized/property-style recurrence coverage with a fixed seed;
+- [x] direct profile/medicine/appointment/document/backup-reminder service tests;
+- [x] appointment explicit-UTC and denied-permission fail-safe tests;
+- [x] document import rollback and safe export tests;
 - [x] WAL snapshot creation/content/integrity/pre-cancellation coverage;
 - [x] app-lock cryptographic/source security contracts and verifier-buffer clearing;
+- [x] document/backup caller-owned key-buffer hygiene tests;
+- [x] strict backup ZIP topology tests;
+- [x] chunked AEAD v2 round-trip/prefix-truncation/trailing-data tests;
+- [x] legacy chunked AEAD v1 read-compatibility test;
 - [x] existing encryption/backup/report integration coverage.
 
 Still useful later when stable target infrastructure exists:
 
 - [ ] Add platform UI automation on real/emulated targets.
 - [ ] Add deeper notification permission denial/retry state-transition automation where platform APIs can be reliably driven.
-- [ ] Add backup compatibility fixtures across future schema versions.
+- [ ] Add canonical historical backup/document compatibility fixtures across future formats.
 - [ ] Add file-corruption and low-storage target failure-path tests.
 - [ ] Expand semantic/accessibility XAML contract coverage where meaningful without replacing manual assistive-technology testing.
 
-### 11. Improve release engineering
+### 12. Improve release engineering
 
 Completed:
 
@@ -195,14 +214,14 @@ Remaining optional/production improvements:
 
 These preserve the local-first, non-diagnostic boundary unless a future architecture decision explicitly expands infrastructure while retaining safety constraints.
 
-### 12. Localization
+### 13. Localization
 
 - [ ] Move remaining hard-coded UI strings into resources.
 - [ ] Add locale-aware date/time formatting while keeping machine-readable exports invariant where required.
 - [ ] Add languages based on actual user demand.
 - [ ] Add right-to-left layout testing before shipping an RTL locale.
 
-### 13. Reminder usability
+### 14. Reminder usability
 
 - [ ] Add clearer upcoming-reminder grouping/filtering.
 - [ ] Add safe duplicate-schedule detection without inferring clinical intent.
@@ -210,19 +229,19 @@ These preserve the local-first, non-diagnostic boundary unless a future architec
 - [ ] Improve explanation of OS delivery limitations per platform.
 - [ ] Preserve explicit user-entered times and never silently calculate dosage.
 
-### 14. Document organization
+### 15. Document organization
 
 - [ ] Improve folder/tag filtering and search.
 - [ ] Add duplicate-file detection based on local cryptographic hashes without uploading files.
 - [ ] Add optional local thumbnails/previews with encrypted-source handling and cache cleanup.
 - [ ] Add bulk export/delete actions with explicit confirmation.
 
-### 15. Backup usability
+### 16. Backup usability
 
 - [ ] Add clearer backup-age status/reminders.
 - [ ] Add optional local backup-history metadata without storing backup password.
 - [ ] Add restore-preview metadata that remains non-sensitive.
-- [ ] Add migration fixtures for each future schema version.
+- [ ] Add migration fixtures for each future schema/package/encrypted-stream version.
 
 ## Priority 4 — separately reviewed future versions
 
@@ -268,13 +287,6 @@ Current voluntary support URL:
 
 Funding remains separate from health behavior. Contributions must not change CareNest's medical-safety boundary, silently enable data sharing, imply medical advice, change reminder priority, or provide access to local user data.
 
-Potential sustainable project paths to consider later:
-
-- voluntary sponsorship/donations;
-- paid convenience features that do not alter medical claims/core safety behavior, only after store-policy review;
-- paid organizational support without access to user medical data unless separately designed and consented;
-- consulting/custom-development work linked from maintainer profile rather than embedding sensitive service workflows into CareNest.
-
 ## Definition of done for public `1.0.0`
 
 CareNest should be promoted from release candidate only when all applicable items are true:
@@ -283,7 +295,9 @@ CareNest should be promoted from release candidate only when all applicable item
 - [ ] complete automated formatting/test/build/CodeQL/Dependency Audit matrix is green on the exact final release commit;
 - [ ] `CareNest Release Evidence` is generated for the exact promoted commit;
 - [ ] manual supported-platform smoke tests are complete;
-- [ ] notification limitations are manually verified/documented;
+- [ ] notification/appointment limitations are manually verified/documented;
+- [ ] new v2 document/backup workflows are tested in packaged builds;
+- [ ] retained v1 encrypted-data compatibility is verified with canonical historical fixtures when available;
 - [ ] backup/restore is tested on clean installations;
 - [ ] accessibility checks are complete;
 - [ ] store policy review is complete, including external voluntary-support link;
