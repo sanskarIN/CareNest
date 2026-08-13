@@ -12,6 +12,8 @@ public sealed class ChunkedAeadTests
     private const int ChunkSize = 64 * 1024;
     private static readonly byte[] Magic = "TSAE"u8.ToArray();
     private static readonly byte[] Aad = "CareNest.Tests.ChunkedAead"u8.ToArray();
+    private static readonly byte[] LegacyVersionBytes = [1];
+    private static readonly byte[] LegacyTerminal = new byte[4];
 
     [Fact]
     public async Task Version2_RoundTripsMultipleChunks()
@@ -132,7 +134,7 @@ public sealed class ChunkedAeadTests
         try
         {
             await output.WriteAsync(Magic);
-            await output.WriteAsync(new byte[] { 1 });
+            await output.WriteAsync(LegacyVersionBytes);
             await output.WriteAsync(baseNonce);
 
             using var aes = new AesGcm(key, TagSize);
@@ -143,7 +145,7 @@ public sealed class ChunkedAeadTests
             await output.WriteAsync(length);
             await output.WriteAsync(tag);
             await output.WriteAsync(cipher);
-            await output.WriteAsync(new byte[4]);
+            await output.WriteAsync(LegacyTerminal);
             output.Position = 0;
             return output;
         }
