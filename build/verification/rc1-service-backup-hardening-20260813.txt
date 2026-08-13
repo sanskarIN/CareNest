@@ -1,0 +1,6 @@
+CareNest exact-head verification marker
+
+Source head: 8e2607f287ca5777d9edbab445042f96c6bcfcec
+Scope: appointment UTC/permission hardening, application-service coverage, document import rollback, encrypted document key-memory hygiene, strict encrypted backup topology, backup key-memory hygiene.
+
+This marker exists only to trigger pull-request verification and must not be merged into main.
