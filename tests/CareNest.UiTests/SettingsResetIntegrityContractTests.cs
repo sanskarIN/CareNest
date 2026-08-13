@@ -29,6 +29,9 @@ public sealed class SettingsResetIntegrityContractTests
         var deleteFile = methodSource.IndexOf(
             "await documentStore.DeleteAsync(file);",
             StringComparison.Ordinal);
+        var removeDocumentKey = methodSource.IndexOf(
+            "await secretStore.RemoveAsync(SecretKeys.DocumentMasterKey);",
+            StringComparison.Ordinal);
         var navigate = methodSource.IndexOf(
             "await navigation.NavigateAsync(\"//onboarding\");",
             StringComparison.Ordinal);
@@ -37,7 +40,8 @@ public sealed class SettingsResetIntegrityContractTests
         Assert.True(clearDatabase > listFiles, "Structured records must be cleared after filenames are captured.");
         Assert.True(disableLock > clearDatabase, "App-lock state must be cleared after the database reset succeeds.");
         Assert.True(deleteFile > disableLock, "Encrypted payload deletion must happen only after structured records and app-lock state are cleared.");
-        Assert.True(navigate > deleteFile, "Reset must navigate to onboarding only after encrypted payload cleanup completes.");
+        Assert.True(removeDocumentKey > deleteFile, "The document master key must remain available until encrypted payload cleanup succeeds.");
+        Assert.True(navigate > removeDocumentKey, "Reset must navigate to onboarding only after encrypted payload and document-key cleanup completes.");
     }
 
     [Fact]
@@ -64,5 +68,23 @@ public sealed class SettingsResetIntegrityContractTests
 
         Assert.True(cancelNotifications >= 0, "Reset must cancel CareNest notifications.");
         Assert.True(clearDatabase > cancelNotifications, "Notification registrations should be cancelled before destructive local-data reset begins.");
+    }
+
+    [Fact]
+    public void ResetAllData_RemovesDocumentVaultSecretThroughSecretStore()
+    {
+        var source = RepositoryLocator.Read(
+            "src",
+            "CareNest.App",
+            "ViewModels",
+            "SettingsViewModel.cs");
+
+        Assert.Contains("private readonly ISecretStore secretStore;", source, StringComparison.Ordinal);
+        Assert.Contains("ISecretStore secretStore,", source, StringComparison.Ordinal);
+        Assert.Contains("this.secretStore = secretStore;", source, StringComparison.Ordinal);
+        Assert.Contains(
+            "await secretStore.RemoveAsync(SecretKeys.DocumentMasterKey);",
+            source,
+            StringComparison.Ordinal);
     }
 }
