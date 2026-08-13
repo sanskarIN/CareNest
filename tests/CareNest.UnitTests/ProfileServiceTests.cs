@@ -65,7 +65,9 @@ public sealed class ProfileServiceTests
         await service.DeleteAsync(profile.Id);
 
         Assert.Equal(profile.Id, repository.DeletedProfileId);
-        Assert.Equal(["doc-1.cndoc", "doc-2.cndoc", "profile-photo.cndoc"], documentStore.DeletedFiles);
+        Assert.Equal(
+            new[] { "doc-1.cndoc", "doc-2.cndoc", "profile-photo.cndoc" },
+            documentStore.DeletedFiles);
         var audit = Assert.Single(repository.AuditEntries);
         Assert.Equal(AuditAction.Deleted, audit.Action);
         Assert.Equal(profile.Id, audit.EntityId);
