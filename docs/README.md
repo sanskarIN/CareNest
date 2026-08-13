@@ -35,18 +35,18 @@ CareNest is a local-first .NET MAUI family health organizer. It is an organizati
 - [`architecture/SERVICE_BOUNDARIES.md`](architecture/SERVICE_BOUNDARIES.md) — project/service/infrastructure responsibility boundaries.
 - [`architecture/DATABASE_SCHEMA.md`](architecture/DATABASE_SCHEMA.md) — SQLite relationships, entities, migrations, WAL/snapshot model.
 - [`architecture/DATA_STORAGE_AND_EXPORT.md`](architecture/DATA_STORAGE_AND_EXPORT.md) — storage/export/share/deletion boundaries.
-- [`architecture/BACKUP_AND_RESTORE.md`](architecture/BACKUP_AND_RESTORE.md) — encrypted backup/restore architecture.
-- [`architecture/DOCUMENT_VAULT.md`](architecture/DOCUMENT_VAULT.md) — encrypted imported-document storage/key/import/export/delete model.
-- [`architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — deterministic occurrence vs Android/iOS/Mac/Windows notification-delivery behavior.
+- [`architecture/BACKUP_AND_RESTORE.md`](architecture/BACKUP_AND_RESTORE.md) — encrypted backup/restore architecture, strict topology, v1/v2 framing compatibility.
+- [`architecture/DOCUMENT_VAULT.md`](architecture/DOCUMENT_VAULT.md) — encrypted imported-document storage, v2 framing, rollback, key handling, import/export/delete model.
+- [`architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — deterministic occurrence vs Android/iOS/Mac/Windows delivery plus appointment UTC/permission behavior.
 - [`architecture/ADR-0001-local-first.md`](architecture/ADR-0001-local-first.md) — local-first architecture decision.
 - [`architecture/ADR-0002-reminder-occurrences.md`](architecture/ADR-0002-reminder-occurrences.md) — reminder materialization decision.
 - [`architecture/ADR-0003-encrypted-backup-format.md`](architecture/ADR-0003-encrypted-backup-format.md) — encrypted backup-format decision.
-- [`../DECISIONS.md`](../DECISIONS.md) — consolidated architectural/engineering decisions.
+- [`../DECISIONS.md`](../DECISIONS.md) — consolidated architectural/engineering decisions, including appointment UTC, rollback, key-buffer, strict backup topology, and AEAD-v2 decisions.
 
 ### Reminder scheduling and platform notifications
 
 - [`testing/REMINDER_SCHEDULING_CONTRACT.md`](testing/REMINDER_SCHEDULING_CONTRACT.md) — deterministic planner contract covering explicit schedules, UTC windows, ownership, date/state rules, DST, deduplication, and occurrence identity.
-- [`architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — platform permission, delivery, recovery, Android exact-alarm/battery, Apple local notification, and Windows fallback limitations.
+- [`architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — platform permission, delivery, recovery, appointment UTC, Android exact-alarm/battery, Apple local notification, and Windows fallback limitations.
 - [`FEATURE_REFERENCE.md`](FEATURE_REFERENCE.md#reminder-planner) — feature-level reminder reference.
 - [`architecture/APPLICATION_FLOWS.md`](architecture/APPLICATION_FLOWS.md#reminder-materialization-flow) — planner/coordinator runtime flow.
 
@@ -55,14 +55,14 @@ CareNest is a local-first .NET MAUI family health organizer. It is an organizati
 - [`privacy/PRIVACY_MODEL.md`](privacy/PRIVACY_MODEL.md) — complete local-first privacy architecture.
 - [`privacy/DATA_LIFECYCLE.md`](privacy/DATA_LIFECYCLE.md) — data lifecycle from user entry/import through local use/export/backup/deletion.
 - [`architecture/DATA_STORAGE_AND_EXPORT.md`](architecture/DATA_STORAGE_AND_EXPORT.md) — where data lives and how it leaves CareNest.
-- [`architecture/DOCUMENT_VAULT.md`](architecture/DOCUMENT_VAULT.md) — encrypted document payload boundary.
+- [`architecture/DOCUMENT_VAULT.md`](architecture/DOCUMENT_VAULT.md) — encrypted document payload boundary and explicit export boundary.
 - [`REPORTS_AND_EXPORTS.md`](REPORTS_AND_EXPORTS.md) — plaintext/portable export boundary.
 - [`../PRIVACY.md`](../PRIVACY.md) — user-facing privacy policy.
 
 ### Security
 
-- [`security/SECURITY_MODEL.md`](security/SECURITY_MODEL.md) — complete technical security reference.
-- [`security/THREAT_MODEL.md`](security/THREAT_MODEL.md) — threats, controls, residual risks.
+- [`security/SECURITY_MODEL.md`](security/SECURITY_MODEL.md) — complete technical security reference including AEAD-v2, topology, key-buffer, appointment/permission controls.
+- [`security/THREAT_MODEL.md`](security/THREAT_MODEL.md) — threats, controls, residual risks including legacy v1 compatibility.
 - [`security/LOGGING_PRIVACY.md`](security/LOGGING_PRIVACY.md) — allowed/prohibited diagnostic content.
 - [`security/DEPENDENCY_RISK_REGISTER.md`](security/DEPENDENCY_RISK_REGISTER.md) — tracked dependency risks.
 - [`../SECURITY.md`](../SECURITY.md) — root security/reporting policy.
@@ -70,7 +70,7 @@ CareNest is a local-first .NET MAUI family health organizer. It is an organizati
 
 ### Backup and data portability
 
-- [`architecture/BACKUP_AND_RESTORE.md`](architecture/BACKUP_AND_RESTORE.md) — protected backup format/path and restore behavior.
+- [`architecture/BACKUP_AND_RESTORE.md`](architecture/BACKUP_AND_RESTORE.md) — protected backup format/path, strict topology and restore behavior.
 - [`architecture/DATA_STORAGE_AND_EXPORT.md`](architecture/DATA_STORAGE_AND_EXPORT.md) — JSON/PDF/CSV/document/calendar/export boundaries.
 - [`architecture/DOCUMENT_VAULT.md`](architecture/DOCUMENT_VAULT.md) — encrypted document payload/key portability.
 - [`REPORTS_AND_EXPORTS.md`](REPORTS_AND_EXPORTS.md) — report/export contracts.
@@ -87,19 +87,19 @@ CareNest is a local-first .NET MAUI family health organizer. It is an organizati
 
 ### Testing and CI
 
-- [`testing/TESTING_GUIDE.md`](testing/TESTING_GUIDE.md) — test project roles, commands, verified counts, CI/security gates, exact-head protocol.
-- [`testing/TEST_PLAN.md`](testing/TEST_PLAN.md) — current concise test plan.
+- [`testing/TESTING_GUIDE.md`](testing/TESTING_GUIDE.md) — current 190-test baseline, direct service tests, backup topology, AEAD v2, platform/security gates, exact-head protocol.
+- [`testing/TEST_PLAN.md`](testing/TEST_PLAN.md) — concise current test plan.
 - [`testing/REMINDER_SCHEDULING_CONTRACT.md`](testing/REMINDER_SCHEDULING_CONTRACT.md) — reminder test invariants.
-- [`releases/PHASE8_VERIFICATION_EVIDENCE.md`](releases/PHASE8_VERIFICATION_EVIDENCE.md) — current runtime/test hardening verification evidence.
+- [`releases/PHASE8_VERIFICATION_EVIDENCE.md`](releases/PHASE8_VERIFICATION_EVIDENCE.md) — preserved earlier Phase 8 reminder-integrity verification evidence.
 
 ### Release engineering
 
 - [`releases/RELEASE_PROCESS.md`](releases/RELEASE_PROCESS.md) — end-to-end public release process.
-- [`releases/RELEASE_CHECKLIST.md`](releases/RELEASE_CHECKLIST.md) — release evidence and blocking checklist.
-- [`releases/QUALITY_GATE.md`](releases/QUALITY_GATE.md) — production quality requirements.
+- [`releases/RELEASE_CHECKLIST.md`](releases/RELEASE_CHECKLIST.md) — current PR #33 release evidence and blocking checklist.
+- [`releases/QUALITY_GATE.md`](releases/QUALITY_GATE.md) — production quality requirements including service/document/backup/AEAD-v2 gates.
 - [`releases/MANUAL_TEST_MATRIX.md`](releases/MANUAL_TEST_MATRIX.md) — device/accessibility/manual behavior evidence matrix.
 - [`releases/STORE_SUBMISSION_CHECKLIST.md`](releases/STORE_SUBMISSION_CHECKLIST.md) — distribution-channel checks.
-- [`releases/SECURITY_RELEASE_REVIEW.md`](releases/SECURITY_RELEASE_REVIEW.md) — security approval record.
+- [`releases/SECURITY_RELEASE_REVIEW.md`](releases/SECURITY_RELEASE_REVIEW.md) — security approval record including v1/v2/topology/key-buffer review.
 - [`releases/RELEASE_EVIDENCE.md`](releases/RELEASE_EVIDENCE.md) — evidence/provenance workflow.
 - [`releases/RELEASE_NOTES_TEMPLATE.md`](releases/RELEASE_NOTES_TEMPLATE.md) — release-notes template.
 - [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) — exact-source marker-only CI protocol.
@@ -109,35 +109,44 @@ CareNest is a local-first .NET MAUI family health organizer. It is an organizati
 
 ### Project state and history
 
-- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current release status and real blockers.
-- [`../CHANGELOG.md`](../CHANGELOG.md) — version/change history.
+- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current release status, PR #33 baseline, completed hardening and real blockers.
+- [`../CHANGELOG.md`](../CHANGELOG.md) — version/change/verification history.
 - [`../what_changed.md`](../what_changed.md) — active detailed continuation handoff.
 - [`history/what_changed_full_through_phase8.md`](history/what_changed_full_through_phase8.md) — exact preserved full pre-documentation handoff containing the complete earlier implementation/hardening/verification record.
 - [`../DECISIONS.md`](../DECISIONS.md) — engineering decisions.
 
 ## Current automated baseline
 
-Latest exact runtime/test source verified through PR #30:
+Latest exact runtime/test source verified through PR #33:
 
-`c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`
+`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
 
 Evidence:
 
-- CareNest CI #248 / `31382194805`: success;
-- 74 unit tests;
-- 13 integration tests;
-- 54 UI-contract/policy tests;
-- 141 total core tests;
+- CareNest CI #332 / `31691592300`: success;
+- platform-neutral formatting: success;
+- **106 unit tests**;
+- **30 integration tests**;
+- **54 UI-contract/policy tests**;
+- **190 total core tests**;
 - Android Release: success;
 - Windows Release: success;
 - iOS simulator Release: success;
 - Mac Catalyst Release: success;
-- CodeQL #248 / `31382194687`: success;
-- Dependency Audit #10 / `31382194683`: success.
+- CodeQL #332 / `31691592435`: success;
+- Dependency Audit #13 / `31691592302`: success.
 
-PR #30 was verification-only and closed without merging its marker.
+PR #33 was verification-only and closed without merging its marker.
 
-Documentation-only commits after that source head do not change the runtime/test source represented by the above evidence.
+Verification history for this continuation:
+
+- PR #31 exposed CA1861 in new test source after formatting passed; it was fixed rather than suppressed and the PR closed unmerged.
+- PR #32 verified corrected service/document/backup hardening at 186 tests.
+- PR #33 verified later authenticated-stream-v2 source at 190 tests and is the current exact automated baseline.
+
+Documentation-only commits after source `4f5f9abe...` do not change the runtime/test source represented by the above evidence.
+
+The successful Dependency Audit does not close `GHSA-2m69-gcr7-jv3q`; the dependency risk register remains authoritative.
 
 ## Current production blockers
 
@@ -147,7 +156,9 @@ Real remaining gates include:
 
 - manual device/emulator verification;
 - manual accessibility verification;
-- notification permission/delivery/Android alarm/battery/reboot/time-zone checks;
+- notification permission/delivery/appointment/Android alarm/battery/reboot/time-zone checks;
+- packaged-target verification of new v2 document/backup workflows;
+- legacy v1 encrypted document/backup fixture compatibility verification when canonical fixtures are available;
 - current Apple/Google store-policy review, including external voluntary project-support link;
 - signing/package identities and secrets outside Git;
 - store screenshots/listings/privacy/data-safety disclosures;
