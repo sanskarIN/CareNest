@@ -1,4 +1,3 @@
-
 using CareNest.Application.Contracts;
 using CareNest.Domain.Entities;
 using CareNest.Domain.Enums;
@@ -102,9 +101,12 @@ public sealed class AppointmentService(
             return;
         }
 
-        var due = DateTime.SpecifyKind(
-            appointment.StartsUtc,
-            DateTimeKind.Utc)
+        if (appointment.StartsUtc.Kind != DateTimeKind.Utc)
+        {
+            throw new InvalidOperationException("Stored appointment start time must be UTC before reminder scheduling.");
+        }
+
+        var due = appointment.StartsUtc
             .AddMinutes(-appointment.ReminderMinutesBefore.Value);
 
         if (due <= timeProvider.GetUtcNow().UtcDateTime)
@@ -142,7 +144,6 @@ public sealed class AppointmentService(
                 policy.Vibrate),
             cancellationToken);
     }
-
 
     private async Task<NotificationPolicy> LoadPolicyAsync(CancellationToken cancellationToken)
     {
