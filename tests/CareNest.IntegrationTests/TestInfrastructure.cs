@@ -13,15 +13,27 @@ internal sealed class MemorySecretStore : ISecretStore
     private readonly ConcurrentDictionary<string, byte[]> _bytes = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, string> _strings = new(StringComparer.Ordinal);
 
+    public byte[]? LastReturnedBytes { get; private set; }
+
+    public byte[]? LastSetBytesInput { get; private set; }
+
     public Task<byte[]?> GetBytesAsync(string key, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult(_bytes.TryGetValue(key, out var value) ? value.ToArray() : null);
+        if (!_bytes.TryGetValue(key, out var value))
+        {
+            LastReturnedBytes = null;
+            return Task.FromResult<byte[]?>(null);
+        }
+
+        LastReturnedBytes = value.ToArray();
+        return Task.FromResult<byte[]?>(LastReturnedBytes);
     }
 
     public Task SetBytesAsync(string key, byte[] value, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        LastSetBytesInput = value;
         _bytes[key] = value.ToArray();
         return Task.CompletedTask;
     }
