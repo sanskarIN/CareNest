@@ -43,7 +43,6 @@
 - Global/UI/startup/reminder error logging records only safe operational metadata such as exception type names, not full exception messages, stack traces, health-record identifiers, or user-entered health content.
 - `docs/security/LOGGING_PRIVACY.md` documents and automated tests enforce the diagnostic redaction boundary.
 - `docs/releases/QUALITY_GATE.md`, `SECURITY_RELEASE_REVIEW.md`, `RELEASE_EVIDENCE.md`, `RELEASE_NOTES_TEMPLATE.md`, and `VERIFICATION_BRANCH_PROTOCOL.md` define reproducible promotion/evidence requirements.
-- An earlier recovery-history audit restored every valid BMC/dependency/release-gate file that existed in the previously green source baseline.
 - Medicine schedule validation covers explicit interval/start-time rules, selected weekdays, cycle on/off values, date ordering, clock ranges, recognized schedule enum values, supported weekday-mask bits, and trimmed/valid time-zone identifiers.
 - Reminder planning validates profile → medicine → schedule → persisted schedule-time ownership before materializing occurrences, while allowing intentionally unbound editor times before persistence.
 - Archived profiles are suppressed defensively inside the planner in addition to the coordinator's archive filter.
@@ -60,11 +59,46 @@
 - `docs/DOCUMENTATION_STANDARDS.md` defines implementation-evidence, safety, privacy, dependency-risk, manual-evidence, and documentation-only-source-baseline rules.
 - `docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md` inventories the complete documentation set while explicitly preserving manual/store/signing/dependency/release blockers as incomplete operational work.
 
+## Service and appointment hardening completed
+
+- Appointment domain validation now requires `StartsUtc.Kind == DateTimeKind.Utc` and validates a trimmed time-zone identifier separately.
+- Appointment reminder scheduling no longer uses `DateTime.SpecifyKind` to reinterpret local/unspecified clock ticks as UTC.
+- An appointment save that requests notification permission and remains denied does not attempt platform scheduling.
+- Appointment reminder rebuild does not repeatedly prompt for permission and does not schedule while permission is denied.
+- A stored appointment with non-UTC `StartsUtc` fails closed during reminder rebuild.
+- Direct application-service tests cover profile create/update/delete coordination, medicine create/update/schedule/stock/delete behavior, appointment save/permission/rebuild/delete behavior, document import/export/delete/rollback behavior, and backup-reminder scheduling/permission behavior.
+- Reusable repository/time/reminder/notification/document-store test doubles provide deterministic platform-neutral service tests.
+
+## Document-vault hardening completed
+
+- Document import now performs compensating cleanup across the encrypted payload and SQLite metadata path.
+- Metadata-save failure removes the newly created encrypted payload.
+- Audit failure after metadata save attempts rollback of both the metadata record and encrypted payload.
+- Rollback cleanup uses non-cancelled cleanup attempts and incomplete cleanup is surfaced explicitly.
+- Explicit document export constrains the temporary filename to a safe leaf name.
+- Caller-owned document master-key copies are zeroed after import/export where managed-memory control permits.
+- An invalid retrieved key copy is cleared; a newly generated key buffer is cleared if secure-store persistence fails.
+- New encrypted documents record stream encryption version **2**.
+
+## Backup and cryptographic hardening completed
+
+- New chunked encrypted document/backup payload streams use framing **version 2** with an authenticated terminal record.
+- Data-chunk AAD binds counter and plaintext length; the terminal tag binds the next counter and zero length.
+- V2 readers reject chunk-boundary prefix truncation and trailing bytes after terminal.
+- Legacy chunked framing version 1 remains readable for backward compatibility; existing v1 ciphertext is not represented as retroactively upgraded.
+- The decrypted backup ZIP topology is allowlisted before extraction.
+- Duplicate, unexpected, nested, non-`.cndoc`, manifest-count-mismatched, and invalid document-key archive layouts are rejected.
+- Backup extraction retains full-path containment checks as defense in depth.
+- Backup password-derived AES key/salt buffers are cleared after crypto paths where practical.
+- Document master-key copies used during backup creation/restore are cleared after use where practical.
+- Chunked AEAD work buffers are cleared where managed-memory control permits.
+- Integration tests cover v2 multi-chunk round-trip, prefix truncation rejection, trailing-data rejection, legacy v1 decryption, strict backup topology, document/backup key-buffer hygiene, and new document encryption metadata.
+
 ## Security dependency status
 
 NuGet audit reports `GHSA-2m69-gcr7-jv3q` for the SQLitePCLRaw native `2.1.11` package resolved by the current `sqlite-net-pcl` dependency chain.
 
-An attempted `2.1.12` bundle pin was rejected because that version is not available on NuGet.org. The repository therefore does **not** claim this advisory is fixed. Instead:
+The repository does **not** claim this advisory is fixed. Instead:
 
 - the exact advisory URL is temporarily suppressed through `NuGetAuditSuppress` so unrelated compile/test failures remain visible;
 - no wildcard or severity-wide audit suppression is used;
@@ -74,38 +108,39 @@ An attempted `2.1.12` bundle pin was rejected because that version is not availa
 
 ## Current fully verified source head
 
-Exact runtime/test source head verified through PR #30:
+Exact runtime/test source head verified through PR #33:
 
-`c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`
+`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
 
 Verification marker head:
 
-`59016b7e2b13d5ac1c93cf0db973f275c6e7eb19`
+`62a0050a2622e12a31d00842778af0bc96355482`
 
-The marker changed only `build/verification/rc1-ownership-utc-dst-hardening-20260810-2.txt`. PR #30 was closed without merge after the full matrix succeeded.
+The marker changed only `build/verification/rc1-aead-v2-hardening-20260813.txt`. PR #33 was closed without merge after the full matrix succeeded.
 
 Automated evidence:
 
-- CareNest CI run #248 / `31382194805`: **success**.
+- CareNest CI run #332 / `31691592300`: **success**.
 - Platform-neutral formatting gate: **success**.
-- Unit tests: **74 passed, 0 failed, 0 skipped**.
-- Integration tests: **13 passed, 0 failed, 0 skipped**.
+- Unit tests: **106 passed, 0 failed, 0 skipped**.
+- Integration tests: **30 passed, 0 failed, 0 skipped**.
 - UI-contract/policy tests: **54 passed, 0 failed, 0 skipped**.
-- Total automated test cases in the core job: **141 passed, 0 failed, 0 skipped**.
+- Total automated test cases in the core job: **190 passed, 0 failed, 0 skipped**.
 - Android Release build: **success**.
 - Windows Release build: **success**.
 - iOS simulator Release build: **success**.
 - Mac Catalyst Release build: **success**.
-- CodeQL run #248 / `31382194687`: **success**.
-- Dependency Audit run #10 / `31382194683`: **success**.
+- CodeQL run #332 / `31691592435`: **success**.
+- Dependency Audit run #13 / `31691592302`: **success**.
 
-PR #29 / source head `04057299fe6d13012734ba235e6fa92604753948` was intentionally superseded after CI #246 exposed analyzer error CA2263 in the newly added non-generic `Enum.IsDefined(Type, object)` call. The quality gate was not weakened: `main` was corrected in commit `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` to use generic `Enum.IsDefined(schedule.Kind)`, then a new marker-only PR #30 was created from that exact corrected head and passed the complete matrix.
+## Current verification sequence
 
-The preceding fully green baseline was PR #28 / source head `69c4dd9319f7dc47edea1786e683f7d90c656e1e`, which passed CI #220, CodeQL #220, Dependency Audit #8, formatting, 37 unit tests, 13 integration tests, 51 UI-contract tests, and all four platform builds. PR #30 supersedes that automated source baseline because it includes the additional ownership/UTC/snooze/DST/property hardening.
+- PR #31 was intentionally superseded after formatting passed but unit-test compilation exposed CA1861 in a newly added profile-service assertion. The analyzer finding was fixed on `main` rather than suppressed; PR #31 was closed without merge.
+- PR #32 verified corrected service/document/backup hardening source `8a28bbf30692b2b0e98ec801dac1531d50d65db1` with 106 unit + 26 integration + 54 UI = 186 core tests, all four platform builds, CodeQL #326, and Dependency Audit #12 green.
+- Later authenticated-stream-v2 source changes required a new exact-head run rather than reusing PR #32 evidence.
+- PR #33 verified source `4f5f9abe...` with 190 core tests and all platform/security/dependency gates green, then closed without merging its marker.
 
-Earlier superseded verification PRs #24–#26 intentionally exposed and drove fixes for analyzer, privacy-logging, path-normalization, generated-source scanning, and nullable-contract problems instead of weakening quality gates.
-
-The comprehensive documentation pass after source head `c61f3c31...` changes Markdown documentation only. It does not change runtime/test/project/workflow/package/platform source and therefore does not replace the PR #30 runtime baseline. A source-to-head compare is required/recorded in the detailed handoff before this documentation pass is treated as complete.
+Documentation-only commits after source head `4f5f9abe...` do not change runtime/test/product source and therefore do not replace the PR #33 runtime baseline.
 
 ## Documentation status
 
@@ -114,10 +149,10 @@ The current documentation set covers:
 - end-user behavior and limitations;
 - complete feature reference;
 - architecture, service boundaries, application flows, database schema;
-- encrypted document vault;
+- appointment/notification UTC and permission behavior;
+- encrypted document vault including v2 framing/rollback/key hygiene;
 - data storage/export/deletion;
-- encrypted backup/restore;
-- notification/platform behavior;
+- encrypted backup/restore including strict topology/v1-v2 compatibility;
 - reports/exports;
 - privacy model/data lifecycle;
 - security architecture/threat model/logging/dependency risk;
@@ -133,7 +168,9 @@ Documentation completeness does not mean production release readiness. Operation
 
 - Complete manual device/emulator matrix on Android, Windows, iOS/iPadOS, and Mac Catalyst.
 - Complete manual screen-reader, large-text, keyboard, contrast, and reduced-motion checks.
-- Manually verify notification permission denied/granted, Android exact-alarm/battery/reboot/time/time-zone behavior, and real-device reminder delivery limitations.
+- Manually verify notification permission denied/granted, appointment permission behavior, Android exact-alarm/battery/reboot/time/time-zone behavior, and real-device reminder delivery limitations.
+- Manually verify new v2 encrypted document and backup workflows on packaged targets.
+- Verify legacy v1 encrypted document/backup compatibility using canonical historical fixtures when available before any decision to drop v1 support.
 - Verify current Apple App Store and Google Play policy for the external voluntary project-support link before submission.
 - Prepare signing identities/credentials outside Git.
 - Build and inspect signed release packages on appropriately provisioned hosts.
