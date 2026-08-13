@@ -330,10 +330,12 @@ public sealed class SettingsViewModel : ViewModelBase
     private async Task TestReminderAsync()
     {
         var diagnostics = await notifications.GetDiagnosticsAsync();
-        if (!diagnostics.PermissionGranted)
+        if (!diagnostics.PermissionGranted &&
+            !await notifications.RequestPermissionAsync())
         {
-            _ = await notifications.RequestPermissionAsync();
+            throw new InvalidOperationException("Notification permission was not granted.");
         }
+
         await notifications.ShowTestAsync();
         await RefreshDiagnosticsAsync();
     }
