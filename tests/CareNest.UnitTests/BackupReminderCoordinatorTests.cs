@@ -42,7 +42,11 @@ public sealed class BackupReminderCoordinatorTests
     public async Task SyncAsync_PermissionPromptStillDenied_DoesNotSchedule()
     {
         var repository = EnabledRepository();
-        var notifications = new StickyDeniedNotificationService();
+        var notifications = new NotificationServiceSpy
+        {
+            Diagnostics = new(false, true, true, true, "test", Array.Empty<string>()),
+            PermissionRequestResult = false
+        };
         var coordinator = new BackupReminderCoordinator(repository, notifications, new FixedTimeProvider(Now));
 
         await coordinator.SyncAsync(requestPermission: true);
@@ -112,39 +116,6 @@ public sealed class BackupReminderCoordinatorTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(Settings.TryGetValue(key, out var value) ? value : null);
-        }
-    }
-
-    private sealed class StickyDeniedNotificationService : NotificationServiceSpy
-    {
-        public new int PermissionRequestCount { get; private set; }
-
-        public new List<CareNest.Application.Contracts.NotificationRequest> Scheduled { get; } = [];
-
-        public new Task<bool> RequestPermissionAsync(CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            PermissionRequestCount++;
-            return Task.FromResult(false);
-        }
-
-        public new Task<CareNest.Application.Contracts.NotificationDiagnostics> GetDiagnosticsAsync(CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(new CareNest.Application.Contracts.NotificationDiagnostics(
-                false,
-                true,
-                true,
-                true,
-                "test",
-                Array.Empty<string>()));
-        }
-
-        public new Task ScheduleAsync(CareNest.Application.Contracts.NotificationRequest request, CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            Scheduled.Add(request);
-            return Task.CompletedTask;
         }
     }
 }
