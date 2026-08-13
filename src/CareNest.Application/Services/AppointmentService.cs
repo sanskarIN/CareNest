@@ -117,11 +117,19 @@ public sealed class AppointmentService(
         var diagnostics = await notifications.GetDiagnosticsAsync(
             cancellationToken);
 
-        if (!diagnostics.PermissionGranted &&
-            requestPermission)
+        if (!diagnostics.PermissionGranted)
         {
-            _ = await notifications.RequestPermissionAsync(
+            if (!requestPermission)
+            {
+                return;
+            }
+
+            var permissionGranted = await notifications.RequestPermissionAsync(
                 cancellationToken);
+            if (!permissionGranted)
+            {
+                return;
+            }
         }
 
         var policy = await LoadPolicyAsync(cancellationToken);
