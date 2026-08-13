@@ -1,0 +1,6 @@
+CareNest exact-head verification marker
+
+Source head: 48ed3782d7756458c189f2cb594e672343781eb3
+Scope: reset data-integrity ordering plus regression contract on top of the fully green service/document/backup/AEAD-v2 baseline.
+
+This marker exists only to trigger pull-request verification and must not be merged into main.
