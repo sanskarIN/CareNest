@@ -59,7 +59,7 @@ public sealed class EncryptedDocumentStore(
                 await using var plain = File.OpenRead(tempPlain);
                 await using var encrypted = File.Create(outputPath);
                 await Security.ChunkedAead.EncryptAsync(plain, encrypted, key, Magic, Aad, cancellationToken);
-                return new StoredDocument(encryptedFileName, size, hash, 1);
+                return new StoredDocument(encryptedFileName, size, hash, 2);
             }
             catch
             {
