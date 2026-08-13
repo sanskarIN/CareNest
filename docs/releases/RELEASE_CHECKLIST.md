@@ -2,18 +2,18 @@
 
 ## Automated verification evidence
 
-Latest exact-head verification PR: `#30`  
-Source head verified: `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`  
-Verification marker head: `59016b7e2b13d5ac1c93cf0db973f275c6e7eb19`  
-CareNest CI run: `#248` / `31382194805`  
-CodeQL run: `#248` / `31382194687`  
-Dependency Audit run: `#10` / `31382194683`
+Latest exact-head verification PR: `#33`  
+Source head verified: `4f5f9abe9d702fa33d6aba3f15c113febfebf95e`  
+Verification marker head: `62a0050a2622e12a31d00842778af0bc96355482`  
+CareNest CI run: `#332` / `31691592300`  
+CodeQL run: `#332` / `31691592435`  
+Dependency Audit run: `#13` / `31691592302`
 
 - [x] Platform-neutral `dotnet format --verify-no-changes` gate.
-- [x] Unit tests — 74 passed, 0 failed, 0 skipped.
-- [x] Integration tests — 13 passed, 0 failed, 0 skipped.
-- [x] UI-contract/policy tests — 54 passed, 0 failed, 0 skipped.
-- [x] Total automated test cases in the core job — 141 passed, 0 failed, 0 skipped.
+- [x] Unit tests — **106 passed, 0 failed, 0 skipped**.
+- [x] Integration tests — **30 passed, 0 failed, 0 skipped**.
+- [x] UI-contract/policy tests — **54 passed, 0 failed, 0 skipped**.
+- [x] Total automated test cases in the core job — **190 passed, 0 failed, 0 skipped**.
 - [x] Android Release build.
 - [x] Windows Release build.
 - [x] iOS simulator Release build.
@@ -21,17 +21,29 @@ Dependency Audit run: `#10` / `31382194683`
 - [x] CodeQL analysis.
 - [x] Dependency Audit.
 
-PR #30 was a verification-only branch containing only `build/verification/rc1-ownership-utc-dst-hardening-20260810-2.txt` beyond source head `c61f3c31...`. It was closed without merging after the full matrix completed successfully, so the marker is not production source.
+PR #33 was a verification-only branch containing only `build/verification/rc1-aead-v2-hardening-20260813.txt` beyond source head `4f5f9abe...`. It was closed without merging after the full matrix completed successfully, so the marker is not production source.
 
-The verified source includes all previous repository/privacy/architecture/reminder/snapshot/app-lock hardening plus planner entity-ownership validation, archived-profile suppression, UTC planning/rebuild/snooze contracts, schedule enum/weekday/time-zone validation hardening, deterministic property-style recurrence coverage, and representative multi-zone DST gap/overlap coverage.
+The verified source includes all previous repository/privacy/architecture/reminder/snapshot/app-lock hardening plus:
 
-The checkmarks above record GitHub-hosted automated evidence for exact source head `c61f3c31...`. Later documentation-only status/changelog/handoff commits do not change runtime/test/product source and are not represented as a new platform-verification head.
+- appointment UTC/time-zone/permission fail-safe behavior;
+- direct profile/medicine/appointment/document/backup-reminder service tests;
+- document import compensating rollback;
+- document-key caller-buffer clearing;
+- strict backup ZIP topology validation;
+- backup/document-key/password-derived-buffer cleanup;
+- chunked AES-GCM framing v2 for new encrypted streams;
+- authenticated v2 terminal record;
+- v2 prefix-truncation/trailing-data rejection;
+- retained v1 decryption compatibility;
+- new encrypted document metadata stream version 2.
 
-Automated green status does not substitute for manual device, signing, accessibility, notification-delivery, current store-policy, or dependency-risk checks.
+The checkmarks above record GitHub-hosted automated evidence for exact source head `4f5f9abe...`. Later documentation-only status/changelog/handoff commits do not change runtime/test/product source and are not represented as a new platform-verification head.
+
+Automated green status does not substitute for manual device, signing, accessibility, notification-delivery, current store-policy, legacy-fixture, or dependency-risk checks.
 
 ## Verification hardening sequence
 
-The current green result follows marker-only exact-head verification cycles that expose defects instead of weakening quality gates:
+The green result follows marker-only exact-head verification cycles that expose defects instead of weakening quality gates:
 
 - PR #24 / CI #175: found CA1873 eager logger-argument evaluation and CA1861 test-allocation analyzer failures; CodeQL succeeded.
 - PR #25 / CI #190: formatting, unit and integration tests passed; Dependency Audit #5 and CodeQL #190 passed; UI-contract execution exposed project-reference path normalization, generated-file scanning and an existing StartupCoordinator exception-object logging issue; MAUI compile also confirmed explicit logger-level guards were required.
@@ -39,7 +51,10 @@ The current green result follows marker-only exact-head verification cycles that
 - PR #27 / CI #200: all automated gates passed for the privacy/policy hardening baseline.
 - PR #28 / CI #220: all automated gates passed after reminder schedule/DST/window hardening, WAL snapshot integrity/cancellation coverage, and app-lock verifier clearing/security contracts were added.
 - PR #29 / CI #246: marker-only verification exposed CA2263 in the newly added non-generic `Enum.IsDefined(Type, object)` schedule-kind validation. The source was corrected on `main`; the PR was closed without merge and is not release evidence.
-- PR #30 / CI #248: all automated gates passed on the corrected exact source head, including 141 core tests and all four platform Release builds.
+- PR #30 / CI #248: all automated gates passed on the corrected reminder-integrity exact source head with 141 core tests.
+- PR #31: service/document/backup hardening verification exposed CA1861 in a newly added profile-service test assertion after formatting passed. The assertion was fixed on `main`; the PR was closed without merge and is not release evidence.
+- PR #32 / CI #326: corrected service/document/backup hardening passed with 106 unit + 26 integration + 54 UI = 186 core tests and all platform/security/dependency gates green.
+- PR #33 / CI #332: authenticated-stream-v2 source passed with 106 unit + 30 integration + 54 UI = **190 core tests** plus all four Release target builds, CodeQL #332, and Dependency Audit #13.
 
 ## Release-preparation additions now present
 
@@ -55,11 +70,12 @@ The current green result follows marker-only exact-head verification cycles that
 - Release Evidence workflow for source/toolchain/test/dependency/checksum evidence;
 - logging privacy contract;
 - deterministic reminder scheduling contract;
+- complete testing guide and test plan;
 - production quality gate;
 - security release-review checklist;
 - release-notes template;
 - exact-head verification-branch protocol;
-- automated repository/architecture/ViewModel/data-model/branding/async/logging/app-lock/reminder-integrity policy contracts;
+- automated repository/architecture/ViewModel/data-model/branding/async/logging/app-lock/reminder/service/backup/crypto policy and integration coverage;
 - original light, dark, and monochrome CareNest mark variants.
 
 ## Release preparation and manual verification
@@ -77,7 +93,7 @@ The current green result follows marker-only exact-head verification cycles that
 - [x] Dependency Audit is green for the exact verified source head.
 - [ ] Run the manual/tag-triggered `CareNest Release Evidence` workflow for the exact commit ultimately promoted to public `1.0.0`.
 
-### Automated reminder, snapshot, and app-lock safety coverage
+### Automated reminder, appointment, service, snapshot and app-lock coverage
 
 - [x] Every-N-hours requires explicit valid interval and exactly one explicit starting time.
 - [x] Selected-weekday schedules require at least one explicit selected day.
@@ -97,13 +113,36 @@ The current green result follows marker-only exact-head verification cycles that
 - [x] Out-of-order explicit times return chronologically ordered occurrences.
 - [x] DST-invalid spring-forward local times do not cause an invented alternate reminder time.
 - [x] DST-overlap local times produce a deterministic occurrence.
-- [x] DST gap/overlap matrix covers representative North America, Europe and Australia zones when available on the test host.
+- [x] DST gap/overlap matrix covers representative North America, Europe, Australia and New Zealand zones when available on the test host.
 - [x] Deterministic fixed-seed property tests validate random planning windows, cycle matrices, all supported weekday masks, uniqueness/order, and representative every-N-hours spacing.
+- [x] Appointment `StartsUtc` rejects local/unspecified kinds instead of relabeling them as UTC.
+- [x] Appointment time-zone identifiers are trimmed/validated.
+- [x] Appointment save does not schedule when notification permission remains denied.
+- [x] Appointment rebuild does not prompt/schedule while permission is denied.
+- [x] Direct service tests cover profile, medicine, appointment, document and backup-reminder orchestration.
 - [x] WAL snapshots contain committed profile data and pass SQLite integrity check.
 - [x] Pre-cancelled WAL snapshot requests throw cancellation and leave no output file.
 - [x] App-lock verifier uses salted PBKDF2-HMAC-SHA256 and fixed-time comparison.
 - [x] Derived and retrieved verifier buffers are cleared after verification paths.
 - [x] Plaintext PIN persistence is rejected by source contracts; disabling app lock removes stored lock material.
+
+### Automated document/backup cryptographic coverage
+
+- [x] Document import database-save failure removes the encrypted payload.
+- [x] Document audit failure after metadata save rolls back both metadata and encrypted payload.
+- [x] Incomplete document rollback is surfaced explicitly.
+- [x] Document master-key caller-owned copies are cleared after import/export where practical.
+- [x] New encrypted documents record stream format version 2.
+- [x] Chunked AEAD v2 multi-chunk round-trip passes.
+- [x] V2 authenticated terminal rejects chunk-boundary prefix truncation.
+- [x] Trailing data after terminal is rejected.
+- [x] Legacy framing-v1 stream remains decryptable.
+- [x] Backup creation/restore clears caller-owned document-key copies where practical.
+- [x] Backup password-derived key/salt buffers are cleared after crypto paths where practical.
+- [x] Strict backup topology rejects duplicate entries.
+- [x] Strict backup topology rejects unexpected/nested/non-`.cndoc` entries.
+- [x] Strict backup topology validates manifest document count and document-key length/presence.
+- [x] Restore retains path-containment validation after topology validation.
 
 ### Core product behavior
 
@@ -113,16 +152,19 @@ The current green result follows marker-only exact-head verification cycles that
 - [ ] Create/pause/resume/complete/archive medicine schedules.
 - [ ] Verify daily, selected-weekday, every-N-hours, cycle/custom-range and as-needed behaviors on supported targets.
 - [ ] Verify notification permission denied and granted flows.
+- [ ] Verify appointment permission-denied/granted reminder flow on supported targets.
 - [ ] Verify Android battery/exact-alarm diagnostics on a device/appropriate emulator.
 - [ ] Verify reboot/time/time-zone rebuild behavior on applicable platforms.
 - [ ] Verify stored schedule intent is not silently rewritten after a time-zone change.
 - [ ] Mark taken/skipped/delayed/missed and edit medication log.
 - [ ] Verify snooze rejects invalid/past clock values and behaves correctly with real platform notification scheduling.
 - [ ] Verify quiet hours and follow-up reminder behavior.
-- [ ] Import/export/delete encrypted documents.
+- [ ] Import/export/delete new v2 encrypted documents.
+- [ ] Verify retained legacy v1 encrypted-document compatibility using a canonical historical fixture when available.
 - [ ] Create appointment and calendar export.
 - [ ] Export CSV, JSON and PDF reports; verify disclaimers/privacy boundaries.
-- [ ] Create encrypted backup; restore on clean data; reject wrong password and tampered backup.
+- [ ] Create new v2 encrypted backup; restore on clean data; reject wrong password and tampered backup.
+- [ ] Verify retained legacy v1 backup compatibility using a canonical historical fixture when available.
 - [ ] Enable/disable app lock and verify cold-start lock on target devices.
 - [ ] Verify local reset/profile deletion destructive confirmations and expected cleanup.
 
@@ -147,6 +189,9 @@ The current green result follows marker-only exact-head verification cycles that
 - [x] Automated policy checks reject named diagnosis/dosage/treatment/interaction/risk-scoring feature regressions.
 - [x] App-lock security contract protects salted PBKDF2-HMAC-SHA256, fixed-time verification, verifier-buffer clearing, no plaintext PIN persistence, and lock-material removal.
 - [x] Planner ownership checks fail closed rather than materializing reminder occurrences under mismatched local entities.
+- [x] New encrypted stream v2 terminal/truncation/trailing-data behavior is integration tested.
+- [x] Strict backup topology is integration tested.
+- [x] Caller-owned key-buffer hygiene has integration coverage.
 - [ ] Confirm on target devices that no document content, backup passwords, plaintext PINs, sensitive notes or private file paths appear in device/platform logs.
 - [ ] Confirm export/share operations occur only after explicit user action.
 - [ ] Confirm no CareNest account/backend/network requirement appears in normal local-first flows.
