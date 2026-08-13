@@ -1,486 +1,421 @@
-using System.Globalization;
-using System.Text.Json;
-using CareNest.Application.Contracts;
+using System.Collections.ObjectModel;
+using System.Text;
+using System.Windows.Input;
 using CareNest.App.Services;
+using CareNest.Application.Contracts;
+using CareNest.Domain.Enums;
 using CareNest.Shared;
-using Microsoft.Extensions.Logging;
 
 namespace CareNest.App.ViewModels;
 
-public sealed class SettingsViewModel : ViewModelBase
+public sealed record RedactedScheduleItem(string OccurrenceId, DateTime DueUtc, ReminderState State)
 {
-    private readonly ICareNestRepository repository;
-    private readonly INotificationService notifications;
-    private readonly IBackupService backups;
-    private readonly IBackupReminderCoordinator backupReminders;
-    private readonly IAppLockService appLock;
-    private readonly INavigationService navigation;
-    private readonly IUserDialogService dialogs;
-    private readonly IFileShareService fileShare;
-    private readonly IDocumentStore documentStore;
-    private readonly ISecretStore secretStore;
-    private readonly ILogger<SettingsViewModel> logger;
-    private bool isLoaded;
-    private bool appLockEnabled;
-    private bool genericNotificationLabels = true;
-    private bool persistentNotifications;
-    private bool soundEnabled = true;
-    private bool vibrationEnabled = true;
-    private bool followUpEnabled;
-    private int followUpMinutes = AppConstants.DefaultFollowUpMinutes;
-    private bool quietHoursEnabled;
-    private TimeSpan quietStart = new(22, 0, 0);
-    private TimeSpan quietEnd = new(7, 0, 0);
-    private string theme = "System";
-    private bool largeInterface;
-    private bool reducedMotion;
-    private bool backupReminderEnabled;
-    private string diagnosticSummary = string.Empty;
-    private string storageSummary = string.Empty;
+    public string ShortId => OccurrenceId.Length <= 8 ? OccurrenceId : OccurrenceId[..8];
+}
+
+public sealed class SettingsViewModel : ObservableViewModel
+{
+    private static readonly string[] CacheDirectoryNames =
+        ["Reports", "Backups", "Restore", "Exports", "ProfilePreviews"];
+
+    private readonly ICareNestRepository _repository;
+    private readonly AppStateService _state;
+    private readonly INotificationService _notifications;
+    private readonly IReminderCoordinator _reminders;
+    private readonly IAppointmentService _appointments;
+    private readonly BackupReminderCoordinator _backupReminder;
+    private readonly IBackupService _backup;
+    private readonly IDocumentStore _documents;
+    private readonly ISecretStore _secretStore;
+    private readonly IAppFileGateway _files;
+    private readonly IAppLockService _lock;
+    private readonly IAppNavigator _navigator;
+
+    private ThemePreference _theme;
+    private bool _reducedMotion;
+    private bool _largeInterface;
+    private bool _quietHoursEnabled;
+    private TimeSpan _quietHoursStart = TimeSpan.FromHours(22);
+    private TimeSpan _quietHoursEnd = TimeSpan.FromHours(7);
+    private bool _genericLabels = true;
+    private bool _persistentNotifications;
+    private bool _soundEnabled = true;
+    private bool _vibrationEnabled = true;
+    private bool _backupReminderEnabled;
+    private bool _appLockEnabled;
+    private string _diagnostics = "Not checked yet.";
+    private string _storageUsage = "Calculating…";
+    private string _schemaVersion = "—";
+    private string _timeZoneSimulation = TimeZoneInfo.Local.Id;
+    private string _simulationResult = string.Empty;
 
     public SettingsViewModel(
         ICareNestRepository repository,
+        AppStateService state,
         INotificationService notifications,
-        IBackupService backups,
-        IBackupReminderCoordinator backupReminders,
-        IAppLockService appLock,
-        INavigationService navigation,
-        IUserDialogService dialogs,
-        IFileShareService fileShare,
-        IDocumentStore documentStore,
+        IReminderCoordinator reminders,
+        IAppointmentService appointments,
+        BackupReminderCoordinator backupReminder,
+        IBackupService backup,
+        IDocumentStore documents,
         ISecretStore secretStore,
-        ILogger<SettingsViewModel> logger,
-        SafeUiErrorService errors)
-        : base(errors)
+        IAppFileGateway files,
+        IAppLockService appLock,
+        IAppNavigator navigator,
+        SafeUiErrorService errors) : base(errors)
     {
-        this.repository = repository;
-        this.notifications = notifications;
-        this.backups = backups;
-        this.backupReminders = backupReminders;
-        this.appLock = appLock;
-        this.navigation = navigation;
-        this.dialogs = dialogs;
-        this.fileShare = fileShare;
-        this.documentStore = documentStore;
-        this.secretStore = secretStore;
-        this.logger = logger;
+        _repository = repository;
+        _state = state;
+        _notifications = notifications;
+        _reminders = reminders;
+        _appointments = appointments;
+        _backupReminder = backupReminder;
+        _backup = backup;
+        _documents = documents;
+        _secretStore = secretStore;
+        _files = files;
+        _lock = appLock;
+        _navigator = navigator;
 
-        RefreshCommand = AsyncCommand(LoadAsync);
-        SaveCommand = AsyncCommand(SaveAsync);
-        ChangePinCommand = AsyncCommand(ChangePinAsync);
-        DisableAppLockCommand = AsyncCommand(DisableAppLockAsync);
-        CreateBackupCommand = AsyncCommand(CreateBackupAsync);
-        RestoreBackupCommand = AsyncCommand(RestoreBackupAsync);
-        TestReminderCommand = AsyncCommand(TestReminderAsync);
-        RebuildRemindersCommand = AsyncCommand(RebuildRemindersAsync);
-        ExportDiagnosticsCommand = AsyncCommand(ExportDiagnosticsAsync);
-        ClearCacheCommand = AsyncCommand(ClearCacheAsync);
-        VacuumDatabaseCommand = AsyncCommand(VacuumDatabaseAsync);
-        ResetAllDataCommand = AsyncCommand(ResetAllDataAsync);
-        OpenAboutCommand = AsyncCommand(() => navigation.NavigateAsync("about"));
+        SavePreferencesCommand = new AsyncCommand(SavePreferencesAsync);
+        NotificationDiagnosticsCommand = new AsyncCommand(RefreshDiagnosticsAsync);
+        TestReminderCommand = new AsyncCommand(TestReminderAsync);
+        RebuildRemindersCommand = new AsyncCommand(RebuildRemindersAsync);
+        ExportSanitizedDiagnosticsCommand = new AsyncCommand(ExportSanitizedDiagnosticsAsync);
+        SimulateTimeZoneCommand = new AsyncCommand(SimulateTimeZoneAsync);
+        VacuumCommand = new AsyncCommand(VacuumAsync);
+        ClearCacheCommand = new AsyncCommand(ClearCacheAsync);
     }
 
-    public bool AppLockEnabled
-    {
-        get => appLockEnabled;
-        set => SetProperty(ref appLockEnabled, value);
-    }
+    public IReadOnlyList<ThemePreference> ThemeOptions { get; } =
+        Enum.GetValues<ThemePreference>();
+    public ObservableCollection<RedactedScheduleItem> RedactedSchedule { get; } = [];
+    public string CurrentTimeZone => TimeZoneInfo.Local.Id;
 
-    public bool GenericNotificationLabels
-    {
-        get => genericNotificationLabels;
-        set => SetProperty(ref genericNotificationLabels, value);
-    }
+    public ThemePreference Theme { get => _theme; set => SetProperty(ref _theme, value); }
+    public bool ReducedMotion { get => _reducedMotion; set => SetProperty(ref _reducedMotion, value); }
+    public bool LargeInterface { get => _largeInterface; set => SetProperty(ref _largeInterface, value); }
+    public bool QuietHoursEnabled { get => _quietHoursEnabled; set => SetProperty(ref _quietHoursEnabled, value); }
+    public TimeSpan QuietHoursStart { get => _quietHoursStart; set => SetProperty(ref _quietHoursStart, value); }
+    public TimeSpan QuietHoursEnd { get => _quietHoursEnd; set => SetProperty(ref _quietHoursEnd, value); }
+    public bool GenericLabels { get => _genericLabels; set => SetProperty(ref _genericLabels, value); }
+    public bool PersistentNotifications { get => _persistentNotifications; set => SetProperty(ref _persistentNotifications, value); }
+    public bool SoundEnabled { get => _soundEnabled; set => SetProperty(ref _soundEnabled, value); }
+    public bool VibrationEnabled { get => _vibrationEnabled; set => SetProperty(ref _vibrationEnabled, value); }
+    public bool BackupReminderEnabled { get => _backupReminderEnabled; set => SetProperty(ref _backupReminderEnabled, value); }
+    public bool AppLockEnabled { get => _appLockEnabled; private set => SetProperty(ref _appLockEnabled, value); }
+    public string Diagnostics { get => _diagnostics; private set => SetProperty(ref _diagnostics, value); }
+    public string StorageUsage { get => _storageUsage; private set => SetProperty(ref _storageUsage, value); }
+    public string SchemaVersion { get => _schemaVersion; private set => SetProperty(ref _schemaVersion, value); }
+    public string TimeZoneSimulation { get => _timeZoneSimulation; set => SetProperty(ref _timeZoneSimulation, value); }
+    public string SimulationResult { get => _simulationResult; private set => SetProperty(ref _simulationResult, value); }
 
-    public bool PersistentNotifications
-    {
-        get => persistentNotifications;
-        set => SetProperty(ref persistentNotifications, value);
-    }
+    public ICommand SavePreferencesCommand { get; }
+    public ICommand NotificationDiagnosticsCommand { get; }
+    public ICommand TestReminderCommand { get; }
+    public ICommand RebuildRemindersCommand { get; }
+    public ICommand ExportSanitizedDiagnosticsCommand { get; }
+    public ICommand SimulateTimeZoneCommand { get; }
+    public ICommand VacuumCommand { get; }
+    public ICommand ClearCacheCommand { get; }
 
-    public bool SoundEnabled
-    {
-        get => soundEnabled;
-        set => SetProperty(ref soundEnabled, value);
-    }
-
-    public bool VibrationEnabled
-    {
-        get => vibrationEnabled;
-        set => SetProperty(ref vibrationEnabled, value);
-    }
-
-    public bool FollowUpEnabled
-    {
-        get => followUpEnabled;
-        set => SetProperty(ref followUpEnabled, value);
-    }
-
-    public int FollowUpMinutes
-    {
-        get => followUpMinutes;
-        set => SetProperty(ref followUpMinutes, Math.Clamp(value, 1, 180));
-    }
-
-    public bool QuietHoursEnabled
-    {
-        get => quietHoursEnabled;
-        set => SetProperty(ref quietHoursEnabled, value);
-    }
-
-    public TimeSpan QuietStart
-    {
-        get => quietStart;
-        set => SetProperty(ref quietStart, value);
-    }
-
-    public TimeSpan QuietEnd
-    {
-        get => quietEnd;
-        set => SetProperty(ref quietEnd, value);
-    }
-
-    public string Theme
-    {
-        get => theme;
-        set => SetProperty(ref theme, value);
-    }
-
-    public bool LargeInterface
-    {
-        get => largeInterface;
-        set => SetProperty(ref largeInterface, value);
-    }
-
-    public bool ReducedMotion
-    {
-        get => reducedMotion;
-        set => SetProperty(ref reducedMotion, value);
-    }
-
-    public bool BackupReminderEnabled
-    {
-        get => backupReminderEnabled;
-        set => SetProperty(ref backupReminderEnabled, value);
-    }
-
-    public string DiagnosticSummary
-    {
-        get => diagnosticSummary;
-        private set => SetProperty(ref diagnosticSummary, value);
-    }
-
-    public string StorageSummary
-    {
-        get => storageSummary;
-        private set => SetProperty(ref storageSummary, value);
-    }
-
-    public IAsyncCommand RefreshCommand { get; }
-    public IAsyncCommand SaveCommand { get; }
-    public IAsyncCommand ChangePinCommand { get; }
-    public IAsyncCommand DisableAppLockCommand { get; }
-    public IAsyncCommand CreateBackupCommand { get; }
-    public IAsyncCommand RestoreBackupCommand { get; }
-    public IAsyncCommand TestReminderCommand { get; }
-    public IAsyncCommand RebuildRemindersCommand { get; }
-    public IAsyncCommand ExportDiagnosticsCommand { get; }
-    public IAsyncCommand ClearCacheCommand { get; }
-    public IAsyncCommand VacuumDatabaseCommand { get; }
-    public IAsyncCommand ResetAllDataCommand { get; }
-    public IAsyncCommand OpenAboutCommand { get; }
-
-    public async Task OnAppearingAsync()
-    {
-        if (!isLoaded)
+    public Task LoadAsync() =>
+        RunAsync(async ct =>
         {
-            await ExecuteSafeAsync(LoadAsync, "Unable to load settings.");
-            isLoaded = true;
-        }
-    }
+            Theme = await _state.GetThemeAsync(ct);
+            ReducedMotion = await BoolAsync(SettingKeys.ReducedMotion, false, ct);
+            LargeInterface = await BoolAsync(SettingKeys.LargeInterface, false, ct);
+            QuietHoursEnabled = await BoolAsync(SettingKeys.QuietHoursEnabled, false, ct);
+            GenericLabels = await BoolAsync(SettingKeys.GenericNotificationLabels, true, ct);
+            PersistentNotifications = await BoolAsync(SettingKeys.PersistentNotifications, false, ct);
+            SoundEnabled = await BoolAsync(SettingKeys.SoundEnabled, true, ct);
+            VibrationEnabled = await BoolAsync(SettingKeys.VibrationEnabled, true, ct);
+            BackupReminderEnabled = await BoolAsync(SettingKeys.BackupReminderEnabled, false, ct);
+            QuietHoursStart = ParseTime(await _repository.GetSettingAsync(SettingKeys.QuietHoursStart, ct), new TimeSpan(22, 0, 0));
+            QuietHoursEnd = ParseTime(await _repository.GetSettingAsync(SettingKeys.QuietHoursEnd, ct), new TimeSpan(7, 0, 0));
+            AppLockEnabled = await _lock.IsEnabledAsync(ct);
+            SchemaVersion = (await _repository.GetSchemaVersionAsync(ct)).ToString();
+            StorageUsage = FormatBytes(await _documents.GetStorageUsageBytesAsync(ct));
+            await LoadDiagnosticsCoreAsync(ct);
+            await LoadRedactedScheduleAsync(ct);
+        }, "CareNest could not load settings.");
 
-    private async Task LoadAsync()
-    {
-        AppLockEnabled = await appLock.IsEnabledAsync();
-        GenericNotificationLabels = await GetBoolAsync(SettingKeys.GenericNotificationLabels, true);
-        PersistentNotifications = await GetBoolAsync(SettingKeys.PersistentNotifications, false);
-        SoundEnabled = await GetBoolAsync(SettingKeys.SoundEnabled, true);
-        VibrationEnabled = await GetBoolAsync(SettingKeys.VibrationEnabled, true);
-        FollowUpEnabled = await GetBoolAsync(SettingKeys.FollowUpEnabled, false);
-        FollowUpMinutes = await GetIntAsync(SettingKeys.FollowUpMinutes, AppConstants.DefaultFollowUpMinutes);
-        QuietHoursEnabled = await GetBoolAsync(SettingKeys.QuietHoursEnabled, false);
-        QuietStart = await GetTimeAsync(SettingKeys.QuietHoursStart, new TimeSpan(22, 0, 0));
-        QuietEnd = await GetTimeAsync(SettingKeys.QuietHoursEnd, new TimeSpan(7, 0, 0));
-        Theme = await repository.GetSettingAsync(SettingKeys.Theme) ?? "System";
-        LargeInterface = await GetBoolAsync(SettingKeys.LargeInterface, false);
-        ReducedMotion = await GetBoolAsync(SettingKeys.ReducedMotion, false);
-        BackupReminderEnabled = await GetBoolAsync(SettingKeys.BackupReminderEnabled, false);
-
-        ApplyTheme(Theme);
-        await RefreshDiagnosticsAsync();
-    }
-
-    private async Task SaveAsync()
-    {
-        await repository.SetSettingAsync(SettingKeys.GenericNotificationLabels, Bool(GenericNotificationLabels));
-        await repository.SetSettingAsync(SettingKeys.PersistentNotifications, Bool(PersistentNotifications));
-        await repository.SetSettingAsync(SettingKeys.SoundEnabled, Bool(SoundEnabled));
-        await repository.SetSettingAsync(SettingKeys.VibrationEnabled, Bool(VibrationEnabled));
-        await repository.SetSettingAsync(SettingKeys.FollowUpEnabled, Bool(FollowUpEnabled));
-        await repository.SetSettingAsync(SettingKeys.FollowUpMinutes, FollowUpMinutes.ToString(CultureInfo.InvariantCulture));
-        await repository.SetSettingAsync(SettingKeys.QuietHoursEnabled, Bool(QuietHoursEnabled));
-        await repository.SetSettingAsync(SettingKeys.QuietHoursStart, QuietStart.ToString("c", CultureInfo.InvariantCulture));
-        await repository.SetSettingAsync(SettingKeys.QuietHoursEnd, QuietEnd.ToString("c", CultureInfo.InvariantCulture));
-        await repository.SetSettingAsync(SettingKeys.Theme, Theme);
-        await repository.SetSettingAsync(SettingKeys.LargeInterface, Bool(LargeInterface));
-        await repository.SetSettingAsync(SettingKeys.ReducedMotion, Bool(ReducedMotion));
-        await repository.SetSettingAsync(SettingKeys.BackupReminderEnabled, Bool(BackupReminderEnabled));
-
-        ApplyTheme(Theme);
-        await backupReminders.SyncAsync(requestPermission: BackupReminderEnabled);
-        await RefreshDiagnosticsAsync();
-    }
-
-    private async Task ChangePinAsync()
-    {
-        var first = await dialogs.PromptSecretAsync("App lock", "Enter a new 6-32 digit PIN.", "Set PIN");
-        if (string.IsNullOrWhiteSpace(first))
+    public Task EnableAppLockAsync(string pin) =>
+        RunAsync(async ct =>
         {
-            return;
-        }
+            await _lock.SetPinAsync(pin, ct);
+            AppLockEnabled = true;
+            StatusMessage = "App lock enabled. Keep your PIN safe; CareNest cannot recover it.";
+        }, "CareNest could not enable app lock. Use a numeric PIN of 6–32 digits.");
 
-        var second = await dialogs.PromptSecretAsync("Confirm PIN", "Enter the PIN again.", "Confirm");
-        if (!string.Equals(first, second, StringComparison.Ordinal))
+    public Task DisableAppLockAsync(string pin) =>
+        RunAsync(async ct =>
         {
-            throw new InvalidOperationException("The PIN entries do not match.");
-        }
-
-        await appLock.EnableAsync(first);
-        AppLockEnabled = true;
-    }
-
-    private async Task DisableAppLockAsync()
-    {
-        if (!await dialogs.ConfirmAsync("Disable app lock?", "The device/app sandbox still protects local data, but CareNest will no longer ask for a PIN.", "Disable", "Cancel"))
-        {
-            return;
-        }
-
-        await appLock.DisableAsync();
-        AppLockEnabled = false;
-    }
-
-    private async Task CreateBackupAsync()
-    {
-        var password = await dialogs.PromptSecretAsync("Create encrypted backup", "Enter a backup password with at least 8 characters. CareNest cannot recover it if you forget it.", "Continue");
-        if (string.IsNullOrWhiteSpace(password))
-        {
-            return;
-        }
-
-        var saved = await fileShare.SaveAsync(
-            $"CareNest-backup-{DateTime.UtcNow:yyyyMMdd-HHmm}.cnbak",
-            async (stream, cancellationToken) =>
-                await backups.CreateEncryptedBackupAsync(stream, password, AppInfo.Current.VersionString, cancellationToken),
-            CancellationToken.None);
-
-        if (saved)
-        {
-            await repository.SetSettingAsync(SettingKeys.LastBackupUtc, DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
-            await backupReminders.SyncAsync(requestPermission: false);
-        }
-    }
-
-    private async Task RestoreBackupAsync()
-    {
-        var source = await fileShare.OpenReadAsync([".cnbak"], CancellationToken.None);
-        if (source is null)
-        {
-            return;
-        }
-
-        await using (source)
-        {
-            var password = await dialogs.PromptSecretAsync("Restore encrypted backup", "Enter the backup password.", "Inspect");
-            if (string.IsNullOrWhiteSpace(password))
+            if (!await _lock.VerifyPinAsync(pin, ct))
             {
-                return;
+                throw new InvalidOperationException("The app-lock PIN is incorrect.");
+            }
+            await _lock.DisableAsync(ct);
+            AppLockEnabled = false;
+            StatusMessage = "App lock disabled.";
+        }, "CareNest could not disable app lock.");
+
+    public Task CreateBackupAsync(string password) =>
+        RunAsync(async ct =>
+        {
+            ValidateBackupPassword(password);
+            var directory = Path.Combine(FileSystem.Current.CacheDirectory, "Backups");
+            Directory.CreateDirectory(directory);
+            var path = Path.Combine(directory, $"CareNest-{DateTime.UtcNow:yyyyMMdd-HHmmss}{AppConstants.BackupExtension}");
+            await using (var destination = File.Create(path))
+            {
+                await _backup.CreateEncryptedBackupAsync(destination, password, AppInfo.Current.VersionString, ct);
             }
 
-            var inspection = await backups.InspectAsync(source, password);
-            var approved = await dialogs.ConfirmAsync(
-                "Replace local CareNest data?",
-                $"Backup {inspection.AppVersion} from {inspection.CreatedUtc.ToLocalTime():g} contains {inspection.DocumentCount} encrypted document(s). Restore replaces current local records and document storage. This cannot be undone unless you made a separate backup.",
-                "Restore",
-                "Cancel");
-            if (!approved)
+            await _repository.SetSettingAsync(SettingKeys.LastBackupUtc, DateTime.UtcNow.ToString("O"), ct);
+            await _backupReminder.SyncAsync(requestPermission: false, cancellationToken: ct);
+            await _files.ShareFileAsync(path, "Save CareNest encrypted backup", ct);
+            StatusMessage = "Encrypted backup created. The destination is user-chosen through the system share/save surface.";
+        }, "CareNest could not create the encrypted backup.");
+
+    public Task RestoreBackupAsync(string password) =>
+        RunAsync(async ct =>
+        {
+            ValidateBackupPassword(password);
+            var picked = await _files.PickBackupForRestoreAsync(ct);
+            if (picked is null) return;
+
+            var restoreDirectory = Path.Combine(FileSystem.Current.CacheDirectory, "Restore");
+            Directory.CreateDirectory(restoreDirectory);
+            var restorePath = Path.Combine(restoreDirectory, $"{Guid.NewGuid():N}{AppConstants.BackupExtension}");
+            try
             {
-                return;
+                await using (var pickedStream = await picked.OpenReadAsync(ct))
+                await using (var copy = File.Create(restorePath))
+                {
+                    await pickedStream.CopyToAsync(copy, ct);
+                }
+
+                BackupInspection inspection;
+                await using (var inspectStream = File.OpenRead(restorePath))
+                {
+                    inspection = await _backup.InspectAsync(inspectStream, password, ct);
+                }
+                if (inspection.SchemaVersion > await _repository.GetSchemaVersionAsync(ct))
+                {
+                    throw new InvalidOperationException("This backup uses a newer database schema.");
+                }
+
+                await _notifications.CancelAllAsync(ct);
+                await using var restoreStream = File.OpenRead(restorePath);
+                await _backup.RestoreEncryptedBackupAsync(restoreStream, password, ct);
+                await _reminders.RebuildAsync(cancellationToken: ct);
+                await _appointments.RebuildRemindersAsync(ct);
+                await _backupReminder.SyncAsync(requestPermission: false, cancellationToken: ct);
+                await LoadAsyncAfterRestore(ct);
+                StatusMessage = $"Backup from {inspection.CreatedUtc:u} restored after integrity validation.";
+            }
+            finally
+            {
+                if (File.Exists(restorePath))
+                {
+                    File.Delete(restorePath);
+                }
+            }
+        }, "CareNest could not restore the backup. Check the password, file, and available storage.");
+
+    public Task ResetAllDataAsync() =>
+        RunAsync(async ct =>
+        {
+            await _notifications.CancelAllAsync(ct);
+            var storedFiles = await _documents.ListStoredFilesAsync(ct);
+
+            // Clear structured records first. If this fails, encrypted payloads and keys remain
+            // available rather than leaving live database rows that point to deleted files.
+            await _repository.ClearAllAsync(ct);
+
+            // After the database is clear, remove encrypted payloads while their key is retained.
+            // If file cleanup fails, a retry can still decrypt/remove any remaining orphan payload.
+            foreach (var file in storedFiles)
+            {
+                await _documents.DeleteAsync(file, ct);
             }
 
-            source.Position = 0;
-            await notifications.CancelAllAsync();
-            await backups.RestoreEncryptedBackupAsync(source, password);
-            await repository.InitializeAsync();
-            await backupReminders.SyncAsync(requestPermission: false);
-            await navigation.NavigateAsync("//dashboard");
-        }
-    }
+            // Remove secure material only after document cleanup has succeeded.
+            await _secretStore.RemoveAsync(SecretKeys.DocumentMasterKey, ct);
+            await _lock.DisableAsync(ct);
+            AppLockEnabled = false;
+            await _navigator.ResetToOnboardingAsync(ct);
+        }, "CareNest could not fully reset local data.");
 
-    private async Task TestReminderAsync()
-    {
-        var diagnostics = await notifications.GetDiagnosticsAsync();
-        if (!diagnostics.PermissionGranted &&
-            !await notifications.RequestPermissionAsync())
+    private Task SavePreferencesAsync() =>
+        RunAsync(async ct =>
         {
-            throw new InvalidOperationException("Notification permission was not granted.");
-        }
+            await _state.SetThemeAsync(Theme, ct);
+            await _state.SetBoolAsync(SettingKeys.ReducedMotion, ReducedMotion, ct);
+            await _state.SetLargeInterfaceAsync(LargeInterface, ct);
+            await _state.SetBoolAsync(SettingKeys.QuietHoursEnabled, QuietHoursEnabled, ct);
+            await _state.SetBoolAsync(SettingKeys.GenericNotificationLabels, GenericLabels, ct);
+            await _state.SetBoolAsync(SettingKeys.PersistentNotifications, PersistentNotifications, ct);
+            await _state.SetBoolAsync(SettingKeys.SoundEnabled, SoundEnabled, ct);
+            await _state.SetBoolAsync(SettingKeys.VibrationEnabled, VibrationEnabled, ct);
+            await _state.SetBoolAsync(SettingKeys.BackupReminderEnabled, BackupReminderEnabled, ct);
+            await _repository.SetSettingAsync(SettingKeys.QuietHoursStart, TimeOnly.FromTimeSpan(QuietHoursStart).ToString("HH:mm"), ct);
+            await _repository.SetSettingAsync(SettingKeys.QuietHoursEnd, TimeOnly.FromTimeSpan(QuietHoursEnd).ToString("HH:mm"), ct);
+            await _reminders.RebuildAsync(cancellationToken: ct);
+            await _appointments.RebuildRemindersAsync(ct);
+            await _backupReminder.SyncAsync(requestPermission: BackupReminderEnabled, cancellationToken: ct);
+            StatusMessage = "Settings saved. Quiet hours suppress reminder notifications without changing the recorded schedule time.";
+        }, "CareNest could not save settings.");
 
-        await notifications.ShowTestAsync();
-        await RefreshDiagnosticsAsync();
-    }
-
-    private async Task RebuildRemindersAsync()
-    {
-        await repository.SetSettingAsync("reminders.last-manual-rebuild-utc", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
-        await backupReminders.SyncAsync(requestPermission: false);
-        await RefreshDiagnosticsAsync();
-    }
-
-    private async Task ExportDiagnosticsAsync()
-    {
-        var diagnostics = await notifications.GetDiagnosticsAsync();
-        var schema = await repository.GetSchemaVersionAsync();
-        var payload = new
+    private Task RefreshDiagnosticsAsync() =>
+        RunAsync(async ct =>
         {
-            Product = AppConstants.ProductName,
-            Version = AppInfo.Current.VersionString,
-            Build = AppInfo.Current.BuildString,
-            Platform = DeviceInfo.Current.Platform.ToString(),
-            DeviceType = DeviceInfo.Current.DeviceType.ToString(),
-            TimeZoneId = TimeZoneInfo.Local.Id,
-            SchemaVersion = schema,
-            Notification = diagnostics,
-            GeneratedUtc = DateTime.UtcNow,
-            Safety = AppConstants.ReminderLimitation
-        };
+            await LoadDiagnosticsCoreAsync(ct);
+            await LoadRedactedScheduleAsync(ct);
+            StatusMessage = "Notification diagnostics refreshed.";
+        }, "CareNest could not read notification diagnostics.");
 
-        await fileShare.ShareTextAsync(
-            "CareNest sanitized diagnostics",
-            JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true }));
-    }
-
-    private async Task ClearCacheAsync()
-    {
-        var cache = FileSystem.CacheDirectory;
-        if (Directory.Exists(cache))
+    private Task TestReminderAsync() =>
+        RunAsync(async ct =>
         {
-            foreach (var directory in Directory.EnumerateDirectories(cache))
+            if (!await _notifications.RequestPermissionAsync(ct))
             {
-                Directory.Delete(directory, recursive: true);
+                throw new InvalidOperationException("Notification permission was not granted.");
             }
-            foreach (var file in Directory.EnumerateFiles(cache))
+            await _notifications.ShowTestAsync(ct);
+            await LoadDiagnosticsCoreAsync(ct);
+            StatusMessage = "Test notification requested.";
+        }, "CareNest could not show a test notification.");
+
+    private Task RebuildRemindersAsync() =>
+        RunAsync(async ct =>
+        {
+            await _reminders.MarkOverdueAsMissedAsync(ct);
+            await _reminders.RebuildAsync(cancellationToken: ct);
+            await _appointments.RebuildRemindersAsync(ct);
+            StatusMessage = "Future reminder requests were rebuilt from user-entered schedules.";
+        }, "CareNest could not rebuild reminder requests.");
+
+    private Task ClearCacheAsync() =>
+        RunAsync(ct =>
+        {
+            ct.ThrowIfCancellationRequested();
+            foreach (var name in CacheDirectoryNames)
             {
-                File.Delete(file);
+                var path = Path.Combine(FileSystem.Current.CacheDirectory, name);
+                if (Directory.Exists(path))
+                {
+                    Directory.Delete(path, recursive: true);
+                }
             }
-        }
-        await RefreshDiagnosticsAsync();
-    }
+            StatusMessage = "Temporary CareNest export/preview cache cleared. Encrypted stored records and documents were not deleted.";
+            return Task.CompletedTask;
+        }, "CareNest could not clear all temporary cache files.");
 
-    private async Task VacuumDatabaseAsync()
-    {
-        await repository.VacuumAsync();
-        await RefreshDiagnosticsAsync();
-    }
-
-    private async Task ResetAllDataAsync()
-    {
-        if (!await dialogs.ConfirmAsync("Reset all local CareNest data?", "This permanently removes local profiles, medicines, appointments, logs, settings, encrypted documents, and app-lock data on this device. Export or back up anything you need first.", "Reset", "Cancel"))
+    private Task VacuumAsync() =>
+        RunAsync(async ct =>
         {
-            return;
-        }
+            await _repository.VacuumAsync(ct);
+            StatusMessage = "Local database maintenance completed.";
+        }, "CareNest could not compact the local database.");
 
-        await notifications.CancelAllAsync();
-        var storedFiles = await documentStore.ListStoredFilesAsync();
-
-        // Clear structured records first. If this fails, encrypted payloads remain intact
-        // rather than leaving database records pointing at files already deleted.
-        await repository.ClearAllAsync();
-        await appLock.DisableAsync();
-
-        // Encrypted files are removed only after structured data has been cleared.
-        // A file-system failure can leave an encrypted orphan that a retry can remove,
-        // but it cannot leave a live CareNest document row referencing a deleted payload.
-        foreach (var file in storedFiles)
+    private Task SimulateTimeZoneAsync() =>
+        RunAsync(ct =>
         {
-            await documentStore.DeleteAsync(file);
-        }
+            ct.ThrowIfCancellationRequested();
+            var zone = TimeZoneInfo.FindSystemTimeZoneById(TimeZoneSimulation.Trim());
+            var now = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, zone);
+            SimulationResult = $"Simulation only: {zone.DisplayName} → {now:yyyy-MM-dd HH:mm zzz}. No stored schedules were changed.";
+            return Task.CompletedTask;
+        }, "That time-zone identifier is unavailable on this device.");
 
-        // Keep the document key until payload cleanup succeeds so a failed file deletion
-        // remains recoverable on retry. After cleanup, remove the final document-vault secret.
-        await secretStore.RemoveAsync(SecretKeys.DocumentMasterKey);
-        AppLockEnabled = false;
-
-        await navigation.NavigateAsync("//onboarding");
-    }
-
-    private async Task RefreshDiagnosticsAsync()
-    {
-        var diagnostics = await notifications.GetDiagnosticsAsync();
-        var schema = await repository.GetSchemaVersionAsync();
-        var usage = await documentStore.GetStorageUsageBytesAsync();
-        DiagnosticSummary = $"{diagnostics.PlatformSummary}\nPermission: {(diagnostics.PermissionGranted ? "granted" : "not granted")}\nExact scheduling: {(diagnostics.ExactSchedulingAvailable ? "available" : "limited")}\nBattery optimization exemption: {(diagnostics.BatteryOptimizationExempt ? "yes" : "no/unknown")}\nDatabase schema: {schema}\nTime zone: {TimeZoneInfo.Local.Id}";
-        if (diagnostics.Warnings.Count > 0)
+    private Task ExportSanitizedDiagnosticsAsync() =>
+        RunAsync(async ct =>
         {
-            DiagnosticSummary += "\n" + string.Join("\n", diagnostics.Warnings.Select(x => $"• {x}"));
-        }
-        StorageSummary = $"Encrypted document storage: {FormatBytes(usage)}";
-        if (logger.IsEnabled(LogLevel.Debug))
+            var upcoming = await _reminders.GetUpcomingAsync(null, 30, ct);
+            var d = await _notifications.GetDiagnosticsAsync(ct);
+            var text = new StringBuilder()
+                .AppendLine("CareNest sanitized diagnostics")
+                .AppendLine($"GeneratedUtc: {DateTime.UtcNow:O}")
+                .AppendLine($"AppVersion: {AppInfo.Current.VersionString}")
+                .AppendLine($"Build: {AppInfo.Current.BuildString}")
+                .AppendLine($"SchemaVersion: {await _repository.GetSchemaVersionAsync(ct)}")
+                .AppendLine($"OS: {DeviceInfo.Current.Platform} {DeviceInfo.Current.VersionString}")
+                .AppendLine($"TimeZone: {TimeZoneInfo.Local.Id}")
+                .AppendLine($"PermissionGranted: {d.PermissionGranted}")
+                .AppendLine($"SchedulingAvailable: {d.SchedulingAvailable}")
+                .AppendLine($"ExactSchedulingAvailable: {d.ExactSchedulingAvailable}")
+                .AppendLine($"BatteryOptimizationExempt: {d.BatteryOptimizationExempt}")
+                .AppendLine($"FutureOccurrenceCountPreview: {upcoming.Count}")
+                .AppendLine("Upcoming schedule inspector (redacted):");
+
+            foreach (var item in upcoming)
+            {
+                text.AppendLine($"- occurrence={ShortId(item.OccurrenceId)} dueUtc={item.ScheduledUtc:O} state={item.State}");
+            }
+            text.AppendLine("Health names, document contents, notes, and contact details are intentionally omitted.");
+            await _files.ShareTextAsync(text.ToString(), "CareNest sanitized diagnostics", ct);
+        }, "CareNest could not export sanitized diagnostics.");
+
+    private async Task LoadRedactedScheduleAsync(CancellationToken ct)
+    {
+        var upcoming = await _reminders.GetUpcomingAsync(null, 30, ct);
+        RedactedSchedule.Clear();
+        foreach (var item in upcoming)
         {
-            logger.LogDebug("Settings diagnostics refreshed for {Platform} with schema {SchemaVersion}.", DeviceInfo.Current.Platform, schema);
+            RedactedSchedule.Add(new RedactedScheduleItem(item.OccurrenceId, item.ScheduledUtc, item.State));
         }
     }
 
-    private async Task<bool> GetBoolAsync(string key, bool fallback)
+    private async Task LoadDiagnosticsCoreAsync(CancellationToken ct)
     {
-        var raw = await repository.GetSettingAsync(key);
-        return raw is null ? fallback : string.Equals(raw, "1", StringComparison.Ordinal);
+        var d = await _notifications.GetDiagnosticsAsync(ct);
+        Diagnostics = string.Join(Environment.NewLine,
+            new[]
+            {
+                $"Permission: {(d.PermissionGranted ? "granted" : "not granted")}",
+                $"Scheduling: {(d.SchedulingAvailable ? "available" : "limited")}",
+                $"Exact timing: {(d.ExactSchedulingAvailable ? "available" : "not guaranteed")}",
+                $"Battery optimization exemption: {(d.BatteryOptimizationExempt ? "yes" : "no/unknown")}",
+                d.PlatformSummary
+            }.Concat(d.Warnings.Select(x => "• " + x)));
     }
 
-    private async Task<int> GetIntAsync(string key, int fallback)
+    private async Task LoadAsyncAfterRestore(CancellationToken ct)
     {
-        var raw = await repository.GetSettingAsync(key);
-        return int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) ? value : fallback;
+        SchemaVersion = (await _repository.GetSchemaVersionAsync(ct)).ToString();
+        StorageUsage = FormatBytes(await _documents.GetStorageUsageBytesAsync(ct));
+        await LoadDiagnosticsCoreAsync(ct);
     }
 
-    private async Task<TimeSpan> GetTimeAsync(string key, TimeSpan fallback)
-    {
-        var raw = await repository.GetSettingAsync(key);
-        return TimeSpan.TryParseExact(raw, "c", CultureInfo.InvariantCulture, out var value) ? value : fallback;
-    }
+    private Task<bool> BoolAsync(string key, bool fallback, CancellationToken ct) =>
+        _state.GetBoolAsync(key, fallback, ct);
 
-    private static string Bool(bool value) => value ? "1" : "0";
+    private static TimeSpan ParseTime(string? value, TimeSpan fallback) =>
+        TimeOnly.TryParse(value, out var parsed) ? parsed.ToTimeSpan() : fallback;
+
+    private static string ShortId(string value) =>
+        value.Length <= 8 ? value : value[..8];
 
     private static string FormatBytes(long bytes)
     {
-        if (bytes < 1024)
+        string[] units = ["B", "KB", "MB", "GB"];
+        var value = (double)Math.Max(0, bytes);
+        var unit = 0;
+        while (value >= 1024 && unit < units.Length - 1)
         {
-            return $"{bytes} B";
+            value /= 1024;
+            unit++;
         }
-        if (bytes < 1024 * 1024)
-        {
-            return $"{bytes / 1024d:F1} KB";
-        }
-        return $"{bytes / (1024d * 1024d):F1} MB";
+        return $"{value:0.##} {units[unit]}";
     }
 
-    private static void ApplyTheme(string value)
+    private static void ValidateBackupPassword(string password)
     {
-        Application.Current!.UserAppTheme = value switch
+        if (string.IsNullOrWhiteSpace(password) || password.Length < 10)
         {
-            "Light" => AppTheme.Light,
-            "Dark" => AppTheme.Dark,
-            _ => AppTheme.Unspecified
-        };
+            throw new ArgumentException("Use a backup password containing at least 10 characters.");
+        }
     }
 }
