@@ -1,10 +1,8 @@
 # what_changed.md
 
-## CareNest complete continuation handoff — 2026-08-13
+## CareNest complete continuation handoff — final 2026-08-13 Phase 9 state
 
-This is the active detailed CareNest handoff for the continuation completed on 2026-08-13.
-
-The user requested continued implementation with complete code, maximum logical commits, no skipped files, GitHub delivery on `main`, and an updated `what_changed.md`. This file records the complete continuation from the previously documentation-complete release-candidate state through the latest service, appointment, document, backup, cryptographic, testing, security, verification, and documentation hardening.
+This is the active detailed handoff for the latest CareNest continuation.
 
 Repository: `https://github.com/sanskarIN/CareNest`  
 Branch: `main`  
@@ -20,25 +18,34 @@ Watermark: `Made by the Sanskar`
 
 ---
 
-# Preserved earlier handoffs
+# No-loss handoff/history preservation
 
-No earlier implementation/history record was discarded when this active handoff was replaced.
+No earlier CareNest implementation, documentation, verification, or handoff detail was discarded to create this active file.
 
-The complete earlier Phase 0–8 implementation/hardening/verification handoff remains on current `main` at:
+Complete earlier records remain on current `main`:
 
-`docs/history/what_changed_full_through_phase8.md`
+- `docs/history/what_changed_full_through_phase8.md` — complete Phase 0–8 implementation/hardening/verification history.
+- `docs/history/what_changed_documentation_through_20260812.md` — complete 2026-08-12 documentation-completion handoff.
+- `docs/history/what_changed_through_pr33_20260813.md` — the exact previous active `what_changed.md` Git blob, 1,333 lines, covering the entire appointment/service/document/backup/AEAD-v2 continuation through verified PR #33.
+- `docs/history/PROJECT_STATUS_through_PR33.md` — exact previous PR #33-era `PROJECT_STATUS.md` snapshot.
 
-That file reuses the exact historical Git blob and contains the complete earlier repository assembly, privacy/logging hardening, reminder-integrity hardening, PR #24–#30 verification history, SQLite/WAL/app-lock work, BMC work, and earlier commit-level record.
+The previous active handoff blob was:
 
-The complete 2026-08-12 documentation-completion handoff is also preserved on current `main` at:
+`2ae7966e815046b517f8985df9016f6caabc54f5`
 
-`docs/history/what_changed_documentation_through_20260812.md`
+It was preserved exactly on `main` by:
 
-Preservation commit:
+`566e2df4dae9d56c406539cd6bd9df3db19e76b4` — `docs: preserve CareNest handoff through PR33`
 
-`d9271e24aa8b9884fc99ade11636a16e77aad9ea` — `docs: preserve complete 2026-08-12 CareNest handoff`
+The previous project-status blob was:
 
-The active file therefore continues the record rather than replacing history with a shorter summary.
+`7bc7cfe7dd348892197ef4006e7d6861bb00dc03`
+
+It was preserved by:
+
+`8bb384fc1aba1b7e9329bc6da144bd3decad13fc` — `docs: preserve project status through PR33`
+
+This active file therefore continues the complete record rather than replacing history with a shorter reconstruction.
 
 ---
 
@@ -49,1095 +56,558 @@ CareNest remains a local-first organizational application.
 CareNest does **not**:
 
 - diagnose conditions;
-- determine or infer medicine dosage;
+- determine, calculate, or infer medicine dosage;
 - recommend treatment;
 - perform medication-interaction checking as a clinical feature;
 - create clinical risk scores;
 - independently verify medication adherence;
 - replace a clinician or pharmacist;
 - provide emergency services;
-- guarantee notification delivery.
+- guarantee reminder/notification delivery.
 
-Medicine `StrengthText` and `InstructionText` remain opaque user-entered text. Reminder schedules and stock changes are derived only from explicit user-entered configuration values.
+Medicine strength and instruction fields remain opaque user-entered text. Reminder times and stock calculations continue to originate only from explicit user-entered values/configuration.
 
-The current continuation adds correctness/security/reliability controls only. It does not introduce clinical interpretation.
+The latest continuation changes local-state integrity, privacy, tests, verification evidence, and release documentation only. It does not add medical interpretation.
 
 ---
 
-# Local-first/privacy boundary retained
+# Local-first boundary retained
 
 Current v1 still has:
 
 - no required CareNest account;
 - no required CareNest backend/server;
-- no automatic CareNest cloud sync;
+- no automatic CareNest cloud synchronization;
 - no silent caregiver sharing;
 - no hidden analytics/telemetry client;
 - local SQLite structured records;
-- encrypted imported document payloads;
+- separately encrypted imported document payloads;
 - manual password-encrypted backups;
-- explicit user-controlled export/share/calendar actions;
+- explicit user-controlled report/document/calendar sharing and export;
 - optional local app lock;
-- privacy-minimized notification/logging behavior.
+- privacy-minimized logging and diagnostics.
 
-The SQLite database is still **not** represented as transparently whole-database encrypted. The application sandbox/device security protects SQLite metadata, while document payloads and manual backup payloads have separate authenticated-encryption protections.
+The SQLite database is not described as transparently whole-database encrypted. Document and backup payloads retain their separate authenticated-encryption boundaries.
 
 ---
 
-# Starting point for this continuation
+# Starting automated baseline for this latest phase
 
-The prior documentation-complete `main` head before new runtime/test work was:
+The immediately preceding fully green automated source baseline was PR #33 source:
 
-`d1d62aaa9a4e8579badf0e89ee740bf39d0f4605`
+`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
 
-At that point the latest exact verified runtime/test source was still PR #30 source:
+PR #33 evidence:
 
-`c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`
-
-PR #30 baseline:
-
-- CareNest CI #248 / `31382194805`: success;
-- 74 unit tests;
-- 13 integration tests;
-- 54 UI-contract/policy tests;
-- 141 total core tests;
+- CareNest CI #332: success;
+- 106 unit tests;
+- 30 integration tests;
+- 54 UI-contract tests;
+- 190 total core tests;
 - Android Release: success;
 - Windows Release: success;
 - iOS simulator Release: success;
 - Mac Catalyst Release: success;
-- CodeQL #248 / `31382194687`: success;
-- Dependency Audit #10 / `31382194683`: success.
+- CodeQL #332: success;
+- Dependency Audit #13: success.
 
-The current continuation supersedes that automated source baseline with PR #33 as recorded below.
+PR #33 was marker-only and closed without merge.
 
----
-
-# Continuation goals completed
-
-The current continuation focused on remaining automatable release-quality work after the repository became source complete and documentation complete.
-
-Completed areas:
-
-- appointment UTC integrity;
-- appointment notification-permission fail-safe behavior;
-- direct application-service unit coverage;
-- deterministic reusable test doubles;
-- document import rollback consistency across SQLite + encrypted filesystem payload;
-- encrypted document key-buffer hygiene;
-- strict decrypted-backup archive topology;
-- backup cryptographic key/salt/key-copy hygiene;
-- authenticated chunked AEAD stream termination v2;
-- legacy encrypted-stream v1 read compatibility;
-- prefix-truncation resistance for new v2 streams;
-- trailing-data rejection for new v2 streams;
-- encrypted document metadata updated for new framing version;
-- exact-head PR verification cycles #31, #32, and #33;
-- complete architecture/security/testing/release/status/documentation alignment.
+All detailed appointment/service/document/backup/crypto work through that baseline remains in `docs/history/what_changed_through_pr33_20260813.md` and is not repeated here solely to avoid duplicating 1,333 already-preserved lines.
 
 ---
 
-# Detailed runtime/test commit ledger
+# Phase 9 objective
 
-The continuation was intentionally split into many logical commits so behavior/security/test changes remain reviewable.
+The latest continuation performed one more Settings/local-state integrity review after the PR #33 cryptographic/service baseline.
 
-## 1. Require explicit UTC appointment start timestamps
+The intended goal was narrow:
 
-Commit:
-
-`4263d18c16eeca8da13a9efc7efe344490c41ec3` — `fix: require UTC appointment start timestamps`
-
-Updated:
-
-`src/CareNest.Domain/Rules/AppointmentRules.cs`
-
-Behavior:
-
-- validates non-null appointment;
-- validates profile ID/title;
-- trims/validates `TimeZoneId`;
-- requires `appointment.StartsUtc.Kind == DateTimeKind.Utc`;
-- rejects local/unspecified appointment start values;
-- retains the explicit reminder-lead range boundary.
-
-Reason:
-
-The property is explicitly named/persisted as UTC and must not silently accept ambiguous clock kinds.
-
-## 2. Stop silently relabeling appointment clock ticks as UTC
-
-Commit:
-
-`175180eba49f51a5a18204e4857f66151a9adb1f` — `fix: stop reinterpreting appointment start time as UTC`
-
-Updated:
-
-`src/CareNest.Application/Services/AppointmentService.cs`
-
-Behavior:
-
-- removes silent `DateTime.SpecifyKind(..., DateTimeKind.Utc)` reinterpretation;
-- requires stored appointment start to already satisfy the UTC contract before reminder scheduling;
-- calculates reminder due time from the validated explicit UTC start instant plus the user-entered reminder lead.
-
-This is a time-integrity fix, not a medical scheduling decision.
-
-## 3. Appointment UTC/time-zone rule tests
-
-Commit:
-
-`9a3b160feca2413c64b579989b807f6e28490881` — `test: cover appointment UTC and timezone validation`
-
-Updated:
-
-`tests/CareNest.UnitTests/AppointmentAndProfileRulesTests.cs`
-
-Coverage:
-
-- local appointment start rejected;
-- unspecified appointment start rejected;
-- valid UTC accepted;
-- valid time-zone identifier is trimmed;
-- existing reminder-lead boundary remains covered.
-
-## 4. Reusable repository test double
-
-Commit:
-
-`899ad86f875c18eef3606cfaee3189078c44cd1c` — `test: add reusable repository test double`
-
-Added:
-
-`tests/CareNest.UnitTests/TestDoubles/RepositoryStub.cs`
-
-Provides a complete no-op/default implementation of `ICareNestRepository` that individual service tests can override narrowly.
-
-## 5. Deterministic TimeProvider test double
-
-Commit:
-
-`a2dd856f9f2a22360d98f505592737ded3c7365e` — `test: add deterministic CareNest time provider`
-
-Added:
-
-`tests/CareNest.UnitTests/TestDoubles/FixedTimeProvider.cs`
-
-Allows application-service tests to assert exact UTC timestamps without depending on the runner clock.
-
-## 6. Reminder coordinator spy
-
-Commit:
-
-`034ba02a225b11d98fa102f0601be8b6398455cd` — `test: add reminder coordinator spy`
-
-Added:
-
-`tests/CareNest.UnitTests/TestDoubles/ReminderCoordinatorSpy.cs`
-
-Tracks reminder rebuild calls while preserving a no-op platform-neutral service boundary.
-
-## 7. Notification service spy
-
-Commit:
-
-`d0475ef0a99d3bc2b753eed73142ac38f464b258` — `test: add notification service spy`
-
-Added:
-
-`tests/CareNest.UnitTests/TestDoubles/NotificationServiceSpy.cs`
-
-Tracks:
-
-- permission requests;
-- diagnostics;
-- scheduled notification requests;
-- cancellation calls;
-- test notification calls.
-
-## 8. Encrypted document-store spy
-
-Commit:
-
-`2062546eb2192357420ce63cdfbb4193f5ac5179` — `test: add encrypted document store spy`
-
-Added:
-
-`tests/CareNest.UnitTests/TestDoubles/DocumentStoreSpy.cs`
-
-Supports deterministic application-level import/export/delete tests without invoking real cryptography.
-
-## 9. ProfileService direct tests
-
-Commit:
-
-`a1aabf5209ccd5b833ca88cbf4972ee8fa8d91d4` — `test: cover profile service save and deletion flows`
-
-Added:
-
-`tests/CareNest.UnitTests/ProfileServiceTests.cs`
-
-Coverage includes:
-
-- new profile → Created audit;
-- existing profile → Updated audit;
-- `UpdatedUtc` comes from deterministic UTC time provider;
-- profile deletion coordinates encrypted document cleanup;
-- profile-photo encrypted payload cleanup;
-- profile cascade deletion;
-- deletion audit.
-
-## 10. Respect denied appointment notification permission
-
-Commit:
-
-`fa7e935b8f1da4f87cfa1751db6e86e07985466c` — `fix: respect denied appointment notification permission`
-
-Updated:
-
-`src/CareNest.Application/Services/AppointmentService.cs`
-
-Behavior:
-
-- if diagnostics show permission denied during an explicit reminder-capable save, CareNest requests permission;
-- if permission remains denied, no platform notification schedule is attempted;
-- rebuild path does not prompt for permission;
-- rebuild path does not attempt scheduling while permission remains denied.
-
-The appointment record itself remains local and saved even when notification permission is unavailable.
-
-## 11. AppointmentService direct tests
-
-Commit:
-
-`c16b1bdffb8264f0bac572dd72ade8283cbb6025` — `test: cover appointment reminder service behavior`
-
-Added:
-
-`tests/CareNest.UnitTests/AppointmentServiceTests.cs`
-
-Coverage:
-
-- new appointment save + Created audit;
-- exact reminder due time from explicit UTC start;
-- denied permission + rejected request → no schedule;
-- denied permission + granted request → schedule;
-- rebuild with denied permission → no prompt/no schedule;
-- stored non-UTC appointment → fail closed;
-- delete cancels platform reminder then deletes record.
-
-## 12. MedicineService direct tests
-
-Commit:
-
-`8a5a9c0ae87e3b27ec2d073318cb31c07bd83b4d` — `test: cover medicine service persistence and stock flows`
-
-Added:
-
-`tests/CareNest.UnitTests/MedicineServiceTests.cs`
-
-Coverage:
-
-- new medicine → Created audit;
-- existing medicine → Updated audit;
-- reminder rebuild after save;
-- schedule persistence;
-- future occurrence invalidation from exact current UTC;
-- reminder rebuild after schedule save;
-- stock adjustment uses repository/user-entered values;
-- fallback to explicit medicine stock value;
-- negative estimated stock rejected before persistence;
-- medicine cascade delete + audit + reminder rebuild.
-
-No stock change is inferred from medicine strength/instructions.
-
-## 13. Roll back document DB record when import audit fails
-
-Commit:
-
-`ae2c09be7774a6a846ed4ad9c0ec0cf6bd98be35` — `fix: rollback document record when import audit fails`
-
-Updated:
-
-`src/CareNest.Application/Services/DocumentService.cs`
-
-Previous gap:
-
-If encrypted payload creation and DB metadata save succeeded but audit persistence failed, the catch path removed the encrypted payload but could leave the DB record pointing to a now-missing encrypted file.
-
-Current behavior:
-
-1. encrypted payload is created;
-2. DB document metadata is saved;
-3. audit entry is attempted;
-4. if DB save fails, encrypted payload is removed;
-5. if audit fails after DB save, DB record and encrypted payload are both rolled back;
-6. rollback uses `CancellationToken.None` so a cancelled main operation does not intentionally strand newly created artifacts;
-7. cleanup failures are collected;
-8. if cleanup cannot fully complete, an `AggregateException` surfaces original + cleanup failures instead of hiding partial cleanup.
-
-This is compensating rollback, not a claim of a cross-filesystem/SQLite ACID transaction.
-
-## 14. DocumentService rollback/export tests
-
-Commit:
-
-`65a9917ead7db985b97eafeea39554b6cce2ca45` — `test: cover encrypted document service rollback and export flows`
-
-Added:
-
-`tests/CareNest.UnitTests/DocumentServiceTests.cs`
-
-Coverage:
-
-- successful import metadata/audit;
-- DB save failure removes encrypted payload;
-- audit failure removes DB record + encrypted payload;
-- explicit export constrains original filename to safe leaf path;
-- explicit export audits `Exported` action;
-- existing document delete removes DB record + encrypted payload;
-- missing document delete is idempotent.
-
-## 15. Backup reminder coordinator tests
-
-Commit:
-
-`067076425cba56471117465f5d94acb12bb6693a` — `test: cover backup reminder scheduling and permission flows`
-
-Added:
-
-`tests/CareNest.UnitTests/BackupReminderCoordinatorTests.cs`
-
-Coverage:
-
-- disabled backup reminder cancels registration;
-- denied permission without explicit prompt → no schedule;
-- explicit prompt still denied → no schedule;
-- no previous backup → schedules from current UTC + configured days;
-- overdue backup → schedules near future instead of past;
-- sound/vibration preferences respected.
-
-## 16. Simplify denied backup-permission regression
-
-Commit:
-
-`b6eb37b0475139fe7a2b0e588a97a7e998d8828d` — `test: simplify denied backup permission regression`
-
-Refined the permission-denied test to use the reusable notification spy cleanly rather than hiding base members in a derived helper.
-
-## 17. Clear document master-key copy after vault operations
-
-Commit:
-
-`6ad32950b60ac6e439bcb1634603e4b8d4fd63ee` — `security: clear document master key after vault operations`
-
-Updated:
-
-`src/CareNest.Infrastructure/Documents/EncryptedDocumentStore.cs`
-
-Behavior:
-
-- caller-owned 32-byte key copy retrieved from `ISecretStore` is zeroed in `finally` after import;
-- caller-owned key copy is zeroed after export;
-- invalid retrieved key copy is zeroed before generating a replacement.
-
-## 18. Clear generated key if secure-store persistence fails
-
-Commit:
-
-`0dc941449661cb39b90de8163b73f05b22bbcdbf` — `security: clear generated document key when persistence fails`
-
-If a newly generated document key cannot be persisted to secure storage, its caller-owned buffer is zeroed before the failure propagates.
-
-## 19. Verify document key-buffer clearing
-
-Commit:
-
-`93b70421bc231dbee2740808caea45fb7264dfe1` — `test: verify document master key buffers are cleared`
-
-Updated:
-
-`tests/CareNest.IntegrationTests/EncryptedDocumentStoreTests.cs`
-
-Adds a tracking `ISecretStore` to prove caller-owned key buffers passed into/out of the abstraction are zeroed by CareNest after import/export.
-
-## 20. Make profile cleanup assertion explicit
-
-Commit:
-
-`fe4b1c8780e3c4d431bba0da3a9180502ed59ad4` — `test: make profile cleanup assertion explicit`
-
-Refined the profile cleanup assertion before exact-head verification.
-
-## 21. Expose infrastructure internals to integration tests
-
-Commit:
-
-`53b61862b4661459e12bec7967d76065c4412b85` — `test: expose infrastructure internals to integration tests`
-
-Added:
-
-`src/CareNest.Infrastructure/Properties/AssemblyInfo.cs`
-
-with `InternalsVisibleTo("CareNest.IntegrationTests")` so the strict archive validator and shared crypto framing can be tested directly without making them public runtime APIs.
-
-## 22. Add strict backup archive topology validator
-
-Commit:
-
-`1d67e883608bdfb95237bf994a89533bed38b52f` — `security: validate encrypted backup archive topology`
-
-Added:
-
-`src/CareNest.Infrastructure/Backup/BackupArchiveValidator.cs`
-
-Allowed file topology after authenticated decryption:
-
-```text
-manifest.json
-database/carenest.db
-secrets/document-master-key.bin
-documents/<top-level-name>.cndoc
-```
-
-Rules:
-
-- package format version must match supported CareNest format;
-- schema version must be positive;
-- document count must be non-negative;
-- duplicate file entries rejected;
-- manifest required;
-- database required;
-- unexpected files rejected;
-- nested document paths rejected;
-- non-`.cndoc` document files rejected;
-- manifest document count must equal actual document entries;
-- document-bearing backup requires valid 32-byte document key;
-- any present document-key entry must be exactly 32 bytes.
-
-## 23. Portable archive-separator validation
-
-Commit:
-
-`20a3d35b604a989d86b9f46a73e8db0f3c8a0cfc` — `fix: use portable backup entry separator checks`
-
-Ensures archive topology validation is cross-platform and explicitly rejects both slash/backslash nesting without relying on a platform-specific overload.
-
-## 24. Enforce strict backup archive/key cleanup in production service
-
-Commit:
-
-`3b4d28e77f01e297420dd7582b10b2d749ac6204` — `security: enforce strict backup archive and key cleanup`
-
-Updated:
-
-`src/CareNest.Infrastructure/Backup/EncryptedBackupService.cs`
-
-Behavior:
-
-- `InspectAsync` validates strict archive topology after authenticated decryption;
-- restore validates topology before extraction;
-- path containment remains a defense-in-depth extraction control;
-- backup creation clears copied document-master-key buffer after use;
-- PBKDF2-derived AES key is zeroed after encrypt/decrypt paths;
-- random salt buffer is zeroed after encrypt/decrypt paths;
-- old/restored document-key copies are zeroed after restore handling;
-- document-bearing backup cannot be created/restored without the required valid key material.
-
-## 25. Strict backup-topology integration tests
-
-Commit:
-
-`61e83a977ea607c310701bce7e767d12d8bb142b` — `test: cover strict encrypted backup archive topology`
-
-Added:
-
-`tests/CareNest.IntegrationTests/BackupArchiveValidatorTests.cs`
-
-Coverage:
-
-- valid archive with no docs;
-- valid archive with document + 32-byte key;
-- nested document entry rejected;
-- non-`.cndoc` entry rejected;
-- unexpected file rejected;
-- duplicate file entry rejected;
-- manifest count mismatch rejected;
-- missing document key rejected when documents exist;
-- invalid key length rejected;
-- invalid schema version rejected;
-- negative document count rejected.
-
-## 26. Expose copied secret buffers in integration test infrastructure
-
-Commit:
-
-`26f9c9ed9cb020f46ff8fd0ce0a62d4371c6f99c` — `test: expose copied secret buffers for hygiene assertions`
-
-Updated:
-
-`tests/CareNest.IntegrationTests/TestInfrastructure.cs`
-
-The in-memory secret store retains references to the caller-owned copies it returns/receives so integration tests can assert CareNest zeroed those specific buffers while independently retaining its own stored copy.
-
-## 27. Verify backup clears copied document key
-
-Commit:
-
-`8e2607f287ca5777d9edbab445042f96c6bcfcec` — `test: verify backup clears copied document key buffer`
-
-Updated:
-
-`tests/CareNest.IntegrationTests/EncryptedBackupTests.cs`
-
-This became the first exact source head for PR #31.
-
-Coverage proves backup creation clears the caller-owned document-master-key copy after it has been used to create the protected portable backup.
+1. Ensure the full local-state lifecycle does not create active structured metadata that points to an already-unavailable encrypted document payload if a later operation fails.
+2. Ensure the document-vault master key is handled through the existing `ISecretStore` abstraction and remains available until encrypted payload processing completes.
+3. Ensure app-lock secure material is handled after document-vault local-state processing.
+4. Preserve the already verified Settings MAUI/MVVM architecture rather than introducing a parallel/obsolete implementation shape.
+5. Protect the resulting dependency wiring and lifecycle ordering with platform-neutral UI-contract tests.
+6. Re-run exact-head formatting, tests, four platform Release builds, CodeQL, and dependency audit.
 
 ---
 
-# PR #31 — superseded verification that exposed CA1861
+# Initial Settings lifecycle finding
 
-Exact source:
+The original PR #33 Settings lifecycle processed encrypted document files before the structured repository transition.
 
-`8e2607f287ca5777d9edbab445042f96c6bcfcec`
+That order could create an undesirable partial state if encrypted payload processing succeeded but the later repository operation failed: structured metadata could remain while its corresponding payload was already unavailable to CareNest.
 
-Verification marker:
+The intended hardening therefore moved the structured repository transition before encrypted payload processing, while still collecting the target document filenames beforehand.
 
-`f98c3cc3458e0e42b6336111b7fc4f400ec75d92`
+The document key must remain available during payload processing. Its secure-storage entry is transitioned only after the targeted encrypted payload work succeeds.
+
+---
+
+# Superseded Settings implementation sequence
+
+A source-selection/replay mistake occurred during this continuation and is documented explicitly rather than hidden.
+
+An obsolete/stale `SettingsViewModel` implementation shape was accidentally written to `main` while the lifecycle work was being applied. That obsolete shape used types from an older architecture such as:
+
+- `ViewModelBase`;
+- `IBackupReminderCoordinator`;
+- `INavigationService`;
+- `IUserDialogService`;
+- `IFileShareService`;
+- `IAsyncCommand`.
+
+Those are not the types used by the verified PR #33 Settings implementation.
+
+The relevant superseded commits in that path were:
+
+- `c83ca013588ebb022b4ce30de99e51bcd69c9f6e` — initial local-state ordering edit on the stale Settings source.
+- `48ed3782d7756458c189f2cb594e672343781eb3` — first stale Settings source contract.
+- `7b942187d1d7d77ae149e5895d5f221697825111` — stale Settings source with document-key lifecycle addition.
+- `de6e0a05ef177ffbb7def07c9e3c91c65a6ac091` — stale Settings test update.
+- `543916d9d0ed4640617e9c2890a8af4e0daf8fb1` — additional stale-source Settings edit.
+- `218db7e9ce7e6890fece430e909fa22c364634b1` — stale contract/source candidate used for PR #35.
+
+These commits are retained in Git history for traceability but are **not** the final source interpretation.
+
+---
+
+# Verification PR #34 — superseded before promotion
+
+A marker-only verification branch was created from source `48ed3782...`.
 
 PR:
 
-`#31 — Verify CareNest service, document, and backup hardening`
+`#34 — Verify CareNest reset data integrity hardening`
 
-Marker-only diff:
+Marker head:
 
-`build/verification/rc1-service-backup-hardening-20260813.txt`
+`6dc4bd4cb2739a1b528bf8efee741313113e6740`
 
-Result:
+PR #34 was closed without merge when the continuing lifecycle review found one more secure-storage requirement: the CareNest document master key still needed to be included in the full local-state lifecycle.
 
-- platform-neutral formatting passed;
-- unit-test compilation exposed CA1861 in a new constant-array assertion in `ProfileServiceTests`;
-- the analyzer finding was treated as a real quality-gate failure;
-- no analyzer suppression was added;
-- PR #31 was closed without merge;
-- marker never entered `main`;
-- PR #31 is **not** release evidence.
-
-## CA1861 correction
-
-Commit:
-
-`8a28bbf30692b2b0e98ec801dac1531d50d65db1` — `fix: satisfy static array analyzer in profile cleanup test`
-
-The expected cleanup array became a static test field rather than allocating a constant array inside the assertion.
-
-This corrected source became the PR #32 verification base.
+PR #34 was therefore not promoted as release evidence and its marker did not enter `main`.
 
 ---
 
-# PR #32 — green service/document/backup baseline
+# Verification PR #35 — CI exposed the obsolete source
 
-Exact source:
+A later marker-only verification PR was created from stale source:
 
-`8a28bbf30692b2b0e98ec801dac1531d50d65db1`
-
-Marker:
-
-`aa751f8f84cc2ef3fa0dd93bfcd8db9e5d2288d4`
+`218db7e9ce7e6890fece430e909fa22c364634b1`
 
 PR:
 
-`#32 — Reverify CareNest service, document, and backup hardening`
+`#35 — Verify final CareNest settings integrity hardening`
 
-Marker-only file:
+Marker head:
 
-`build/verification/rc1-service-backup-hardening-20260813-2.txt`
+`01671e0b08d01a85e67311d4e76ef7023d521410`
 
-Results:
+Workflow runs:
 
-- CareNest CI #326 / `31690726676`: **success**;
-- formatting: **success**;
-- unit tests: **106 passed, 0 failed, 0 skipped**;
-- integration tests: **26 passed, 0 failed, 0 skipped**;
-- UI-contract/policy tests: **54 passed, 0 failed, 0 skipped**;
-- total core tests: **186 passed**;
-- Android Release: **success**;
-- Windows Release: **success**;
-- iOS simulator Release: **success**;
-- Mac Catalyst Release: **success**;
-- CodeQL #326 / `31690726675`: **success**;
-- Dependency Audit #12 / `31690726700`: **success**.
+- CareNest CI #358 / run `31701221708`;
+- CodeQL #358 / run `31701221693`;
+- Dependency Audit #15 / run `31701221717`.
 
-PR #32 was closed without merge after success. Its marker did not enter production source.
+Dependency Audit #15 completed successfully and the core test step reached green, but Android/Apple application compilation failed.
 
-The open SQLitePCLRaw advisory remained open; a green Dependency Audit does not mean remediation occurred.
+The Android job exposed compile errors for the obsolete Settings architecture, including missing types such as:
 
----
+- `ViewModelBase`;
+- `IBackupReminderCoordinator`;
+- `INavigationService`;
+- `IUserDialogService`;
+- `IFileShareService`;
+- `IAsyncCommand`.
 
-# Deeper cryptographic audit and authenticated stream v2
+That failure was treated correctly as source evidence. The project did **not** suppress the compiler errors, weaken CI, or represent PR #35 as successful.
 
-After the PR #32 source was green, a deeper review of the shared chunked authenticated-encryption format identified a meaningful integrity hardening opportunity.
-
-Legacy framing v1 authenticated each data chunk, but the final zero-length marker was not itself authenticated. A valid authenticated prefix ending exactly at a chunk boundary could therefore theoretically be presented as complete if a parser accepted a zero-length terminator at that point.
-
-Rather than remove compatibility with existing CareNest encrypted data, the solution was:
-
-- write new streams as framing **v2**;
-- authenticate the terminal record in v2;
-- keep legacy v1 decryption support;
-- explicitly document that old v1 ciphertext is not retroactively upgraded.
-
-## 28. Authenticate chunked AEAD stream termination
-
-Commit:
-
-`f1df67def1bb4ac311eeed3bd9f9661ebad772cc` — `security: authenticate chunked AEAD stream termination`
-
-Updated:
-
-`src/CareNest.Infrastructure/Security/ChunkedAead.cs`
-
-New write format:
-
-- magic bytes;
-- framing version `2`;
-- 12-byte base nonce;
-- zero or more authenticated data chunk records;
-- authenticated terminal record.
-
-Each data chunk binds through AAD:
-
-- stable application context prefix;
-- chunk counter;
-- plaintext chunk length.
-
-V2 terminal:
-
-- 4-byte zero length;
-- 16-byte AES-GCM authentication tag;
-- tag is computed with the **next** chunk counter and length `0` over empty plaintext.
-
-Security effect:
-
-A valid prefix cannot be accepted as a complete v2 stream merely by ending on an authenticated chunk boundary unless the terminator tag for that exact next counter is also valid.
-
-Reader behavior:
-
-- supports v1 and v2;
-- validates expected magic;
-- validates supported version;
-- validates chunk length;
-- verifies each AES-GCM chunk;
-- verifies v2 terminal tag;
-- rejects trailing bytes after terminal;
-- checks counter overflow;
-- requires a 32-byte AES-256 key.
-
-Memory hygiene:
-
-Known mutable buffers are zeroed where practical, including base nonce, plaintext chunk buffer, ciphertext chunk buffer, data tag, terminal tag, per-record nonce, AAD, header/magic/length buffers.
-
-## 29. Mark new encrypted documents as stream format v2
-
-Commit:
-
-`4b3a7984dfdf590373e29cee0b3e40ae7fc5641e` — `security: mark new encrypted documents with stream format v2`
-
-Updated:
-
-`src/CareNest.Infrastructure/Documents/EncryptedDocumentStore.cs`
-
-New document imports now store:
-
-`EncryptionVersion = 2`
-
-Existing v1 encrypted document files remain readable and are not automatically rewritten merely because the app is upgraded.
-
-## 30. Direct authenticated-stream v2 + legacy v1 tests
-
-Commit:
-
-`5a1de4260bb3579b0d8dcef289beb4175dd369b3` — `test: cover authenticated stream termination and v1 compatibility`
-
-Added:
-
-`tests/CareNest.IntegrationTests/ChunkedAeadTests.cs`
-
-Coverage:
-
-- v2 multi-chunk round-trip;
-- output header records version 2;
-- chunk-boundary prefix truncation is rejected because a terminal tag from a later counter cannot authenticate at the earlier counter;
-- trailing data after valid terminal is rejected;
-- handcrafted legacy v1 stream remains decryptable.
-
-## 31. Avoid constant-array allocations in legacy fixture
-
-Commit:
-
-`2469445dcb8551a54f99fb092d69837a2de15af3` — `test: avoid constant array allocations in legacy stream fixture`
-
-Refined the v1 compatibility fixture to avoid triggering the same constant-array allocation analyzer family seen during PR #31.
-
-## 32. Require new encrypted document metadata version 2
-
-Commit:
-
-`4f5f9abe9d702fa33d6aba3f15c113febfebf95e` — `test: require encrypted document stream format v2`
-
-Updated:
-
-`tests/CareNest.IntegrationTests/EncryptedDocumentStoreTests.cs`
-
-The integration suite now explicitly requires new imports to report `EncryptionVersion == 2` while preserving read compatibility for v1 framing through the direct shared framing test.
-
-This commit became the exact source for PR #33.
+PR #35 was closed without merge and is explicitly **not** release evidence.
 
 ---
 
-# PR #33 — current fully green exact automated runtime/test baseline
+# Recovery of the verified Settings architecture
 
-Verification branch:
-
-`ci/carenest-rc1-aead-v2-hardening-20260813`
-
-Exact runtime/test source:
+The exact PR #33 Settings implementation was retrieved from verified source:
 
 `4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
 
-Verification marker head:
+That correct implementation uses:
 
-`62a0050a2622e12a31d00842778af0bc96355482`
+- `SettingsViewModel : ObservableViewModel`;
+- `ICareNestRepository _repository`;
+- `AppStateService _state`;
+- `INotificationService _notifications`;
+- `IReminderCoordinator _reminders`;
+- `IAppointmentService _appointments`;
+- `BackupReminderCoordinator _backupReminder`;
+- `IBackupService _backup`;
+- `IDocumentStore _documents`;
+- `IAppFileGateway _files`;
+- `IAppLockService _lock`;
+- `IAppNavigator _navigator`;
+- `ICommand` command surfaces.
 
-Marker file:
+The current `TestReminderAsync` permission behavior from the verified source was retained rather than replaced: it requests/confirms notification permission and stops before requesting a platform test notification when permission is not granted.
 
-`build/verification/rc1-aead-v2-hardening-20260813.txt`
+Recovery commit:
 
-Pull request:
+`b2549fd58c69f721c0cd600984a79f30c91912a2` — `fix: restore verified settings architecture with safe full reset`
 
-`#33 — Verify CareNest authenticated stream v2 hardening`
+That commit restored the PR #33 architecture and reapplied only the intended lifecycle changes.
 
-The PR contained only the verification marker beyond the exact source head and was closed without merge after all gates passed.
+---
 
-## CareNest CI #332
+# Final Settings lifecycle behavior
 
-Run:
+The final verified `SettingsViewModel.ResetAllDataAsync` flow uses this conceptual order:
 
-`31691592300`
+1. Request cancellation of CareNest notification registrations.
+2. Capture the encrypted document filenames that must be processed.
+3. Transition the structured local repository to its fresh state.
+4. Process the targeted encrypted document payload files while the document key remains available.
+5. Transition `SecretKeys.DocumentMasterKey` through the registered `ISecretStore` after payload processing succeeds.
+6. Disable app lock through the existing `IAppLockService` abstraction.
+7. Clear the Settings in-memory app-lock state.
+8. Return navigation to onboarding.
 
-Conclusion:
+Failure-safety intent:
+
+- if repository processing fails, encrypted payloads and key material have not already been made unavailable by CareNest;
+- if encrypted payload processing stops part way through, the document key still exists for a later retry;
+- only after encrypted payload work succeeds does CareNest transition the document key;
+- app-lock secure material is handled afterward through its existing service;
+- navigation occurs last.
+
+This remains an application-level privacy lifecycle. It is not represented as physical secure erasure of flash storage or removal of user/OS copies outside CareNest's control.
+
+---
+
+# Secure-storage audit
+
+The current secure-store abstraction is:
+
+`ISecretStore`
+
+MAUI registration:
+
+`AddSingleton<ISecretStore, SecureSecretStore>()`
+
+`SecureSecretStore.RemoveAsync` maps to platform `SecureStorage.Default.Remove(key)` while respecting cancellation.
+
+Document-vault key:
+
+`SecretKeys.DocumentMasterKey = "documents.master-key.v1"`
+
+App-lock material is handled through `AppLockService.DisableAsync`, which removes the CareNest app-lock enabled flag, PBKDF2 salt, and verifier values from the same secure-storage abstraction.
+
+The final Settings source therefore uses existing platform/security boundaries instead of directly calling a platform secure-storage API from the view-model.
+
+---
+
+# Stale contract removal and replacement
+
+The obsolete Settings contract left from the stale-source sequence was removed:
+
+`0b3dbfb880c057391c04dafe47e9366d539db504` — `test: remove obsolete settings contract`
+
+A new current-architecture contract was then added:
+
+`3b19ce08f509f27aca823469abc5b8a03ed2465a` — `test: add settings lifecycle contract`
+
+File:
+
+`tests/CareNest.UiTests/SettingsLifecycleContractTests.cs`
+
+The contract contains two tests.
+
+## Contract 1 — registered secret-store lifecycle
+
+Checks that:
+
+- Settings depends on `ISecretStore`;
+- constructor injection is present;
+- the injected secret store is retained;
+- the document master-key constant participates in the Settings lifecycle;
+- `MauiProgram.cs` registers `ISecretStore` → `SecureSecretStore`.
+
+## Contract 2 — lifecycle ordering
+
+Checks the current source order of:
+
+- notification cancellation;
+- encrypted-file discovery;
+- structured repository transition;
+- encrypted payload processing;
+- secret-store document-key transition;
+- app-lock transition;
+- onboarding navigation.
+
+This increased the UI-contract suite from 54 to 56 tests.
+
+---
+
+# Exact repaired-source comparison to PR #33
+
+Before final verification, source:
+
+`3b19ce08f509f27aca823469abc5b8a03ed2465a`
+
+was compared directly against verified PR #33 source:
+
+`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
+
+At that comparison point, the only non-Markdown differences were:
+
+- `src/CareNest.App/ViewModels/SettingsViewModel.cs` — 15 additions, 2 deletions;
+- `tests/CareNest.UiTests/SettingsLifecycleContractTests.cs` — new 45-line file.
+
+All other differences were documentation.
+
+This comparison was used to prove that the obsolete Settings implementation was no longer present in the final candidate.
+
+---
+
+# Final exact-head verification — PR #36
+
+Final verified source:
+
+`3b19ce08f509f27aca823469abc5b8a03ed2465a`
+
+Verification branch:
+
+`ci/carenest-rc1-final-verification-20260813`
+
+Verification marker:
+
+`b89d4289172f1d4004f3b7017b7ebb90d5471b13`
+
+Marker path:
+
+`build/verification/rc1-final-verification-20260813.txt`
+
+PR:
+
+`#36 — Verify final CareNest rc1 source head`
+
+PR #36 changed only the marker file beyond the exact base source.
+
+After all required checks passed, PR #36 was closed **without merge**. The marker is not part of `main`.
+
+---
+
+# PR #36 automated evidence
+
+## CareNest CI #362
+
+Run ID:
+
+`31701943543`
+
+Result:
 
 **success**
 
-Core evidence:
+Core job:
 
-- platform-neutral formatting: **success**;
-- `CareNest.UnitTests`: **106 passed, 0 failed, 0 skipped**;
-- `CareNest.IntegrationTests`: **30 passed, 0 failed, 0 skipped**;
-- `CareNest.UiTests`: **54 passed, 0 failed, 0 skipped**;
-- total core tests: **190 passed, 0 failed, 0 skipped**.
+- platform-neutral formatting: success;
+- UnitTests: 106 passed, 0 failed, 0 skipped;
+- IntegrationTests: 30 passed, 0 failed, 0 skipped;
+- UiTests: 56 passed, 0 failed, 0 skipped;
+- total core tests: 192 passed, 0 failed, 0 skipped.
 
-Platform evidence:
+Job IDs:
 
-- Android Release: **success**;
-- Windows Release: **success**;
-- iOS simulator Release: **success**;
-- Mac Catalyst Release: **success**.
+- Core tests: `94452963864`
+- Android build: `94452963638`
+- Windows build: `94452963566`
+- Apple build: `94452963689`
 
-## CodeQL #332
+Platform builds:
 
-Run:
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success.
 
-`31691592435`
+## CodeQL #362
 
-Conclusion:
+Run ID:
 
-**success**
+`31701943506`
 
-## Dependency Audit #13
-
-Run:
-
-`31691592302`
-
-Conclusion:
+Result:
 
 **success**
 
-Important dependency statement:
+## Dependency Audit #16
 
-The successful Dependency Audit does **not** close `GHSA-2m69-gcr7-jv3q`. The exact advisory remains narrowly suppressed so unrelated failures stay visible. `docs/security/DEPENDENCY_RISK_REGISTER.md` remains the authoritative open-risk record.
+Run ID:
 
-## Current automated baseline
+`31701943476`
 
-PR #33 supersedes PR #30 and PR #32 as the latest exact automated runtime/test source baseline.
+Result:
 
-Current counts:
+**success**
 
-- unit: 106;
-- integration: 30;
-- UI-contract/policy: 54;
-- total: 190.
+The successful dependency audit does **not** close the tracked SQLitePCLRaw advisory described below.
 
 ---
 
-# Cryptographic version distinction
+# New Phase 9 documentation commits
 
-The repository now explicitly distinguishes several version layers.
+The verified source was frozen before the following documentation-only commits.
 
-## Backup package/application format
+## Verification evidence
 
-The versioned CareNest backup package/manifest format is governed separately by `AppConstants.BackupFormatVersion`.
+`754b84628ccf01e53782f0501c1ddbb6be7287db` — `docs: add final Settings lifecycle verification evidence`
 
-## Backup outer encryption header
+Added:
 
-The outer CareNest backup recognizer/header has its own version boundary.
+`docs/releases/SETTINGS_LIFECYCLE_VERIFICATION_20260813.md`
 
-## Chunked AEAD stream framing
+Contains exact PR #36 source/marker/run/job/test evidence plus PR #34/#35 recovery history.
 
-The internal shared streaming encryption framing is now:
+## Local-state security model
 
-- v1: legacy readable format;
-- v2: current new-write format with authenticated terminal record.
+`b66886da3b30403cddb755721c5828a0533a3402` — `docs: document full local-data clear security model`
 
-These are intentionally not conflated.
+Added:
 
-## Stable AAD context strings
+`docs/security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md`
 
-Strings such as `CareNest.Document.v1` are stable application-context AAD labels, not a declaration that the chunked stream framing is still version 1.
+Documents ordering rationale, failure behavior, secure-store boundaries, notification limitations, external-copy limits, automated controls, and residual risks.
 
----
+## Settings lifecycle testing contract
 
-# V1 compatibility boundary
+`269b380efb9ad5750e1e65db271c0cdc287444db` — `docs: document Settings lifecycle regression contract`
 
-CareNest does not claim historical v1 ciphertext has magically received v2 protection.
+Added:
 
-Current compatibility policy:
+`docs/testing/SETTINGS_LIFECYCLE_CONTRACT.md`
 
-- all new shared encrypted streams use framing v2;
-- existing framing-v1 encrypted document/backup streams remain readable;
-- v1 is retained to avoid making existing user data inaccessible;
-- v1 ciphertext is not automatically rewritten in the background;
-- removing v1 support requires an explicit migration/deprecation/security/recovery review;
-- canonical historical fixtures should be preserved/used before production deprecation decisions.
+Documents the two new UI contracts, their architectural purpose, and regression-response rules.
 
-Automated evidence currently includes a handcrafted v1-compatible stream fixture.
+## Privacy lifecycle
 
-Manual/release evidence still worth obtaining:
+`c5499828a217a32add62e652788dfeee546a45b3` — `docs: document local privacy cleanup lifecycle`
 
-- a canonical encrypted document created by a previously verified/released v1 build using synthetic data;
-- a canonical encrypted backup created by a previously verified/released v1 path using synthetic data;
-- successful read/restore of those exact historical fixtures in the intended production package.
+Added:
 
----
+`docs/privacy/LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md`
 
-# Sensitive-memory boundary
+Documents the CareNest-controlled state boundary versus backups/exports/screenshots/OS copies outside the application boundary.
 
-CareNest now explicitly clears known application-owned mutable buffers where practical.
+## Phase 9 evidence
 
-Covered examples:
+`7120fb3b1f40094ee9bf386bc5d6ad81641b5635` — `docs: add Phase 9 exact-head verification evidence`
 
-- app-lock derived verifier;
-- app-lock retrieved verifier;
-- retrieved document-master-key copy;
-- generated document key if persistence fails;
-- backup copied document key;
-- backup old/restored document-key copies;
-- PBKDF2-derived backup AES key;
-- backup random salt;
-- chunked-AEAD plaintext buffer;
-- chunked-AEAD ciphertext buffer;
-- authentication tags;
-- per-record nonce;
-- AAD buffer;
-- terminal tag.
+Added:
 
-Limitations remain explicit:
+`docs/releases/PHASE9_VERIFICATION_EVIDENCE.md`
 
-`CryptographicOperations.ZeroMemory` reduces lifetime of known mutable arrays owned by CareNest. It does not prove erasure of copies inside the garbage-collected runtime, platform secure store, OS, swap, crash dumps, hardware caches, or a compromised process/device.
+Provides the compact exact-source PR #36 evidence record.
 
----
+## Preserve previous active handoff
 
-# Strict backup topology boundary
+`566e2df4dae9d56c406539cd6bd9df3db19e76b4` — `docs: preserve CareNest handoff through PR33`
 
-After authenticated decryption, a backup archive is validated against exactly what the restore implementation consumes.
+Added exact old `what_changed.md` blob at:
 
-Allowed file layout:
+`docs/history/what_changed_through_pr33_20260813.md`
 
-```text
-manifest.json
-database/carenest.db
-secrets/document-master-key.bin
-documents/<top-level-name>.cndoc
-```
+## Preserve previous project status
 
-`secrets/document-master-key.bin` may be absent for a no-document backup, but if present must be 32 bytes. If documents exist, the 32-byte key is required.
+`8bb384fc1aba1b7e9329bc6da144bd3decad13fc` — `docs: preserve project status through PR33`
 
-Rejected layouts include:
+Added exact old `PROJECT_STATUS.md` blob at:
 
-- duplicate file entries;
-- missing manifest;
-- missing database;
-- unsupported package format;
-- invalid/non-positive schema version;
-- negative document count;
-- unexpected files;
-- nested document files;
-- backslash/slash nested document paths;
-- non-`.cndoc` document files;
-- document-count mismatch;
-- document-bearing archive without required key;
-- invalid-length document key.
+`docs/history/PROJECT_STATUS_through_PR33.md`
 
-Extraction also retains the existing full-path containment validation as defense in depth.
+## Promote current project status
+
+`0ec80aa644f3fbe7666cb5afd2b260c0bab1d6ce` — `docs: promote PR36 automated baseline`
+
+Updated canonical:
+
+`PROJECT_STATUS.md`
+
+It now records PR #36, 192 tests, all platform/security/dependency gates, recovery history, Phase 9 references, and unchanged real production blockers.
+
+## Phase 9 change record
+
+`da2979af1cbeda81b20f13a00f13995e1b308334` — `docs: add Phase 9 change record`
+
+Added:
+
+`docs/releases/CHANGELOG_PHASE9_20260813.md`
+
+This supplements the existing root changelog without rewriting older entries.
 
 ---
 
-# Application-service test coverage added
+# Current test baseline
 
-The platform-neutral unit suite now directly tests major application orchestration instead of relying only on UI/source contracts and integration persistence tests.
+Exact verified source:
 
-## ProfileService
+`3b19ce08f509f27aca823469abc5b8a03ed2465a`
 
-- create/update audit distinction;
-- deterministic UTC touch time;
-- cascading profile deletion coordination;
-- encrypted document cleanup;
-- profile-photo encrypted cleanup;
-- deletion audit.
+Current automated core test totals:
 
-## MedicineService
+- Unit: 106
+- Integration: 30
+- UI-contract: 56
+- Total: 192
 
-- create/update audit distinction;
-- reminder rebuild after medicine save;
-- schedule save;
-- future occurrence invalidation;
-- reminder rebuild after schedule change;
-- explicit user/repository stock arithmetic;
-- negative estimated stock rejection;
-- cascade delete/rebuild.
+All passed in PR #36.
 
-## AppointmentService
-
-- explicit UTC start;
-- due-time calculation;
-- create audit;
-- denied notification permission;
-- granted permission after explicit request;
-- rebuild without prompt while denied;
-- stored non-UTC fail-closed behavior;
-- cancellation before delete.
-
-## DocumentService
-
-- encrypted import metadata;
-- DB save failure rollback;
-- audit failure rollback;
-- cleanup failure surfacing;
-- safe export leaf filename;
-- export audit;
-- existing delete;
-- idempotent missing delete.
-
-## BackupReminderCoordinator
-
-- disabled state cancellation;
-- denied permission behavior;
-- no background permission prompt;
-- scheduling from current/last backup time;
-- overdue correction to near-future;
-- sound/vibration preferences.
+The two-test increase from PR #33 is entirely the new `SettingsLifecycleContractTests.cs` file.
 
 ---
 
-# Post-PR33 documentation alignment
+# Current documentation/evidence entry points
 
-After exact source `4f5f9abe...` was fully green, `main` was advanced only with documentation so runtime/test evidence remains exact and attributable.
+Primary current status/evidence:
 
-## Documentation commits after PR #33 source
+- `PROJECT_STATUS.md`
+- `docs/releases/SETTINGS_LIFECYCLE_VERIFICATION_20260813.md`
+- `docs/releases/PHASE9_VERIFICATION_EVIDENCE.md`
+- `docs/releases/CHANGELOG_PHASE9_20260813.md`
+- `docs/security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md`
+- `docs/testing/SETTINGS_LIFECYCLE_CONTRACT.md`
+- `docs/privacy/LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md`
+- `what_changed.md`
 
-1. `ecd190f28fd5e07ab2cdb1d17e14d825f30f986d` — `docs: expand test plan for service backup and AEAD hardening`
-2. `8340797afe8ec56f5f837f5bb2f1f1a1ca207491` — `docs: promote 190-test CareNest verification baseline`
-3. `7a809eb3443056d2df0b6f9cf3711bce3cc6b24b` — `docs: document appointment UTC and permission fail-safe behavior`
-4. `6d7b56787b9f89258b0a7c2592b7893ee1e65fae` — `docs: document document-vault v2 framing and rollback guarantees`
-5. `dace7f371daa65480e0bbdb712b91303ba99aca4` — `docs: document strict backup topology and authenticated framing v2`
-6. `1d08a3c4f6310880815f5e3c50d46a39772f4f45` — `docs: align security model with AEAD v2 and rollback hardening`
-7. `afa1cd5d2579853e737df0f7bf3a6eb2464d9422` — `docs: expand threat model for stream truncation and backup topology`
-8. `5299d5337f9ba44168bb833d228b7fdf8a7acd02` — `docs: record appointment rollback backup and AEAD v2 decisions`
-9. `5384b3472bc0119506c0109a4514eda408a9da95` — `docs: add service backup and AEAD v2 production quality gates`
-10. `010b675d5fb83c4e1f498be3708815f2a235414b` — `docs: expand security release review for v2 encryption hardening`
-11. `705263fd169dcabc7b1c606d7c825581acb8666c` — `docs: record PR33 190-test release verification evidence`
-12. `075dabf7a3e68531a8f4f0740e6118d30ea10bd4` — `docs: promote PR33 service backup and AEAD v2 baseline`
-13. `4c184d0ab5453522fffa8b9573b7cb6da66262ae` — `docs: record service backup and authenticated-stream hardening`
-14. `341f0e3081d71f430307a945eb3bb8b603db50be` — `docs: publish 190-test service backup and crypto baseline`
-15. `985204bcc01992622971c10af9a0164ce63fad9e` — `docs: promote PR33 baseline in documentation hub`
-16. `ff318bed42400f9bb53a4ea4d6bd8815f4a0feaf` — `docs: advance roadmap after PR33 crypto and service hardening`
-17. `d9271e24aa8b9884fc99ade11636a16e77aad9ea` — `docs: preserve complete 2026-08-12 CareNest handoff`
+Complete earlier records:
 
-The preservation commit adds only the exact prior handoff blob under `docs/history/`.
+- `docs/history/what_changed_full_through_phase8.md`
+- `docs/history/what_changed_documentation_through_20260812.md`
+- `docs/history/what_changed_through_pr33_20260813.md`
+- `docs/history/PROJECT_STATUS_through_PR33.md`
 
 ---
 
-# Documentation aligned to current verified source
+# Buy Me a Coffee / support status retained
 
-The following current files now describe the new runtime truth:
+Voluntary CareNest project support remains:
 
-- `docs/testing/TEST_PLAN.md`;
-- `docs/testing/TESTING_GUIDE.md`;
-- `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`;
-- `docs/architecture/DOCUMENT_VAULT.md`;
-- `docs/architecture/BACKUP_AND_RESTORE.md`;
-- `docs/security/SECURITY_MODEL.md`;
-- `docs/security/THREAT_MODEL.md`;
-- `DECISIONS.md`;
-- `docs/releases/QUALITY_GATE.md`;
-- `docs/releases/SECURITY_RELEASE_REVIEW.md`;
-- `docs/releases/RELEASE_CHECKLIST.md`;
-- `PROJECT_STATUS.md`;
-- `CHANGELOG.md`;
-- `README.md`;
-- `docs/README.md`;
-- `docs/releases/NEXT_STEPS.md`;
-- this `what_changed.md`.
+`https://buymeacoffee.com/sanskarIN`
 
----
+Existing support integration includes:
 
-# New architectural/security decisions recorded
+- centralized app constant;
+- in-app About support action;
+- `.github/FUNDING.yml`;
+- `BUY_ME_A_COFFEE.md`;
+- `docs/SUPPORT_CARENEST.md`;
+- custom CareNest BMC vector artwork;
+- funding-link contract tests;
+- privacy/security/store-boundary documentation.
 
-`DECISIONS.md` now includes:
+Funding remains voluntary, is separate from health data, and does not unlock medical functionality.
 
-## Decision 29 — appointment UTC and permission fail-safe
-
-- `StartsUtc` requires actual UTC kind;
-- local/unspecified ticks are rejected, not relabeled;
-- notification permission denial stops scheduling;
-- background rebuild does not repeatedly prompt while denied.
-
-## Decision 30 — document import compensating rollback
-
-- encrypted payload, DB metadata, and audit span multiple persistence surfaces;
-- DB save failure removes payload;
-- audit failure after metadata save removes both DB record and payload;
-- rollback cleanup is non-cancelled;
-- incomplete rollback is surfaced.
-
-## Decision 31 — clear caller-owned cryptographic buffers
-
-- mutable verifier/key/salt/work buffers are zeroed where practical;
-- no claim of total OS/runtime erasure.
-
-## Decision 32 — strict backup topology before extraction
-
-- restore accepts only the exact expected file layout;
-- duplicate/nested/unexpected/count/key-invalid layouts fail;
-- path containment remains defense in depth.
-
-## Decision 33 — authenticated stream v2 + v1 compatibility
-
-- new streams use authenticated terminal v2;
-- v2 rejects prefix truncation/trailing data;
-- v1 remains readable;
-- v1 data is not falsely represented as retroactively upgraded;
-- removing v1 requires explicit migration/deprecation review.
+Current Apple/Google store-policy review for the external support link remains an operational release gate.
 
 ---
 
@@ -1147,187 +617,94 @@ Tracked advisory:
 
 `GHSA-2m69-gcr7-jv3q`
 
-Current affected path:
+Current dependency path still resolves SQLitePCLRaw native `2.1.11` through the current `sqlite-net-pcl` chain.
 
-SQLitePCLRaw native `2.1.11` through the current sqlite-net-pcl dependency graph.
+The repository does **not** claim this is fixed.
 
-Current truthful state:
+The exact audit suppression is narrow and is not represented as remediation.
 
-- exact advisory is narrowly present in `NuGetAuditSuppress`;
-- no wildcard/severity-wide suppression exists;
-- the suppression is not remediation;
-- `docs/security/DEPENDENCY_RISK_REGISTER.md` marks the risk open;
-- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` defines the migration/upgrade regression gate;
-- final production release needs an explicit acceptable resolution/decision.
+Authoritative files:
 
-The current continuation did not guess or invent an unavailable patched package version.
+- `docs/security/DEPENDENCY_RISK_REGISTER.md`
+- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`
+
+Final production review must follow that documented migration/risk process.
 
 ---
 
-# Current production blockers
+# Production release blockers remain real
 
-Automated source hardening is green, but final public `1.0.0` remains intentionally blocked.
+PR #36 completes the current automated exact-head source verification. It does not complete public `1.0.0` promotion.
 
-## Manual platform/device behavior
+Still required:
 
-- Android phone/emulator matrix;
-- Windows matrix;
-- iPhone/iPad matrix;
-- Mac Catalyst matrix;
-- notification permission denied/granted;
-- appointment notification permission denied/granted;
-- real notification delivery limitations;
-- Android exact/inexact alarm behavior;
-- Android battery optimization behavior;
-- Android reboot/time/time-zone behavior;
-- real snooze behavior against platform scheduling;
-- document import/export/delete;
-- calendar export;
-- app-lock cold start;
-- encrypted backup/restore on clean installation.
+1. Android manual device/emulator matrix.
+2. Windows manual matrix.
+3. iOS/iPadOS manual matrix.
+4. Mac Catalyst manual matrix.
+5. Manual notification permission and real-delivery checks.
+6. Android alarm/battery/reboot/time/time-zone checks.
+7. Packaged-target appointment/reminder/document/calendar/report checks.
+8. Packaged-target v2 encrypted document/backup checks.
+9. Clean-install backup restore, wrong-password, and tamper checks.
+10. Current Settings local-state lifecycle checks on intended devices.
+11. Screen-reader checks.
+12. Large-text/text-scaling checks.
+13. Desktop keyboard/focus checks.
+14. Contrast/theme/reduced-motion checks.
+15. Current Apple App Store external-support-link policy review.
+16. Current Google Play external-support-link policy review.
+17. Signing identities/credentials outside Git.
+18. Signed package build and inspection.
+19. Store screenshots using fictional data.
+20. Store descriptions/privacy/data-safety metadata.
+21. Final SQLitePCLRaw advisory disposition.
+22. `CareNest Release Evidence` for the exact production commit.
+23. Final version/build metadata, release notes, checksums, production tag, and GitHub release only after applicable gates pass.
 
-## Encrypted-data compatibility
-
-- packaged-target test of new v2 document import/export;
-- packaged-target test of new v2 backup create/inspect/restore;
-- canonical historical v1 encrypted-document fixture verification when available;
-- canonical historical v1 backup fixture verification when available;
-- do not remove v1 support before explicit migration/deprecation evidence.
-
-## Accessibility
-
-- screen reader;
-- large text/text scaling;
-- keyboard/focus;
-- contrast/themes;
-- reduced motion.
-
-## Distribution
-
-- current Apple App Store rule review for voluntary external project-support link;
-- current Google Play rule review for voluntary external project-support link;
-- signing identities/credentials outside Git;
-- signed package creation/inspection;
-- package identities/version/build metadata;
-- screenshots with fictional data only;
-- store listing text;
-- privacy/data-safety disclosures.
-
-## Security/release evidence
-
-- explicit SQLitePCLRaw advisory resolution/decision;
-- final security review for exact production candidate;
-- final `CareNest Release Evidence` run for the exact promoted commit;
-- final release notes/tag/GitHub release only after applicable blockers clear.
-
-No item above is marked complete merely because automated tests are green.
+No item above is marked complete merely because the code/documentation exists or automated CI is green.
 
 ---
 
-# Deferred future scope remains unchanged
+# Deferred scope remains unchanged
 
-The following remain deliberately outside current v1 and require new privacy/security/threat/consent architecture before implementation:
+Still outside current v1:
 
 - cloud synchronization;
 - remote caregiver collaboration;
-- accounts;
-- mobile-number authentication;
-- server-side storage;
-- automatic remote sharing;
-- analytics/telemetry;
+- required accounts/mobile-number authentication;
+- server-side health-record storage;
+- silent remote sharing;
+- hidden analytics/telemetry;
 - diagnosis;
 - dosage calculation/inference;
 - treatment recommendations;
 - medication-interaction claims;
 - clinical risk scoring.
 
-The non-clinical boundary is not a temporary defect to remove.
+Any future networked feature requires a new consent/authentication/key/privacy/threat/export/store architecture review.
 
 ---
 
-# Git identity note
+# Environment truth
 
-Requested maintainer identity for local Git commits:
+The repository-assembly environment used in this work does not provide local `dotnet`/MAUI workloads, device simulators, signing credentials, or store submission sessions.
 
-```bash
-git config user.name "Sanskar"
-git config user.email "sanskarin@outlook.in"
-```
+GitHub-hosted Actions is the authoritative automated verification surface for the exact source SHA recorded above.
 
-Repository setup/documentation includes this identity in the local setup workflow.
-
-The connected GitHub APIs used in this conversation do not expose arbitrary author/committer-email parameters through the available write operations. Connector-created commits therefore use the authenticated GitHub identity. The repository does not falsely claim those API commits were forced to `sanskarin@outlook.in`.
-
-Local/future Git commits can use the requested email through the provided setup scripts.
+Manual device/accessibility/store/signing/release tasks remain separate and are not claimed complete unless actually performed.
 
 ---
 
-# Local environment limitation
+# Current repository interpretation
 
-The local execution environment used for repository assembly does not provide a complete .NET MAUI host with all platform workloads/device tooling.
-
-Therefore the repository does not falsely claim local execution of:
-
-- MAUI restore/build for all targets;
-- emulator/device smoke testing;
-- signing;
-- store packaging.
-
-GitHub-hosted Actions are the authoritative automated evidence for the exact source baselines recorded above.
-
----
-
-# Current exact repository interpretation
-
-- CareNest remains `1.0.0-rc.1`.
-- Complete runtime/test source is on `main`.
-- Latest exact automated runtime/test source is `4f5f9abe9d702fa33d6aba3f15c113febfebf95e`.
-- PR #33 is the current exact automated source baseline.
-- PR #33 marker `62a0050a2622e12a31d00842778af0bc96355482` was closed without merge.
-- CareNest CI #332 / `31691592300`: success.
-- Unit tests: 106 passed.
-- Integration tests: 30 passed.
-- UI-contract/policy tests: 54 passed.
-- Total core tests: 190 passed.
-- Android Release: success.
-- Windows Release: success.
-- iOS simulator Release: success.
-- Mac Catalyst Release: success.
-- CodeQL #332 / `31691592435`: success.
-- Dependency Audit #13 / `31691592302`: success.
-- Appointment UTC and permission fail-safe behavior is implemented/tested.
-- Direct application-service tests are implemented.
-- Document import rollback consistency is implemented/tested.
-- Document/backup key-buffer hygiene is implemented/tested.
-- Strict backup archive topology is implemented/tested.
-- New encrypted streams use authenticated-terminal framing v2.
-- V2 prefix truncation/trailing data are rejected and tested.
-- Legacy v1 encrypted streams remain readable and tested.
-- Existing v1 ciphertext is not represented as retroactively upgraded.
-- New encrypted document metadata records stream version 2.
-- The SQLitePCLRaw advisory remains open and is not claimed fixed.
-- Manual/accessibility/store/signing/final Release Evidence work remains open.
-- Earlier complete Phase 0–8 and 2026-08-12 documentation handoffs are preserved under `docs/history/`.
-
----
-
-# Documentation-only boundary after PR #33
-
-Before this active handoff update, exact verified source `4f5f9abe9d702fa33d6aba3f15c113febfebf95e` was compared to documentation head `ff318bed42400f9bb53a4ea4d6bd8815f4a0feaf`.
-
-Result:
-
-- status: ahead;
-- 16 commits after the verified runtime/test source;
-- all changed files were Markdown documentation;
-- no C# runtime source changed;
-- no XAML changed;
-- no test source changed;
-- no project/solution/package file changed;
-- no workflow changed;
-- no platform source changed;
-- no runtime resource changed.
-
-The later `d9271e24...` preservation commit also adds only a Markdown historical handoff using the exact prior blob.
-
-This `what_changed.md` update is itself documentation-only. A final compare from `4f5f9abe...` to the resulting `main` head is performed after this commit so the documentation-only boundary can be confirmed through the final handoff state.
+- CareNest `1.0.0-rc.1` source remains complete for the current v1 scope.
+- Exact latest automated source baseline is `3b19ce08f509f27aca823469abc5b8a03ed2465a`.
+- PR #36 is the latest green exact-head verification evidence.
+- Automated baseline is 192/192 core tests plus Android/Windows/iOS simulator/Mac Catalyst Release builds, CodeQL, and Dependency Audit green.
+- PR #35 is intentionally retained as failed/superseded evidence that exposed the obsolete Settings replacement; it is not release evidence.
+- The verified PR #33 Settings architecture was restored before the final lifecycle hardening was verified.
+- Previous active handoff/status files are preserved exactly under `docs/history/`.
+- The SQLitePCLRaw advisory remains open.
+- Manual device/accessibility/store/signing/final-release work remains blocking.
+- No cloud/account/clinical-decision functionality was introduced by Phase 9.
