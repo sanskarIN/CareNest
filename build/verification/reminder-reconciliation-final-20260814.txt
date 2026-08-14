@@ -1,0 +1,6 @@
+CareNest exact-head verification marker
+Runtime source: 4cf2aec989233d213ac7b1099a50d44e1acc3ca0
+Current base: 7845338e1691e526bc43e758bf36e99af7f76d21
+Date: 2026-08-14
+Purpose: final full verification after reminder reconciliation fixes; base differs from runtime source only by documentation.
+This marker is verification-only and must not be merged.
