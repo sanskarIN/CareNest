@@ -13,6 +13,7 @@ The v1 architecture is designed to provide:
 - encrypted imported document storage;
 - password-encrypted manual backup/restore;
 - deterministic reminder materialization from explicit user-entered schedules;
+- explicit reconciliation between persisted reminder state and platform scheduled requests;
 - platform notification abstractions with limitation reporting;
 - MVVM-style UI separation;
 - testable platform-neutral domain/application/infrastructure layers;
@@ -83,6 +84,7 @@ Responsibilities include:
 - repository/service contracts;
 - reminder planning;
 - reminder coordination;
+- reminder platform-state reconciliation/compensation through abstractions;
 - use-case orchestration;
 - notification abstraction;
 - profile/medicine/appointment/document/report/backup-facing application operations;
@@ -125,9 +127,9 @@ Responsibilities include:
 
 ### Tests
 
-- `CareNest.UnitTests`: domain/application/reminder deterministic tests.
-- `CareNest.IntegrationTests`: SQLite/crypto/backup/document/report integration.
-- `CareNest.UiTests`: source/XAML/repository/architecture/ViewModel/security policy contracts.
+- `CareNest.UnitTests`: domain/application/reminder deterministic/direct service tests.
+- `CareNest.IntegrationTests`: SQLite/crypto/backup/document/report/reminder behavior integration.
+- `CareNest.UiTests`: source/XAML/repository/architecture/ViewModel/security/release-policy contracts.
 
 See `docs/testing/TESTING_GUIDE.md`.
 
@@ -197,30 +199,76 @@ Planner protections include:
 
 ### Coordinator
 
-`ReminderCoordinator`:
+`ReminderCoordinator` coordinates two distinct state surfaces:
 
-1. loads enabled schedules;
-2. loads related medicine/profile/times;
-3. invokes planner;
-4. upserts materialized occurrences;
-5. reads future eligible occurrences;
-6. applies notification policy/quiet hours;
-7. calls platform `INotificationService`;
-8. processes reminder state changes;
-9. creates medication-log entries;
-10. applies explicit user-configured stock changes after Taken events.
+1. persisted CareNest reminder occurrences/log state;
+2. operating-system scheduled notification/alarm requests.
+
+Core responsibilities include:
+
+1. load eligible schedules/medicine/profile/times;
+2. invoke `ReminderPlanner`;
+3. upsert materialized occurrences;
+4. use `ScheduledUtc` or explicit `SnoozedUntilUtc` as the effective due time;
+5. reconcile existing platform requests before replacement, quiet-hour suppression, or invalidation;
+6. schedule eligible platform notifications through `INotificationService`;
+7. process reminder actions with cancellation-first ordering;
+8. create medication-log entries where applicable;
+9. apply only explicit user-configured stock changes after Taken events;
+10. reconcile overdue reminders;
+11. keep cancellation failures retryable rather than falsely declaring synchronization complete.
+
+### Persisted state ↔ OS request reconciliation
+
+The SQLite row and the platform request are not one transaction.
+
+CareNest therefore applies explicit ordering/compensation:
+
+- cancel an old platform request before replacement/suppression/invalidation;
+- retain enough stale occurrence identity after schedule edits to cancel obsolete OS requests;
+- cancel future requests before medicine/profile cascade deletion;
+- if persistence fails after platform cancellation, attempt non-cancelled rebuild compensation for still-existing records;
+- reconcile medicine/profile saves before later non-critical audit bookkeeping;
+- reconcile appointment persistence with its platform reminder request;
+- leave cancellation failure retryable.
+
+### Handled reminder actions
+
+Taken, Skipped, Delayed, Missed, Snoozed, and Cancelled use cancellation-first ordering:
+
+1. cancel the old platform request;
+2. persist the requested handled state only after cancellation succeeds;
+3. for Snoozed, schedule a replacement only after state persistence;
+4. if later persistence/scheduling fails, attempt non-cancelled restoration of previous occurrence state plus reminder rebuild;
+5. surface aggregate recovery failure rather than claiming contradictory state is consistent.
+
+Post-success audit/stock bookkeeping is not allowed to falsely undo an already completed user action.
 
 ### Snooze
 
 Snooze requires a future UTC value. Local or unspecified `DateTime.Kind` is rejected rather than silently reinterpreted.
 
+For a valid snooze, `SnoozedUntilUtc` is the effective due time for upcoming/overdue behavior. The original scheduled time remains historical schedule identity.
+
 ### Platform delivery
 
-CareNest distinguishes deterministic planner state from OS notification delivery.
+CareNest distinguishes deterministic planner/persisted state from OS notification delivery.
 
 OS permission/battery/background/force-stop/shutdown/policy can affect delivery. The app reports limitations instead of guaranteeing reminders.
 
-See `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` and `docs/architecture/APPLICATION_FLOWS.md`.
+See:
+
+- `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`;
+- `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`;
+- `docs/architecture/APPLICATION_FLOWS.md`.
+
+## Appointment reminder architecture
+
+Appointments store an explicit UTC instant. `Appointment.StartsUtc` must have `DateTimeKind.Utc`; local/unspecified values are rejected rather than relabeled.
+
+Appointment save/rebuild respects notification permission and does not repeatedly prompt from background recovery.
+
+Database appointment persistence and the platform reminder request remain separate surfaces. Appointment services use compensation/reconciliation when one succeeds and a later step fails.
 
 ## Time-zone architecture
 
@@ -246,6 +294,8 @@ Persistence design includes:
 - ordered migrations;
 - `SchemaInfo` version tracking;
 - relationships/cascades/indexes;
+- transactional migration DDL + schema-version recording;
+- transaction boundaries for multi-step repository changes where consistency matters;
 - WAL mode;
 - busy timeout;
 - parameterized repository operations;
@@ -267,6 +317,25 @@ Important operations include:
 
 Snapshot integration tests verify committed content and `PRAGMA integrity_check`, not only output file existence.
 
+## SQLite dependency/provider architecture
+
+The application retains the established `sqlite-net-pcl` API path while central transitive package pinning selects maintained native/provider leaves.
+
+Current RC1 package intent:
+
+- `sqlite-net-pcl` `1.9.172`;
+- `SQLitePCLRaw.bundle_green` `2.1.11`;
+- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
+- `SQLitePCLRaw.lib.e_sqlite3.android` `2.1.12`;
+- selected SQLitePCLRaw providers `2.1.12`;
+- no former `GHSA-2m69-gcr7-jv3q` audit suppression.
+
+`SqliteDependencySecurityContractTests` protects the package floor/suppression absence.
+
+A security-clean dependency graph does not by itself prove packaged existing-database/encrypted-document/backup compatibility. Those remain manual release gates after native/provider changes.
+
+See `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
+
 ## Encrypted document architecture
 
 Imported sensitive document bytes are stored separately using authenticated encryption.
@@ -281,7 +350,11 @@ User-selected file
   -> key material kept via platform secure storage
 ```
 
-Explicit export/decryption creates a copy outside the CareNest vault boundary.
+New encrypted payloads use chunked authenticated framing v2; legacy v1 remains readable for compatibility.
+
+Read/export paths do not silently create a replacement key when existing encrypted payloads depend on a missing/corrupt key.
+
+Explicit export/decryption creates a copy outside the CareNest vault boundary. Temporary application-owned plaintext is managed/cleaned according to export/share lifecycle rules.
 
 ## Backup architecture
 
@@ -291,8 +364,11 @@ Security properties include:
 
 - PBKDF2-HMAC-SHA256 password derivation;
 - AES-GCM authenticated encryption;
+- chunked authenticated framing v2 for new writes;
+- legacy v1 read compatibility;
+- strict decrypted archive topology validation;
 - format/version validation;
-- wrong-password/tamper rejection;
+- wrong-password/tamper/truncation/trailing-data rejection;
 - protected inclusion of encrypted-document recovery key material;
 - database snapshot path compatible with WAL.
 
@@ -309,7 +385,10 @@ Protection model:
 - PBKDF2-HMAC-SHA256 verifier;
 - secure platform secret-store persistence;
 - fixed-time comparison;
+- exact salt/verifier shape validation;
 - derived/retrieved verifier-buffer clearing where managed memory control permits;
+- rollback around multi-key update/disable transitions;
+- fail-closed missing/corrupt material;
 - delete stored lock material when disabled.
 
 It is not whole-database/device encryption.
@@ -366,7 +445,7 @@ The MAUI project targets Android, iOS, Mac Catalyst, and Windows.
 
 CI uses separate target jobs for platform builds.
 
-## CI/security architecture
+## CI/security/release architecture
 
 Repository automation includes:
 
@@ -374,17 +453,23 @@ Repository automation includes:
 - unit/integration/UI-policy tests;
 - Android/Windows/iOS/Mac Catalyst Release builds;
 - CodeQL;
-- Dependency Audit;
+- unsuppressed Dependency Audit;
 - Release Gate;
 - Release Evidence.
 
-Major source hardening uses marker-only exact-head PR verification. Verification marker files are never merged into `main`.
+Major verification-relevant source hardening uses marker-only exact-head PR verification. Verification marker files are never merged into `main`.
 
-## Dependency risk boundary
+Production tags matching `v*` run the exact tagged commit through:
 
-The current sqlite-net dependency chain resolves SQLitePCLRaw native `2.1.11`, tracked under `GHSA-2m69-gcr7-jv3q`.
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
 
-The narrow exact audit suppression is not remediation. The risk register remains authoritative until a compatible patched/replacement path is actually validated or release is explicitly blocked/decided.
+Release Evidence records source/ref/run identity, tracked-file manifests/checksums, all three TRX suites, dependency inventories, workspace integrity, and evidence checksums. It uploads available evidence even when an evidence component fails, then applies an aggregate success/failure gate.
+
+Release workflow/test/build-script changes are verification-relevant source even when application runtime behavior is unchanged.
 
 ## External support boundary
 
@@ -402,12 +487,22 @@ Architecture principles:
 
 - validate before destructive writes;
 - preserve async/cancellation behavior;
+- use non-cancelled compensation deliberately when cancellation should not strand inconsistent cross-surface state;
 - avoid synchronous task blocking;
-- keep reminder rebuild idempotent;
+- keep reminder planning/rebuild idempotent;
+- reconcile persisted state and external OS requests explicitly;
 - keep diagnostics privacy-minimized;
-- treat tool/analyzer failures as defects to understand rather than broadly suppress;
-- keep manual/store/signing limitations explicit;
+- treat tool/analyzer/workflow failures as defects to understand rather than broadly suppress;
+- keep manual/store/signing/data-compatibility limitations explicit;
 - do not claim a release gate complete unless it actually ran.
+
+## Current verification lineage
+
+Authoritative completed bug-audit baseline PR #54 verified 261 core tests, all four platform Release builds, CodeQL, and unsuppressed Dependency Audit for the runtime/test/dependency graph.
+
+Later release-engineering source changes added tag triggers, failure-preserving Release Evidence, blocking local dependency audit, hardened Git setup and Release Gate checks, and executable policy tests. Superseded PR #55 verified 277 core tests plus Android/Windows/CodeQL/Dependency Audit before the complete-file audit identified further release-tooling/documentation corrections.
+
+The current final `main` head requires a fresh complete exact-source verification before becoming the new release-engineering baseline.
 
 ## Future architecture
 
@@ -432,6 +527,7 @@ Any networked/collaboration feature requires new authentication, consent/revocat
 - `docs/architecture/DATABASE_SCHEMA.md`
 - `docs/architecture/DATA_STORAGE_AND_EXPORT.md`
 - `docs/architecture/BACKUP_AND_RESTORE.md`
+- `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`
 - `docs/privacy/PRIVACY_MODEL.md`
 - `docs/security/SECURITY_MODEL.md`
 - `docs/testing/TESTING_GUIDE.md`
