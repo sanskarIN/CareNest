@@ -4,46 +4,46 @@ This document tracks work after the source-complete `1.0.0-rc.1` milestone. It i
 
 ## Current automated hardening baseline
 
-The earlier PR #33 baseline is historical. The 2026-08-14 repository-wide correctness audit continued far beyond that source and intentionally used failure-driven exact-source checkpoints rather than hiding test/analyzer defects.
+The authoritative current automated baseline is marker-only PR #56:
 
-The authoritative final automated bug-audit baseline is marker-only PR #54:
+`Verify complete CareNest release-engineering source`
 
-`Verify final CareNest bug-audit source`
+Frozen source/base SHA:
+
+`4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
 
 Final evidence:
 
-- CareNest CI #503 / run `31766059137`: **success**;
+- CareNest CI #571 / run `31770929379`: **success**;
 - platform-neutral formatting: **success**;
 - **122 unit tests**: passed;
 - **39 integration tests**: passed;
-- **100 UI-contract/policy tests**: passed;
-- **261 total automated tests**: passed;
+- **124 UI-contract/policy tests**: passed;
+- **285 total automated tests**: passed;
 - Android Release: **success**;
 - Windows Release: **success**;
 - iOS simulator Release: **success**;
 - Mac Catalyst Release: **success**;
-- CodeQL #503 / run `31766059215`: **success**;
-- unsuppressed Dependency Audit #35 / run `31766059132`: **success**.
+- CodeQL #571 / run `31770929382`: **success**;
+- unsuppressed Dependency Audit #41 / run `31770929383`: **success**.
 
-PR #54 is closed without merge. Its verification marker `build/verification/bug-audit-final-20260814-2.txt` is not part of `main`.
+PR #56 is closed without merge. Its verification marker `build/verification/release-engineering-final-v2-20260814.txt` is not part of `main`.
 
-PR #53 independently completed a duplicate green verification of the same final runtime/test source boundary; PR #54 remains the recorded authoritative checkpoint.
+`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` records the authoritative final release-engineering evidence. PR #54 remains the historical authoritative runtime bug-audit baseline for the earlier runtime/test/dependency graph.
 
-The final verified source includes the earlier hardening plus the later 2026-08-14 corrections for:
+The verified source includes the final reminder/document/backup/SQLite hardening plus later release-engineering controls for:
 
-- snoozed/stale reminder effective-due reconciliation;
-- platform cancellation before reminder replacement/suppression/invalidation;
-- medicine/profile delete compensation;
-- schedule occurrence-row preservation until platform reconciliation;
-- medicine/profile save-time reminder reconciliation;
-- appointment reminder persistence compensation;
-- cancellation-first reminder actions with recovery;
-- notification failure-injection coverage;
-- report-cache cleanup after sharing;
-- analyzer-safe direct reminder-reconciliation tests;
-- SQLite native/provider dependency remediation and audit-suppression removal.
+- exact `v*` tag execution of CareNest CI, CodeQL, Dependency Audit, Release Gate and Release Evidence;
+- manual workflow entry points where configured;
+- PR-only dependency metadata guarded from tag/manual runs;
+- failure-preserving Release Evidence with tracked-source provenance/checksums and rerun-safe artifact identity;
+- blocking unsuppressed dependency audit in local quality/preflight scripts;
+- repository-local Git setup that verifies `Sanskar` / `sanskarin@outlook.in` and fails on Git errors;
+- fail-closed production Release Gate matching;
+- executable workflow/script/release-policy contracts;
+- active architecture/security/setup/release docs aligned with the remediated SQLite graph and cancellation-first reminder model.
 
-Verification history remains intentionally failure-driven. PR #43 was not green; PRs #44, #46 and #49 exposed additional integration/UI/analyzer defects; PRs #47/#48/#50 exercised the SQLite remediation while source was moving; PRs #51/#52 were superseded when later source changed. No failed/superseded marker was promoted as final release evidence.
+Verification history remains intentionally failure-driven. PR #43 was not green; PRs #44, #46 and #49 exposed additional integration/UI/analyzer defects; PRs #47/#48/#50 exercised the SQLite remediation while source was moving; PRs #51/#52 were superseded; PR #54 completed the runtime bug-audit baseline; PR #55 verified the first release-engineering snapshot but was superseded when the complete-file audit found further legitimate fixes; PR #56 is the final green replacement.
 
 This automated source work does not complete the production-release blockers below.
 
@@ -65,8 +65,8 @@ Completed source work:
 - [x] Remove the narrow `NuGetAuditSuppress` entry for `GHSA-2m69-gcr7-jv3q`.
 - [x] Add `SqliteDependencySecurityContractTests` so the old vulnerable pin floor/suppression cannot silently return.
 - [x] Re-run unsuppressed Dependency Audit successfully during multiple remediation checkpoints.
-- [x] Complete final unsuppressed Dependency Audit #35 / run `31766059132` on authoritative PR #54.
-- [x] Complete all 261 automated tests and all four platform Release builds on the same final source boundary.
+- [x] Complete unsuppressed Dependency Audit #41 / run `31770929383` on authoritative PR #56.
+- [x] Complete all 285 automated tests and all four platform Release builds on the same verified source boundary.
 - [x] Update `docs/security/DEPENDENCY_RISK_REGISTER.md` with the resolved-in-source graph and evidence.
 - [x] Update `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` with the selected migration path.
 
@@ -148,20 +148,25 @@ Store rules can change. Before submitting a store build:
 
 ## Priority 1 — release promotion
 
-### 7. Create the final production-candidate verification branch
+### 7. Final production commit/tag verification and evidence
 
-PR #54 is the completed automated bug-audit baseline, but the final **production-candidate** verification must happen after all applicable Priority 0 manual/security/distribution work and any source/configuration changes that result from it.
+PR #56 is the completed automated RC1 release-engineering baseline, but public production approval still requires exact-tag evidence after the Priority 0 manual/security/distribution blockers and any resulting source/configuration changes are complete.
 
 - [x] Exact-head marker-only verification protocol is documented in `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
-- [x] The 2026-08-14 bug audit uses failure-driven marker-only verification rather than reusing stale successful subsets.
-- [x] All required PR #54 automated gates are green for the current RC1 source boundary.
-- [x] PR #54 was closed without merging its marker after evidence capture.
-- [ ] After Priority 0 blockers are complete, branch from the exact intended production-release commit.
-- [ ] Trigger the complete GitHub Actions matrix.
-- [ ] Require green formatting/core tests, Android, Windows, iOS simulator, Mac Catalyst, CodeQL, and Dependency Audit.
-- [ ] Run `CareNest Release Evidence` for the exact promoted commit.
-- [ ] Capture workflow run IDs in `what_changed.md`, `PROJECT_STATUS.md`, release checklist, and release notes.
-- [ ] Close verification-only production marker PR without merging its marker file.
+- [x] PR #56 completed the full current RC1 formatting/test/platform/CodeQL/unsuppressed-audit matrix.
+- [x] PR #56 was closed without merging its marker after evidence capture.
+- [x] Exact `v*` tags are configured to trigger CareNest CI, CodeQL, Dependency Audit, Release Gate and Release Evidence.
+- [x] Release Evidence preserves available failed-run evidence and uses source/run/attempt provenance.
+- [ ] Complete Priority 0 blockers and resolve any source/configuration changes they require.
+- [ ] If source/test/workflow/package/project/platform/build-script files change, create a new exact-head marker verification before tagging.
+- [ ] Select the exact intended production-release commit.
+- [ ] Create the approved `v*` tag pointing to that exact commit.
+- [ ] Require tagged CareNest CI success.
+- [ ] Require tagged CodeQL success.
+- [ ] Require tagged unsuppressed Dependency Audit success.
+- [ ] Require tagged Release Gate success.
+- [ ] Require tagged CareNest Release Evidence success.
+- [ ] Capture final workflow run IDs, artifact identity/checksums, signing/package provenance, and manual evidence in `what_changed.md`, `PROJECT_STATUS.md`, release checklist, security review, and release notes.
 
 ### 8. Promote version metadata
 
@@ -169,7 +174,7 @@ PR #54 is the completed automated bug-audit baseline, but the final **production
 - [ ] Update app version/build values consistently for Android, Apple, and Windows targets.
 - [ ] Update `CHANGELOG.md` and release notes.
 - [ ] Update `PROJECT_STATUS.md` from release-candidate status to actual shipped status.
-- [ ] Create an annotated Git tag from the exact verified commit.
+- [ ] Ensure final production tag points to the exact approved commit and is not reused/moved after a failed tag gate.
 
 ### 9. Build and archive release artifacts
 
@@ -179,6 +184,7 @@ PR #54 is the completed automated bug-audit baseline, but the final **production
 - [ ] Windows: create intended signed MSIX/package.
 - [ ] Generate SHA-256 checksums for directly distributed artifacts.
 - [ ] Keep release artifacts/provenance separate from source-control secrets.
+- [ ] Confirm signed package provenance points to the exact approved/tagged commit.
 
 ## Priority 2 — post-release quality
 
@@ -224,7 +230,13 @@ Completed hardening now includes:
 - [x] chunked AEAD v2 round-trip/prefix-truncation/trailing-data tests;
 - [x] legacy chunked AEAD v1 read-compatibility test;
 - [x] existing encryption/backup/report integration coverage;
-- [x] SQLite dependency-security pin/suppression contract.
+- [x] SQLite dependency-security pin/suppression contract;
+- [x] exact release workflow trigger/event-safety contracts;
+- [x] Release Evidence provenance/failure-preservation/rerun-identity contracts;
+- [x] blocking release-preflight dependency-audit contracts;
+- [x] deterministic/fail-closed local quality-gate contracts;
+- [x] repository-local Git identity setup contracts;
+- [x] fail-closed production Release Gate contracts.
 
 Still useful later when stable target infrastructure exists:
 
@@ -238,15 +250,20 @@ Still useful later when stable target infrastructure exists:
 
 Completed:
 
-- [x] Dependency Audit workflow for pull requests.
+- [x] Dependency Audit workflow for pull requests, manual execution and exact `v*` tags.
 - [x] Release Gate workflow blocks unresolved tracked dependency risk and incomplete release checklist.
-- [x] Release Evidence workflow records exact source/ref/toolchain/test/dependency/checksum evidence.
-- [x] Exact-head marker-only verification protocol documented and proven through multiple verification cycles, including analyzer-failure supersession rather than stale evidence reuse.
+- [x] Release Gate matching is hardened against indentation/case/nested-checkbox bypasses.
+- [x] Release Evidence workflow records exact source/ref/run/attempt/toolchain/test/dependency/workspace/checksum evidence.
+- [x] Release Evidence retains available failed-run evidence before aggregate failure and names artifacts with commit/run/attempt identity.
+- [x] Exact-head marker-only verification protocol documented and proven through multiple verification cycles.
 - [x] Platform-neutral formatting enforced in CI.
 - [x] CodeQL and multi-platform build matrix remain required automated gates.
+- [x] CareNest CI, CodeQL, Dependency Audit, Release Gate and Release Evidence are configured for exact `v*` release tags.
+- [x] Bash/PowerShell local quality and release-preflight scripts run blocking unsuppressed dependency audits.
+- [x] Repository-local Git setup scripts fail closed and verify `Sanskar` / `sanskarin@outlook.in`.
 - [x] Narrow SQLite audit exception removed after a compatible dependency graph was established.
 - [x] Dependency regression contract prevents silent restoration of the old SQLite pin/suppression baseline.
-- [x] Final RC1 bug-audit source completed the entire formatting/test/platform/CodeQL/unsuppressed-audit matrix under PR #54.
+- [x] Final release-engineering source completed the entire formatting/test/platform/CodeQL/unsuppressed-audit matrix under PR #56.
 
 Remaining optional/production improvements:
 
@@ -338,12 +355,11 @@ Funding remains separate from health behavior. Contributions must not change Car
 CareNest should be promoted from release candidate only when all applicable items are true:
 
 - [x] no known production-blocking SQLite advisory is being hidden by the former `GHSA-2m69-gcr7-jv3q` exception; the verified source graph removes that suppression and guards the maintained native/provider floor;
-- [x] complete automated formatting/test/build/CodeQL/Dependency Audit matrix is green for the current RC1 bug-audit source boundary under PR #54;
-- [ ] complete automated matrix is green again on the **exact final production-release commit** after any remaining Priority 0 changes;
-- [ ] `CareNest Release Evidence` is generated for the exact promoted commit;
+- [x] complete automated formatting/test/build/CodeQL/Dependency Audit matrix is green for the current RC1 release-engineering source boundary under PR #56;
+- [ ] complete automated matrix is green again if verification-relevant source changes after PR #56 and before production tagging;
 - [ ] manual supported-platform smoke tests are complete;
 - [ ] existing-database/SQLite compatibility checks are complete on packaged representative builds;
-- [ ] notification/appointment limitations are manually verified/documented;
+- [ ] notification/appointment limitations and cancellation-first reminder actions are manually verified/documented;
 - [ ] new v2 document/backup workflows are tested in packaged builds;
 - [ ] retained v1 encrypted-data compatibility is verified with canonical historical fixtures when available;
 - [ ] backup/restore is tested on clean installations;
@@ -352,6 +368,8 @@ CareNest should be promoted from release candidate only when all applicable item
 - [ ] signing keys/certificates are secured outside Git;
 - [ ] privacy/data-safety disclosures match actual behavior;
 - [ ] release notes/changelog/status/handoff documents are updated;
-- [ ] signed release artifacts are archived with exact version/provenance information.
+- [ ] signed release artifacts are archived with exact version/provenance information;
+- [ ] exact approved production `v*` tag completes CareNest CI, CodeQL, Dependency Audit, Release Gate and Release Evidence successfully;
+- [ ] final Release Evidence artifact/checksums and production package provenance are recorded.
 
-Current automated RC1 source hardening is complete and green. The remaining manual/device/accessibility/store/signing/distribution and packaged-data compatibility conditions intentionally keep final `1.0.0` publication blocked until actual evidence exists.
+Current automated RC1 source/release-engineering hardening is complete and green. The remaining manual/device/accessibility/store/signing/distribution and packaged-data compatibility conditions intentionally keep final `1.0.0` publication blocked until actual evidence exists.
