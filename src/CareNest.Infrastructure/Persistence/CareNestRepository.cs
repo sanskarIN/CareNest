@@ -427,9 +427,8 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
         await Db.ExecuteAsync("VACUUM;");
     }
 
-    public async Task ClearAllAsync(CancellationToken cancellationToken = default)
-    {
-        await RunAtomicAsync(connection =>
+    public Task ClearAllAsync(CancellationToken cancellationToken = default) =>
+        RunAtomicAsync(connection =>
         {
             foreach (var table in ClearAllTables)
             {
@@ -437,10 +436,6 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
                 connection.Execute($"DELETE FROM {table};");
             }
         }, cancellationToken);
-
-        cancellationToken.ThrowIfCancellationRequested();
-        await Db.ExecuteAsync("VACUUM;");
-    }
 
     private async Task RunAtomicAsync(
         Action<SQLiteConnection> action,
