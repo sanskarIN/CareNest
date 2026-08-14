@@ -41,13 +41,15 @@ public sealed class ProfileService(ICareNestRepository repository, IDocumentStor
         var completionFailures = new List<Exception>();
         var encryptedFiles = documents
             .Select(document => document.EncryptedFileName)
-            .Append(profile?.PhotoPath)
             .Where(path => !string.IsNullOrWhiteSpace(path))
-            .Cast<string>()
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
+            .ToList();
 
-        foreach (var encryptedFile in encryptedFiles)
+        if (!string.IsNullOrWhiteSpace(profile?.PhotoPath))
+        {
+            encryptedFiles.Add(profile.PhotoPath);
+        }
+
+        foreach (var encryptedFile in encryptedFiles.Distinct(StringComparer.Ordinal))
         {
             try
             {
