@@ -1,291 +1,278 @@
 # Changelog
 
-All notable changes follow Keep a Changelog principles and semantic versioning.
+All notable CareNest changes are recorded here using Keep a Changelog-style categories and semantic-versioning intent.
+
+The exact pre-documentation-completion changelog is preserved at:
+
+`docs/history/pre-complete-docs-20260814/CHANGELOG.md`
+
+Historical evidence is retained rather than rewritten. This active changelog records the current authoritative state and the latest continuation.
 
 ## [Unreleased] - 2026-08-14
 
-### Added
+### Added — complete project documentation
 
-- Direct integration coverage for future snoozes whose original scheduled time has already passed, overdue snoozes, and stale future-occurrence cancellation/replacement.
-- Reminder reconciliation source contracts covering OS-request cancellation before replacement/suppression/invalidation, schedule-row preservation, and medicine/profile lifecycle compensation.
-- Appointment reminder persistence compensation coverage across database/platform reminder state.
-- Notification scheduling/cancellation failure injection for reminder action and reconciliation recovery tests.
-- Reminder action cancellation/recovery ordering coverage.
-- `SqliteDependencySecurityContractTests` protecting the maintained SQLite native/provider package floor and preventing restoration of the old advisory audit suppression.
-- `docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` as the authoritative final automated evidence record.
-- Corrected repository-wide verification/security/release status documentation for the final 2026-08-14 audit.
+- `docs/COMPLETE_PROJECT_DOCUMENTATION.md` as the canonical end-to-end project reference covering product identity, scope, architecture, data, reminders, security/privacy, encryption, backup, setup, testing, release and documentation map.
+- `docs/CODEBASE_REFERENCE.md` with concrete Shared/Domain/Application/Infrastructure/MAUI/test project and file responsibilities.
+- `docs/CONFIGURATION_REFERENCE.md` documenting current central package versions, build/analyzer policy, NuGet audit behavior, target frameworks, MAUI target isolation, workflows, Git identity, secrets and provenance.
+- `docs/MAINTENANCE_AND_OPERATIONS.md` covering routine maintenance, triage, dependency/schema/crypto/reminder changes, documentation, exact-head verification, release, signing, hotfix and incident operations.
+- `docs/releases/DOCUMENTATION_AUDIT_20260814.md` recording the repository-wide documentation inventory and separating documentation completeness from production release completeness.
+- Exact historical snapshots under `docs/history/pre-complete-docs-20260814/` before replacing stale active security/threat/setup/architecture/notification/documentation-standard/changelog/handoff files.
 
-### Changed
+### Changed — documentation hub and public project entry
 
-- Snoozed reminders use `SnoozedUntilUtc` as effective due time for upcoming and overdue behavior.
-- Reminder rebuild explicitly reconciles persisted occurrence rows with existing operating-system requests before replacement, suppression, quiet-hours handling, or invalidation.
-- Medicine/profile schedule and lifecycle operations preserve enough occurrence state to cancel stale OS requests before deleting structured rows.
-- Medicine/profile delete flows cancel future platform requests before database cascade and use non-cancelled rebuild compensation if persistence fails.
-- Medicine/profile save flows reconcile reminders before non-critical audit bookkeeping can make a successful structured-data transition appear failed.
-- Appointment persistence now reconciles/compensates platform reminder state around database failures.
-- Reminder actions are cancellation-first: the old platform request is cancelled before Taken/Skipped/Delayed/Missed/Snoozed/Cancelled state is committed.
-- Failed later reminder-action persistence or snooze replacement attempts restore the prior state and rebuild platform scheduling using non-cancelled compensation.
-- Shared report-cache files are removed after successful share handoff where CareNest still owns the temporary cache copy.
-- SQLite central transitive pinning now selects the maintained native/provider leaf path while retaining the current `sqlite-net-pcl`/bundle API path.
-- Active release/security/status documents now distinguish fully completed source remediation from still-required packaged existing-data compatibility evidence.
+- Root `README.md` now promotes PR #56 as the authoritative automated release-engineering baseline while retaining PR #54 as historical runtime bug-audit evidence.
+- `docs/README.md` now indexes the whole-project, codebase, configuration, maintenance, architecture, privacy/security, testing, release and history documentation set.
+- `docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md` now covers source/API/configuration/automation/maintainer documentation and the PR #56 285-test baseline.
+- `docs/DOCUMENTATION_STANDARDS.md` now defines current evidence wording, historical preservation, PR #56 verification citation, SQLite remediation wording, reminder reconciliation language and production/manual evidence rules.
+- `docs/setup/DEVELOPMENT.md` now uses the current toolchain/package/release-script/PR #56 source truth and repository-local Git identity behavior.
+- `docs/architecture/ARCHITECTURE.md` now describes current reminder cross-surface compensation, SQLite/provider state, document/backup security, platform boundaries and exact-tag release architecture.
+- `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md` now documents effective snooze due time, cancellation-first actions, medicine/profile/appointment compensation and the real Android/Windows/Apple release matrix.
+- `docs/security/SECURITY_MODEL.md` and `docs/security/THREAT_MODEL.md` now use PR #56 as the active automated baseline and no longer say a final post-PR #55 verification is pending.
 
-### Fixed
+### Added — release workflow policy contracts
 
-- Corrected future snoozes disappearing from upcoming results after their original scheduled time passed.
-- Corrected expired snoozes remaining `Snoozed` instead of transitioning according to overdue handling.
-- Corrected stale scheduled occurrences remaining represented as active platform requests after schedule changes.
-- Corrected reminder/platform state mutation ordering so handled state is not committed while a known old OS request remains scheduled.
-- Corrected reminder delete/save compensation boundaries for medicine, profile, and appointment workflows.
-- Corrected CA1861 in newly added reminder-reconciliation test expectations without suppressing analyzer policy.
-- Corrected the earlier documentation claim that verification PR #43 was fully green; its core CI actually failed in integration testing and skipped the UI-contract suite.
-- Corrected the earlier assumption that the tracked SQLite advisory necessarily required keeping the old native/provider dependency path.
+Release-engineering hardening added source-policy tests covering:
 
-### Security
+- `v*` production tag/manual workflow entry points;
+- Dependency Audit event safety for pull-request-only metadata;
+- Release Evidence source provenance and run-attempt identity;
+- independent unit/integration/UI/dependency/workspace evidence capture;
+- failure-preserving evidence artifact upload before aggregate failure;
+- release evidence retention expectations;
+- blocking release-preflight NuGet audit behavior;
+- clean-checkout local quality-gate behavior;
+- PowerShell native command failure handling;
+- repository-local Git setup identity/root/failure behavior;
+- Release Gate nested unchecked checklist/open-risk matching and required security/evidence surfaces.
 
-- Removed the exact `GHSA-2m69-gcr7-jv3q` `NuGetAuditSuppress` entry from `Directory.Build.props` after establishing a compatible maintained dependency path.
-- Centrally pinned `SQLitePCLRaw.lib.e_sqlite3` to `3.53.3`.
-- Centrally pinned `SQLitePCLRaw.lib.e_sqlite3.android` and selected provider packages to `2.1.12`.
-- Final authoritative Dependency Audit #35 / run `31766059132` succeeded without the former advisory suppression, including platform-neutral and Android MAUI app dependency graphs.
-- Report share cleanup reduces lifetime of application-owned plaintext report cache files after external share handoff.
-- Reminder cancellation/recovery logging remains privacy-safe and does not log health-record identifiers, exception messages, or stack traces.
-- The SQLite package remediation does not introduce a CareNest backend, account, telemetry client, remote database, cloud-sync requirement, or user-controlled raw SQL path.
+These contracts increased the authoritative UI-contract/policy test count from 100 at PR #54 to 124 at PR #56.
 
-### Verification
+### Changed — exact production-tag verification
 
-Authoritative final marker-only verification: PR #54 — `Verify final CareNest bug-audit source`.
+Production tags matching `v*` are configured to run the exact tagged commit through:
 
-Source/base SHA frozen for runtime/test/dependency verification:
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
 
-`4490f3f86752841d436e981b29279970c90c947b`
+A tag is not production approval until all required automated and manual/device/accessibility/store/signing/package compatibility gates have completed successfully.
+
+### Changed — Release Evidence
+
+CareNest Release Evidence now records and/or retains:
+
+- exact source commit/ref;
+- GitHub Actions run ID;
+- run attempt;
+- .NET toolchain information;
+- tracked-source file manifest;
+- tracked-source SHA-256 checksums;
+- unit test TRX;
+- integration test TRX;
+- UI-contract/policy TRX;
+- transitive dependency inventories;
+- workspace integrity state;
+- evidence checksums.
+
+Evidence components are attempted independently. Available evidence is uploaded with failure-preserving behavior before the final aggregate success/failure gate.
+
+Artifact identity contains source/run/attempt information so reruns do not become ambiguous.
+
+### Changed — local quality/release scripts
+
+- Bash and PowerShell release-preflight scripts treat unsuppressed NuGet audit failure as blocking.
+- Selected MAUI target dependency graphs are audited before optional release target builds.
+- Bash/PowerShell quality-gate scripts run clean-checkout-safe core test/audit sequences.
+- PowerShell scripts explicitly fail on required native command errors.
+- Git setup scripts locate the repository root, use repository-local configuration, set `Sanskar` / `sanskarin@outlook.in`, verify the values and fail on Git errors.
+
+### Changed — production Release Gate
+
+Release Gate now fails closed for:
+
+- unresolved/open dependency risk state;
+- nested unchecked applicable release checklist rows;
+- required security/evidence document absence;
+- core test failure.
+
+Matching is hardened against ordinary indentation/case variations that previously could make a textual gate fragile.
+
+### Fixed — reminder effective-due behavior
+
+- Future snoozes no longer disappear from upcoming results when the original scheduled instant has passed.
+- Overdue snoozes are evaluated from `SnoozedUntilUtc` rather than the stale original time.
+- `SnoozedUntilUtc` is the effective due time while a snooze is valid.
+
+### Fixed — stale platform reminder reconciliation
+
+- Existing OS requests are cancelled before replacement, quiet-hours suppression or invalidation.
+- Schedule edits retain enough old occurrence identity to cancel stale OS requests before final cleanup.
+- Platform cancellation failure remains retryable instead of falsely marking the state reconciled.
+
+### Fixed — reminder action ordering/recovery
+
+Handled Taken/Skipped/Delayed/Missed/Snoozed/Cancelled actions now use cancellation-first ordering:
+
+1. cancel old platform request;
+2. persist handled state only after cancellation succeeds;
+3. for snooze, schedule the replacement after state persistence;
+4. if later essential persistence/scheduling fails, restore previous state and attempt non-cancelled rebuild;
+5. aggregate recovery failure instead of claiming consistency.
+
+### Fixed — medicine/profile reminder compensation
+
+- Future platform requests are cancelled before medicine/profile database cascade deletion.
+- If persistence fails after platform cancellation, a non-cancelled rebuild compensation is attempted for records that still exist.
+- Save flows reconcile reminders before later non-critical audit bookkeeping can make an already-applied primary change appear failed.
+
+### Fixed — appointment reminder persistence
+
+- Appointment database/platform reminder state is reconciled/compensated around persistence failures.
+- Appointment deletion cancels the platform request before record deletion.
+- `StartsUtc` continues to require actual UTC; local/unspecified ticks are rejected rather than relabeled.
+- Background appointment rebuild does not repeatedly prompt for notification permission and does not schedule while permission remains denied.
+
+### Fixed — report cache lifecycle
+
+Application-owned shared report cache files are removed after successful share handoff where CareNest still owns the temporary copy.
+
+External copies already controlled by another application/location remain outside CareNest’s deletion guarantee.
+
+### Security — SQLite dependency remediation
+
+The former `GHSA-2m69-gcr7-jv3q` source exception is remediated.
+
+Current verified package intent:
+
+- `sqlite-net-pcl` `1.9.172`;
+- `SQLitePCLRaw.bundle_green` `2.1.11`;
+- central transitive pinning enabled;
+- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
+- `SQLitePCLRaw.lib.e_sqlite3.android` `2.1.12`;
+- selected SQLitePCLRaw providers `2.1.12`;
+- former exact advisory `NuGetAuditSuppress` removed.
+
+`SqliteDependencySecurityContractTests` prevents silent restoration of the old package/suppression baseline.
+
+Source remediation is complete; representative packaged existing-database/encrypted-data compatibility remains a separate manual production gate.
+
+### Security — encryption/backup/document protections retained
+
+- New encrypted document/backup streams use chunked AES-256-GCM framing v2 with authenticated terminal state.
+- Legacy framing v1 remains readable for compatibility.
+- Trailing bytes after v2 terminal are rejected.
+- Strict decrypted backup archive topology is validated before extraction.
+- Missing/corrupt document master key with existing ciphertext fails closed rather than silently creating a replacement key.
+- Known mutable application-owned key/verifier/salt/crypto buffers are cleared where practical.
+- Document import and backup restore use compensating cleanup/rollback across independent state surfaces.
+
+### Security — local-first/logging boundaries retained
+
+- No CareNest account/backend/cloud-sync requirement was introduced.
+- No hidden runtime analytics/telemetry client was introduced.
+- Logging privacy contracts continue to prevent routine health content/secrets/raw sensitive exception data from leaking into normal application logs.
+- Voluntary project support remains an explicit external browser action and is separate from health behavior/access.
+
+## Verification — PR #56 authoritative release-engineering baseline
+
+PR #56: `Verify complete CareNest release-engineering source`.
+
+Frozen source/base:
+
+`4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
 
 Marker head:
 
-`929168a0a319b15d9e89997d86436d59ae731ad1`
+`e3bc621cea05364a69abee0dadbd71a67c17bddb`
 
-Final evidence:
+Evidence:
 
-- CareNest CI #503 / `31766059137`: success.
-- Platform-neutral formatting: success.
-- Unit tests: **122 passed, 0 failed, 0 skipped**.
-- Integration tests: **39 passed, 0 failed, 0 skipped**.
-- UI-contract/policy tests: **100 passed, 0 failed, 0 skipped**.
-- Total automated tests: **261 passed, 0 failed, 0 skipped**.
-- Android Release: success.
-- Windows Release: success.
-- iOS simulator Release: success.
-- Mac Catalyst Release: success.
-- CodeQL #503 / `31766059215`: success.
-- Dependency Audit #35 / `31766059132`: success without the former SQLite advisory suppression.
+- CareNest CI #571 / `31770929379`: **success**;
+- formatting: **success**;
+- UnitTests: **122 passed, 0 failed, 0 skipped**;
+- IntegrationTests: **39 passed, 0 failed, 0 skipped**;
+- UiTests/source-policy: **124 passed, 0 failed, 0 skipped**;
+- total core tests: **285 passed, 0 failed, 0 skipped**;
+- Android Release: **success**;
+- Windows Release: **success**;
+- iOS simulator Release: **success**;
+- Mac Catalyst Release: **success**;
+- CodeQL #571 / `31770929382`: **success**;
+- unsuppressed Dependency Audit #41 / `31770929383`: **success**.
 
-PR #54 was closed without merge after success; its marker is not part of `main`. PR #53 independently completed a duplicate green verification of the same final runtime/test graph and was also closed without merge.
+PR #56 was closed without merge. Its marker is not part of `main`.
 
-Public production promotion remains blocked on actual real-device/accessibility/notification/document/backup checks, packaged SQLite existing-data compatibility evidence, current store-policy review, signing/store preparation, and final Release Evidence for the exact promoted production commit.
+PR #54 remains the historical authoritative runtime bug-audit baseline. PR #55 remains superseded intermediate release-engineering evidence.
 
-## [Unreleased] - 2026-08-13
+## Documentation-completion commits — 2026-08-14
 
-### Added
+The documentation completion pass added or aligned the following logical commits on `main`:
 
-- Reusable platform-neutral test doubles for repository, deterministic time, reminder coordination, notifications, and encrypted document storage.
-- Direct `ProfileService` tests for create/update audits, UTC touch timestamps, cascading encrypted-document/profile-photo cleanup, and deletion audit behavior.
-- Direct `MedicineService` tests for create/update audits, reminder rebuilds, schedule persistence/future-occurrence invalidation, explicit stock adjustments, negative estimated-stock rejection, and cascade deletion.
-- Direct `AppointmentService` tests for UTC scheduling, denied/granted notification permission behavior, rebuild behavior without permission prompts, non-UTC stored-data rejection, and reminder cancellation/deletion.
-- Direct `DocumentService` tests for encrypted import metadata, save/audit failure rollback, safe temporary export filenames, export audits, and idempotent deletion.
-- Direct `BackupReminderCoordinator` tests for disabled reminders, denied permission behavior, no background permission prompts, current/last-backup scheduling, overdue recovery, and sound/vibration preferences.
-- `BackupArchiveValidator` with strict allowlisted backup ZIP topology checks.
-- Integration coverage for duplicate/unexpected/nested/non-`.cndoc` backup entries, manifest count mismatches, invalid/missing document-key material, and invalid schema/document-count metadata.
-- Integration coverage that caller-owned document-master-key copies are cleared after document/backup cryptographic operations where managed-memory control permits.
-- Direct `ChunkedAead` integration tests for version-2 multi-chunk round-trip, authenticated-terminal prefix-truncation rejection, trailing-data rejection, and legacy version-1 read compatibility.
+- `06f6ae6968d01e272ab1c0b37190442df867c637` — `docs: add complete project documentation`;
+- `2796e2852c659f88e64666c7894c13cc08cda2e1` — `docs: promote PR56 in root README`;
+- `20649ff30bc1fb8b8c6321d725e492209e1a52eb` — `docs: add complete codebase reference`;
+- `37a179aaa2ad3d9a7ac944712cacb2e0d01a0183` — `docs: add configuration and automation reference`;
+- `d7ca9b8400caf20ac506a9bfb81c8c3d58bc5da7` — `docs: add maintenance and operations manual`;
+- `198c8355348aaee76c30781d51214ae355e1dae9` — `docs: record complete documentation audit`;
+- `332f95610c80000c7f5f3ae01074877fb438cab6` — `docs: complete documentation hub index`;
+- `22116ebc4057d1eab33fb123593072b17c7bb115` — `docs: complete documentation checklist for PR56`;
+- `e7a7dde60a710ffc1fe25ce28a15aad1b72f0e3d` — `docs: preserve pre-completion documentation snapshots`;
+- `7a783dd7f9edf15e2f0f0b9943d7289c209f051c` — `docs: finalize current security architecture`;
+- `d30d707e2fbcf7e98bd2372cf6b3865debd41bd6` — `docs: finalize current threat model`;
+- `24b621c114cf877d603c315bcd64b9e9e9c8d301` — `docs: finalize PR56 development setup`;
+- `998d03f784b6ec85d18991596df45012c89b4d79` — `docs: finalize current architecture reference`;
+- `04cb7563949ba4a9f5d8cac46c08a84d94c844bd` — `docs: finalize notification platform behavior`;
+- `fb07250ab61d9ddcdb1760c862dd231d49100107` — `docs: finalize documentation standards`.
 
-### Changed
+GitHub commit metadata for this continuation uses `Sanskar <sanskarin@outlook.in>`.
 
-- Appointment start timestamps now require explicit `DateTimeKind.Utc`; local/unspecified values are rejected instead of being relabeled with `DateTime.SpecifyKind`.
-- Appointment time-zone identifiers are trimmed and validated separately from the explicit UTC start instant.
-- Appointment save-time notification scheduling now stops when a permission request remains denied.
-- Appointment reminder rebuild does not prompt for notification permission and does not schedule while permission remains denied.
-- Document import now uses compensating rollback across SQLite metadata and encrypted payload storage when save/audit steps fail.
-- Rollback cleanup for a failed document import uses non-cancelled cleanup attempts so a cancelled main operation does not knowingly strand the newly created artifacts.
-- Encrypted document master-key copies are zeroed after import/export paths where application-owned mutable buffers are available.
-- Newly generated document-key material is cleared if secret-store persistence fails.
-- Backup creation/restore now clears caller-owned document-key copies, password-derived AES key material, and salt buffers after use where practical.
-- Backup inspection/restore validates strict archive topology before extraction; path-containment validation remains as defense in depth.
-- New encrypted document and backup payload streams use chunked AEAD framing **version 2** with an authenticated terminal record.
-- The chunked encrypted-stream reader rejects bytes after the terminal record.
-- Existing chunked framing version 1 remains decryptable for backward compatibility; historical v1 ciphertext is not represented as retroactively upgraded.
-- Newly imported encrypted document metadata records encryption stream version `2`.
-- Shared chunked AEAD working buffers are cleared where managed-memory control permits.
+## Production work intentionally still open
 
-### Fixed
+Documentation completeness and PR #56 automation do not complete:
 
-- Removed silent appointment clock-kind reinterpretation that could turn local/unspecified ticks into a different UTC reminder instant.
-- Prevented appointment services from attempting platform scheduling after notification permission remains denied.
-- Prevented normal document-import audit failures from leaving a database record pointing to an encrypted payload that rollback already removed.
-- Added explicit aggregate failure reporting when document import rollback itself cannot fully clean both local persistence surfaces.
-- Prevented decrypted backup archives with duplicate, unexpected, nested, or manifest-inconsistent entries from reaching the extraction/replacement stage.
-- Prevented new chunked encrypted streams from accepting a chunk-boundary authenticated prefix as a complete stream through an unauthenticated terminator; v2 now authenticates termination against the next chunk counter and zero length.
-- Corrected CA1861 exposed by verification PR #31 in a newly added profile-service test assertion instead of suppressing the analyzer.
+- real Android/Windows/iOS/iPadOS/Mac Catalyst manual matrices;
+- actual notification permission/delivery/recovery behavior;
+- Android alarm/battery/reboot/time/time-zone checks;
+- packaged SQLite existing-data upgrade/integrity/readability;
+- encrypted document/backup historical compatibility;
+- clean-install restore;
+- accessibility testing;
+- current Apple/Google store-policy review;
+- signing credentials/configuration outside Git;
+- signed artifact generation/inspection;
+- store listing/screenshots/privacy/data-safety metadata;
+- exact final production tag Release Gate/Release Evidence;
+- final version/build/checksums/publication.
 
-### Security
-
-- New encrypted-stream framing v2 authenticates the terminal record and binds it to the next chunk counter/zero plaintext length.
-- V2 rejects prefix truncation and trailing data while retaining v1 decryption compatibility for existing data.
-- Backup topology is allowlisted to `manifest.json`, `database/carenest.db`, optional/required `secrets/document-master-key.bin`, and top-level `documents/*.cndoc` files.
-- Document-bearing backups require a valid 32-byte document master key before restore proceeds.
-- Known mutable caller-owned verifier/key/salt/nonce/AAD/tag/plain/cipher buffers are cleared after use where practical; this is not represented as erasure of every runtime/OS/secure-store copy.
-- `GHSA-2m69-gcr7-jv3q` remains explicitly open for the SQLitePCLRaw `2.1.11` dependency path. Successful Dependency Audit runs do not claim remediation.
-
-### Verification
-
-Latest exact runtime/test source head verified:
-
-`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
-
-Verification PR #33 used marker head `62a0050a2622e12a31d00842778af0bc96355482`, changed only `build/verification/rc1-aead-v2-hardening-20260813.txt`, and was closed without merge after success.
-
-- CareNest CI #332 / `31691592300`: success.
-- Platform-neutral formatting: success.
-- Unit tests: **106 passed, 0 failed, 0 skipped**.
-- Integration tests: **30 passed, 0 failed, 0 skipped**.
-- UI-contract/policy tests: **54 passed, 0 failed, 0 skipped**.
-- Total core automated tests: **190 passed, 0 failed, 0 skipped**.
-- Android Release: success.
-- Windows Release: success.
-- iOS simulator Release: success.
-- Mac Catalyst Release: success.
-- CodeQL #332 / `31691592435`: success.
-- Dependency Audit #13 / `31691592302`: success.
-
-Verification sequence for this continuation:
-
-- PR #31 verified source `8e2607f287ca5777d9edbab445042f96c6bcfcec`; formatting passed, but unit-test compilation exposed CA1861 in a new constant-array assertion. The test was fixed on `main`, PR #31 was closed without merge, and the analyzer was not suppressed.
-- PR #32 verified corrected source `8a28bbf30692b2b0e98ec801dac1531d50d65db1` with 106 unit + 26 integration + 54 UI = 186 tests, all four platform builds, CodeQL #326, and Dependency Audit #12 green.
-- Later authenticated-stream-v2 source changes required new exact-head PR #33 instead of reusing PR #32 evidence.
-- PR #33 is the current exact automated baseline.
-
-Public production promotion remains blocked on manual device/accessibility/notification/document/backup checks, current store-policy review, signing/store preparation, final Release Evidence for the exact promoted commit, and an explicit decision/resolution for the open SQLite dependency risk.
-
-## [Unreleased] - 2026-08-12
-
-### Documentation
-
-- Added `docs/README.md` as the canonical CareNest documentation hub.
-- Added complete end-user documentation in `docs/USER_GUIDE.md` and feature-by-feature behavior/contracts in `docs/FEATURE_REFERENCE.md`.
-- Added `docs/REPORTS_AND_EXPORTS.md` for JSON/PDF/CSV/document/calendar export semantics and privacy boundaries.
-- Added `docs/GLOSSARY.md` for shared product/engineering terminology.
-- Added end-to-end application-flow, service-boundary, data-storage/export, encrypted backup/restore, encrypted document-vault, and platform-notification architecture references under `docs/architecture/`.
-- Expanded `docs/architecture/ARCHITECTURE.md` and `DATABASE_SCHEMA.md` from concise overviews into complete architecture/schema/WAL/migration references.
-- Added `docs/privacy/PRIVACY_MODEL.md` and expanded `docs/privacy/DATA_LIFECYCLE.md` to document local-first storage, outbound boundaries, OS/external-copy limitations, backup/export/deletion behavior, and future-network review requirements.
-- Added `docs/security/SECURITY_MODEL.md` to consolidate trust boundaries, SQLite/document/backup/app-lock protection, logging, dependency, CI, secret-management, and residual-risk rules.
-- Added `docs/design/ACCESSIBILITY.md`; expanded the design system, localization architecture, and store-asset guidance with accessibility, responsive-layout, safety wording, localization/RTL, screenshot, privacy, and distribution requirements.
-- Expanded `docs/setup/DEVELOPMENT.md` and `TROUBLESHOOTING.md`, and added `PLATFORM_SETUP.md` plus `MAINTAINER_OPERATIONS.md` for Android/Windows/iOS/Mac Catalyst setup, Git identity, CI, dependency, signing, troubleshooting, and release operations.
-- Added `docs/testing/TESTING_GUIDE.md` covering the unit/integration/UI-contract suites, current 141-test verified baseline, formatting, reminder/property/DST/WAL/app-lock/security contracts, platform builds, CodeQL, Dependency Audit, and manual testing.
-- Added `docs/releases/RELEASE_PROCESS.md` covering the complete production release lifecycle from scope freeze through exact-head verification, manual matrix, accessibility, store-policy review, signing, Release Evidence, tagging, and hotfixes.
-- Added `docs/DOCUMENTATION_STANDARDS.md` and `docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md` to define documentation evidence/maintenance rules and inventory the completed documentation package without marking manual production work complete.
-- Expanded `CONTRIBUTING.md` with architecture, medical-safety, privacy, security, reminder, schema, dependency, test, accessibility, documentation, and exact-head verification contribution rules.
-- Updated root `README.md`, `PROJECT_STATUS.md`, and `DECISIONS.md` to link/record the complete documentation package while keeping the exact runtime/test source baseline at `c61f3c31...`.
-- The documentation pass is intentionally Markdown-only and does not claim a new runtime/platform verification baseline beyond PR #30.
-
-### Added
-
-- Platform-neutral `dotnet format --verify-no-changes` verification in the core CI job.
-- Repository policy tests covering implementation placeholders, local-first network/telemetry boundaries, clinical-decision feature-name regressions, common signing/secret files, and required governance/release artifacts.
-- Architecture dependency tests enforcing Shared → Domain → Application → Infrastructure boundaries while keeping MAUI isolated to the application composition project.
-- ViewModel contract tests preventing direct SQLite/network-client access and protecting onboarding notification-permission and as-needed reminder rules.
-- Data-model contract tests for every entity required by the CareNest master prompt and for opaque medicine strength/instruction storage.
-- Branding/localization contract tests for app icon, splash, BMC support artwork, safety resource keys, and clickable support surfaces.
-- Original monochrome, light-surface, and dark-surface CareNest mark variants.
-- Privacy-aware global unhandled/unobserved-task exception observation registered once during application startup.
-- `docs/security/LOGGING_PRIVACY.md` describing the allowed/prohibited runtime diagnostic boundary.
-- `CareNest Release Evidence` workflow that records exact source/ref/toolchain identity, TRX results, transitive dependency inventories, SHA-256 evidence checksums, and an immutable Actions artifact for a manual/tag-triggered release candidate.
-- `docs/releases/RELEASE_EVIDENCE.md`, `QUALITY_GATE.md`, `SECURITY_RELEASE_REVIEW.md`, `RELEASE_NOTES_TEMPLATE.md`, and `VERIFICATION_BRANCH_PROTOCOL.md`.
-- Automated async-safety contract coverage preventing common synchronous task-blocking patterns in runtime source.
-- Expanded medicine-schedule validation tests for explicit intervals/start times, selected weekdays, cycle on/off values, date ordering, clock ranges, recognized schedule enum values, supported weekday-mask bits, and blank/unknown/trimmed time-zone identifiers.
-- Expanded reminder-planner tests for cycle schedules, custom/schedule/medicine end boundaries, archived profiles, paused/completed/archived medicines, and daylight-saving gaps.
-- Reminder planning boundary tests for half-open UTC windows, UTC-kind validation, duplicate-time deduplication, stable occurrence identity, and chronological ordering.
-- Reminder entity-ownership tests covering profile → medicine → schedule → persisted schedule-time relationships plus intentionally unbound editor times.
-- Reminder coordinator contract tests protecting UTC rebuild overrides and explicit future-UTC snooze validation.
-- Deterministic fixed-seed property-style recurrence tests covering arbitrary half-open windows, cycle on/off matrices, all supported weekday masks, stable uniqueness/order, and representative every-N-hours intervals.
-- Representative multi-zone DST gap/overlap coverage for North America, Europe, Australia, and New Zealand when those time-zone identifiers are available on the test host.
-- `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` documenting deterministic, non-clinical schedule materialization, ownership, UTC, snooze, state, and DST rules.
-- WAL snapshot integration coverage that opens the copied database read-only, verifies committed profile content, and executes `PRAGMA integrity_check`.
-- Snapshot cancellation regression coverage ensuring a pre-cancelled request creates no output file.
-- App-lock security contract coverage for salted PBKDF2-HMAC-SHA256 verification, fixed-time comparison, verifier-buffer clearing, plaintext-PIN non-persistence, stored lock-material removal, and numeric PIN policy.
-
-### Changed
-
-- Restored the previously verified Dependency Audit and production Release Gate workflows after a repository-history recovery audit identified files that had not been replayed.
-- Restored the privacy-safe structured bug report form and all previously verified highlighted Buy Me a Coffee README/SUPPORT/About assets and release guidance.
-- Expanded required-repository policy checks to include CI, CodeQL, Dependency Audit, Release Gate, Release Evidence, logging privacy, dependency risk, and security/quality review files.
-- Repository/logging source-policy scans now ignore generated `bin`/`obj` content so checks apply to committed source instead of generated SDK files.
-- Architecture project-reference parsing is separator-normalized for Linux/Windows compatibility and explicitly non-null under nullable analysis.
-- App-lock verification now clears both the newly derived verifier and the verifier retrieved from secure storage after a PIN comparison; malformed/missing-salt paths also clear a retrieved verifier before returning.
-- Threat-model/security documentation now explicitly treats app lock as a local privacy barrier rather than whole-database/device encryption and records weak-PIN/device-compromise residual risk.
-- Reminder planning now rejects inconsistent local entity ownership instead of materializing an occurrence under a mismatched profile, medicine, schedule, or persisted schedule-time relationship.
-- Planner windows and coordinator rebuild overrides now require actual UTC `DateTime` values rather than silently reinterpreting local/unspecified clock ticks.
-- Snooze actions now require an explicit future UTC timestamp before occurrence persistence or platform notification scheduling.
-- Archived profiles are suppressed defensively in the planner as well as in the coordinator's existing archive filter.
-- Test-plan, security-review, quality-gate, release-checklist, and roadmap documentation now record the expanded reminder integrity invariants.
-
-### Fixed
-
-- Removed full exception-object logging from `SafeUiErrorService`, `StartupCoordinator`, and reminder scheduling/recovery paths.
-- Global, UI, startup, and reminder error logging now uses explicit `ILogger.IsEnabled(...)` guards and logs only safe metadata such as exception type names instead of exception messages, stack traces, health-record identifiers, or user-entered health content.
-- Corrected CA1873 eager logger-argument evaluation findings surfaced by GitHub-hosted MAUI builds.
-- Corrected CA1861 constant-array allocation guidance in architecture tests.
-- Corrected cross-platform project-reference path parsing and a nullable filename return caught by exact-head CI.
-- Corrected policy-test false positives caused by generated `obj` global-using files.
-- Added regression evidence that invalid spring-forward local schedule times do not cause CareNest to invent a replacement reminder time.
-- Added explicit regression evidence that duplicate user-entered clock times do not create duplicate reminder occurrences.
-- Corrected CA2263 surfaced by verification PR #29 by replacing the new non-generic `Enum.IsDefined(Type, object)` schedule-kind check with generic `Enum.IsDefined(schedule.Kind)` instead of weakening analyzer policy.
-
-### Verification
-
-Exact production runtime/test source head for that continuation: `c61f3c31c4ba33419c7b348fc8ee63a58eaa637b` through PR #30, later superseded by the 2026-08-13 PR #33 baseline above.
-
-### Security
-
-- `GHSA-2m69-gcr7-jv3q` remains explicitly open for the SQLitePCLRaw `2.1.11` dependency path.
-- The exact advisory suppression remains narrowly scoped and is governed by `docs/security/DEPENDENCY_RISK_REGISTER.md` and `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
-- Public production promotion remains blocked on an explicit dependency-risk decision/resolution plus manual device/accessibility/store/signing work and final release evidence.
+These remain release-blocking until actual evidence exists.
 
 ## [1.0.0-rc.1] - 2026-08-09
 
 ### Added
 
-- Complete local-first CareNest application architecture and source tree.
+- Complete local-first CareNest project structure and first RC implementation.
 - Profiles, medicine records, schedules, reminder occurrences and medication log.
 - Appointments, encrypted document organization, stock/refill tracking and reports.
-- Manual password-encrypted backup/restore (format v2), per-profile structured export/delete workflows, and portable encrypted-document recovery.
+- Password-encrypted manual backup/restore and portable encrypted-document recovery.
 - App lock, notification diagnostics, accessibility/theme settings and developer tools.
 - Android, iOS, Mac Catalyst and Windows platform integration structure.
 - Security, privacy, threat-model, setup, release and contribution documentation.
-- Automated unit/integration/contract test projects and GitHub Actions workflow.
-- Dependency risk register for security advisories that cannot yet be resolved by an available compatible package release.
-- Voluntary project-support link for `https://buymeacoffee.com/sanskarIN` in the About page, README/support documentation, and GitHub funding metadata.
-- `docs/releases/NEXT_STEPS.md` with production-release blockers, manual device checks, signing/store work, release promotion tasks, and future-version ideas.
-- UI-contract coverage that verifies the funding URL and voluntary-support wording stay consistent across runtime and repository support surfaces.
-
-### Fixed
-
-- Corrected SQLite result-producing PRAGMA handling for WAL journal mode, busy timeout, and WAL checkpoint operations so sqlite-net no longer treats returned rows as non-query failures.
-- Added regression coverage for WAL mode, busy-timeout configuration, and WAL-backed database snapshot creation used by encrypted backups.
-- Corrected MAUI CI target selection so a platform-specific target no longer leaks into referenced `net10.0` projects.
-- Added an explicit MAUI Controls package reference and isolated platform source trees to their corresponding target frameworks.
-- Corrected startup-page switch typing, nullable schedule-editor values, and redacted reminder-diagnostic timestamp usage.
-- Corrected Android time-zone-change intent handling.
-- Hardened Android notification scheduling for nullable platform values, pending-intent construction, notification construction, API-level guards, and notification-manager access.
-- Updated Apple CI to use a runner/toolchain compatible with the installed .NET 10 iOS and Mac Catalyst workloads.
-- Reclassified non-correctness analyzer recommendations so they remain visible without hiding functional build/test failures.
-- Centralized repository, creator, funding, and contact values through shared CareNest constants in the About view model.
-
-### Security
-
-- Added a narrowly scoped NuGet audit exception for `GHSA-2m69-gcr7-jv3q` because the current `sqlite-net-pcl` dependency chain resolves SQLitePCLRaw `2.1.11` and the attempted `2.1.12` bundle version is not available on NuGet.org.
-- The SQLite advisory remains open and explicitly tracked in `docs/security/DEPENDENCY_RISK_REGISTER.md`; the audit exception is not represented as a vulnerability fix.
-- No wildcard or severity-wide NuGet audit suppression was added.
-- The external voluntary-support action opens only after explicit user interaction and is documented as an independent third-party service; CareNest does not automatically send health records, documents, backups, or profile data to the funding provider.
+- Automated unit/integration/source-contract tests and GitHub Actions.
+- Voluntary project-support link and support metadata.
 
 ### Safety
 
-- Added explicit non-diagnostic/non-treatment medical boundaries throughout onboarding, About, reports and documentation.
-- Reminder and stock limitations are surfaced instead of silently inferred.
-- Project support is explicitly separated from medical advice, health functionality, reminder behavior, emergency assistance, support priority, and access to local CareNest data.
+- Non-diagnostic/non-treatment boundaries included across onboarding, About, reports and documentation.
+- Reminder/stock limitations surfaced instead of silently inferred.
+- Project support explicitly separated from medical advice, reminder behavior, emergency assistance and access to local data.
+
+## Historical changelog
+
+The complete detailed changelog that existed before the current documentation-completion alignment—including 2026-08-12, 2026-08-13, earlier 2026-08-14 runtime/security work and historical dependency statements—is preserved byte-for-byte at:
+
+`docs/history/pre-complete-docs-20260814/CHANGELOG.md`
+
+Use that file together with `what_changed.md`, `docs/history/`, and dated verification documents when investigating historical source/evidence states.
