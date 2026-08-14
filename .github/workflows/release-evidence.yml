@@ -13,7 +13,7 @@ jobs:
   evidence:
     name: Core release evidence
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
         with:
@@ -41,6 +41,8 @@ jobs:
           printf '%s\n' "${GITHUB_RUN_ATTEMPT}" > artifacts/github-run-attempt.txt
 
       - name: Run unit tests with TRX evidence
+        id: unit
+        continue-on-error: true
         run: >-
           dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj
           --configuration Release
@@ -49,6 +51,8 @@ jobs:
           --nologo
 
       - name: Run integration tests with TRX evidence
+        id: integration
+        continue-on-error: true
         run: >-
           dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj
           --configuration Release
@@ -57,6 +61,8 @@ jobs:
           --nologo
 
       - name: Run UI contract tests with TRX evidence
+        id: ui
+        continue-on-error: true
         run: >-
           dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj
           --configuration Release
@@ -65,6 +71,8 @@ jobs:
           --nologo
 
       - name: Capture transitive dependency inventories
+        id: dependencies
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -76,16 +84,48 @@ jobs:
           dotnet list tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj package --include-transitive --format json > artifacts/dependencies/integration-tests.json
           dotnet list tests/CareNest.UiTests/CareNest.UiTests.csproj package --include-transitive --format json > artifacts/dependencies/ui-tests.json
 
+      - name: Verify tracked workspace remains unchanged
+        id: workspace
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --porcelain=v1 --untracked-files=no > artifacts/git-status-after.txt
+          git diff --exit-code
+
       - name: Record evidence checksums
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
           find artifacts -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > artifacts/SHA256SUMS
 
       - name: Upload immutable run evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: carenest-release-evidence-${{ github.sha }}
           path: artifacts/
           if-no-files-found: error
           retention-days: 90
+
+      - name: Require complete successful release evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          failures=0
+          for result in \
+            "unit=${{ steps.unit.outcome }}" \
+            "integration=${{ steps.integration.outcome }}" \
+            "ui=${{ steps.ui.outcome }}" \
+            "dependencies=${{ steps.dependencies.outcome }}" \
+            "workspace=${{ steps.workspace.outcome }}"; do
+            name="${result%%=*}"
+            outcome="${result#*=}"
+            if [[ "$outcome" != "success" ]]; then
+              echo "Release evidence component failed: $name ($outcome)"
+              failures=1
+            fi
+          done
+          exit "$failures"
