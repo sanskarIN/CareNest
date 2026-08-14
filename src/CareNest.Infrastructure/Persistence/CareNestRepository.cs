@@ -36,17 +36,17 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
     }
 
     public Task SaveProfileAsync(PersonProfile profile, CancellationToken cancellationToken = default) =>
-        RunAtomicAsync(cancellationToken, connection =>
+        RunAtomicAsync(connection =>
         {
             if (profile.IsPrimary)
             {
                 connection.Execute("UPDATE PersonProfile SET IsPrimary = 0 WHERE Id <> ?", profile.Id);
             }
             connection.InsertOrReplace(profile);
-        });
+        }, cancellationToken);
 
     public Task DeleteProfileCascadeAsync(string profileId, CancellationToken cancellationToken = default) =>
-        RunAtomicAsync(cancellationToken, connection =>
+        RunAtomicAsync(connection =>
         {
             var medicines = connection.Query<Medicine>(
                 "SELECT * FROM Medicine WHERE ProfileId = ?",
@@ -72,7 +72,7 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
             connection.Execute("DELETE FROM MedicationLogEntry WHERE ProfileId = ?", profileId);
             connection.Execute("DELETE FROM ReminderOccurrence WHERE ProfileId = ?", profileId);
             connection.Execute("DELETE FROM PersonProfile WHERE Id = ?", profileId);
-        });
+        }, cancellationToken);
 
     public async Task<IReadOnlyList<Medicine>> GetMedicinesAsync(string? profileId = null, bool includeArchived = false, CancellationToken cancellationToken = default)
     {
@@ -107,8 +107,8 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
     }
 
     public Task DeleteMedicineCascadeAsync(string medicineId, CancellationToken cancellationToken = default) =>
-        RunAtomicAsync(cancellationToken, connection =>
-            DeleteMedicineCascade(connection, medicineId, cancellationToken));
+        RunAtomicAsync(connection =>
+            DeleteMedicineCascade(connection, medicineId, cancellationToken), cancellationToken);
 
     public async Task<IReadOnlyList<MedicineSchedule>> GetSchedulesForMedicineAsync(string medicineId, CancellationToken cancellationToken = default)
     {
@@ -123,7 +123,7 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
     }
 
     public Task SaveScheduleAsync(MedicineSchedule schedule, IReadOnlyCollection<ScheduleTime> times, CancellationToken cancellationToken = default) =>
-        RunAtomicAsync(cancellationToken, connection =>
+        RunAtomicAsync(connection =>
         {
             connection.InsertOrReplace(schedule);
             connection.Execute("DELETE FROM ScheduleTime WHERE MedicineScheduleId = ?", schedule.Id);
@@ -133,7 +133,7 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
                 time.MedicineScheduleId = schedule.Id;
                 connection.Insert(time);
             }
-        });
+        }, cancellationToken);
 
     public async Task<IReadOnlyList<ScheduleTime>> GetScheduleTimesAsync(string scheduleId, CancellationToken cancellationToken = default)
     {
@@ -142,14 +142,14 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
     }
 
     public Task DeleteScheduleAsync(string scheduleId, CancellationToken cancellationToken = default) =>
-        RunAtomicAsync(cancellationToken, connection =>
-            DeleteSchedule(connection, scheduleId));
+        RunAtomicAsync(connection =>
+            DeleteSchedule(connection, scheduleId), cancellationToken);
 
     public async Task UpsertOccurrencesAsync(IEnumerable<ReminderOccurrence> occurrences, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var materialized = occurrences.ToArray();
-        await RunAtomicAsync(cancellationToken, connection =>
+        await RunAtomicAsync(connection =>
         {
             foreach (var occurrence in materialized)
             {
@@ -168,7 +168,7 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
                 }
                 connection.InsertOrReplace(occurrence);
             }
-        });
+        }, cancellationToken);
     }
 
     public async Task<IReadOnlyList<ReminderOccurrence>> GetOccurrencesAsync(DateTime fromUtc, DateTime toUtc, string? profileId = null, CancellationToken cancellationToken = default)
@@ -300,11 +300,11 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
     }
 
     public Task DeleteDocumentAsync(string id, CancellationToken cancellationToken = default) =>
-        RunAtomicAsync(cancellationToken, connection =>
+        RunAtomicAsync(connection =>
         {
             connection.Execute("DELETE FROM DocumentTag WHERE DocumentId = ?", id);
             connection.Execute("DELETE FROM CareDocument WHERE Id = ?", id);
-        });
+        }, cancellationToken);
 
     public async Task<IReadOnlyList<Tag>> GetTagsAsync(CancellationToken cancellationToken = default)
     {
@@ -322,7 +322,7 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
     {
         cancellationToken.ThrowIfCancellationRequested();
         var distinctTagIds = tagIds.Distinct(StringComparer.Ordinal).ToArray();
-        await RunAtomicAsync(cancellationToken, connection =>
+        await RunAtomicAsync(connection =>
         {
             connection.Execute("DELETE FROM DocumentTag WHERE DocumentId = ?", documentId);
             foreach (var tagId in distinctTagIds)
@@ -333,7 +333,7 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
                     documentId,
                     tagId);
             }
-        });
+        }, cancellationToken);
     }
 
     public async Task<IReadOnlyList<Tag>> GetDocumentTagsAsync(string documentId, CancellationToken cancellationToken = default)
@@ -382,11 +382,11 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
     }
 
     public Task DeleteEmergencyContactAsync(string id, CancellationToken cancellationToken = default) =>
-        RunAtomicAsync(cancellationToken, connection =>
+        RunAtomicAsync(connection =>
         {
             connection.Execute("DELETE FROM EmergencyContact WHERE Id = ?", id);
             connection.Execute("UPDATE PersonProfile SET EmergencyContactId = NULL WHERE EmergencyContactId = ?", id);
-        });
+        }, cancellationToken);
 
     public async Task<string?> GetSettingAsync(string key, CancellationToken cancellationToken = default)
     {
@@ -429,22 +429,22 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
 
     public async Task ClearAllAsync(CancellationToken cancellationToken = default)
     {
-        await RunAtomicAsync(cancellationToken, connection =>
+        await RunAtomicAsync(connection =>
         {
             foreach (var table in ClearAllTables)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 connection.Execute($"DELETE FROM {table};");
             }
-        });
+        }, cancellationToken);
 
         cancellationToken.ThrowIfCancellationRequested();
         await Db.ExecuteAsync("VACUUM;");
     }
 
     private async Task RunAtomicAsync(
-        CancellationToken cancellationToken,
-        Action<SQLiteConnection> action)
+        Action<SQLiteConnection> action,
+        CancellationToken cancellationToken)
     {
         await Ready(cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
