@@ -15,12 +15,32 @@ public sealed class AppLockSecurityContractTests
     }
 
     [Fact]
-    public void AppLock_VerificationClearsDerivedAndStoredVerifierBuffers()
+    public void AppLock_ClearsNewAndRetrievedSaltVerifierBuffers()
     {
         var source = RepositoryLocator.Read("src", "CareNest.App", "Services", "AppLockService.cs");
 
-        Assert.Contains("CryptographicOperations.ZeroMemory(actual)", source, StringComparison.Ordinal);
-        Assert.Contains("CryptographicOperations.ZeroMemory(expected)", source, StringComparison.Ordinal);
+        Assert.Contains("ZeroIfPresent(salt)", source, StringComparison.Ordinal);
+        Assert.Contains("ZeroIfPresent(verifier)", source, StringComparison.Ordinal);
+        Assert.Contains("ZeroIfPresent(previousSalt)", source, StringComparison.Ordinal);
+        Assert.Contains("ZeroIfPresent(previousVerifier)", source, StringComparison.Ordinal);
+        Assert.Contains("ZeroIfPresent(actual)", source, StringComparison.Ordinal);
+        Assert.Contains("ZeroIfPresent(expected)", source, StringComparison.Ordinal);
+        Assert.Contains("CryptographicOperations.ZeroMemory(value)", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AppLock_PinUpdateRestoresPreviousSecureStorageStateAfterWriteFailure()
+    {
+        var source = RepositoryLocator.Read("src", "CareNest.App", "Services", "AppLockService.cs");
+
+        Assert.Contains("previousEnabled = await secretStore.GetStringAsync", source, StringComparison.Ordinal);
+        Assert.Contains("previousSalt = await secretStore.GetBytesAsync", source, StringComparison.Ordinal);
+        Assert.Contains("previousVerifier = await secretStore.GetBytesAsync", source, StringComparison.Ordinal);
+        Assert.Contains("catch (Exception updateFailure)", source, StringComparison.Ordinal);
+        Assert.Contains("RestoreBytesAsync(", source, StringComparison.Ordinal);
+        Assert.Contains("RestoreStringAsync(", source, StringComparison.Ordinal);
+        Assert.Contains("CancellationToken.None", source, StringComparison.Ordinal);
+        Assert.Contains("rollbackFailures.Insert(0, updateFailure)", source, StringComparison.Ordinal);
     }
 
     [Fact]
