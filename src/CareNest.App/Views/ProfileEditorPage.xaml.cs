@@ -18,6 +18,12 @@ public partial class ProfileEditorPage : ContentPage, IQueryAttributable
         _ = _viewModel.LoadAsync(id);
     }
 
+    protected override async void OnDisappearing()
+    {
+        base.OnDisappearing();
+        await _viewModel.DiscardPendingPhotoAsync();
+    }
+
     private async void AddContactClicked(object? sender, EventArgs e)
     {
         var name = await DisplayPromptAsync("Emergency contact", "Name", maxLength: 120);
