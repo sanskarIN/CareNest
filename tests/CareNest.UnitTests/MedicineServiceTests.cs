@@ -42,6 +42,22 @@ public sealed class MedicineServiceTests
     }
 
     [Fact]
+    public async Task SaveAsync_AuditFails_AfterReminderReconciliation()
+    {
+        var repository = new RecordingRepository
+        {
+            AuditFailure = new InvalidOperationException("test audit failure")
+        };
+        var reminders = new ReminderCoordinatorSpy();
+        var service = new MedicineService(repository, reminders, new FixedTimeProvider(Now));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.SaveAsync(ValidMedicine()));
+
+        Assert.NotNull(repository.SavedMedicine);
+        Assert.Equal(1, reminders.RebuildCount);
+    }
+
+    [Fact]
     public async Task SaveScheduleAsync_PreservesRowsForPlatformReconciliationAndRebuilds()
     {
         var repository = new RecordingRepository();
@@ -194,6 +210,8 @@ public sealed class MedicineServiceTests
 
         public Exception? DeleteMedicineFailure { get; init; }
 
+        public Exception? AuditFailure { get; init; }
+
         public List<AuditEntry> AuditEntries { get; } = [];
 
         public override Task<Medicine?> GetMedicineAsync(string id, CancellationToken cancellationToken = default)
@@ -259,6 +277,11 @@ public sealed class MedicineServiceTests
         public override Task AddAuditEntryAsync(AuditEntry entry, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (AuditFailure is not null)
+            {
+                return Task.FromException(AuditFailure);
+            }
+
             AuditEntries.Add(entry);
             return Task.CompletedTask;
         }
