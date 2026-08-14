@@ -9,12 +9,24 @@ internal sealed class ReminderCoordinatorSpy : IReminderCoordinator
 
     public DateTime? LastRebuildFromUtc { get; private set; }
 
+    public List<string> CancelledMedicineIds { get; } = [];
+
+    public List<string> CancelledProfileIds { get; } = [];
+
+    public Exception? RebuildFailure { get; set; }
+
+    public Exception? CancelMedicineFailure { get; set; }
+
+    public Exception? CancelProfileFailure { get; set; }
+
     public Task RebuildAsync(DateTime? fromUtc = null, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         RebuildCount++;
         LastRebuildFromUtc = fromUtc;
-        return Task.CompletedTask;
+        return RebuildFailure is null
+            ? Task.CompletedTask
+            : Task.FromException(RebuildFailure);
     }
 
     public Task HandleOccurrenceAsync(
@@ -41,5 +53,27 @@ internal sealed class ReminderCoordinatorSpy : IReminderCoordinator
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult<IReadOnlyList<ReminderPreview>>(Array.Empty<ReminderPreview>());
+    }
+
+    public Task CancelFutureForMedicineAsync(
+        string medicineId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        CancelledMedicineIds.Add(medicineId);
+        return CancelMedicineFailure is null
+            ? Task.CompletedTask
+            : Task.FromException(CancelMedicineFailure);
+    }
+
+    public Task CancelFutureForProfileAsync(
+        string profileId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        CancelledProfileIds.Add(profileId);
+        return CancelProfileFailure is null
+            ? Task.CompletedTask
+            : Task.FromException(CancelProfileFailure);
     }
 }
