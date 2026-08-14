@@ -23,18 +23,81 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
     {
         ValidatePin(pin);
 
-        var salt = RandomNumberGenerator.GetBytes(16);
-        var verifier = Rfc2898DeriveBytes.Pbkdf2(
-            pin,
-            salt,
-            Iterations,
-            HashAlgorithmName.SHA256,
-            32);
+        string? previousEnabled = null;
+        byte[]? previousSalt = null;
+        byte[]? previousVerifier = null;
+        byte[]? salt = null;
+        byte[]? verifier = null;
 
-        await secretStore.SetBytesAsync(SaltKey, salt, cancellationToken);
-        await secretStore.SetBytesAsync(VerifierKey, verifier, cancellationToken);
-        await secretStore.SetStringAsync(EnabledKey, "1", cancellationToken);
-        CryptographicOperations.ZeroMemory(verifier);
+        try
+        {
+            previousEnabled = await secretStore.GetStringAsync(
+                EnabledKey,
+                cancellationToken);
+            previousSalt = await secretStore.GetBytesAsync(
+                SaltKey,
+                cancellationToken);
+            previousVerifier = await secretStore.GetBytesAsync(
+                VerifierKey,
+                cancellationToken);
+
+            salt = RandomNumberGenerator.GetBytes(16);
+            verifier = Rfc2898DeriveBytes.Pbkdf2(
+                pin,
+                salt,
+                Iterations,
+                HashAlgorithmName.SHA256,
+                32);
+
+            try
+            {
+                await secretStore.SetBytesAsync(
+                    SaltKey,
+                    salt,
+                    cancellationToken);
+                await secretStore.SetBytesAsync(
+                    VerifierKey,
+                    verifier,
+                    cancellationToken);
+                await secretStore.SetStringAsync(
+                    EnabledKey,
+                    "1",
+                    cancellationToken);
+            }
+            catch (Exception updateFailure)
+            {
+                var rollbackFailures = new List<Exception>();
+                await RestoreBytesAsync(
+                    SaltKey,
+                    previousSalt,
+                    rollbackFailures);
+                await RestoreBytesAsync(
+                    VerifierKey,
+                    previousVerifier,
+                    rollbackFailures);
+                await RestoreStringAsync(
+                    EnabledKey,
+                    previousEnabled,
+                    rollbackFailures);
+
+                if (rollbackFailures.Count > 0)
+                {
+                    rollbackFailures.Insert(0, updateFailure);
+                    throw new AggregateException(
+                        "The app-lock PIN update failed and the previous secure-storage state could not be fully restored.",
+                        rollbackFailures);
+                }
+
+                throw;
+            }
+        }
+        finally
+        {
+            ZeroIfPresent(salt);
+            ZeroIfPresent(verifier);
+            ZeroIfPresent(previousSalt);
+            ZeroIfPresent(previousVerifier);
+        }
     }
 
     public async Task<bool> VerifyPinAsync(
@@ -48,32 +111,29 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
 
         var salt = await secretStore.GetBytesAsync(SaltKey, cancellationToken);
         var expected = await secretStore.GetBytesAsync(VerifierKey, cancellationToken);
-
-        if (salt is null || expected is null)
-        {
-            if (expected is not null)
-            {
-                CryptographicOperations.ZeroMemory(expected);
-            }
-
-            return false;
-        }
-
-        var actual = Rfc2898DeriveBytes.Pbkdf2(
-            pin,
-            salt,
-            Iterations,
-            HashAlgorithmName.SHA256,
-            expected.Length);
+        byte[]? actual = null;
 
         try
         {
+            if (salt is null || expected is null)
+            {
+                return false;
+            }
+
+            actual = Rfc2898DeriveBytes.Pbkdf2(
+                pin,
+                salt,
+                Iterations,
+                HashAlgorithmName.SHA256,
+                expected.Length);
+
             return CryptographicOperations.FixedTimeEquals(actual, expected);
         }
         finally
         {
-            CryptographicOperations.ZeroMemory(actual);
-            CryptographicOperations.ZeroMemory(expected);
+            ZeroIfPresent(actual);
+            ZeroIfPresent(salt);
+            ZeroIfPresent(expected);
         }
     }
 
@@ -83,6 +143,58 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
         await secretStore.RemoveAsync(EnabledKey, cancellationToken);
         await secretStore.RemoveAsync(SaltKey, cancellationToken);
         await secretStore.RemoveAsync(VerifierKey, cancellationToken);
+    }
+
+    private async Task RestoreBytesAsync(
+        string key,
+        byte[]? value,
+        ICollection<Exception> failures)
+    {
+        try
+        {
+            if (value is null)
+            {
+                await secretStore.RemoveAsync(key, CancellationToken.None);
+            }
+            else
+            {
+                await secretStore.SetBytesAsync(key, value, CancellationToken.None);
+            }
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+        }
+    }
+
+    private async Task RestoreStringAsync(
+        string key,
+        string? value,
+        ICollection<Exception> failures)
+    {
+        try
+        {
+            if (value is null)
+            {
+                await secretStore.RemoveAsync(key, CancellationToken.None);
+            }
+            else
+            {
+                await secretStore.SetStringAsync(key, value, CancellationToken.None);
+            }
+        }
+        catch (Exception ex)
+        {
+            failures.Add(ex);
+        }
+    }
+
+    private static void ZeroIfPresent(byte[]? value)
+    {
+        if (value is not null)
+        {
+            CryptographicOperations.ZeroMemory(value);
+        }
     }
 
     private static void ValidatePin(string pin)
