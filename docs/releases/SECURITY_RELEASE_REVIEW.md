@@ -111,7 +111,7 @@ Complete this review against the exact commit proposed for a public release.
 - [x] `SQLitePCLRaw.lib.e_sqlite3.android` and the selected providers are centrally pinned at or above `2.1.12` in the current source.
 - [x] The exact advisory `NuGetAuditSuppress` entry was removed rather than broadened.
 - [x] `SqliteDependencySecurityContractTests` protects the maintained native/provider floor and absence of the old suppression.
-- [x] Multiple unsuppressed Dependency Audit checkpoints succeeded during remediation, including current PR #53 Dependency Audit #34 / `31766026570`.
+- [x] Unsuppressed Dependency Audit checkpoints succeeded during remediation and the authoritative PR #54 Dependency Audit #35 / `31766059132` succeeded on the final verified source.
 - [ ] Final release evidence records the actual resolved dependency graph and manual existing-data compatibility results; it must not confuse a successful audit with packaged data/device validation.
 
 ## Platform/distribution
@@ -123,32 +123,36 @@ Complete this review against the exact commit proposed for a public release.
 - [ ] Current Apple/Google rules for the voluntary external support link were reviewed.
 - [ ] Store privacy/data-safety disclosures match local-first behavior.
 
-## Current RC1 automated candidate
+## Current RC1 automated baseline
 
-The earlier PR #33 reference is historical. The 2026-08-14 audit continued through reminder reconciliation, failure compensation, report-cache cleanup and SQLite dependency remediation.
+The earlier PR #33 reference is historical. The 2026-08-14 audit continued through reminder reconciliation, failure compensation, report-cache cleanup, cancellation-first reminder action recovery, appointment persistence compensation and SQLite dependency remediation.
 
-Current exact runtime/test source covered by marker-only PR #53:
+Authoritative marker-only verification: PR #54 — `Verify final CareNest bug-audit source`.
 
-`da2aed19ee9224b8d8661f11520ab9396e2c005e`
+Verified runtime/test/dependency source/base SHA:
 
-PR #53 marker head:
+`4490f3f86752841d436e981b29279970c90c947b`
 
-`f648bad8ea666dfb0a13e594577dee7a80d141c6`
+Marker head:
 
-Current evidence:
+`929168a0a319b15d9e89997d86436d59ae731ad1`
 
-- CareNest CI #501 / `31766026734` — still in progress only because the Apple Release job has not yet completed;
-- platform-neutral formatting — success;
+Final automated evidence:
+
+- CareNest CI #503 / `31766059137` — **success**;
+- platform-neutral formatting — **success**;
 - **122 unit tests** — passed;
 - **39 integration tests** — passed;
 - **100 UI-contract/policy tests** — passed;
 - **261 total core tests** — passed;
-- Android Release — success;
-- Windows Release — success;
-- iOS simulator Release — pending/in progress at this document update;
-- Mac Catalyst Release — pending behind iOS at this document update;
-- CodeQL #501 / `31766026573` — success;
-- Dependency Audit #34 / `31766026570` — success without the former SQLite advisory suppression.
+- Android Release — **success**;
+- Windows Release — **success**;
+- iOS simulator Release — **success**;
+- Mac Catalyst Release — **success**;
+- CodeQL #503 / `31766059215` — **success**;
+- Dependency Audit #35 / `31766059132` — **success** without the former SQLite advisory suppression, including the platform-neutral and Android MAUI app graphs.
+
+PR #54 was closed without merge after the complete matrix passed. Its verification marker is not part of `main`. PR #53 is duplicate corroborating same-source evidence and was also closed without merge.
 
 Verification history retained for auditability:
 
@@ -161,8 +165,9 @@ Verification history retained for auditability:
 - PR #49 exposed CA1861 in new reminder reconciliation assertions; the tests were corrected rather than suppressing the analyzer.
 - PRs #47/#48/#50 provided useful unsuppressed SQLite-audit evidence while `main` was moving, but were not final combined-source baselines.
 - PRs #51/#52 were superseded when later runtime/test source changed.
+- PR #53 independently corroborated the final graph but was closed as duplicate after PR #54 completed the full matrix.
 
-PR #53 must not be promoted until every required job is green. Its marker file must be closed without merge after evidence is recorded.
+`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` is the authoritative automated evidence record for this audit.
 
 This automated reference still does not pre-approve a later production commit or complete the manual/device/accessibility/store/signing/SQLite-existing-data compatibility gates.
 
