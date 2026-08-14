@@ -1,0 +1,5 @@
+CareNest final bug-audit verification marker.
+
+Date: 2026-08-14
+Purpose: exact-head formatting, core tests, Android/Windows/iOS simulator/Mac Catalyst Release builds, CodeQL, and Dependency Audit after the complete source bug audit.
+This marker is verification-only and must not be merged into main.
