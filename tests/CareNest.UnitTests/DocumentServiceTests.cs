@@ -88,18 +88,12 @@ public sealed class DocumentServiceTests
     [Fact]
     public async Task ExportToTemporaryFileAsync_UsesSafeFileNameAndAuditsExplicitExport()
     {
-        var document = new CareDocument
-        {
-            Id = "document-1",
-            ProfileId = "profile-1",
-            Title = "Report",
-            OriginalFileName = $"..{Path.DirectorySeparatorChar}outside.txt",
-            EncryptedFileName = "document-1.cndoc"
-        };
+        var document = ExistingDocument();
+        document.OriginalFileName = $"..{Path.DirectorySeparatorChar}outside.txt";
         var repository = new RecordingRepository { ExistingDocument = document };
         var store = new DocumentStoreSpy { ExportPayload = Encoding.UTF8.GetBytes("decrypted") };
         var service = new DocumentService(repository, store, new FixedTimeProvider(Now));
-        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "CareNest.UnitTests", Guid.NewGuid().ToString("N"));
+        var temporaryDirectory = TemporaryDirectory();
 
         try
         {
@@ -115,24 +109,67 @@ public sealed class DocumentServiceTests
         }
         finally
         {
-            if (Directory.Exists(temporaryDirectory))
-            {
-                Directory.Delete(temporaryDirectory, recursive: true);
-            }
+            DeleteDirectory(temporaryDirectory);
+        }
+    }
+
+    [Fact]
+    public async Task ExportToTemporaryFileAsync_DecryptFailsAfterWriting_RemovesPartialPlaintext()
+    {
+        var document = ExistingDocument();
+        var repository = new RecordingRepository { ExistingDocument = document };
+        var store = new DocumentStoreSpy
+        {
+            ExportPayload = Encoding.UTF8.GetBytes("partial plaintext"),
+            ThrowAfterExportWrite = true
+        };
+        var service = new DocumentService(repository, store, new FixedTimeProvider(Now));
+        var temporaryDirectory = TemporaryDirectory();
+
+        try
+        {
+            await Assert.ThrowsAsync<InvalidDataException>(() =>
+                service.ExportToTemporaryFileAsync(document.Id, temporaryDirectory));
+
+            Assert.Empty(Directory.EnumerateFiles(temporaryDirectory));
+            Assert.Empty(repository.AuditEntries);
+        }
+        finally
+        {
+            DeleteDirectory(temporaryDirectory);
+        }
+    }
+
+    [Fact]
+    public async Task ExportToTemporaryFileAsync_AuditFails_RemovesCompletedPlaintext()
+    {
+        var document = ExistingDocument();
+        var repository = new RecordingRepository
+        {
+            ExistingDocument = document,
+            ThrowOnAudit = true
+        };
+        var store = new DocumentStoreSpy { ExportPayload = Encoding.UTF8.GetBytes("decrypted") };
+        var service = new DocumentService(repository, store, new FixedTimeProvider(Now));
+        var temporaryDirectory = TemporaryDirectory();
+
+        try
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                service.ExportToTemporaryFileAsync(document.Id, temporaryDirectory));
+
+            Assert.Empty(Directory.EnumerateFiles(temporaryDirectory));
+        }
+        finally
+        {
+            DeleteDirectory(temporaryDirectory);
         }
     }
 
     [Fact]
     public async Task DeleteAsync_ExistingDocument_RemovesRecordAndEncryptedPayload()
     {
-        var document = new CareDocument
-        {
-            Id = "document-1",
-            ProfileId = "profile-1",
-            Title = "Report",
-            OriginalFileName = "report.pdf",
-            EncryptedFileName = "document-1.cndoc"
-        };
+        var document = ExistingDocument();
         var repository = new RecordingRepository { ExistingDocument = document };
         var store = new DocumentStoreSpy();
         var service = new DocumentService(repository, store, new FixedTimeProvider(Now));
@@ -154,6 +191,27 @@ public sealed class DocumentServiceTests
 
         Assert.Empty(repository.DeletedDocumentIds);
         Assert.Empty(store.DeletedFiles);
+    }
+
+    private static CareDocument ExistingDocument() =>
+        new()
+        {
+            Id = "document-1",
+            ProfileId = "profile-1",
+            Title = "Report",
+            OriginalFileName = "report.pdf",
+            EncryptedFileName = "document-1.cndoc"
+        };
+
+    private static string TemporaryDirectory() =>
+        Path.Combine(Path.GetTempPath(), "CareNest.UnitTests", Guid.NewGuid().ToString("N"));
+
+    private static void DeleteDirectory(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, recursive: true);
+        }
     }
 
     private static PickedFile Picked(string fileName, string? contentType, string value) =>
