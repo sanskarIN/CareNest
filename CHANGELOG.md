@@ -2,6 +2,85 @@
 
 All notable changes follow Keep a Changelog principles and semantic versioning.
 
+## [Unreleased] - 2026-08-14
+
+### Added
+
+- Direct integration coverage for future snoozes whose original scheduled time has already passed, overdue snoozes, and stale future-occurrence cancellation/replacement.
+- Reminder reconciliation source contracts covering OS-request cancellation before replacement/suppression/invalidation, schedule-row preservation, and medicine/profile lifecycle compensation.
+- Appointment reminder persistence compensation coverage across database/platform reminder state.
+- Notification scheduling/cancellation failure injection for reminder action and reconciliation recovery tests.
+- Reminder action cancellation/recovery ordering coverage.
+- `SqliteDependencySecurityContractTests` protecting the maintained SQLite native/provider package floor and preventing restoration of the old advisory audit suppression.
+- `docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` as the authoritative final automated evidence record.
+- Corrected repository-wide verification/security/release status documentation for the final 2026-08-14 audit.
+
+### Changed
+
+- Snoozed reminders use `SnoozedUntilUtc` as effective due time for upcoming and overdue behavior.
+- Reminder rebuild explicitly reconciles persisted occurrence rows with existing operating-system requests before replacement, suppression, quiet-hours handling, or invalidation.
+- Medicine/profile schedule and lifecycle operations preserve enough occurrence state to cancel stale OS requests before deleting structured rows.
+- Medicine/profile delete flows cancel future platform requests before database cascade and use non-cancelled rebuild compensation if persistence fails.
+- Medicine/profile save flows reconcile reminders before non-critical audit bookkeeping can make a successful structured-data transition appear failed.
+- Appointment persistence now reconciles/compensates platform reminder state around database failures.
+- Reminder actions are cancellation-first: the old platform request is cancelled before Taken/Skipped/Delayed/Missed/Snoozed/Cancelled state is committed.
+- Failed later reminder-action persistence or snooze replacement attempts restore the prior state and rebuild platform scheduling using non-cancelled compensation.
+- Shared report-cache files are removed after successful share handoff where CareNest still owns the temporary cache copy.
+- SQLite central transitive pinning now selects the maintained native/provider leaf path while retaining the current `sqlite-net-pcl`/bundle API path.
+- Active release/security/status documents now distinguish fully completed source remediation from still-required packaged existing-data compatibility evidence.
+
+### Fixed
+
+- Corrected future snoozes disappearing from upcoming results after their original scheduled time passed.
+- Corrected expired snoozes remaining `Snoozed` instead of transitioning according to overdue handling.
+- Corrected stale scheduled occurrences remaining represented as active platform requests after schedule changes.
+- Corrected reminder/platform state mutation ordering so handled state is not committed while a known old OS request remains scheduled.
+- Corrected reminder delete/save compensation boundaries for medicine, profile, and appointment workflows.
+- Corrected CA1861 in newly added reminder-reconciliation test expectations without suppressing analyzer policy.
+- Corrected the earlier documentation claim that verification PR #43 was fully green; its core CI actually failed in integration testing and skipped the UI-contract suite.
+- Corrected the earlier assumption that the tracked SQLite advisory necessarily required keeping the old native/provider dependency path.
+
+### Security
+
+- Removed the exact `GHSA-2m69-gcr7-jv3q` `NuGetAuditSuppress` entry from `Directory.Build.props` after establishing a compatible maintained dependency path.
+- Centrally pinned `SQLitePCLRaw.lib.e_sqlite3` to `3.53.3`.
+- Centrally pinned `SQLitePCLRaw.lib.e_sqlite3.android` and selected provider packages to `2.1.12`.
+- Final authoritative Dependency Audit #35 / run `31766059132` succeeded without the former advisory suppression, including platform-neutral and Android MAUI app dependency graphs.
+- Report share cleanup reduces lifetime of application-owned plaintext report cache files after external share handoff.
+- Reminder cancellation/recovery logging remains privacy-safe and does not log health-record identifiers, exception messages, or stack traces.
+- The SQLite package remediation does not introduce a CareNest backend, account, telemetry client, remote database, cloud-sync requirement, or user-controlled raw SQL path.
+
+### Verification
+
+Authoritative final marker-only verification: PR #54 — `Verify final CareNest bug-audit source`.
+
+Source/base SHA frozen for runtime/test/dependency verification:
+
+`4490f3f86752841d436e981b29279970c90c947b`
+
+Marker head:
+
+`929168a0a319b15d9e89997d86436d59ae731ad1`
+
+Final evidence:
+
+- CareNest CI #503 / `31766059137`: success.
+- Platform-neutral formatting: success.
+- Unit tests: **122 passed, 0 failed, 0 skipped**.
+- Integration tests: **39 passed, 0 failed, 0 skipped**.
+- UI-contract/policy tests: **100 passed, 0 failed, 0 skipped**.
+- Total automated tests: **261 passed, 0 failed, 0 skipped**.
+- Android Release: success.
+- Windows Release: success.
+- iOS simulator Release: success.
+- Mac Catalyst Release: success.
+- CodeQL #503 / `31766059215`: success.
+- Dependency Audit #35 / `31766059132`: success without the former SQLite advisory suppression.
+
+PR #54 was closed without merge after success; its marker is not part of `main`. PR #53 independently completed a duplicate green verification of the same final runtime/test graph and was also closed without merge.
+
+Public production promotion remains blocked on actual real-device/accessibility/notification/document/backup checks, packaged SQLite existing-data compatibility evidence, current store-policy review, signing/store preparation, and final Release Evidence for the exact promoted production commit.
+
 ## [Unreleased] - 2026-08-13
 
 ### Added
