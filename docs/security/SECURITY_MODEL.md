@@ -37,9 +37,11 @@ Current security statement:
 - database is protected primarily by application sandbox/device security;
 - CareNest does not claim transparent whole-database encryption;
 - SQL/repository access is kept in infrastructure rather than UI;
-- migrations are versioned;
+- migrations are versioned and migration/version writes are transactionally coordinated;
 - integrity tests cover persistence behavior;
-- WAL mode and busy-timeout configuration are regression tested.
+- WAL mode and busy-timeout configuration are regression tested;
+- backup snapshot tests validate copied committed content and `PRAGMA integrity_check`;
+- native/provider package changes are treated as both dependency-security work and data-compatibility work.
 
 ## Encrypted document protection
 
@@ -73,6 +75,21 @@ Controls:
 
 This is compensating cleanup, not a claim of a single cross-filesystem/SQLite ACID transaction. Process termination or OS failure can still interrupt cleanup and therefore remains a manual/recovery consideration.
 
+## Plaintext export/cache lifecycle
+
+Explicit document/report export necessarily creates plaintext or portable output.
+
+Current controls include:
+
+- failed decrypted document export cleans application-owned incomplete/plaintext output best effort;
+- successful decrypted temporary document exports stay under the managed `Exports` cache until explicitly shared/exported;
+- CSV/PDF/JSON writers use staged partial files and atomic final moves;
+- failed/cancelled report generation removes incomplete staging files best effort;
+- shared report flows remove the application-owned temporary report after share handoff returns where CareNest still owns that copy;
+- CareNest does not claim deletion of copies already controlled by another app, cloud destination, OS share service, screenshot, backup, or filesystem snapshot.
+
+CSV string output also neutralizes formula-like user-entered prefixes in the portable spreadsheet representation without mutating the stored source record.
+
 ## Backup protection
 
 Manual backups use:
@@ -90,6 +107,8 @@ Manual backups use:
 Allowed archive files are limited to the manifest, database, optional/required document key, and top-level `.cndoc` document entries. Duplicate, nested, unexpected, count-mismatched, or invalid-key layouts fail validation.
 
 The backup password is not recoverable through a CareNest backend because no such backend exists in v1.
+
+Primary encrypted backup/restore completion is distinguished from later local bookkeeping. A later audit/history write failure does not falsely turn a completely written backup or fully committed restore into an unsuccessful cryptographic operation.
 
 ## Sensitive buffer handling
 
@@ -119,7 +138,9 @@ The optional app lock uses:
 - fixed-time verifier comparison;
 - platform secure secret storage for enabled/salt/verifier material;
 - clearing candidate/retrieved verifier buffers where managed-memory control permits;
-- removal of stored lock material when disabled.
+- removal of stored lock material when disabled;
+- rollback around multi-key update/disable transitions;
+- fail-closed behavior when stored salt/verifier material is missing or malformed.
 
 Limitations:
 
@@ -138,16 +159,20 @@ CareNest minimizes notification payload sensitivity.
 - platform notification systems control final storage/display/delivery;
 - user device lock-screen preview settings remain important.
 
-Time/permission integrity controls now also include:
+Time/permission integrity controls include:
 
 - appointment `StartsUtc` must be actual `DateTimeKind.Utc`;
 - local/unspecified appointment ticks are rejected instead of silently relabeled;
 - denied notification permission is not treated as successful appointment scheduling;
-- background/rebuild paths do not repeatedly prompt and do not schedule while permission remains denied.
+- background/rebuild paths do not repeatedly prompt and do not schedule while permission remains denied;
+- medicine planner/rebuild boundaries require explicit UTC transport timestamps;
+- snooze requires an explicit future UTC timestamp.
 
 ## Reminder integrity protections
 
-Reminder-planning security/reliability controls include:
+Reminder planning and platform-state integrity are separate but coordinated concerns.
+
+Planning controls include:
 
 - explicit entity-ownership validation;
 - known schedule kind;
@@ -161,7 +186,25 @@ Reminder-planning security/reliability controls include:
 - archived/paused/completed/disabled/as-needed suppression rules;
 - explicit future-UTC snooze requirement.
 
-These controls protect organizational data integrity. They do not validate clinical appropriateness.
+Platform reconciliation controls include:
+
+- snoozed occurrences use `SnoozedUntilUtc` as their effective due time;
+- rebuild attempts cancellation of an existing OS request before replacement, quiet-hour suppression, or invalidation;
+- cancellation failure leaves state retryable instead of falsely reconciled;
+- schedule edits retain enough old occurrence identity to cancel stale platform requests;
+- medicine/profile deletion cancels future platform requests before database cascade and attempts non-cancelled rebuild compensation if persistence fails;
+- medicine/profile save flows reconcile reminders before later non-critical audit bookkeeping;
+- appointment persistence/platform scheduling uses compensation/reconciliation rather than assuming database and OS scheduler are one transaction.
+
+Handled reminder actions are cancellation-first:
+
+1. cancel the old platform request;
+2. persist Taken/Skipped/Delayed/Missed/Snoozed/Cancelled only after cancellation succeeds;
+3. schedule a snooze replacement only after state persistence;
+4. if a later persistence/scheduling step fails, attempt non-cancelled restoration of the previous occurrence state and reminder rebuild;
+5. if recovery also fails, surface aggregate failure rather than claiming consistency.
+
+These controls protect organizational data integrity. They do not validate clinical appropriateness or guarantee OS delivery.
 
 ## Logging protection
 
@@ -171,7 +214,7 @@ The codebase uses source contracts and explicit logging-level guards to avoid:
 
 - full exception-object logging from user-data operation paths;
 - raw exception messages/stack traces;
-- medicine/profile/reminder record identifiers in reminder scheduling failures;
+- medicine/profile/reminder record identifiers in reminder scheduling/cancellation/recovery failures;
 - document contents;
 - credentials/PINs/backup passwords/keys.
 
@@ -225,26 +268,29 @@ Signing/configuration secrets belong outside Git.
 
 ## Dependency security
 
-NuGet dependency auditing is part of repository verification.
+NuGet dependency auditing is a blocking repository/release control.
 
-Current known tracked risk:
+The formerly tracked SQLite native dependency exception for `GHSA-2m69-gcr7-jv3q` is remediated in the current RC1 source graph:
 
-`GHSA-2m69-gcr7-jv3q` against SQLitePCLRaw native `2.1.11` through the current dependency chain.
+- central transitive pinning remains enabled;
+- `sqlite-net-pcl` remains `1.9.172`;
+- `SQLitePCLRaw.bundle_green` remains `2.1.11` as the compatible bundle API path;
+- `SQLitePCLRaw.lib.e_sqlite3` is pinned to `3.53.3`;
+- `SQLitePCLRaw.lib.e_sqlite3.android` is pinned to `2.1.12`;
+- selected provider packages are pinned to `2.1.12`;
+- the exact `GHSA-2m69-gcr7-jv3q` `NuGetAuditSuppress` entry has been removed;
+- `SqliteDependencySecurityContractTests` prevents restoration of the old native/provider floor or suppression.
 
-Important:
+This source remediation was verified by unsuppressed Dependency Audit and the full platform/core matrix on PR #54, and again through later release-engineering checkpoints. The security decision is not permission to skip packaged existing-database, encrypted-document, backup, reminder, and real-device compatibility checks after changing native persistence dependencies.
 
-- the exact audit suppression exists only to keep other validation observable;
-- it is not remediation;
-- no blanket/severity-wide suppression is used;
-- release risk remains open in `docs/security/DEPENDENCY_RISK_REGISTER.md`;
-- provider/package changes must follow `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
+Any future audit exception must be exact, temporary, documented in `DEPENDENCY_RISK_REGISTER.md`, and reviewed as a release risk. Wildcard/severity-wide suppression is prohibited.
 
 ## Static and automated security controls
 
 Repository automation includes:
 
 - CodeQL;
-- Dependency Audit;
+- unsuppressed Dependency Audit;
 - architecture contracts;
 - repository policy contracts;
 - no common signing-secret file contracts;
@@ -257,7 +303,9 @@ Repository automation includes:
 - chunked AEAD v2 truncation/trailing-data/legacy-v1 tests;
 - sensitive caller-buffer hygiene tests;
 - SQLite migration/integrity tests;
-- reminder/appointment ownership/time/state/permission contracts;
+- SQLite dependency-security contracts;
+- reminder/appointment ownership/time/state/permission/reconciliation contracts;
+- release workflow/preflight/quality-gate contracts;
 - warnings-as-errors CI posture for correctness/security analyzers except explicitly documented advisory exceptions.
 
 ## Source hygiene
@@ -272,7 +320,7 @@ Runtime source avoids common synchronous task-blocking patterns.
 
 Cancellation-aware operations are used where appropriate for I/O/application workflows.
 
-Security-sensitive cleanup sometimes intentionally uses non-cancelled cleanup after the main operation has failed so cancellation cannot knowingly strand a newly created encrypted payload/metadata record.
+Security-sensitive cleanup/reconciliation sometimes intentionally uses non-cancelled compensation after the main operation has failed so cancellation cannot knowingly strand newly created encrypted payloads/metadata or leave a known cancelled reminder request without a best-effort restore attempt.
 
 This improves reliability and consistency but is not itself a confidentiality guarantee against process termination.
 
@@ -323,37 +371,59 @@ Residual risks outside CareNest's guarantee include:
 
 Device-level encryption, secure lock screen, OS updates, and trusted software remain part of the overall security posture.
 
-## Latest automated security baseline
+## Automated security baselines
 
-Exact runtime/test source:
+### Authoritative bug-audit baseline
 
-`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
+Marker-only PR #54 verified the 2026-08-14 runtime/test/dependency graph:
 
-Marker-only PR #33 completed successfully and was closed without merge.
-
-- CareNest CI #332 / `31691592300`: success;
-- 190 core tests passed;
+- CareNest CI #503 / `31766059137`: success;
+- 122 unit + 39 integration + 100 UI-contract = 261 tests passed;
 - Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
-- CodeQL #332 / `31691592435`: success;
-- Dependency Audit #13 / `31691592302`: success.
+- CodeQL #503 / `31766059215`: success;
+- unsuppressed Dependency Audit #35 / `31766059132`: success.
 
-The Dependency Audit result does not close the tracked SQLitePCLRaw advisory.
+PR #54 was closed without merge after evidence capture.
+
+### Release-engineering hardening after PR #54
+
+Later workflow/test/build-script changes added exact `v*` tag triggers, failure-preserving release evidence, blocking local dependency audits, and executable release-policy contracts. These changes are verification-relevant even though they do not intentionally change the application runtime.
+
+PR #55 was a successful but superseded checkpoint: formatting, 122 unit tests, 39 integration tests, 116 UI-contract tests, Android, Windows, CodeQL #547 / `31769940053`, and unsuppressed Dependency Audit #38 / `31769940039` succeeded before further confirmed release-tooling/documentation corrections required a newer exact-source verification.
+
+The final current `main` head must receive a fresh complete exact-source matrix before it replaces these historical checkpoints as the release-engineering baseline.
+
+## Exact-tag release security behavior
+
+Tags matching `v*` are configured to run the exact tagged commit through:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
+
+Release Evidence records source/ref/run identity, tracked-source manifests/checksums, all three core TRX suites, dependency inventories, workspace integrity, and evidence checksums. It uploads available evidence even when a component fails, then applies an aggregate failure gate.
+
+A tag is not a production approval until every required tag workflow plus manual/device/accessibility/store/signing/packaged-data compatibility evidence is complete.
 
 ## Security release review
 
 Before final public promotion:
 
-- rerun CodeQL/Dependency Audit for exact promoted source;
+- rerun the complete exact-source matrix for the intended production commit/tag;
+- rerun CodeQL/unsuppressed Dependency Audit for exact promoted source;
 - review threat model;
 - review logging privacy;
 - review v1/v2 encrypted-stream compatibility plan;
 - review strict backup topology assumptions;
-- review dependency risk;
+- review dependency risk/remediation state;
+- complete packaged SQLite existing-data/encrypted-data compatibility evidence;
 - complete `docs/releases/SECURITY_RELEASE_REVIEW.md`;
 - verify no real secrets were committed;
 - verify signed artifacts come from exact reviewed source;
 - verify store/privacy disclosures match runtime behavior;
-- manually inspect logs and export/backup workflows on target devices.
+- manually inspect logs and export/backup/reminder workflows on target devices.
 
 ## Incident response
 
