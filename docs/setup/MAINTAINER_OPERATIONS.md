@@ -54,7 +54,11 @@ Identify whether the work changes:
 - platform permissions;
 - backup format;
 - dependencies;
+- workflows/release gates;
+- tests/build scripts;
 - only documentation.
+
+Workflow/test/build-script changes are verification-relevant even when the application runtime source is unchanged.
 
 ## Commit discipline
 
@@ -117,9 +121,14 @@ Any reminder-planner/coordinator change must consider:
 - state suppression;
 - as-needed behavior;
 - snooze future-UTC requirement;
+- snoozed effective due time;
+- cancellation before replacement/suppression/invalidation;
+- cancellation-first handled reminder actions;
+- persistence/platform compensation;
+- medicine/profile/appointment lifecycle reconciliation;
 - platform delivery limitations.
 
-Update `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` if the deterministic contract changes.
+Update `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` and related platform/release documentation if the deterministic/lifecycle contract changes.
 
 ## Schema changes
 
@@ -140,17 +149,20 @@ For NuGet/package changes:
 
 - update central package definitions where applicable;
 - run restore/test/build matrix;
-- run Dependency Audit;
+- run unsuppressed Dependency Audit;
 - run CodeQL for source/security-relevant changes;
 - inspect transitive dependency changes;
 - update third-party notices if required;
-- update dependency risk register if advisory status changes.
+- update dependency risk register if advisory status changes;
+- perform packaged compatibility checks when persistence/native-provider behavior may be affected.
 
 ### SQLite-specific rule
 
 Do not change sqlite-net/SQLitePCLRaw provider/bundle versions without following `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
 
-Current tracked advisory remains open until actually resolved/approved.
+The previously tracked `GHSA-2m69-gcr7-jv3q` source exception is remediated in the current RC1 graph. The maintained native/provider floors and absence of the old `NuGetAuditSuppress` entry are protected by `SqliteDependencySecurityContractTests`.
+
+Do not restore the old suppression merely because packaged existing-data/encrypted-data compatibility evidence is still incomplete. Treat that remaining work as manual release qualification.
 
 ## Security changes
 
@@ -190,6 +202,7 @@ Preserve:
 - fixed-time comparison;
 - verifier-buffer clearing where possible;
 - deletion of lock material when disabled;
+- rollback/fail-closed behavior for multi-key secure-store transitions;
 - explicit limitation that app lock is not whole-database encryption.
 
 Biometric/recovery/remote unlock features require a separate threat-model decision.
@@ -226,6 +239,7 @@ For documentation-only changes:
 - keep factual claims tied to implemented behavior;
 - do not mark manual tests complete without evidence;
 - do not describe advisories as fixed unless the dependency graph actually changed and passed verification;
+- do not describe source remediation as packaged compatibility proof;
 - keep links consistent;
 - update `docs/README.md` for major new documents;
 - update `what_changed.md` when the user requests a detailed handoff.
@@ -240,13 +254,93 @@ Key workflows include:
 - CodeQL;
 - Dependency Audit;
 - Release Gate;
-- Release Evidence.
+- CareNest Release Evidence.
 
-CI verifies formatting/core tests/platform Release builds.
+### Pull-request verification
 
-CodeQL and Dependency Audit are independent security/dependency evidence.
+Marker-only verification PRs to `main` run:
 
-Release Gate intentionally prevents production promotion while tracked release blockers remain.
+- CareNest CI;
+- CodeQL;
+- Dependency Audit.
+
+Release Gate and Release Evidence remain production/tag/manual workflows rather than marker-PR approval shortcuts.
+
+### Manual execution
+
+CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence support manual `workflow_dispatch` where defined for release/maintenance use.
+
+### Exact release-tag execution
+
+Tags matching `v*` trigger the exact tagged commit through:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
+
+A release tag must not bypass the same test/build/security/dependency gates that protected the candidate source.
+
+Do not publish/promote a tag until all required tag-triggered runs are successful.
+
+## Local quality gates
+
+Use:
+
+```bash
+build/scripts/quality-gate.sh
+```
+
+or:
+
+```powershell
+./build/scripts/quality-gate.ps1
+```
+
+Both quality-gate scripts are intended to work from a clean checkout and:
+
+- verify formatting of platform-neutral/test projects;
+- build platform-neutral source projects;
+- restore/run all core test projects;
+- run unsuppressed NuGet audit for all core test dependency graphs;
+- fail immediately/explicitly when a required native command fails.
+
+They do not replace platform MAUI builds or manual device testing.
+
+## Release preflight
+
+Use:
+
+```bash
+build/scripts/release-preflight.sh
+```
+
+or:
+
+```powershell
+./build/scripts/release-preflight.ps1
+```
+
+Preflight treats NuGet audit as blocking. When `CARENEST_TARGET` is set, it audits that MAUI target before building it.
+
+The scripts must not restore the old behavior of ignoring a dependency-audit failure with `|| true`/warning-only handling.
+
+## Release Evidence behavior
+
+`CareNest Release Evidence` captures:
+
+- exact commit/ref/run identity;
+- tracked-file manifest;
+- SHA-256 checksum manifest for tracked source;
+- pre/post tracked-workspace status;
+- TRX results for all three core test suites;
+- transitive dependency inventories for platform-neutral source/test projects;
+- evidence-file checksums.
+
+Test/dependency/workspace evidence components are attempted independently. The artifact upload uses failure-preserving behavior before the final aggregated outcome gate, so a failed release-evidence run remains diagnosable.
+
+The release-evidence artifact is retained for 90 days by the workflow.
 
 ## Exact-head verification
 
@@ -254,20 +348,20 @@ Use `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
 
 Do not merge the marker PR.
 
-A source change after verification makes the old verification stale for that new source.
+A source/workflow/test/configuration change after verification makes the old verification stale for that new source.
 
 ## Failure handling
 
-If CI exposes an analyzer/compiler/test failure:
+If CI exposes an analyzer/compiler/test/workflow failure:
 
 1. read the actual log;
-2. determine whether it is source, test, toolchain, or infrastructure;
-3. fix source/test when the finding is legitimate;
+2. determine whether it is source, test, workflow, toolchain, or infrastructure;
+3. fix source/test/workflow when the finding is legitimate;
 4. avoid broad suppression;
 5. close stale marker PR;
 6. verify corrected exact source again.
 
-Historical verification PRs intentionally exposed multiple analyzer/privacy/path/nullability defects and were closed without merge after corrections.
+Historical verification PRs intentionally exposed multiple analyzer/privacy/path/nullability/reminder issues and were closed without merge after corrections.
 
 ## Release evidence records
 
@@ -282,6 +376,15 @@ When a verification succeeds, record:
 - CodeQL run number/ID;
 - Dependency Audit run number/ID;
 - whether marker was closed without merge.
+
+For a production/tag evidence run also record:
+
+- tag;
+- Release Gate run;
+- Release Evidence run;
+- Release Evidence artifact/checksums;
+- manual packaged SQLite/data compatibility evidence;
+- signing/package provenance.
 
 Update:
 
@@ -298,13 +401,15 @@ If the only commits after a verified source SHA are `.md` documentation files, u
 
 Do not imply platform compilation was rerun for documentation-only commits unless it actually was.
 
+This exception does not apply to workflow/test/build-script changes; those are verification-relevant and require a fresh exact-source verification before promotion.
+
 ## Manual testing records
 
 `docs/releases/MANUAL_TEST_MATRIX.md` is evidence, not a wishlist.
 
 Fill rows only after performing the test on the named platform/build.
 
-Record device/OS/build and result notes.
+Record device/OS/build/source and result notes.
 
 ## Store submissions
 
@@ -344,4 +449,4 @@ Public support requests should use synthetic/redacted data.
 
 Do not publish/tag final production merely because repository source is complete.
 
-Final promotion requires the real release blockers in `PROJECT_STATUS.md`, `NEXT_STEPS.md`, and `RELEASE_CHECKLIST.md` to be resolved and evidenced.
+Final promotion requires the real release blockers in `PROJECT_STATUS.md`, `NEXT_STEPS.md`, and `RELEASE_CHECKLIST.md` to be resolved and evidenced, followed by successful exact-tag workflow gates for the approved commit.
