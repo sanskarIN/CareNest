@@ -1,6 +1,6 @@
 # CareNest Development Setup
 
-This is the primary development setup for CareNest `1.0.0-rc.1`. For platform-specific details, also read `docs/setup/PLATFORM_SETUP.md`.
+This is the primary development setup for CareNest `1.0.0-rc.1`. For the full system overview see `docs/COMPLETE_PROJECT_DOCUMENTATION.md`; for package/build/workflow details see `docs/CONFIGURATION_REFERENCE.md`; for platform specifics see `docs/setup/PLATFORM_SETUP.md`.
 
 ## Repository
 
@@ -13,21 +13,21 @@ Default branch: `main`.
 
 ## Required toolchain
 
-Core requirements:
+Core:
 
 - Git;
 - .NET 10 SDK;
-- .NET MAUI workload(s) for target platforms being built;
 - NuGet restore access;
-- platform SDK/tooling for each intended target.
+- .NET MAUI workload(s) for target platforms being built;
+- platform SDK/tooling for each selected target.
 
 Platform tooling:
 
-- Android: Android SDK/JDK + MAUI Android workload;
-- iOS/Mac Catalyst: compatible macOS + Xcode + Apple MAUI workload;
-- Windows: Windows App SDK/MAUI prerequisites on a supported Windows development host.
+- Android — Android SDK/JDK + MAUI Android workload;
+- Windows — supported Windows development host + MAUI prerequisites;
+- iOS/Mac Catalyst — compatible macOS + Xcode + Apple MAUI workload.
 
-Use the exact project target frameworks/toolchain expected by the current branch if a later release changes them.
+Use the exact target frameworks/project configuration in the current branch if a later release changes the toolchain.
 
 ## Inspect the environment
 
@@ -37,22 +37,22 @@ dotnet --info
 dotnet workload list
 ```
 
-For Apple hosts also record:
+On Apple hosts:
 
 ```bash
 xcodebuild -version
 ```
 
-## Git maintainer identity
+## Repository-local Git identity
 
-Requested repository-local identity:
+Requested local maintainer identity:
 
 ```bash
-git config --local user.email "sanskarin@outlook.in"
 git config --local user.name "Sanskar"
+git config --local user.email "sanskarin@outlook.in"
 ```
 
-Repository helper scripts:
+Repository helpers:
 
 ```bash
 build/scripts/setup-git.sh
@@ -64,9 +64,9 @@ PowerShell:
 ./build/scripts/setup-git.ps1
 ```
 
-Both helper scripts locate the repository root, use `--local`, fail on native Git errors, and verify the configured name/email.
+Both helpers locate the repository root, require a valid Git work tree, use `--local`, fail on native Git errors, and verify the configured name/email.
 
-GitHub web/API/connector commits can use the authenticated GitHub account identity rather than the local repository identity; do not misrepresent those commits as having an arbitrary local email.
+GitHub web/API/connector commits can use the authenticated GitHub account identity. Do not claim they used an arbitrary local email unless their commit metadata proves it.
 
 ## Solution structure
 
@@ -84,11 +84,19 @@ tests/
   CareNest.UiTests/
 ```
 
-See `docs/architecture/ARCHITECTURE.md` for responsibilities/dependency direction.
+Detailed source mapping: `docs/CODEBASE_REFERENCE.md`.
+
+## Intended dependency direction
+
+```text
+CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure <- CareNest.App
+```
+
+Platform-neutral projects must not depend on MAUI. ViewModels must not issue SQL directly. Local-first v1 runtime code must not casually introduce HTTP/telemetry clients.
 
 ## Install MAUI workloads
 
-Full MAUI workload when the machine is intended to build every platform available on that operating system:
+Full MAUI workload on a host intended to build every supported target available on that OS:
 
 ```bash
 dotnet workload install maui
@@ -102,7 +110,7 @@ dotnet workload install maui-ios
 dotnet workload install maui-maccatalyst
 ```
 
-Install only supported workloads for the host OS.
+Install only workloads supported by the host OS.
 
 ## Restore strategy
 
@@ -115,13 +123,13 @@ dotnet restore src/CareNest.Application/CareNest.Application.csproj
 dotnet restore src/CareNest.Infrastructure/CareNest.Infrastructure.csproj
 ```
 
-The full solution can be restored on a fully provisioned host:
+A fully provisioned host can restore the solution:
 
 ```bash
 dotnet restore CareNest.sln
 ```
 
-On a target-limited host, prefer the target-specific MAUI commands below rather than forcing unrelated workloads.
+On a target-limited host, use the target-specific MAUI commands rather than forcing unrelated workloads.
 
 ## Platform-neutral build
 
@@ -132,13 +140,13 @@ dotnet build src/CareNest.Application/CareNest.Application.csproj -c Release
 dotnet build src/CareNest.Infrastructure/CareNest.Infrastructure.csproj -c Release
 ```
 
-This is the fastest way to separate shared source issues from platform workload/toolchain issues.
+This is the fastest way to separate shared source problems from platform workload/toolchain problems.
 
-## Why `CareNestTargetFramework` is required
+## `CareNestTargetFramework`
 
-CareNest.App is multi-targeted. Supplying a global `TargetFrameworks` value can leak the app target into referenced `net10.0` projects.
+`CareNest.App` is multi-targeted. Supplying a broad global TFM override can leak app target values into referenced platform-neutral projects or force unrelated workloads.
 
-The repository uses `CareNestTargetFramework` to narrow only the MAUI app before restore/build.
+The repository uses `CareNestTargetFramework` to narrow the MAUI app before restore/build.
 
 Pattern:
 
@@ -150,15 +158,9 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
 
 ## Android build
 
-Install:
-
 ```bash
 dotnet workload install maui-android
-```
 
-Build:
-
-```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
   -f net10.0-android \
   -c Release \
@@ -167,19 +169,13 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
 
 ## Windows build
 
-Target framework:
+Current target framework:
 
 `net10.0-windows10.0.19041.0`
 
-On the current CI-backed setup, install the supported MAUI workload on the Windows host:
-
 ```powershell
 dotnet workload install maui
-```
 
-Build:
-
-```powershell
 dotnet build src/CareNest.App/CareNest.App.csproj `
   -f net10.0-windows10.0.19041.0 `
   -c Release `
@@ -188,15 +184,9 @@ dotnet build src/CareNest.App/CareNest.App.csproj `
 
 ## iOS simulator build
 
-Install:
-
 ```bash
 dotnet workload install maui-ios
-```
 
-Build example for Apple-silicon simulator:
-
-```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
   -f net10.0-ios \
   -c Release \
@@ -204,19 +194,13 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -p:RuntimeIdentifier=iossimulator-arm64
 ```
 
-Use a RID compatible with your host/simulator.
+Use a simulator RID compatible with the host/toolchain.
 
 ## Mac Catalyst build
 
-Install:
-
 ```bash
 dotnet workload install maui-maccatalyst
-```
 
-Build:
-
-```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
   -f net10.0-maccatalyst \
   -c Release \
@@ -225,14 +209,14 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
 
 ## Apple Xcode compatibility
 
-The GitHub-hosted Apple CI uses a macOS 26 runner compatible with the current .NET 10 Apple workload.
+The GitHub-hosted Apple CI uses a macOS runner/toolchain compatible with the current .NET 10 Apple workloads.
 
 If local build reports an Xcode-version mismatch:
 
-- inspect installed workload version;
+- inspect installed .NET workload version;
 - inspect selected Xcode version;
 - install/select a supported Xcode version;
-- do not suppress/bypass the workload compatibility check as a release strategy.
+- do not disable/bypass the workload compatibility check as a production strategy.
 
 ## Run tests
 
@@ -242,27 +226,29 @@ dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c 
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
-### Current verification lineage
+## Current authoritative automated baseline
 
-The authoritative completed 2026-08-14 bug-audit baseline was PR #54:
+Marker-only PR #56 verifies the current release-engineering source:
 
-- UnitTests: 122;
-- IntegrationTests: 39;
-- UiTests: 100;
-- total: 261;
-- all four platform Release builds, CodeQL and unsuppressed Dependency Audit passed.
+- source/base SHA: `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
+- marker head: `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
+- CareNest CI #571 / `31770929379`: success;
+- UnitTests: **122 passed**;
+- IntegrationTests: **39 passed**;
+- UiTests/source-policy: **124 passed**;
+- total core: **285 passed**;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL #571 / `31770929382`: success;
+- unsuppressed Dependency Audit #41 / `31770929383`: success.
 
-Release-engineering hardening after PR #54 added workflow/script contracts. Superseded PR #55 already demonstrated:
+PR #56 was closed without merge; its marker is not part of `main`.
 
-- UnitTests: 122 passed;
-- IntegrationTests: 39 passed;
-- UiTests: 116 passed;
-- total: 277 passed;
-- Android/Windows builds, CodeQL and unsuppressed Dependency Audit passed before later confirmed release-tooling/documentation fixes required a newer exact-source verification.
+PR #54 remains the historical runtime bug-audit baseline; PR #55 is superseded intermediate evidence.
 
-The current `main` head must complete a fresh full marker-only verification before it becomes the next authoritative baseline.
-
-See `docs/testing/TESTING_GUIDE.md`.
+See `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` and `docs/testing/TESTING_GUIDE.md`.
 
 ## Local quality gate
 
@@ -278,28 +264,31 @@ PowerShell:
 ./build/scripts/quality-gate.ps1
 ```
 
-Both scripts are intended to work from a clean checkout and:
+The quality-gate scripts are intended to work from a clean checkout and:
 
-- verify platform-neutral/test project formatting;
+- verify platform-neutral/test formatting;
 - build platform-neutral source projects;
 - restore/run all three core test projects;
-- run blocking unsuppressed NuGet audit for the test dependency graphs;
+- run blocking unsuppressed NuGet audit;
 - fail on required native-command errors.
 
-They do not replace the MAUI platform matrix.
+They do not replace the multi-platform MAUI build matrix.
 
 ## Formatting
 
-CI verifies platform-neutral formatting project by project.
-
-Examples:
+Representative commands:
 
 ```bash
+dotnet format src/CareNest.Shared/CareNest.Shared.csproj --verify-no-changes
 dotnet format src/CareNest.Domain/CareNest.Domain.csproj --verify-no-changes
+dotnet format src/CareNest.Application/CareNest.Application.csproj --verify-no-changes
+dotnet format src/CareNest.Infrastructure/CareNest.Infrastructure.csproj --verify-no-changes
 dotnet format tests/CareNest.UnitTests/CareNest.UnitTests.csproj --verify-no-changes
+dotnet format tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj --verify-no-changes
+dotnet format tests/CareNest.UiTests/CareNest.UiTests.csproj --verify-no-changes
 ```
 
-For a full local preflight use the repository release-preflight script when the host is provisioned.
+CI treats applicable analyzer findings as blocking. Fix legitimate findings instead of adding blanket suppressions.
 
 ## Release preflight
 
@@ -315,107 +304,121 @@ PowerShell:
 ./build/scripts/release-preflight.ps1
 ```
 
-Preflight treats the unsuppressed platform-neutral/test dependency audit as blocking. If `CARENEST_TARGET` is set, the selected MAUI target is audited before the target Release build.
+Preflight treats unsuppressed dependency audit as blocking.
 
-See the script and `docs/releases/RELEASE_PROCESS.md` for target configuration and expectations.
+When `CARENEST_TARGET` is set, the selected MAUI target is audited before the optional target Release build.
 
-## Running/debugging the MAUI app
+See `docs/CONFIGURATION_REFERENCE.md` and `docs/releases/RELEASE_PROCESS.md`.
 
-Use an IDE or `dotnet` command appropriate to the target platform.
+## Central package management
 
-When debugging reminder behavior:
+Package versions are managed in `Directory.Packages.props` with central transitive pinning enabled.
 
-- use synthetic medicine/profile data;
-- confirm selected schedule time zone;
-- confirm notification permission/capability;
-- distinguish persisted occurrence state from the operating-system scheduled request;
-- remember snoozed `SnoozedUntilUtc` is the effective due time;
-- verify cancellation-first handled actions before assuming a database state change means the OS request was removed;
-- do not assume OS delivery from planner occurrence generation alone;
-- use developer diagnostics/reminder rebuild tools where available.
+Current key versions include:
 
-## Local data during development
-
-Development installs can create local SQLite/encrypted document/app-lock state.
-
-Do not copy real user health data into development fixtures.
-
-Use fictional/synthetic records for tests/screenshots/reproduction.
-
-## Dependency management
-
-Package versions are centrally managed in `Directory.Packages.props` where applicable.
-
-Run unsuppressed dependency audit after package changes.
-
-### SQLite native/provider path
-
-The formerly tracked `GHSA-2m69-gcr7-jv3q` source exception has been remediated in the current RC1 graph.
-
-Current intent includes:
-
+- `Microsoft.Maui.Controls` `10.0.20`;
 - `sqlite-net-pcl` `1.9.172`;
 - `SQLitePCLRaw.bundle_green` `2.1.11`;
-- central transitive pinning;
 - `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
-- Android native/provider leaves and selected providers at `2.1.12`;
-- no old advisory `NuGetAuditSuppress` entry.
+- `SQLitePCLRaw.lib.e_sqlite3.android` `2.1.12`;
+- selected SQLitePCLRaw providers `2.1.12`;
+- xUnit/test tooling listed in `docs/CONFIGURATION_REFERENCE.md`.
 
-The package floor/suppression absence is protected by `SqliteDependencySecurityContractTests`.
+## SQLite dependency security
 
-Before changing the SQLite provider/bundle/native chain, follow:
+The former exact `GHSA-2m69-gcr7-jv3q` source exception is remediated.
 
-`docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
+Current rules:
 
-Do not restore the old audit suppression merely because packaged existing-database/encrypted-data compatibility evidence is incomplete. Those manual checks are a separate production-release gate.
+- do not restore the former advisory suppression;
+- run unsuppressed dependency audit after package changes;
+- preserve maintained native/provider floor;
+- use `SqliteDependencySecurityContractTests` as an executable package-policy guard;
+- treat packaged existing-data compatibility as separate from source dependency security.
 
-## Analyzer policy
+Before changing SQLite package/provider/native dependencies, follow `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
 
-CI promotes applicable analyzer findings to build failures.
+## Reminder development rules
 
-Historical exact-head verification intentionally exposed real analyzer defects rather than broadly suppressing them.
+When debugging or changing reminder behavior:
 
-If an analyzer fails:
+- use synthetic data;
+- confirm profile/medicine/schedule ownership;
+- confirm explicit schedule time zone;
+- distinguish `ScheduledUtc` from snooze effective due time;
+- remember `SnoozedUntilUtc` is effective due time for a valid snooze;
+- distinguish persisted occurrence state from the OS scheduled request;
+- confirm notification permission/capability;
+- preserve cancellation-before-replacement/suppression/invalidation;
+- preserve cancellation-first handled action ordering;
+- preserve non-cancelled compensation/recovery where cross-surface consistency needs it;
+- do not infer dosage or clinical intent from medicine text;
+- do not assume OS delivery because planner materialization succeeded.
 
-1. understand the finding;
-2. fix source when legitimate;
-3. scope advisory-only exceptions narrowly when the rule is non-correctness guidance;
-4. never hide security/correctness issues with blanket suppression.
+See `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` and `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`.
 
-## Release workflow behavior
+## Appointment development rules
 
-Production tags matching `v*` run the exact tagged commit through:
+- `Appointment.StartsUtc` must be actual `DateTimeKind.Utc`;
+- local/unspecified values are rejected rather than relabeled;
+- notification denial is not successful scheduling;
+- background rebuild does not repeatedly prompt;
+- DB/platform scheduling uses compensation because they are separate surfaces.
 
-- CareNest CI;
-- CodeQL;
-- Dependency Audit;
-- Release Gate;
-- CareNest Release Evidence.
+## Document/backup development rules
 
-Release Evidence records tracked-source provenance/checksums, test TRX files, dependency inventories, workspace integrity and evidence checksums. It retains available evidence on a failed run and applies an aggregate failure gate after the upload.
+- do not silently create an unrelated document key when existing ciphertext depends on a missing/corrupt key;
+- preserve authenticated encryption;
+- preserve supported legacy v1 read compatibility unless a tested migration/recovery plan replaces it;
+- validate backup topology before extraction;
+- clean app-owned temporary plaintext/staging best effort after failure;
+- use synthetic fixtures only;
+- update security/threat/compatibility docs when format/key behavior changes.
 
-Workflow/test/build-script changes are verification-relevant source and require a new exact-head verification before they are used as a production baseline.
+## Local development data
 
-## Architecture rules for contributors
+Development installs can create local SQLite, encrypted document, backup, app-lock and settings state.
+
+Never use or commit real health data as development fixtures.
+
+Use fictional/synthetic profiles, medicine names, documents, backup archives and screenshots.
+
+## Logging/privacy rules
+
+Normal sensitive-path logs must not include:
+
+- user health notes/medicine instructions;
+- document/backup contents;
+- passwords/PINs/keys;
+- raw sensitive exception messages/stack traces;
+- identifiers that are not necessary for safe diagnosis.
+
+See `docs/security/LOGGING_PRIVACY.md`.
+
+## Architecture rules
 
 - UI/ViewModels do not issue SQL directly.
-- Platform-neutral projects do not reference MAUI.
-- Runtime source does not add network/telemetry clients casually in local-first v1.
-- Reminder planner remains platform-neutral/deterministic.
-- Reminder platform request state is reconciled explicitly with persisted occurrence state.
-- Secrets remain outside normal settings/database where secure secret storage is required.
+- Platform-neutral projects do not depend on MAUI.
+- Runtime local-first v1 does not casually add networking/telemetry.
+- Reminder planner remains deterministic/platform-neutral.
+- OS scheduled-request state is reconciled explicitly with persisted state.
+- Secure material stays in secure-storage abstractions where required.
 - Medicine strength/instruction text remains opaque.
 - No diagnosis/treatment/dosage/interaction/risk-scoring feature is introduced.
 
-Architecture contracts enforce many of these rules.
+Architecture and repository policy tests enforce many of these rules.
 
-## Documentation
+## Documentation rule
 
-Start at:
+When implementation, package, workflow, platform, security or release behavior changes, update the relevant documentation in the same work.
 
-`docs/README.md`
+Primary current references:
 
-When behavior, verification, dependency state, or release tooling changes, update the relevant user/architecture/security/testing/release documents in the same work.
+- `docs/COMPLETE_PROJECT_DOCUMENTATION.md`;
+- `docs/CODEBASE_REFERENCE.md`;
+- `docs/CONFIGURATION_REFERENCE.md`;
+- `docs/MAINTENANCE_AND_OPERATIONS.md`;
+- `docs/README.md`.
 
 ## Do not commit
 
@@ -424,15 +427,15 @@ Never commit:
 - signing keys/certificates/keystores;
 - `.p12` / `.pfx` private signing files;
 - API/service credentials;
-- passwords;
-- app-lock PINs;
+- passwords/PINs;
+- encryption keys;
 - exported CareNest backups;
-- real user health documents;
+- real health documents;
 - real SQLite user databases;
-- decrypted temporary health documents;
-- secret `.env` files.
+- decrypted temporary health files;
+- production secret `.env` files.
 
-Repository policy tests detect common secret/signing patterns but do not replace human review.
+Repository policy tests detect common patterns but do not replace human review.
 
 ## Troubleshooting
 
@@ -443,16 +446,21 @@ Useful first commands:
 ```bash
 dotnet --info
 dotnet workload list
-dotnet workload repair
 git status
 ```
 
-If platform-neutral tests pass while one platform fails, investigate that platform workload/SDK/project source rather than assuming shared application logic is broken.
+If platform-neutral tests pass while one platform build fails, investigate that platform’s workload/SDK/project configuration before assuming shared application logic is broken.
 
 ## Exact-head verification
 
-Runtime/test/project/workflow/package/platform/release-script changes that need a new verified baseline follow the marker-only protocol in:
+Runtime/test/project/workflow/package/platform/build-script changes that need a new release baseline follow `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
 
-`docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
+Verification marker files must not be merged into `main`.
 
-Verification markers must not be merged into `main`.
+## Production release boundary
+
+A green automated matrix is necessary but not sufficient for public release.
+
+Real remaining release evidence includes device/platform tests, notification delivery/recovery, packaged SQLite/encrypted-data compatibility, accessibility, current store policy/disclosures, signing, signed artifact inspection, and exact production-tag Release Gate/Release Evidence.
+
+See `PROJECT_STATUS.md`, `docs/releases/RELEASE_CHECKLIST.md`, and `docs/releases/NEXT_STEPS.md`.
