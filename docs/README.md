@@ -6,35 +6,41 @@ CareNest is a local-first .NET MAUI family health organizer. It is an organizati
 
 ## Current verified source
 
-The current exact-head automated source reference is:
+The authoritative final automated bug-audit source reference is marker-only PR #54:
 
-- PR #43 — `Verify final CareNest 2026-08-14 bug audit source`
-- verification branch — `ci/carenest-final-bug-audit-20260814`
+- PR #54 — `Verify final CareNest bug-audit source`;
+- verified runtime/test/dependency source/base SHA — `4490f3f86752841d436e981b29279970c90c947b`;
+- verification marker head — `929168a0a319b15d9e89997d86436d59ae731ad1`;
 - PR closed without merge after all required automated gates succeeded;
 - marker file did not enter `main`.
 
 Successful final gate groups:
 
+- CareNest CI #503 / `31766059137`: success;
 - platform-neutral formatting;
-- complete unit suite;
-- complete integration suite;
-- complete UI-contract/policy suite;
+- 122 unit tests;
+- 39 integration tests;
+- 100 UI-contract/policy tests;
+- 261 total automated tests;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
 - Mac Catalyst Release;
-- CodeQL;
-- Dependency Audit.
+- CodeQL #503 / `31766059215`;
+- unsuppressed Dependency Audit #35 / `31766059132`.
+
+PR #53 independently completed a duplicate green verification of the same final graph; PR #54 is the recorded authoritative checkpoint.
 
 See:
 
 - [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
 - [`../what_changed.md`](../what_changed.md)
+- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md)
 - [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md)
 - [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md)
 - [`security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](security/BUG_AUDIT_SECURITY_NOTES_20260814.md)
 
-The successful Dependency Audit does not resolve `GHSA-2m69-gcr7-jv3q`; the dependency risk register remains authoritative.
+The previously tracked `GHSA-2m69-gcr7-jv3q` repository dependency exception is remediated in the verified source graph: maintained SQLite native/provider leaves are centrally pinned, the exact audit suppression was removed, the dependency contract prevents restoration of the old floor/suppression, and PR #54 passed the unsuppressed audit. Manual packaged existing-database/encrypted-data compatibility remains a production release gate.
 
 ## Start here
 
@@ -89,6 +95,9 @@ Current audited reminder invariants additionally include:
 - rebuild cancels an existing platform request before replacement/suppression/invalidation;
 - stale schedule rows retain their IDs until OS-level cancellation can be attempted;
 - medicine/profile delete flows cancel future platform requests before cascade and compensate if the cascade fails;
+- medicine/profile save flows reconcile platform requests before non-critical audit bookkeeping;
+- appointment save/delete flows reconcile or compensate platform requests around persistence;
+- handled reminder actions cancel the old platform request before state persistence and attempt non-cancelled recovery if later essential work fails;
 - invalid DST-gap interval anchors do not invent a shifted time.
 
 ## Privacy and data lifecycle
@@ -101,7 +110,7 @@ Current audited reminder invariants additionally include:
 - [`REPORTS_AND_EXPORTS.md`](REPORTS_AND_EXPORTS.md) — plaintext/portable export boundary.
 - [`../PRIVACY.md`](../PRIVACY.md) — user-facing policy.
 
-The 2026-08-14 audit additionally routes successful decrypted document exports through the managed `Exports` cache and uses partial-file/atomic-move handling for generated plaintext reports/previews.
+The 2026-08-14 audit routes successful decrypted document exports through the managed `Exports` cache, removes application-owned shared report cache files after share handoff where possible, and uses partial-file/atomic-move handling for generated plaintext reports/previews.
 
 ## Security
 
@@ -142,9 +151,10 @@ The bug audit distinguishes primary backup/restore completion from later best-ef
 - [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — final bug-class regression inventory.
 - [`releases/PHASE8_VERIFICATION_EVIDENCE.md`](releases/PHASE8_VERIFICATION_EVIDENCE.md) — preserved earlier Phase 8 evidence.
 - [`releases/PHASE9_VERIFICATION_EVIDENCE.md`](releases/PHASE9_VERIFICATION_EVIDENCE.md) — preserved PR #36 evidence.
-- [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — latest exact-head evidence.
+- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — authoritative PR #54 automated evidence.
+- [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — complete audit/checkpoint history.
 
-Final PR #43 is the current automated source reference.
+PR #54 is the current automated bug-audit source reference. PR #43 remains historical failed-core evidence.
 
 ## Release engineering
 
@@ -158,13 +168,14 @@ Final PR #43 is the current automated source reference.
 - [`releases/RELEASE_NOTES_TEMPLATE.md`](releases/RELEASE_NOTES_TEMPLATE.md) — release-notes template.
 - [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) — marker-only exact-head CI protocol.
 - [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md) — production blockers and roadmap.
-- [`releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`](releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md) — SQLite dependency remediation plan.
+- [`releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`](releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md) — SQLite dependency remediation/compatibility plan.
 - [`releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md`](releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md) — documentation inventory/operational gates.
-- [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — latest source audit verification.
+- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — authoritative final automated bug-audit evidence.
+- [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — complete bug-audit checkpoint history.
 
 ## Project state and history
 
-- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current PR #43 automated baseline and real blockers.
+- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current PR #54 automated baseline and real blockers.
 - [`../CHANGELOG.md`](../CHANGELOG.md) — version/change history.
 - [`../what_changed.md`](../what_changed.md) — active detailed handoff.
 - [`history/what_changed_full_through_phase8.md`](history/what_changed_full_through_phase8.md) — complete earlier implementation/hardening history.
@@ -181,14 +192,16 @@ Real remaining gates include:
 - manual Android/Windows/iOS/iPadOS/Mac Catalyst verification;
 - manual notification permission/real-delivery/platform lifecycle checks;
 - packaged-target document/photo/report/backup checks;
+- representative packaged existing-database and encrypted-data compatibility checks after the SQLite native/provider remediation;
 - legacy encrypted-format fixture checks when canonical fixtures are available;
 - manual accessibility verification;
 - current Apple/Google store-policy review, including optional external project-support link;
 - signing/package identities and secrets outside Git;
 - signed package generation/inspection;
 - store screenshots/listings/privacy/data-safety disclosures;
-- final Release Evidence for the exact promoted production commit;
-- explicit resolution/decision for the tracked SQLitePCLRaw advisory.
+- final Release Evidence for the exact promoted production commit.
+
+The previous SQLite source exception itself is no longer an open source blocker; the remaining SQLite-related work is packaged/manual compatibility evidence.
 
 Use `PROJECT_STATUS.md`, `releases/NEXT_STEPS.md`, and `releases/RELEASE_CHECKLIST.md` as operational trackers.
 
@@ -205,4 +218,4 @@ When behavior changes:
 7. update `what_changed.md` when a detailed handoff is requested;
 8. if runtime/test/workflow/package/resource source changes after an exact-head verification, run a fresh marker-only verification instead of reusing old evidence.
 
-Documentation must not claim a manual test, store-policy decision, dependency remediation, signing step, or final production release is complete unless it actually occurred.
+Documentation must not claim a manual test, store-policy decision, signing step, or final production release is complete unless it actually occurred.
