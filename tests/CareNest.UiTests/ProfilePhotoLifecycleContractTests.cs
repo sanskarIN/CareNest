@@ -15,6 +15,17 @@ public sealed class ProfilePhotoLifecycleContractTests
     }
 
     [Fact]
+    public void ProfileEditor_UsesSharedAppLifetimePhotoGateInsteadOfDisposableInstanceGate()
+    {
+        var source = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "ProfileEditorViewModel.cs");
+
+        Assert.Contains("private static readonly SemaphoreSlim PhotoGate = new(1, 1)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("private readonly SemaphoreSlim _photoGate", source, StringComparison.Ordinal);
+        Assert.Contains("await PhotoGate.WaitAsync", source, StringComparison.Ordinal);
+        Assert.Contains("PhotoGate.Release()", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ProfileEditor_DeletesPersistedPhotoOnlyAfterProfileSaveSucceeds()
     {
         var source = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "ProfileEditorViewModel.cs");
