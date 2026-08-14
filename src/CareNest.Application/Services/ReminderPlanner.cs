@@ -141,13 +141,15 @@ public sealed class ReminderPlanner
         DateTime toUtc)
     {
         var interval = TimeSpan.FromHours(schedule.IntervalHours!.Value);
-        var localStart = DateTime.SpecifyKind(schedule.StartDate.Date.Add(startTime.AsTimeOnly().ToTimeSpan()), DateTimeKind.Unspecified);
+        var localStart = DateTime.SpecifyKind(
+            schedule.StartDate.Date.Add(startTime.AsTimeOnly().ToTimeSpan()),
+            DateTimeKind.Unspecified);
         var utcStart = SafeLocalToUtc(localStart, zone);
-        if (utcStart is null)
-        {
-            utcStart = SafeLocalToUtc(localStart.AddHours(1), zone);
-        }
 
+        // An every-N-hours schedule needs an unambiguous real anchor instant. If the
+        // user-selected local anchor falls inside a DST gap, do not invent a shifted
+        // replacement time; leave the schedule without generated occurrences until
+        // the user chooses a valid anchor.
         if (utcStart is null)
         {
             return;
@@ -164,21 +166,43 @@ public sealed class ReminderPlanner
             }
         }
 
-        var scheduleEndLocal = schedule.EndDate?.Date.AddDays(1).AddTicks(-1);
-        var medicineEndLocal = medicine.EndDate?.Date.AddDays(1).AddTicks(-1);
+        var scheduleEndDate = schedule.EndDate?.Date;
+        var medicineEndDate = medicine.EndDate?.Date;
 
         while (cursor < toUtc)
         {
-            var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(cursor, DateTimeKind.Utc), zone);
-            if ((scheduleEndLocal is null || local <= scheduleEndLocal) &&
-                (medicineEndLocal is null || local <= medicineEndLocal))
+            var local = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.SpecifyKind(cursor, DateTimeKind.Utc),
+                zone);
+            if ((scheduleEndDate is null || local.Date <= scheduleEndDate.Value) &&
+                (medicineEndDate is null || local.Date <= medicineEndDate.Value))
             {
-                AddOccurrence(result, medicine, schedule, profile, zone, DateTime.SpecifyKind(local, DateTimeKind.Unspecified), fromUtc, toUtc, false);
+                AddOccurrence(
+                    result,
+                    medicine,
+                    schedule,
+                    profile,
+                    zone,
+                    DateTime.SpecifyKind(local, DateTimeKind.Unspecified),
+                    fromUtc,
+                    toUtc,
+                    false);
 
                 if (schedule.FollowUpMinutes is { } followUp)
                 {
-                    var followUpLocal = DateTime.SpecifyKind(local.AddMinutes(followUp), DateTimeKind.Unspecified);
-                    AddOccurrence(result, medicine, schedule, profile, zone, followUpLocal, fromUtc, toUtc, true);
+                    var followUpLocal = DateTime.SpecifyKind(
+                        local.AddMinutes(followUp),
+                        DateTimeKind.Unspecified);
+                    AddOccurrence(
+                        result,
+                        medicine,
+                        schedule,
+                        profile,
+                        zone,
+                        followUpLocal,
+                        fromUtc,
+                        toUtc,
+                        true);
                 }
             }
 
@@ -204,10 +228,10 @@ public sealed class ReminderPlanner
 
     private static bool IsCycleActive(MedicineSchedule schedule, DateTime date)
     {
-        var onDays = schedule.CycleOnDays!.Value;
-        var offDays = schedule.CycleOffDays!.Value;
+        var onDays = (long)schedule.CycleOnDays!.Value;
+        var offDays = (long)schedule.CycleOffDays!.Value;
         var cycleLength = onDays + offDays;
-        var dayIndex = (date.Date - schedule.StartDate.Date).Days;
+        var dayIndex = (long)(date.Date - schedule.StartDate.Date).Days;
         return dayIndex >= 0 && dayIndex % cycleLength < onDays;
     }
 
