@@ -1,0 +1,4 @@
+CareNest release-engineering final verification marker
+Source baseline: 20df185ab4d8a46b24e1c01733435c262556ab4f
+Purpose: verify exact-tag workflow triggers, resilient Release Evidence, deterministic quality/preflight scripts, release workflow contracts, manual/release documentation alignment, and the unchanged CareNest runtime/test graph together.
+This marker is verification-only and must not be merged into main.
