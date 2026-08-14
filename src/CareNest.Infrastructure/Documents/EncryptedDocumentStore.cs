@@ -19,7 +19,7 @@ public sealed class EncryptedDocumentStore(
         CancellationToken cancellationToken = default)
     {
         options.EnsureDirectories();
-        var key = await GetOrCreateKeyAsync(cancellationToken);
+        var key = await GetOrCreateKeyForImportAsync(cancellationToken);
         try
         {
             var encryptedFileName = $"{Guid.NewGuid():N}.cndoc";
@@ -92,7 +92,7 @@ public sealed class EncryptedDocumentStore(
             throw new FileNotFoundException("Encrypted document file is missing.");
         }
 
-        var key = await GetOrCreateKeyAsync(cancellationToken);
+        var key = await GetExistingKeyForReadAsync(cancellationToken);
         try
         {
             await using var source = File.OpenRead(path);
@@ -147,7 +147,7 @@ public sealed class EncryptedDocumentStore(
         return Task.FromResult(result);
     }
 
-    private async Task<byte[]> GetOrCreateKeyAsync(CancellationToken cancellationToken)
+    private async Task<byte[]> GetExistingKeyForReadAsync(CancellationToken cancellationToken)
     {
         var existing = await secretStore.GetBytesAsync(SecretKeys.DocumentMasterKey, cancellationToken);
         if (existing is { Length: 32 })
@@ -158,6 +158,30 @@ public sealed class EncryptedDocumentStore(
         if (existing is not null)
         {
             CryptographicOperations.ZeroMemory(existing);
+        }
+
+        throw new InvalidOperationException(
+            "The document encryption key is unavailable or invalid. Existing encrypted documents cannot be opened until a valid key is restored.");
+    }
+
+    private async Task<byte[]> GetOrCreateKeyForImportAsync(CancellationToken cancellationToken)
+    {
+        var existing = await secretStore.GetBytesAsync(SecretKeys.DocumentMasterKey, cancellationToken);
+        if (existing is { Length: 32 })
+        {
+            return existing;
+        }
+
+        if (existing is not null)
+        {
+            CryptographicOperations.ZeroMemory(existing);
+        }
+
+        if (Directory.Exists(options.DocumentDirectory) &&
+            Directory.EnumerateFiles(options.DocumentDirectory, "*.cndoc", SearchOption.TopDirectoryOnly).Any())
+        {
+            throw new InvalidOperationException(
+                "The document encryption key is unavailable or invalid. CareNest will not create a replacement key while encrypted documents already exist.");
         }
 
         var key = RandomNumberGenerator.GetBytes(32);
