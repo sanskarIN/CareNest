@@ -6,7 +6,7 @@ This document records the repository-wide correctness, failure-safety, privacy, 
 
 CareNest remains a local-first organizational product. Nothing in this audit adds diagnosis, dosage calculation/inference, treatment recommendations, medication-interaction checking, clinical risk scoring, or an emergency-service substitute.
 
-## Verification status correction and current candidate
+## Verification status correction and final authoritative baseline
 
 PR #43 was originally documented as the final fully green verification. That statement was incorrect and is superseded by the actual GitHub Actions evidence.
 
@@ -26,30 +26,35 @@ Actual PR #43 required-gate evidence:
 
 PR #43 was closed without merging its marker, but it is not release evidence and must not be represented as a successful exact-source baseline.
 
-The continuing audit fixed the reminder failures and later platform-lifecycle/analyzer issues instead of suppressing or ignoring them. The current marker-only verification candidate is:
+The continuing audit fixed the reminder failures and later platform-lifecycle/analyzer/dependency issues instead of suppressing or ignoring them.
 
-- PR #53 — `Final CareNest bug-audit verification`;
-- branch: `ci/carenest-final-bug-audit-verification-20260814`;
-- head: `f648bad8ea666dfb0a13e594577dee7a80d141c6`;
-- marker: `build/verification/final-bug-audit-verification-20260814.txt`;
-- runtime/test source covered through `da2aed19ee9224b8d8661f11520ab9396e2c005e`;
-- later movement on `main` at this point is documentation-only and does not change the verified runtime/test/configuration graph.
+The authoritative final automated bug-audit verification is marker-only PR #54:
 
-Current PR #53 evidence already completed successfully:
+- PR #54 — `Verify final CareNest bug-audit source`;
+- branch: `ci/carenest-final-bug-audit-2-20260814`;
+- source/base SHA frozen for runtime/test/dependency verification: `4490f3f86752841d436e981b29279970c90c947b`;
+- marker head: `929168a0a319b15d9e89997d86436d59ae731ad1`;
+- marker: `build/verification/bug-audit-final-20260814-2.txt`;
+- PR closed without merge after successful evidence capture.
 
-- platform-neutral formatting;
+Final PR #54 evidence:
+
+- CareNest CI #503 / run `31766059137`: **success**;
+- platform-neutral formatting: **success**;
 - `CareNest.UnitTests`: **122 passed, 0 failed, 0 skipped**;
 - `CareNest.IntegrationTests`: **39 passed, 0 failed, 0 skipped**;
 - `CareNest.UiTests`: **100 passed, 0 failed, 0 skipped**;
 - total core tests: **261 passed, 0 failed, 0 skipped**;
-- Android Release: success;
-- Windows Release: success;
-- CodeQL #501 / run `31766026573`: success;
-- Dependency Audit #34 / run `31766026570`: success with the former SQLite advisory suppression removed.
+- Android Release: **success**;
+- Windows Release: **success**;
+- iOS simulator Release: **success**;
+- Mac Catalyst Release: **success**;
+- CodeQL #503 / run `31766059215`: **success**;
+- Dependency Audit #35 / run `31766059132`: **success** with the former SQLite advisory suppression removed.
 
-At the time of this documentation commit, the PR #53 Apple job is still running the iOS simulator/Mac Catalyst Release steps. PR #53 must not be described as the final green automated baseline until both Apple builds and the overall CareNest CI run complete successfully.
+PR #53 independently completed a duplicate fully green verification of the same final runtime/test graph. It is useful corroborating evidence, but PR #54 is the recorded authoritative checkpoint. Both marker-only PRs were closed without merge, so neither verification marker is production source.
 
-The verification marker is never intended for `main`; after complete evidence is recorded, the marker PR must be closed without merge.
+The verification marker is never intended for `main`; exact-source verification evidence is recorded, then the marker PR is closed unmerged.
 
 ## Failure-driven checkpoint history
 
@@ -183,7 +188,32 @@ It was closed unmerged and is not final release evidence.
 
 ### PR #53
 
-PR #53 is the current exact runtime/test verification candidate. It includes the subsequent reminder-action failure recovery plus the SQLite dependency remediation. Its final disposition must be based on all required jobs, not on a successful subset.
+PR #53 independently completed a fully green verification of the same final runtime/test graph later recorded authoritatively by PR #54.
+
+Its completed evidence included 122 unit tests, 39 integration tests, 100 UI-contract/policy tests, all four platform Release builds, CodeQL #501 / `31766026573`, and unsuppressed Dependency Audit #34 / `31766026570`.
+
+PR #53 was closed without merging its marker and is retained as duplicate corroborating evidence.
+
+### PR #54
+
+PR #54 is the authoritative final automated bug-audit verification.
+
+Final evidence:
+
+- CareNest CI #503 / `31766059137`: success;
+- formatting: success;
+- 122 unit tests: success;
+- 39 integration tests: success;
+- 100 UI-contract/policy tests: success;
+- 261 total core tests: success;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL #503 / `31766059215`: success;
+- unsuppressed Dependency Audit #35 / `31766059132`: success.
+
+PR #54 was closed without merge and its marker is not part of `main`.
 
 ## Correctness fixes covered by the current source
 
@@ -450,7 +480,7 @@ Current package strategy:
 
 `SqliteDependencySecurityContractTests` requires the patched pin floor and requires that the old audit suppression not return.
 
-Unsuppressed Dependency Audit has succeeded repeatedly during remediation and on current PR #53.
+Unsuppressed Dependency Audit succeeded repeatedly during remediation and finally on authoritative PR #54 Dependency Audit #35 / run `31766059132`.
 
 This package resolution intentionally does not change:
 
@@ -494,6 +524,7 @@ Still required outside this automated source pass:
 
 - real-device/emulator manual matrix on Android, Windows, iOS/iPadOS, and Mac Catalyst;
 - manual notification permission/real-delivery checks;
+- cancellation-first reminder action checks against actual platform scheduling/restart recovery;
 - Android alarm/battery/reboot/time/time-zone checks;
 - manual existing-database upgrade/SQLite compatibility checks;
 - manual document/import/export/backup/restore checks on packaged targets;
@@ -511,6 +542,6 @@ Still required outside this automated source pass:
 
 `GHSA-2m69-gcr7-jv3q` is no longer being hidden by the former narrow source audit exception: the compatible current source graph pins the maintained native/provider leaves and the matching NuGet audit suppression has been removed.
 
-The dependency source remediation is complete, while packaged existing-database/backup/device compatibility remains a separate production validation gate.
+The dependency source remediation and unsuppressed automated verification are complete, while packaged existing-database/backup/device compatibility remains a separate production validation gate.
 
 No successful CI/audit run is interpreted as proof of manual data/device compatibility.
