@@ -54,7 +54,8 @@ The audit tightened temporary plaintext handling:
 - CSV/PDF/JSON report writers stage to a `.partial` path before atomic final move;
 - failed/cancelled report generation removes incomplete staging files best effort;
 - profile photo preview uses the same partial-file then atomic-move principle;
-- Settings Clear Cache includes managed report/export/preview directories.
+- Settings Clear Cache includes managed report/export/preview directories;
+- shared report flows remove the application-owned temporary report file after the share handoff returns, while not claiming deletion of copies already controlled by another application or destination.
 
 These controls do not erase copies already handed to another application, system share destination, cloud provider chosen by the user, screenshot, backup, filesystem snapshot, or other OS/external surface.
 
@@ -101,6 +102,26 @@ Snoozed rows use their explicit `SnoozedUntilUtc` as effective due time.
 
 Medicine/profile deletion cancels future platform requests before the database cascade. If the database cascade then fails, CareNest attempts a non-cancelled reminder rebuild to restore platform scheduling for the records that still exist.
 
+Medicine/profile save flows reconcile reminders after the structured record changes but before later audit bookkeeping can incorrectly make the primary state transition appear failed.
+
+Appointment reminder persistence now follows the same failure-safety principle: if the structured appointment changes and later platform scheduling/persistence work fails, CareNest attempts reconciliation instead of silently leaving the database and OS request surfaces inconsistent.
+
+### Reminder action ordering and compensation
+
+Handled reminder actions now cancel the existing operating-system request before committing the new handled state.
+
+This prevents CareNest from recording a reminder as taken/skipped/delayed/missed/snoozed while an old platform request is still known to be scheduled.
+
+If a later state/snooze scheduling operation fails after cancellation:
+
+- the previous occurrence state is restored with non-cancelled persistence;
+- CareNest attempts a non-cancelled reminder rebuild to restore the platform request state;
+- if both the primary action and recovery fail, the operation surfaces aggregate failure rather than claiming consistency;
+- post-success reminder-action audit bookkeeping is best effort and privacy-safe rather than undoing an already completed user action;
+- user-configured stock adjustment failure after a Taken log is contained and privacy-safely logged instead of falsifying the completed reminder action.
+
+Failure-injection tests exercise cancellation/scheduling ordering and recovery behavior.
+
 ## Logging boundary
 
 New failure logging added during the audit follows the existing privacy policy:
@@ -143,13 +164,34 @@ Migration DDL and schema-version recording are one logical transaction.
 
 Full structured-data clear is transactional, while database compaction is not a prerequisite for later privacy cleanup.
 
-## Dependency risk remains separate
+## SQLite dependency remediation
 
-The current source audit does not remediate:
+The earlier version of this document correctly treated the audit suppression as **not** being a security fix. That temporary state has since been replaced by an actual dependency-graph remediation.
+
+Previously tracked advisory:
 
 `GHSA-2m69-gcr7-jv3q`
 
-A narrowly scoped audit suppression keeps other audit/build failures visible. It must not be described as a security fix.
+Current source controls:
+
+- `SQLitePCLRaw.lib.e_sqlite3` is centrally pinned to `3.53.3`;
+- `SQLitePCLRaw.lib.e_sqlite3.android` is centrally pinned to `2.1.12`;
+- `SQLitePCLRaw.provider.e_sqlite3`, `SQLitePCLRaw.provider.sqlite3`, and `SQLitePCLRaw.provider.dynamic_cdecl` are centrally pinned to `2.1.12`;
+- `sqlite-net-pcl` remains `1.9.172` and `SQLitePCLRaw.bundle_green` remains `2.1.11` while central transitive pinning selects the maintained native/provider leaves;
+- the exact `NuGetAuditSuppress` entry was removed from `Directory.Build.props`;
+- `SqliteDependencySecurityContractTests` rejects restoration of the old native/provider floor or the advisory suppression.
+
+Remediation commits:
+
+- `66cd701f84afd5021a28e7e3327b7da4fad249aa` — native/provider pins;
+- `e939d5bd912d09ffa150c804519c15e2506b7bd7` — audit-suppression removal;
+- `04868965c43d8a6d09b40075d92f20da9b26e32a` — regression contract.
+
+Unsuppressed Dependency Audit succeeded during multiple remediation checkpoints, including PR #47, PR #48, PR #50, and the current PR #53 dependency-audit run. Superseded PRs are retained as historical evidence only; the complete latest-source build/test/CodeQL matrix remains the release-level automated gate.
+
+The package remediation intentionally does not change CareNest's schema, health-record semantics, encrypted-document framing, backup archive format, network boundary, or account model.
+
+Manual existing-database upgrade, backup/restore, encrypted-document and packaged-device checks remain required release evidence.
 
 See:
 
@@ -184,6 +226,8 @@ Those runtime defects were fixed in commit:
 
 `4cf2aec989233d213ac7b1099a50d44e1acc3ca0` — `fix: reconcile snoozed and stale reminder occurrences`
 
-A later exact-head verification PR must replace PR #43 before any source is represented as the current fully green automated baseline.
+Later checkpoints intentionally continued finding/fixing platform reconciliation and analyzer issues rather than reusing PR #43 as proof. PRs #46 and #49 exposed additional lifecycle/analyzer failures; PRs #47/#48/#50 exercised the SQLite remediation while `main` was still moving; PRs #51/#52 were superseded exact-source markers.
 
-Manual real-device, accessibility, store-policy, signing and production-promotion gates remain separate.
+The current marker-only automated candidate is PR #53. Its source includes the subsequent reminder action cancellation/recovery work and the SQLite remediation. It becomes an authoritative automated baseline only if every required formatting/test/platform/CodeQL/unsuppressed-audit gate is green on that source. Its marker file must not be merged.
+
+Manual real-device, encrypted-data compatibility, accessibility, store-policy, signing and production-promotion gates remain separate even after a fully green automated source verification.
