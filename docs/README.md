@@ -6,41 +6,42 @@ CareNest is a local-first .NET MAUI family health organizer. It is an organizati
 
 ## Current verified source
 
-The authoritative final automated bug-audit source reference is marker-only PR #54:
+The authoritative current automated source reference is marker-only PR #56:
 
-- PR #54 — `Verify final CareNest bug-audit source`;
-- verified runtime/test/dependency source/base SHA — `4490f3f86752841d436e981b29279970c90c947b`;
-- verification marker head — `929168a0a319b15d9e89997d86436d59ae731ad1`;
+- PR #56 — `Verify complete CareNest release-engineering source`;
+- verified source/base SHA — `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
+- verification marker head — `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
 - PR closed without merge after all required automated gates succeeded;
 - marker file did not enter `main`.
 
 Successful final gate groups:
 
-- CareNest CI #503 / `31766059137`: success;
+- CareNest CI #571 / `31770929379`: success;
 - platform-neutral formatting;
 - 122 unit tests;
 - 39 integration tests;
-- 100 UI-contract/policy tests;
-- 261 total automated tests;
+- 124 UI-contract/policy tests;
+- 285 total automated core tests;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
 - Mac Catalyst Release;
-- CodeQL #503 / `31766059215`;
-- unsuppressed Dependency Audit #35 / `31766059132`.
+- CodeQL #571 / `31770929382`;
+- unsuppressed Dependency Audit #41 / `31770929383`.
 
-PR #53 independently completed a duplicate green verification of the same final graph; PR #54 is the recorded authoritative checkpoint.
+PR #54 remains the historical authoritative runtime bug-audit baseline for the earlier runtime/test/dependency graph. PR #56 verifies that graph together with the subsequent release-workflow, release-script, Git setup, Release Gate, and executable policy hardening.
 
 See:
 
 - [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
 - [`../what_changed.md`](../what_changed.md)
+- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md)
 - [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md)
 - [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md)
 - [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md)
 - [`security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](security/BUG_AUDIT_SECURITY_NOTES_20260814.md)
 
-The previously tracked `GHSA-2m69-gcr7-jv3q` repository dependency exception is remediated in the verified source graph: maintained SQLite native/provider leaves are centrally pinned, the exact audit suppression was removed, the dependency contract prevents restoration of the old floor/suppression, and PR #54 passed the unsuppressed audit. Manual packaged existing-database/encrypted-data compatibility remains a production release gate.
+The previously tracked `GHSA-2m69-gcr7-jv3q` repository dependency exception is remediated in the verified source graph: maintained SQLite native/provider leaves are centrally pinned, the exact audit suppression was removed, the dependency contract prevents restoration of the old floor/suppression, and PR #56 passed the unsuppressed audit. Manual packaged existing-database/encrypted-data compatibility remains a production release gate.
 
 ## Start here
 
@@ -82,10 +83,10 @@ The previously tracked `GHSA-2m69-gcr7-jv3q` repository dependency exception is 
 ## Reminder scheduling and platform notifications
 
 - [`testing/REMINDER_SCHEDULING_CONTRACT.md`](testing/REMINDER_SCHEDULING_CONTRACT.md) — deterministic planner contract.
-- [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — final stale-alarm/snooze/platform reconciliation regression map.
+- [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — stale-alarm/snooze/platform reconciliation regression map.
 - [`architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — permission/delivery/recovery/platform limitations.
 - [`FEATURE_REFERENCE.md`](FEATURE_REFERENCE.md) — feature-level reminder reference.
-- [`architecture/APPLICATION_FLOWS.md`](architecture/APPLICATION_FLOWS.md) — reminder materialization runtime flow.
+- [`architecture/APPLICATION_FLOWS.md`](architecture/APPLICATION_FLOWS.md) — reminder materialization/reconciliation runtime flow.
 
 Current audited reminder invariants additionally include:
 
@@ -117,7 +118,7 @@ The 2026-08-14 audit routes successful decrypted document exports through the ma
 - [`security/SECURITY_MODEL.md`](security/SECURITY_MODEL.md) — technical security reference.
 - [`security/THREAT_MODEL.md`](security/THREAT_MODEL.md) — threats, controls and residual risks.
 - [`security/LOGGING_PRIVACY.md`](security/LOGGING_PRIVACY.md) — allowed/prohibited diagnostic content.
-- [`security/DEPENDENCY_RISK_REGISTER.md`](security/DEPENDENCY_RISK_REGISTER.md) — tracked dependency risks.
+- [`security/DEPENDENCY_RISK_REGISTER.md`](security/DEPENDENCY_RISK_REGISTER.md) — tracked dependency risks/remediation.
 - [`security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md`](security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md) — full local-data clear failure-safety model.
 - [`security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](security/BUG_AUDIT_SECURITY_NOTES_20260814.md) — app-lock/key/plaintext/platform-reconciliation audit notes.
 - [`../SECURITY.md`](../SECURITY.md) — root security/reporting policy.
@@ -148,34 +149,38 @@ The bug audit distinguishes primary backup/restore completion from later best-ef
 - [`testing/TEST_PLAN.md`](testing/TEST_PLAN.md) — concise test plan.
 - [`testing/REMINDER_SCHEDULING_CONTRACT.md`](testing/REMINDER_SCHEDULING_CONTRACT.md) — reminder invariants.
 - [`testing/SETTINGS_LIFECYCLE_CONTRACT.md`](testing/SETTINGS_LIFECYCLE_CONTRACT.md) — Settings lifecycle contract.
-- [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — final bug-class regression inventory.
+- [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — bug-class regression inventory.
 - [`releases/PHASE8_VERIFICATION_EVIDENCE.md`](releases/PHASE8_VERIFICATION_EVIDENCE.md) — preserved earlier Phase 8 evidence.
 - [`releases/PHASE9_VERIFICATION_EVIDENCE.md`](releases/PHASE9_VERIFICATION_EVIDENCE.md) — preserved PR #36 evidence.
-- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — authoritative PR #54 automated evidence.
+- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — historical authoritative PR #54 runtime bug-audit evidence.
+- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — authoritative PR #56 release-engineering evidence.
 - [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — complete audit/checkpoint history.
 
-PR #54 is the current automated bug-audit source reference. PR #43 remains historical failed-core evidence.
+PR #56 is the current automated source reference. PR #54 remains the completed bug-audit runtime source reference; PR #43 remains historical failed-core evidence.
 
 ## Release engineering
 
+- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — authoritative final PR #56 release-engineering evidence.
 - [`releases/RELEASE_PROCESS.md`](releases/RELEASE_PROCESS.md) — end-to-end public release process.
 - [`releases/RELEASE_CHECKLIST.md`](releases/RELEASE_CHECKLIST.md) — automated/manual promotion checklist.
 - [`releases/QUALITY_GATE.md`](releases/QUALITY_GATE.md) — production quality requirements.
-- [`releases/MANUAL_TEST_MATRIX.md`](releases/MANUAL_TEST_MATRIX.md) — device/accessibility/manual evidence matrix.
-- [`releases/STORE_SUBMISSION_CHECKLIST.md`](releases/STORE_SUBMISSION_CHECKLIST.md) — distribution-channel checks.
+- [`releases/MANUAL_TEST_MATRIX.md`](releases/MANUAL_TEST_MATRIX.md) — device/accessibility/manual/SQLite-compatibility evidence matrix.
+- [`releases/STORE_SUBMISSION_CHECKLIST.md`](releases/STORE_SUBMISSION_CHECKLIST.md) — distribution-channel and exact-tag checks.
 - [`releases/SECURITY_RELEASE_REVIEW.md`](releases/SECURITY_RELEASE_REVIEW.md) — security approval record.
-- [`releases/RELEASE_EVIDENCE.md`](releases/RELEASE_EVIDENCE.md) — evidence/provenance workflow.
+- [`releases/RELEASE_EVIDENCE.md`](releases/RELEASE_EVIDENCE.md) — exact source/evidence/provenance workflow behavior.
 - [`releases/RELEASE_NOTES_TEMPLATE.md`](releases/RELEASE_NOTES_TEMPLATE.md) — release-notes template.
 - [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) — marker-only exact-head CI protocol.
 - [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md) — production blockers and roadmap.
 - [`releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`](releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md) — SQLite dependency remediation/compatibility plan.
 - [`releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md`](releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md) — documentation inventory/operational gates.
-- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — authoritative final automated bug-audit evidence.
+- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — historical authoritative PR #54 automated bug-audit evidence.
 - [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — complete bug-audit checkpoint history.
+
+Exact production tags matching `v*` are configured to run CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence against the exact tagged commit. A tag is not production approval until every required tag workflow plus manual/device/accessibility/store/signing/packaged-data evidence succeeds.
 
 ## Project state and history
 
-- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current PR #54 automated baseline and real blockers.
+- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current PR #56 automated baseline and real blockers.
 - [`../CHANGELOG.md`](../CHANGELOG.md) — version/change history.
 - [`../what_changed.md`](../what_changed.md) — active detailed handoff.
 - [`history/what_changed_full_through_phase8.md`](history/what_changed_full_through_phase8.md) — complete earlier implementation/hardening history.
@@ -191,6 +196,7 @@ Real remaining gates include:
 
 - manual Android/Windows/iOS/iPadOS/Mac Catalyst verification;
 - manual notification permission/real-delivery/platform lifecycle checks;
+- cancellation-first reminder-action behavior against real platform scheduling/restart recovery;
 - packaged-target document/photo/report/backup checks;
 - representative packaged existing-database and encrypted-data compatibility checks after the SQLite native/provider remediation;
 - legacy encrypted-format fixture checks when canonical fixtures are available;
@@ -199,7 +205,8 @@ Real remaining gates include:
 - signing/package identities and secrets outside Git;
 - signed package generation/inspection;
 - store screenshots/listings/privacy/data-safety disclosures;
-- final Release Evidence for the exact promoted production commit.
+- successful exact production `v*` tag CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence runs;
+- final release version/build metadata, notes, checksums, and publication.
 
 The previous SQLite source exception itself is no longer an open source blocker; the remaining SQLite-related work is packaged/manual compatibility evidence.
 
@@ -207,7 +214,7 @@ Use `PROJECT_STATUS.md`, `releases/NEXT_STEPS.md`, and `releases/RELEASE_CHECKLI
 
 ## Documentation maintenance rule
 
-When behavior changes:
+When behavior or release engineering changes:
 
 1. update the lowest-level technical document describing the behavior;
 2. update user-facing documentation if observable behavior changes;
@@ -216,6 +223,6 @@ When behavior changes:
 5. update release status/evidence when verification changes;
 6. update this index for new major documents;
 7. update `what_changed.md` when a detailed handoff is requested;
-8. if runtime/test/workflow/package/resource source changes after an exact-head verification, run a fresh marker-only verification instead of reusing old evidence.
+8. if runtime/test/workflow/package/resource/build-script source changes after an exact-head verification, run a fresh marker-only verification instead of reusing old evidence.
 
-Documentation must not claim a manual test, store-policy decision, signing step, or final production release is complete unless it actually occurred.
+Documentation must not claim a manual test, store-policy decision, signing step, packaged compatibility result, or final production release is complete unless it actually occurred.
