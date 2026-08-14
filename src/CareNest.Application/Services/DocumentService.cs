@@ -103,21 +103,47 @@ public sealed class DocumentService(
         Directory.CreateDirectory(temporaryDirectory);
         var safeName = Path.GetFileName(document.OriginalFileName);
         var outputPath = Path.Combine(temporaryDirectory, $"{Guid.NewGuid():N}_{safeName}");
-        await using (var destination = File.Create(outputPath))
+
+        try
         {
-            await documentStore.ExportDecryptedAsync(document.EncryptedFileName, destination, cancellationToken);
+            await using (var destination = File.Create(outputPath))
+            {
+                await documentStore.ExportDecryptedAsync(
+                    document.EncryptedFileName,
+                    destination,
+                    cancellationToken);
+            }
+
+            await repository.AddAuditEntryAsync(new AuditEntry
+            {
+                EntityType = nameof(CareDocument),
+                EntityId = document.Id,
+                Action = AuditAction.Exported,
+                EventUtc = timeProvider.GetUtcNow().UtcDateTime,
+                SafeSummary = "Document exported by explicit user action"
+            }, cancellationToken);
+
+            return outputPath;
         }
-
-        await repository.AddAuditEntryAsync(new AuditEntry
+        catch (Exception exportFailure)
         {
-            EntityType = nameof(CareDocument),
-            EntityId = document.Id,
-            Action = AuditAction.Exported,
-            EventUtc = timeProvider.GetUtcNow().UtcDateTime,
-            SafeSummary = "Document exported by explicit user action"
-        }, cancellationToken);
+            try
+            {
+                if (File.Exists(outputPath))
+                {
+                    File.Delete(outputPath);
+                }
+            }
+            catch (Exception cleanupFailure)
+            {
+                throw new AggregateException(
+                    "Document export failed and its temporary plaintext file could not be fully cleaned up.",
+                    exportFailure,
+                    cleanupFailure);
+            }
 
-        return outputPath;
+            throw;
+        }
     }
 
     public async Task DeleteAsync(string documentId, CancellationToken cancellationToken = default)
