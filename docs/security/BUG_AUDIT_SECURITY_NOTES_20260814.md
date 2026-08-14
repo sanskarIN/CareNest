@@ -156,10 +156,34 @@ See:
 - `docs/security/DEPENDENCY_RISK_REGISTER.md`;
 - `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
 
-## Final automated evidence
+## Automated verification correction
 
-PR #43 is the exact-head verification reference for the final 2026-08-14 audited source.
+PR #43 was originally described as the final green exact-head reference for source `6e920f38972155ba9eaa6693f6ad948ebf6d1db7`. That description was incorrect and is superseded by the actual GitHub Actions records.
 
-Required formatter, core tests, all four platform Release builds, CodeQL, and Dependency Audit completed successfully. PR #43 was closed without merging its marker.
+Actual PR #43 evidence:
+
+- CareNest CI #448 / run `31764449533`: **failure**;
+- formatting: success;
+- unit tests: success;
+- integration tests: failure;
+- UI-contract/policy tests: skipped after integration failure;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL #448 / run `31764449600`: success;
+- Dependency Audit #23 / run `31764449574`: success.
+
+PR #44 independently reproduced three reminder-reconciliation integration failures on the same source:
+
+- a future snooze was omitted when its original scheduled time was already past;
+- an expired snooze remained `Snoozed` instead of transitioning to `Missed`;
+- a stale future occurrence remained scheduled instead of being cancelled before replacement scheduling.
+
+Those runtime defects were fixed in commit:
+
+`4cf2aec989233d213ac7b1099a50d44e1acc3ca0` — `fix: reconcile snoozed and stale reminder occurrences`
+
+A later exact-head verification PR must replace PR #43 before any source is represented as the current fully green automated baseline.
 
 Manual real-device, accessibility, store-policy, signing and production-promotion gates remain separate.
