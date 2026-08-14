@@ -52,4 +52,33 @@ public sealed class ReportExportTests
         var text = await File.ReadAllTextAsync(path);
         Assert.Contains("user-entered/unverified", text, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task StockCsv_NeutralizesFormulaLikeUserEnteredText()
+    {
+        await using var store = await TestStore.CreateAsync();
+        var profile = new PersonProfile
+        {
+            Name = "=2+2",
+            IsPrimary = true
+        };
+        await store.Repository.SaveProfileAsync(profile);
+        await store.Repository.SaveMedicineAsync(new Medicine
+        {
+            ProfileId = profile.Id,
+            Name = " @HYPERLINK(\"https://example.invalid\")",
+            Form = "Custom",
+            StartDate = DateTime.Today
+        });
+
+        var path = Path.Combine(store.Root, "stock.csv");
+        var reports = new ReportService(store.Repository);
+        await reports.CreateStockRefillCsvAsync(profile.Id, path);
+
+        var text = await File.ReadAllTextAsync(path);
+        Assert.Contains("'=2+2", text, StringComparison.Ordinal);
+        Assert.Contains("' @HYPERLINK", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("\n=2+2,", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("\n @HYPERLINK", text, StringComparison.Ordinal);
+    }
 }
