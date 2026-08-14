@@ -15,6 +15,7 @@ if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
 Write-Step 'CareNest release preflight'
 Write-Host "Repository: $Root"
 dotnet --info
+if ($LASTEXITCODE -ne 0) { throw 'dotnet --info failed.' }
 
 Write-Step 'Source hygiene'
 $markers = Get-ChildItem -Path src, tests -Recurse -File |
@@ -51,13 +52,21 @@ foreach ($project in $testProjects) {
     if ($LASTEXITCODE -ne 0) { throw "Tests failed: $project" }
 }
 
-Write-Step 'Dependency advisory report'
-dotnet list src/CareNest.Infrastructure/CareNest.Infrastructure.csproj package --vulnerable --include-transitive
-if ($LASTEXITCODE -ne 0) {
-    Write-Warning 'Dependency advisory reporting returned a non-zero exit code; inspect the output and risk register.'
+Write-Step 'Blocking dependency audit'
+foreach ($project in $testProjects) {
+    dotnet restore $project --nologo -p:NuGetAudit=true -p:NuGetAuditMode=all
+    if ($LASTEXITCODE -ne 0) { throw "Dependency audit failed: $project" }
 }
 
 if ($env:CARENEST_TARGET) {
+    Write-Step "Audit optional MAUI target: $($env:CARENEST_TARGET)"
+    dotnet restore src/CareNest.App/CareNest.App.csproj `
+        -p:CareNestTargetFramework=$env:CARENEST_TARGET `
+        -p:NuGetAudit=true `
+        -p:NuGetAuditMode=all `
+        --nologo
+    if ($LASTEXITCODE -ne 0) { throw "MAUI dependency audit failed: $($env:CARENEST_TARGET)" }
+
     Write-Step "Optional MAUI Release build: $($env:CARENEST_TARGET)"
     dotnet build src/CareNest.App/CareNest.App.csproj `
         -f $env:CARENEST_TARGET `
@@ -68,4 +77,4 @@ if ($env:CARENEST_TARGET) {
 }
 
 Write-Step 'Preflight complete'
-Write-Host 'Automated checks completed. Manual device, accessibility, signing, store-policy, and dependency-risk release decisions are still required where applicable.'
+Write-Host 'Automated source checks completed. Manual device, accessibility, signing, store-policy, and packaged existing-data/encrypted-data compatibility evidence are still required where applicable.'
