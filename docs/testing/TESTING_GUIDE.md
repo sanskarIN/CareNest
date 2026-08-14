@@ -17,7 +17,7 @@ Primary purpose:
 - direct application-service behavior using deterministic test doubles;
 - profile/medicine/appointment/document/backup-reminder orchestration without MAUI or SQLite.
 
-Current authoritative PR #54 baseline: **122 passed**.
+Current authoritative PR #56 baseline: **122 passed**.
 
 ### `tests/CareNest.IntegrationTests`
 
@@ -33,7 +33,7 @@ Primary purpose:
 - encrypted backup restore/wrong-password/tamper/topology/key-buffer behavior;
 - report/export integration.
 
-Current authoritative PR #54 baseline: **39 passed**.
+Current authoritative PR #56 baseline: **39 passed**.
 
 ### `tests/CareNest.UiTests`
 
@@ -54,27 +54,38 @@ Coverage includes:
 - reminder coordinator UTC/snooze safety contracts;
 - reminder platform-reconciliation and compensation contracts;
 - report export/cache-lifecycle contracts;
-- SQLite dependency-security pin/suppression contracts.
+- SQLite dependency-security pin/suppression contracts;
+- exact release workflow tag/manual entry points;
+- Dependency Audit event-safety contracts;
+- Release Evidence provenance/failure-preservation/rerun-identity contracts;
+- release-preflight blocking audit contracts;
+- deterministic/fail-closed local quality-gate contracts;
+- repository-local Git identity setup contracts;
+- fail-closed production Release Gate contracts.
 
-Current authoritative PR #54 baseline: **100 passed**.
+Current authoritative PR #56 baseline: **124 passed**.
 
 ### Verified total
 
-Authoritative marker-only PR #54 passed **261 core tests** with 0 failed / 0 skipped, plus all four platform Release builds, CodeQL and unsuppressed Dependency Audit.
+Authoritative marker-only PR #56 passed **285 core tests** with 0 failed / 0 skipped, plus all four platform Release builds, CodeQL and unsuppressed Dependency Audit.
 
-PR #54 froze source/base SHA:
+PR #56 froze source/base SHA:
 
-`4490f3f86752841d436e981b29279970c90c947b`
+`4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
 
 Its marker head was:
 
-`929168a0a319b15d9e89997d86436d59ae731ad1`
+`e3bc621cea05364a69abee0dadbd71a67c17bddb`
 
-PR #54 was closed without merge. Its marker is not part of `main`.
+Final evidence:
 
-PR #53 independently completed a duplicate green verification of the same final runtime/test graph; PR #54 is the authoritative recorded checkpoint.
+- CareNest CI #571 / `31770929379`: success;
+- CodeQL #571 / `31770929382`: success;
+- Dependency Audit #41 / `31770929383`: success.
 
-Documentation-only commits after the verified source boundary do not alter the verified runtime/test behavior. Any later runtime/test/configuration change requires fresh exact-source verification before production promotion.
+PR #56 was closed without merge. Its marker is not part of `main`.
+
+PR #54 remains the historical authoritative runtime bug-audit baseline. PR #55 is a superseded release-engineering checkpoint that passed 277/277 core tests, Android, Windows, CodeQL and unsuppressed audit before additional confirmed fixes required PR #56.
 
 ## Running tests locally
 
@@ -240,7 +251,7 @@ Source/UI-contract and direct integration tests protect:
 
 ### Reminder action cancellation/recovery tests
 
-Handled reminder actions now have dedicated ordering/failure coverage.
+Handled reminder actions have dedicated ordering/failure coverage.
 
 Tests protect the sequence:
 
@@ -384,6 +395,59 @@ They detect regressions such as:
 - removal of required governance/release files;
 - generated `bin`/`obj` content being mistaken for committed source.
 
+## Release workflow/script policy tests
+
+The final UI-contract suite includes dedicated executable release-engineering contracts.
+
+### `ReleaseWorkflowContractTests`
+
+Protects:
+
+- exact `v*` tag/manual execution for CI, CodeQL and Dependency Audit;
+- exact `v*` tag/manual execution for Release Gate and Release Evidence;
+- PR-only Dependency Audit diff metadata guard;
+- Release Evidence tracked-source provenance;
+- independent outcome capture for unit/integration/UI/dependency/workspace evidence;
+- evidence upload before aggregate failure;
+- 90-day retention;
+- artifact identity containing commit SHA + run ID + run attempt.
+
+### `ReleasePreflightContractTests`
+
+Protects:
+
+- blocking `NuGetAudit=true` / `NuGetAuditMode=all` behavior;
+- absence of the former warning-only ignored SQLite-audit behavior;
+- PowerShell failure on platform-neutral and MAUI dependency-audit errors.
+
+### `QualityGateScriptContractTests`
+
+Protects:
+
+- clean-checkout-safe test execution;
+- all three core test projects;
+- blocking unsuppressed dependency audit;
+- Bash fail-fast semantics;
+- PowerShell native-command exit-code checks.
+
+### `GitSetupScriptContractTests`
+
+Protects:
+
+- repository-local `user.name` / `user.email` configuration;
+- requested `Sanskar` / `sanskarin@outlook.in` values;
+- repository-root anchoring;
+- Bash/PowerShell fail-closed native Git behavior.
+
+### `ReleaseGateContractTests`
+
+Protects:
+
+- nested unchecked release-checklist detection;
+- case/indentation-safe open-risk detection;
+- required release/security/evidence documents;
+- explicit job timeout presence.
+
 ## Architecture tests
 
 Architecture contracts verify:
@@ -446,7 +510,7 @@ CI builds:
 
 Each platform job installs the necessary target workload rather than requiring all workloads on one runner.
 
-Authoritative PR #54: all four Release builds succeeded.
+Authoritative PR #56: all four Release builds succeeded.
 
 ## CodeQL
 
@@ -454,23 +518,45 @@ CodeQL runs separately from the build/test matrix.
 
 A successful CodeQL run is required automated evidence for the exact source baseline used in a release decision.
 
-Authoritative PR #54: CodeQL #503 / `31766059215` — **success**.
+Authoritative PR #56: CodeQL #571 / `31770929382` — **success**.
 
 ## Dependency Audit
 
-Dependency Audit checks platform-neutral and MAUI dependency graphs.
+Dependency Audit checks platform-neutral/test and Android MAUI dependency graphs.
 
-Authoritative PR #54: Dependency Audit #35 / `31766059132` — **success without the former SQLite advisory suppression**.
+Authoritative PR #56: Dependency Audit #41 / `31770929383` — **success without the former SQLite advisory suppression**.
 
-The earlier narrow exact-advisory suppression was temporary evidence-management, not remediation. It has now been removed from current source after the compatible maintained native/provider path was established.
+The earlier narrow exact-advisory suppression was temporary evidence-management, not remediation. It has been removed from current source after the compatible maintained native/provider path was established.
 
 Do not interpret this successful audit as proof of packaged existing-database or encrypted-data compatibility; those remain manual release evidence.
 
+## Local quality/preflight verification
+
+`build/scripts/quality-gate.sh` and `quality-gate.ps1` are intended to work from a clean checkout and run formatting/build/tests plus blocking unsuppressed dependency audit.
+
+`build/scripts/release-preflight.sh` and `release-preflight.ps1` add release source hygiene, core Release builds, all three test projects, blocking dependency audit, and optional selected MAUI target audit/build through `CARENEST_TARGET`.
+
+Dependency audit failure is not warning-only and must not be ignored with `|| true` or equivalent logic.
+
+## Production-tag workflow behavior
+
+Tags matching `v*` are configured to run the exact tagged commit through:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
+
+A tag is not approved for production publication merely because it exists. Every required tagged workflow plus manual/device/accessibility/store/signing/packaged-data evidence must be complete.
+
+Release Evidence preserves available failure evidence before applying its aggregate pass/fail gate. Artifact existence alone is not a successful release decision.
+
 ## Exact-head verification protocol
 
-For major source hardening:
+For verification-relevant source hardening:
 
-1. finish source/test changes on `main`;
+1. finish source/test/workflow/package/build-script changes on `main`;
 2. freeze exact source SHA;
 3. create temporary verification branch from that SHA;
 4. add only one marker file under `build/verification/`;
@@ -479,7 +565,7 @@ For major source hardening:
 7. run CI/CodeQL/Dependency Audit;
 8. fix failures on `main` rather than weakening quality gates;
 9. recreate verification from corrected exact head if needed;
-10. record green run IDs;
+10. record green run IDs/test totals;
 11. close marker PR without merge.
 
 See `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
@@ -493,44 +579,46 @@ The final audit intentionally retained failed/superseded checkpoints as evidence
 - PR #40 had four platform builds/CodeQL/audit green but core formatting failed; it was not promoted.
 - PRs #41/#42 were intentionally superseded while behavior work was still changing source.
 - PR #43 was **not green**: core integration tests failed and UI-contract tests were skipped, despite platform/CodeQL/audit success.
-- PR #44 independently reproduced the future-snooze, overdue-snooze and stale-occurrence defects; source corrected.
+- PR #44 independently reproduced future-snooze, overdue-snooze and stale-occurrence defects; source corrected.
 - PR #46 exposed broader OS-reminder reconciliation lifecycle contracts; source corrected.
 - PR #47 proved an unsuppressed SQLite dependency graph could audit successfully, but source moved afterward.
 - PR #48 passed unsuppressed audit and CodeQL but exposed a transient moving-base reminder-interface compile mismatch; source corrected/simplified.
 - PR #49 exposed CA1861 in new reminder-reconciliation expectations; test source corrected.
 - PR #50 again passed unsuppressed SQLite audit but predated later analyzer-safe tests.
 - PRs #51/#52 were superseded when later runtime/test source changed.
-- PR #53 completed a duplicate fully green final-source verification.
-- PR #54 is the authoritative fully green final bug-audit checkpoint.
+- PR #53 completed duplicate fully green bug-audit verification.
+- PR #54 completed the authoritative runtime bug-audit source baseline: 261/261 core tests + all platforms + CodeQL + unsuppressed audit.
+- PR #55 completed 277/277 core tests + Android + Windows + CodeQL + unsuppressed audit before being superseded by further confirmed release-tooling/documentation corrections.
+- PR #56 is the authoritative current release-engineering baseline: 285/285 core tests + all four platform builds + CodeQL + unsuppressed audit.
 
-### PR #54 — authoritative final baseline
+### PR #56 — authoritative current baseline
 
 Source/base SHA:
 
-`4490f3f86752841d436e981b29279970c90c947b`
+`4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
 
 Marker head:
 
-`929168a0a319b15d9e89997d86436d59ae731ad1`
+`e3bc621cea05364a69abee0dadbd71a67c17bddb`
 
 Evidence:
 
-- CareNest CI #503 / `31766059137`: success;
+- CareNest CI #571 / `31770929379`: success;
 - formatting: success;
 - UnitTests: **122 passed**;
 - IntegrationTests: **39 passed**;
-- UiTests: **100 passed**;
-- total: **261 passed**;
+- UiTests: **124 passed**;
+- total: **285 passed**;
 - Android Release: success;
 - Windows Release: success;
 - iOS simulator Release: success;
 - Mac Catalyst Release: success;
-- CodeQL #503 / `31766059215`: success;
-- Dependency Audit #35 / `31766059132`: success without the former SQLite advisory suppression.
+- CodeQL #571 / `31770929382`: success;
+- Dependency Audit #41 / `31770929383`: success without the former SQLite advisory suppression.
 
-PR #54 changed only the verification marker beyond its frozen source boundary and was closed without merge.
+PR #56 changed only the verification marker beyond its frozen source boundary and was closed without merge.
 
-See `docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` for the concise final evidence record and `docs/releases/BUG_AUDIT_VERIFICATION_20260814.md` for the detailed failure-driven audit history.
+See `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` for the authoritative final evidence record and `docs/releases/BUG_AUDIT_VERIFICATION_20260814.md` for the detailed failure-driven runtime audit history.
 
 ## Manual release testing
 
