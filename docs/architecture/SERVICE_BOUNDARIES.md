@@ -1,6 +1,6 @@
 # CareNest Service and Infrastructure Boundaries
 
-CareNest uses layered contracts so UI, application logic, persistence, cryptography, and platform integrations remain independently understandable and testable.
+CareNest uses layered contracts so UI, application logic, persistence, cryptography, platform integrations, and release engineering remain independently understandable and testable.
 
 ## Dependency direction
 
@@ -72,7 +72,7 @@ Purpose:
 - use-case orchestration;
 - service/repository contracts;
 - deterministic reminder planning;
-- reminder coordination;
+- reminder coordination/reconciliation;
 - profile/medicine/appointment/document/report/backup-oriented application operations.
 
 Application code should remain platform-neutral.
@@ -117,13 +117,42 @@ It does not schedule OS notifications itself.
 - loading eligible schedules/related records;
 - planner execution;
 - occurrence persistence;
+- effective due-time handling (`ScheduledUtc` vs `SnoozedUntilUtc`);
 - platform notification registration/cancellation through `INotificationService`;
-- snooze state;
+- explicit cancellation before replacement/suppression/invalidation;
+- snooze state and replacement scheduling;
+- cancellation-first Taken/Skipped/Delayed/Missed/Snoozed/Cancelled actions;
+- previous-state/rebuild compensation after later action failure;
 - medication-log generation;
 - user-configured stock changes;
 - overdue reconciliation.
 
 It does not infer how often a medicine should be used.
+
+The coordinator treats persisted reminder state and the operating-system request as separate state surfaces. Cancellation failure remains retryable; it is not converted into a false “reconciled” result.
+
+### Profile/medicine reminder reconciliation boundary
+
+Profile/medicine services own the structured lifecycle decision, while the reminder coordinator owns platform-request reconciliation.
+
+Expected ordering includes:
+
+- reconcile eligibility after state/date changes;
+- cancel future platform requests before destructive medicine/profile cascade deletion;
+- if persistence fails after cancellation, attempt non-cancelled rebuild compensation for still-existing records;
+- keep non-critical audit bookkeeping from falsely turning an already-applied primary data transition into a failed state change.
+
+### Appointment reminder boundary
+
+Appointment records and platform appointment notifications are separate state surfaces.
+
+Application logic:
+
+- requires explicit UTC appointment start values;
+- respects notification permission;
+- avoids background permission prompting;
+- schedules/cancels through the notification abstraction;
+- attempts persistence/platform compensation when one side changes and a later step fails.
 
 ### Notification contract
 
@@ -137,6 +166,8 @@ Typical responsibilities:
 - expose diagnostics/capability information through applicable higher-level services.
 
 Platform-specific implementations belong in `CareNest.App` platform composition.
+
+The application layer decides when cancellation must precede persistence or replacement; platform implementations perform the OS-specific request/cancel operation.
 
 ### Navigation contract
 
@@ -180,11 +211,15 @@ Infrastructure owns:
 
 Application/UI code does not need to know SQL syntax.
 
+Multi-step repository operations use transaction boundaries where one SQLite transaction can preserve local structured consistency. This does not make filesystem/secure-store/OS scheduling operations part of that SQLite transaction.
+
 ### Encrypted document storage boundary
 
 Infrastructure handles document encryption/decryption and protected storage using authenticated .NET cryptographic primitives.
 
 The App layer supplies platform/user-selected file paths/streams as required by UI workflows.
+
+Application services coordinate compensating cleanup when encrypted payload creation and SQLite metadata/audit persistence cannot share one transaction.
 
 ### Backup boundary
 
@@ -194,6 +229,7 @@ Infrastructure handles:
 - protected package format;
 - password-based key derivation;
 - authenticated encryption;
+- strict decrypted archive topology validation;
 - restore validation/staging.
 
 UI supplies explicit user intent/password/destination interaction.
@@ -203,6 +239,8 @@ UI supplies explicit user intent/password/destination interaction.
 Infrastructure/application report services render output based on local records.
 
 Reports must keep the non-clinical boundary and avoid introducing clinical scoring/inference.
+
+Report writers use staged/atomic final-file behavior, and application-owned temporary report cache is removed after share handoff where CareNest still owns the copy.
 
 ## CareNest.App
 
@@ -253,11 +291,15 @@ CareNest does not treat secure storage as a substitute for:
 - whole-database encryption;
 - protection on a rooted/jailbroken/fully compromised device.
 
+Multi-key app-lock transitions use snapshot/rollback behavior; document read/export fails closed when existing ciphertext depends on missing/corrupt key material rather than silently generating a replacement key.
+
 ## File/share/browser boundary
 
 File export, sharing, calendar export, and external funding links occur only after explicit user action.
 
 Once content is handed to another app/service, that destination becomes a separate privacy/security boundary.
+
+CareNest cleans application-owned temporary plaintext where practical but cannot recall copies already owned by an external destination.
 
 ## No-network v1 boundary
 
@@ -279,6 +321,24 @@ Long-running I/O/application operations should be asynchronous and accept/propag
 
 Runtime source policy rejects common synchronous task-blocking patterns such as `.Wait()`, `.Result`, `GetAwaiter().GetResult()`, `Thread.Sleep`, `Task.WaitAll`, and `Task.WaitAny` patterns.
 
+Compensating cleanup/reconciliation can intentionally use non-cancelled operations after a primary failure when allowing caller cancellation to stop cleanup would knowingly strand cross-surface inconsistency.
+
+## Release-engineering boundary
+
+Workflow/test/build-script policy is part of the repository's verification architecture.
+
+Production tags matching `v*` are designed to run:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
+
+Release Evidence records source/ref/run provenance, tracked-file checksums, test TRX files, dependency inventories, workspace integrity, and evidence checksums. It uploads available evidence before an aggregate failure gate so a failed release verification remains diagnosable.
+
+Release workflow/test/build-script changes require fresh exact-source verification even when application runtime code did not change.
+
 ## Adding a new service
 
 Before adding a new service, determine:
@@ -291,7 +351,8 @@ Before adding a new service, determine:
 6. Does it affect backup/restore/schema compatibility?
 7. Does it introduce networking/telemetry?
 8. Does it change the medical-safety boundary?
-9. Which unit/integration/UI-contract tests should enforce it?
-10. Which documentation and release checklists must change?
+9. Does it coordinate state surfaces that cannot share one transaction and therefore require compensation/reconciliation?
+10. Which unit/integration/UI-contract tests should enforce it?
+11. Which documentation and release checklists must change?
 
 Do not place convenience code in a higher layer if doing so breaks architecture direction or makes health-data behavior harder to test/review.
