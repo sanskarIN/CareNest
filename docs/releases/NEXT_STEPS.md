@@ -2,56 +2,100 @@
 
 This document tracks work after the source-complete `1.0.0-rc.1` milestone. It intentionally separates release blockers from completed hardening and optional future versions so unfinished future ideas are not confused with missing RC1 implementation.
 
-## Automated hardening baseline completed
+## Current automated hardening candidate
 
-Exact runtime/test source head `4f5f9abe9d702fa33d6aba3f15c113febfebf95e` passed marker-only verification PR #33:
+The earlier PR #33 baseline is historical. The 2026-08-14 repository-wide correctness audit continued far beyond that source and intentionally used failure-driven exact-source checkpoints rather than hiding test/analyzer defects.
 
-- CareNest CI #332 / `31691592300`;
+Current exact runtime/test source through:
+
+`da2aed19ee9224b8d8661f11520ab9396e2c005e`
+
+is being verified by marker-only PR #53:
+
+`Final CareNest bug-audit verification`
+
+Required automated groups are:
+
 - platform-neutral formatting;
-- **106 unit tests**;
-- **30 integration tests**;
-- **54 UI-contract/policy tests**;
-- **190 total core automated tests**;
+- complete unit-test suite;
+- complete integration-test suite;
+- complete UI-contract/policy suite;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
 - Mac Catalyst Release;
-- CodeQL #332 / `31691592435`;
-- Dependency Audit #13 / `31691592302`.
+- CodeQL;
+- unsuppressed Dependency Audit.
 
-This baseline includes all previous reminder/snapshot/app-lock/privacy hardening plus:
+At the time of this handoff update:
 
-- appointment explicit-UTC and notification-permission fail-safe behavior;
-- direct platform-neutral application-service tests;
-- document-import rollback across SQLite/encrypted-payload storage;
-- caller-owned document/backup key-buffer hygiene;
-- strict backup archive topology validation;
-- chunked AEAD framing v2 for new encrypted document/backup payload streams;
-- authenticated v2 terminal record and trailing-data rejection;
-- legacy chunked framing v1 read compatibility;
-- new encrypted document metadata stream version 2.
+- formatting is green;
+- **122 unit tests** are green;
+- **39 integration tests** are green;
+- **100 UI-contract/policy tests** are green;
+- **261 total core automated tests** are green;
+- CodeQL #501 / run `31766026573` is green;
+- Dependency Audit #34 / run `31766026570` is green with the old SQLite advisory suppression removed;
+- platform Release jobs are still the remaining PR #53 CI gates and must be read from GitHub Actions before PR #53 is declared the final green automated baseline.
 
-Verification history:
+The marker file is verification-only and must not be merged into `main`.
 
-- PR #31 was intentionally superseded after CA1861 was exposed in a new test assertion; the test was fixed instead of suppressing the analyzer.
-- PR #32 passed the corrected service/document/backup source at 186 tests.
-- Later AEAD-v2 source changes required PR #33; PR #33 is now the latest exact automated runtime/test baseline.
+This source includes the earlier hardening plus the later 2026-08-14 corrections for:
 
-This automated baseline does not complete the production-release blockers below.
+- snoozed/stale reminder effective-due reconciliation;
+- platform cancellation before reminder replacement/suppression/invalidation;
+- medicine/profile delete compensation;
+- schedule occurrence-row preservation until platform reconciliation;
+- medicine/profile save-time reminder reconciliation;
+- appointment reminder persistence compensation;
+- cancellation-first reminder actions with recovery;
+- notification failure-injection coverage;
+- report-cache cleanup after sharing;
+- analyzer-safe direct reminder-reconciliation tests;
+- SQLite native/provider dependency remediation and audit-suppression removal.
+
+Verification history remains intentionally failure-driven. PR #43 was not green; PRs #44, #46 and #49 exposed additional integration/UI/analyzer defects; PRs #47/#48/#50 exercised the SQLite remediation while source was moving; PRs #51/#52 were superseded when later source changed. None of their marker files should be merged or reused as final release evidence.
+
+This automated source work does not complete the production-release blockers below.
 
 ## Priority 0 — production-release blockers
 
 These items must be completed before promoting the release candidate to a public production release.
 
-### 1. Resolve the open SQLite dependency advisory
+### 1. SQLite dependency remediation — source completed, release compatibility evidence remains
 
-- [x] Re-check the current `sqlite-net-pcl` / `SQLitePCLRaw` dependency graph through the repository Dependency Audit workflow.
-- [ ] Upgrade to a compatible patched native SQLite package path when one is actually available, or adopt a separately verified replacement provider/path.
-- [ ] Remove the narrow `NuGetAuditSuppress` entry only after the dependency graph no longer resolves the affected package/advisory.
-- [ ] Run unit, integration, UI-contract, Android, Windows, iOS simulator, Mac Catalyst, CodeQL and Dependency Audit verification again after any SQLite dependency/provider change.
-- [ ] Update `docs/security/DEPENDENCY_RISK_REGISTER.md` with the exact final resolution/decision and evidence.
+The previous `GHSA-2m69-gcr7-jv3q` source blocker is remediated in the current dependency graph.
 
-**Current state:** `GHSA-2m69-gcr7-jv3q` remains open for SQLitePCLRaw native `2.1.11`. The narrow audit suppression is not a vulnerability fix.
+Completed source work:
+
+- [x] Re-check the `sqlite-net-pcl` / `SQLitePCLRaw` dependency graph through repository Dependency Audit workflows.
+- [x] Keep `sqlite-net-pcl` `1.9.172` and `SQLitePCLRaw.bundle_green` `2.1.11` while centrally pinning maintained native/provider leaves.
+- [x] Pin `SQLitePCLRaw.lib.e_sqlite3` to `3.53.3`.
+- [x] Pin `SQLitePCLRaw.lib.e_sqlite3.android` to `2.1.12`.
+- [x] Pin the selected SQLitePCLRaw providers to `2.1.12`.
+- [x] Remove the narrow `NuGetAuditSuppress` entry for `GHSA-2m69-gcr7-jv3q`.
+- [x] Add `SqliteDependencySecurityContractTests` so the old vulnerable pin floor/suppression cannot silently return.
+- [x] Re-run unsuppressed Dependency Audit successfully during multiple remediation checkpoints.
+- [x] Update `docs/security/DEPENDENCY_RISK_REGISTER.md` with the resolved-in-source graph and evidence.
+- [x] Update `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` with the selected migration path.
+
+Current source commits:
+
+- `66cd701f84afd5021a28e7e3327b7da4fad249aa` — dependency pins;
+- `e939d5bd912d09ffa150c804519c15e2506b7bd7` — audit-suppression removal;
+- `04868965c43d8a6d09b40075d92f20da9b26e32a` — dependency regression contract.
+
+Still required before public promotion because dependency security and user-data compatibility are separate release concerns:
+
+- [ ] Finish the complete PR #53 final-source platform matrix.
+- [ ] Upgrade/install a representative build containing fictional RC1 data and verify the database remains readable.
+- [ ] Verify profiles, medicines, schedules, reminder rows, logs, appointments, documents, stock and tags after upgrade.
+- [ ] Verify pre-remediation and post-remediation encrypted backups on packaged targets where canonical fixtures are available.
+- [ ] Verify encrypted document payloads continue to decrypt through the existing key path.
+- [ ] Verify reminder rebuild/reconciliation after upgrade.
+- [ ] Record manual compatibility evidence in the release matrix/evidence documents.
+
+**Current state:** dependency remediation is complete in source and the exact NuGet audit suppression is removed. Do not re-open the old exception merely because manual compatibility evidence is still outstanding; track those checks as release-validation work.
 
 ### 2. Run manual device, encrypted-data, and accessibility smoke testing
 
@@ -62,6 +106,7 @@ Automated CI proves compilation/contracts, but it does not replace real-device b
 - [ ] iPhone/iPad: fresh install, notification permission flow, appointment reminder permission behavior, notification delivery, backup/restore, document picker/share, app lock, Dynamic Type/VoiceOver checks.
 - [ ] macOS/Mac Catalyst: fresh install, notifications, appointment reminders, file operations, keyboard navigation, backup/restore, theme changes.
 - [ ] Verify snooze behavior against actual platform notification scheduling.
+- [ ] Verify cancellation-first reminder actions against actual platform scheduling and app restart/recovery.
 - [ ] Verify large-interface mode, reduced motion, screen-reader labels, focus order, contrast, and text scaling on representative devices.
 - [ ] Verify all medical-safety disclaimers remain visible and no workflow implies diagnosis, dosage calculation, treatment recommendations, or guaranteed reminder delivery.
 
@@ -115,10 +160,12 @@ Store rules can change. Before submitting a store build:
 
 ### 7. Create the final production-candidate verification branch
 
-The current hardening head has a green exact-head matrix, but the final production-candidate verification must happen **after** all Priority 0 work and any resulting source/configuration changes.
+PR #53 is the current automated bug-audit verification candidate, but the final **production-candidate** verification must happen after all applicable Priority 0 manual/security/distribution work and any source/configuration changes that result from it.
 
 - [x] Exact-head marker-only verification protocol is documented in `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
-- [x] Current RC1 hardening source has a green exact-head automated baseline through PR #33.
+- [x] The 2026-08-14 bug audit uses failure-driven marker-only verification rather than reusing stale successful subsets.
+- [ ] Confirm every required PR #53 gate is green before naming it the current automated RC1 baseline.
+- [ ] Close PR #53 without merging its marker after evidence is recorded.
 - [ ] After Priority 0 blockers are complete, branch from the exact intended production-release commit.
 - [ ] Trigger the complete GitHub Actions matrix.
 - [ ] Require green formatting/core tests, Android, Windows, iOS simulator, Mac Catalyst, CodeQL, and Dependency Audit.
@@ -174,6 +221,11 @@ Completed hardening now includes:
 - [x] deterministic randomized/property-style recurrence coverage with a fixed seed;
 - [x] direct profile/medicine/appointment/document/backup-reminder service tests;
 - [x] appointment explicit-UTC and denied-permission fail-safe tests;
+- [x] appointment reminder persistence compensation tests;
+- [x] reminder action cancellation/recovery ordering tests;
+- [x] notification scheduling/cancellation failure-injection support;
+- [x] medicine/profile reminder reconciliation and compensation tests;
+- [x] analyzer-safe reminder reconciliation expectations;
 - [x] document import rollback and safe export tests;
 - [x] WAL snapshot creation/content/integrity/pre-cancellation coverage;
 - [x] app-lock cryptographic/source security contracts and verifier-buffer clearing;
@@ -181,7 +233,8 @@ Completed hardening now includes:
 - [x] strict backup ZIP topology tests;
 - [x] chunked AEAD v2 round-trip/prefix-truncation/trailing-data tests;
 - [x] legacy chunked AEAD v1 read-compatibility test;
-- [x] existing encryption/backup/report integration coverage.
+- [x] existing encryption/backup/report integration coverage;
+- [x] SQLite dependency-security pin/suppression contract.
 
 Still useful later when stable target infrastructure exists:
 
@@ -201,6 +254,8 @@ Completed:
 - [x] Exact-head marker-only verification protocol documented and proven through multiple verification cycles, including analyzer-failure supersession rather than stale evidence reuse.
 - [x] Platform-neutral formatting enforced in CI.
 - [x] CodeQL and multi-platform build matrix remain required automated gates.
+- [x] Narrow SQLite audit exception removed after a compatible dependency graph was established.
+- [x] Dependency regression contract prevents silent restoration of the old SQLite pin/suppression baseline.
 
 Remaining optional/production improvements:
 
@@ -291,10 +346,11 @@ Funding remains separate from health behavior. Contributions must not change Car
 
 CareNest should be promoted from release candidate only when all applicable items are true:
 
-- [ ] no unresolved production-blocking dependency risk remains without an explicit approved resolution/decision;
+- [x] no known production-blocking SQLite advisory is being hidden by the former `GHSA-2m69-gcr7-jv3q` exception; the current source graph removes that suppression and guards the maintained native/provider floor;
 - [ ] complete automated formatting/test/build/CodeQL/Dependency Audit matrix is green on the exact final release commit;
 - [ ] `CareNest Release Evidence` is generated for the exact promoted commit;
 - [ ] manual supported-platform smoke tests are complete;
+- [ ] existing-database/SQLite compatibility checks are complete on packaged representative builds;
 - [ ] notification/appointment limitations are manually verified/documented;
 - [ ] new v2 document/backup workflows are tested in packaged builds;
 - [ ] retained v1 encrypted-data compatibility is verified with canonical historical fixtures when available;
@@ -306,4 +362,4 @@ CareNest should be promoted from release candidate only when all applicable item
 - [ ] release notes/changelog/status/handoff documents are updated;
 - [ ] signed release artifacts are archived with exact version/provenance information.
 
-Current automated RC1 hardening is green, but those remaining manual/security/distribution conditions intentionally keep final `1.0.0` publication blocked.
+Current automated RC1 source hardening is substantially complete, but the remaining manual/device/accessibility/store/signing/distribution conditions intentionally keep final `1.0.0` publication blocked until actual evidence exists.
