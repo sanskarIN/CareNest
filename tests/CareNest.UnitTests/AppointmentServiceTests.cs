@@ -32,6 +32,22 @@ public sealed class AppointmentServiceTests
     }
 
     [Fact]
+    public async Task SaveAsync_AuditFails_AfterPlatformReminderIsReconciled()
+    {
+        var repository = new RecordingRepository
+        {
+            AuditFailure = new InvalidOperationException("test audit failure")
+        };
+        var notifications = new NotificationServiceSpy();
+        var service = new AppointmentService(repository, notifications, new FixedTimeProvider(Now));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.SaveAsync(ValidAppointment()));
+
+        Assert.NotNull(repository.SavedAppointment);
+        Assert.Single(notifications.Scheduled);
+    }
+
+    [Fact]
     public async Task SaveAsync_DeniedPermissionAndRejectedRequest_DoesNotSchedule()
     {
         var repository = new RecordingRepository();
@@ -105,6 +121,26 @@ public sealed class AppointmentServiceTests
         Assert.Equal("appointment-1", repository.DeletedAppointmentId);
     }
 
+    [Fact]
+    public async Task DeleteAsync_DatabaseDeleteFails_RestoresExistingReminderWithoutCallerCancellation()
+    {
+        var appointment = ValidAppointment();
+        var repository = new RecordingRepository
+        {
+            ExistingAppointment = appointment,
+            DeleteFailure = new InvalidOperationException("test delete failure")
+        };
+        var notifications = new NotificationServiceSpy();
+        var service = new AppointmentService(repository, notifications, new FixedTimeProvider(Now));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync(appointment.Id));
+
+        Assert.Null(repository.DeletedAppointmentId);
+        Assert.True(notifications.CancelledOccurrenceIds.Count >= 2);
+        var restored = Assert.Single(notifications.Scheduled);
+        Assert.Equal($"appointment-{appointment.Id}", restored.OccurrenceId);
+    }
+
     private static Appointment ValidAppointment() => new()
     {
         Id = "appointment-1",
@@ -124,6 +160,10 @@ public sealed class AppointmentServiceTests
         public Appointment? SavedAppointment { get; private set; }
 
         public string? DeletedAppointmentId { get; private set; }
+
+        public Exception? DeleteFailure { get; init; }
+
+        public Exception? AuditFailure { get; init; }
 
         public List<AuditEntry> AuditEntries { get; } = [];
 
@@ -152,6 +192,11 @@ public sealed class AppointmentServiceTests
         public override Task DeleteAppointmentAsync(string id, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (DeleteFailure is not null)
+            {
+                return Task.FromException(DeleteFailure);
+            }
+
             DeletedAppointmentId = id;
             return Task.CompletedTask;
         }
@@ -159,6 +204,11 @@ public sealed class AppointmentServiceTests
         public override Task AddAuditEntryAsync(AuditEntry entry, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (AuditFailure is not null)
+            {
+                return Task.FromException(AuditFailure);
+            }
+
             AuditEntries.Add(entry);
             return Task.CompletedTask;
         }
