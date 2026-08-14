@@ -23,6 +23,11 @@ public sealed class ProfileService(
         var exists = await repository.GetProfileAsync(profile.Id, cancellationToken) is not null;
         profile.Touch(timeProvider.GetUtcNow().UtcDateTime);
         await repository.SaveProfileAsync(profile, cancellationToken);
+
+        // Archiving/unarchiving a profile changes whether its medicine schedules are
+        // actionable. Reconcile OS requests before nonessential audit bookkeeping.
+        await reminders.RebuildAsync(cancellationToken: cancellationToken);
+
         await repository.AddAuditEntryAsync(new AuditEntry
         {
             EntityType = nameof(PersonProfile),
