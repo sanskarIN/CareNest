@@ -1,27 +1,54 @@
 # CareNest Documentation Standards
 
-This document defines how CareNest documentation should be created, updated, reviewed, and tied to implementation evidence.
+This document defines how CareNest documentation is created, reviewed, updated, verified, and tied to implementation evidence.
 
-## Goals
+## 1. Goals
 
-CareNest documentation should be:
+CareNest documentation must be:
 
-- accurate to the implemented source;
+- accurate to implemented source;
 - explicit about local-first/privacy/security boundaries;
 - explicit about the non-clinical product scope;
-- clear about what is automated evidence vs manual release evidence;
-- discoverable from `docs/README.md` and root `README.md`;
-- maintained alongside behavior changes;
-- honest about known risks and limitations;
-- explicit when a former risk has been remediated in source but still has separate packaged-compatibility evidence outstanding.
+- clear about automated evidence versus manual release evidence;
+- discoverable from `docs/README.md`;
+- maintained alongside behavior/configuration changes;
+- honest about known limitations and historical defects;
+- precise about dependency security versus packaged data compatibility;
+- precise about platform notification limitations;
+- explicit about the exact source SHA behind verification claims.
 
-## Canonical documentation hub
+## 2. Canonical documentation entry points
 
-`docs/README.md` is the primary navigation index for the documentation set.
+Primary complete references:
 
-Every major new user/developer/security/release document should be linked there.
+- `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — end-to-end project reference;
+- `docs/CODEBASE_REFERENCE.md` — source/API/project/file map;
+- `docs/CONFIGURATION_REFERENCE.md` — package/build/workflow/platform configuration;
+- `docs/MAINTENANCE_AND_OPERATIONS.md` — maintainer lifecycle;
+- `docs/README.md` — canonical documentation hub;
+- `docs/releases/DOCUMENTATION_AUDIT_20260814.md` — documentation completeness/evidence audit.
 
-## Documentation layers
+Root public entry point: `README.md`.
+
+## 3. Current authoritative automated baseline
+
+When current automated evidence is needed, use PR #56:
+
+- source/base: `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
+- marker head: `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
+- CareNest CI #571 / `31770929379`: success;
+- 122 unit + 39 integration + 124 UI-contract/policy = 285 total;
+- Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- CodeQL #571 / `31770929382`: success;
+- unsuppressed Dependency Audit #41 / `31770929383`: success.
+
+PR #56 was closed without merge and its marker is not part of `main`.
+
+PR #54 is historical authoritative runtime bug-audit evidence for the earlier 261-test source graph. Do not incorrectly attribute PR #54 to later release-engineering source.
+
+PR #43 is historical failed-core evidence and must not be described as fully green.
+
+## 4. Documentation layers
 
 ### User documentation
 
@@ -32,23 +59,20 @@ Examples:
 - `docs/REPORTS_AND_EXPORTS.md`;
 - root privacy/terms/support files.
 
-User documentation should describe observable behavior without implementation-only jargon unless it helps explain a limitation.
+User documentation should describe observable behavior in clear language while preserving limitations.
 
 ### Architecture documentation
 
 Examples:
 
 - `docs/architecture/ARCHITECTURE.md`;
-- service boundaries;
-- application flows;
-- database schema;
-- backup/restore;
-- document vault;
-- notification/platform behavior.
+- `APPLICATION_FLOWS.md`;
+- `SERVICE_BOUNDARIES.md`;
+- `DATABASE_SCHEMA.md`;
+- backup/document/notification architecture;
+- ADRs.
 
-Architecture documentation should explain ownership, trust boundaries, data flow, failure modes, and project-layer responsibilities.
-
-For workflows that span SQLite/filesystem/secure storage/OS scheduling, document compensation/reconciliation behavior instead of implying a single transaction exists across those independent state surfaces.
+Architecture docs should describe ownership, dependency direction, trust/data boundaries, failure modes and compensation rather than implying false atomicity.
 
 ### Security/privacy documentation
 
@@ -60,214 +84,250 @@ Examples:
 - `docs/privacy/PRIVACY_MODEL.md`;
 - dependency risk register.
 
-Security/privacy documents must distinguish controls from residual risk and never imply guarantees beyond the implementation.
+Security/privacy docs must distinguish controls from residual risk and must not overstate guarantees.
+
+### Development/configuration documentation
+
+Examples:
+
+- `docs/setup/DEVELOPMENT.md`;
+- `docs/setup/PLATFORM_SETUP.md`;
+- `docs/CONFIGURATION_REFERENCE.md`;
+- `docs/MAINTENANCE_AND_OPERATIONS.md`.
+
+Commands and versions must match the current repository.
 
 ### Testing/release documentation
 
 Examples:
 
 - `docs/testing/TESTING_GUIDE.md`;
-- reminder scheduling contract;
-- release process;
+- release process/checklist;
 - quality gate;
 - manual matrix;
 - security release review;
 - store submission checklist;
-- release evidence/protocol.
+- Release Evidence/verification protocol.
 
-These documents must distinguish automated checks, manual checks, store-policy decisions, signing, exact-tag gates, evidence retention, and final release approval.
+These documents must distinguish automated source verification from manual/device/store/signing/package evidence.
 
-## Medical-safety wording
+## 5. Medical-safety wording
 
-CareNest is organizational only.
+CareNest is organizational software.
 
 Documentation must not claim or imply that CareNest:
 
 - diagnoses;
-- calculates/infers dosage;
+- calculates or infers dosage;
 - recommends treatment;
-- checks medication interactions as a clinical guarantee;
+- provides a clinical medication-interaction guarantee;
 - creates clinical risk scores;
 - independently verifies adherence;
+- replaces qualified professionals;
 - provides emergency services;
-- guarantees notification delivery.
+- guarantees reminder delivery.
 
 Medicine strength/instruction text remains user-entered opaque text.
 
-## Reminder wording
+Avoid phrases such as `never miss a dose`, `safe dosage`, `recommended medicine`, or equivalent unsupported clinical claims.
 
-Documentation should distinguish:
+## 6. Reminder wording
 
-- deterministic reminder occurrence materialization;
-- persisted CareNest reminder state; and
-- operating-system notification scheduling/delivery.
+Documentation must distinguish:
 
-Accurate wording can describe deterministic occurrence generation, explicit schedules, time-zone/DST behavior, effective snooze due time, cancellation/replacement ordering, compensation/recovery, and platform limitations.
+1. explicit user schedule intent;
+2. persisted CareNest occurrence state;
+3. operating-system scheduled request/delivery state.
 
-Current consistency language should reflect that:
+Current wording should reflect:
 
-- `SnoozedUntilUtc` is the effective due time for a valid snooze;
-- CareNest cancels an old platform request before replacement, suppression, invalidation, or handled-state persistence;
-- platform cancellation failure remains retryable;
-- medicine/profile/appointment flows use compensation where database and OS scheduler state can fail independently;
-- handled reminder actions attempt non-cancelled previous-state/rebuild recovery if a later step fails.
+- deterministic explicit-input-only planning;
+- explicit ownership/time-zone/UTC/date/state validation;
+- half-open planning windows;
+- no invented DST-gap replacement time;
+- future-UTC snooze rule;
+- `SnoozedUntilUtc` effective due time;
+- platform request cancellation before replacement/suppression/invalidation;
+- cancellation-first handled state transitions;
+- retryable cancellation failure;
+- medicine/profile/appointment compensation;
+- platform delivery limitations.
 
-Avoid unsupported promises such as `never miss a dose` or wording that treats database state as proof the OS request changed successfully.
+Database state alone is not proof of OS scheduler state.
 
-## Local-first wording
+## 7. Local-first wording
 
-Accurate v1 wording:
+Accurate current v1 wording:
 
 - no required CareNest account/backend;
 - no automatic CareNest cloud sync/upload;
+- no hidden runtime telemetry client;
 - local structured storage;
-- encrypted imported documents;
+- encrypted imported document payloads;
 - manual encrypted backups;
-- explicit outbound export/share boundaries.
+- explicit outbound export/share/calendar/browser boundaries.
 
-Do not claim that the OS never creates backups/caches or that exported copies remain local after the user sends them elsewhere.
+Do not claim that the OS never creates caches/backups or that external exported copies remain under CareNest control.
 
-## Encryption wording
+## 8. Encryption wording
 
 Be precise:
 
 - imported document payloads are encrypted;
 - manual backups are encrypted;
-- new encrypted document/backup streams use authenticated framing v2;
-- legacy framing v1 remains readable for compatibility;
-- app-lock verifier material is protected through secure storage;
-- SQLite database is **not** claimed to have transparent whole-database encryption.
+- new encrypted document/backup streams use chunked authenticated framing v2;
+- legacy framing v1 remains readable where compatibility requires it;
+- platform secure storage holds app-lock/document key material;
+- application-owned mutable cryptographic buffers are cleared where practical;
+- SQLite is **not** claimed to have transparent whole-database encryption.
 
-Do not use `fully encrypted` for the entire product unless a future implementation actually supports and verifies that claim.
+Do not say `everything is fully encrypted` unless a future implementation truly provides and verifies that property.
 
-## Dependency-risk wording
+## 9. Dependency security wording
 
-The former `GHSA-2m69-gcr7-jv3q` CareNest source exception is remediated in the current RC1 graph.
+The former `GHSA-2m69-gcr7-jv3q` source exception is remediated.
 
-Accurate current wording:
+Current SQLite package intent:
 
-- `sqlite-net-pcl` remains on the existing application API path;
-- `SQLitePCLRaw.bundle_green` remains `2.1.11`;
-- central transitive pinning selects maintained native/provider leaves;
-- `SQLitePCLRaw.lib.e_sqlite3` is pinned to `3.53.3`;
-- Android native/provider leaves and selected providers are pinned to `2.1.12`;
-- the exact old `NuGetAuditSuppress` entry is removed;
-- `SqliteDependencySecurityContractTests` protects the package floor/suppression absence;
-- unsuppressed Dependency Audit is a required gate.
+- `sqlite-net-pcl` `1.9.172`;
+- `SQLitePCLRaw.bundle_green` `2.1.11`;
+- central transitive pinning;
+- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
+- Android native/provider and selected provider leaves `2.1.12`;
+- old exact advisory suppression removed;
+- package floor/suppression absence protected by `SqliteDependencySecurityContractTests`;
+- unsuppressed Dependency Audit is blocking.
 
 Rules:
 
-- `NuGetAuditSuppress` is not a fix;
+- `NuGetAuditSuppress` is not remediation;
 - do not call a dependency upgraded unless the resolved graph actually changed;
-- do not describe source remediation as proof of packaged existing-database/encrypted-data compatibility;
-- do not reintroduce the old suppression merely because manual packaged compatibility work remains incomplete;
-- record exact package/provider evidence;
-- keep `DEPENDENCY_RISK_REGISTER.md` authoritative.
+- source dependency remediation does not prove packaged existing-data compatibility;
+- do not restore the old suppression just because manual compatibility work is pending;
+- keep `DEPENDENCY_RISK_REGISTER.md` authoritative for dependency risk state.
 
-## Verification wording
+## 10. Verification wording
 
-When citing automated verification include:
+When citing an exact-head verification, include as applicable:
 
-- exact source/base SHA;
-- verification marker/head SHA when applicable;
+- source/base SHA;
+- marker/head SHA;
 - PR number;
 - CI run number/ID;
 - test counts;
 - platform build results;
 - CodeQL run;
 - Dependency Audit run;
-- marker-only/closed-without-merge status when using the exact-head protocol.
+- marker-only and closed-without-merge status.
 
-Do not attribute old verification to newer runtime/test/workflow/package/build-script source that has changed.
+Do not reuse verification evidence after runtime/test/project/workflow/package/platform/build-script source changes.
 
-Workflow, test, build-script, package, and platform-configuration changes are verification-relevant even when application runtime code did not change.
+Workflow, test, build-script, package and platform configuration changes are verification-relevant even when app runtime behavior is not intentionally changed.
 
-## Documentation-only commits after a verified source
+## 11. Documentation-only commits after verified source
 
-If changes after an exact verified source SHA are truly documentation-only:
+If commits after a verified source are truly documentation-only:
 
-- say they are documentation-only;
-- do not claim the later documentation head itself was platform-build verified unless it was;
-- use a commit comparison to prove no runtime/test/project/workflow/package/platform/build-script files changed;
-- keep the verified source SHA separate from the documentation head SHA.
+- call them documentation-only;
+- do not claim the later doc commit itself was platform compiled unless it was;
+- use commit comparison when making a release decision;
+- keep the verified source SHA distinct from the documentation head;
+- consider a final documentation-policy marker verification when repository policy tests consume docs.
 
-This documentation-only exception does **not** apply when tests, workflows, release scripts, package files, project files, or platform configuration changed.
+This exception does not apply to tests, workflows, package/project files, platform configuration or build/release scripts.
 
-## Manual evidence wording
+## 12. Historical evidence
 
-Do not mark a manual device/accessibility/store/signing/packaged-data task complete unless it was actually performed.
+Do not erase failure history to make the project look cleaner.
 
-`MANUAL_TEST_MATRIX.md` is an evidence record, not a statement of intent.
+Historical artifacts can describe old dependency exceptions, test counts, PR failures and source limitations if their historical context is explicit.
 
-A clean NuGet audit is not packaged SQLite upgrade evidence. A green platform compile is not real notification-delivery evidence.
+When replacing a stale active document, preserve the old exact version under `docs/history/` when practical.
 
-## Store policy wording
+Current active docs must clearly identify the latest authoritative state.
 
-Store policies can change.
+## 13. Manual evidence wording
 
-Documentation should say current policy must be reviewed at submission time instead of freezing a possibly stale rule as permanent truth.
+Do not mark device/accessibility/store/signing/packaged-data work complete unless it actually occurred.
 
-This is especially important for:
+`MANUAL_TEST_MATRIX.md` is an evidence record, not an aspiration checklist that can be checked from CI.
 
-- health-app categorization;
-- external funding/project-support links;
+Examples:
+
+- green Android build ≠ real Android notification delivery;
+- green NuGet audit ≠ packaged existing SQLite database upgrade proof;
+- source-level semantic accessibility checks ≠ screen-reader certification;
+- Release Evidence artifact existence ≠ successful Release Evidence gate if the workflow failed.
+
+## 14. Store-policy wording
+
+Store policies change.
+
+Documentation should require current submission-time review rather than freezing possibly stale rules as permanent truth.
+
+This applies particularly to:
+
+- health categorization;
+- privacy/data-safety declarations;
 - permissions;
-- privacy/data-safety forms;
-- payment/funding rules.
+- external voluntary project-support links;
+- payment/funding rules;
+- screenshots/listing claims.
 
-## Funding wording
+## 15. Funding wording
 
-Canonical project-support URL:
+Canonical voluntary project-support URL:
 
 `https://buymeacoffee.com/sanskarIN`
 
-Funding is voluntary project support only.
+Funding must not be represented as:
 
-Do not imply funding:
+- medical functionality;
+- higher reminder priority;
+- emergency assistance;
+- access to local records;
+- paid health advice;
+- a clinical/support entitlement.
 
-- buys medical functionality;
-- changes reminder delivery/priority;
-- unlocks local user data;
-- provides emergency support;
-- creates a medical support entitlement.
-
-## Security/privacy examples
+## 16. Security/privacy examples and test data
 
 Use synthetic/fictional data in:
 
+- documentation examples;
 - screenshots;
-- docs examples;
-- tests;
+- automated tests;
 - public bug reports;
-- release-store graphics.
+- store graphics;
+- migration/backup fixtures.
 
-Never add real health documents/backups/PINs/passwords/signing credentials to documentation.
+Never put real health documents/backups/PINs/passwords/keys/signing credentials in documentation or Git.
 
-## Commands
+## 17. Command accuracy
 
 Commands in documentation should:
 
-- match the current project layout;
-- use the repository's `CareNestTargetFramework` pattern for MAUI target builds;
-- avoid assuming all platform workloads are installed on every host;
-- match current CI-backed workload commands where practical;
-- treat unsuppressed dependency audit as blocking in release/quality-gate examples;
-- keep signing secrets outside command examples checked into Git.
+- match current repository paths;
+- use current target frameworks;
+- use `CareNestTargetFramework` for target-specific MAUI build isolation;
+- not assume every platform workload exists on every host;
+- reflect current CI/workload patterns where practical;
+- treat unsuppressed dependency audit as blocking;
+- keep signing secrets outside Git.
 
-## Git identity wording
+## 18. Git identity wording
 
 Requested local maintainer identity:
 
 - name: `Sanskar`;
 - email: `sanskarin@outlook.in`.
 
-Document this as **repository-local** Git configuration (`git config --local`).
+Document this as repository-local Git configuration with `git config --local`.
 
-Do not claim GitHub web/API/connector commits used that local email unless their commit metadata actually proves it. Authenticated connector commits can use the GitHub account identity.
+Do not claim GitHub web/API/connector commits used that email unless actual commit metadata supports it.
 
-## Release workflow wording
+## 19. Release workflow wording
 
-Production tags matching `v*` are intended to run the exact tagged commit through:
+Production tags matching `v*` run the exact tagged commit through:
 
 - CareNest CI;
 - CodeQL;
@@ -275,131 +335,155 @@ Production tags matching `v*` are intended to run the exact tagged commit throug
 - Release Gate;
 - CareNest Release Evidence.
 
-Release Evidence should be documented as:
+Release Evidence should be documented as containing:
 
-- source/ref/run provenance;
+- commit/ref/run provenance;
+- run attempt;
 - tracked-file manifest/checksums;
 - all three core TRX suites;
 - transitive dependency inventories;
 - workspace integrity;
 - evidence checksums;
-- upload of available evidence even when a component fails;
-- aggregate failure after the evidence upload;
-- artifact identity containing commit SHA, run ID, and run attempt.
+- failure-preserving upload before aggregate failure;
+- artifact identity containing commit SHA, run ID and run attempt.
 
-A failed Release Evidence run can have an artifact; artifact existence alone is never approval.
+A failed Release Evidence run may have an artifact; that artifact is diagnostic evidence, not release approval.
 
-## Links
+## 20. Release Gate wording
 
-Prefer relative repository links for repository-local documentation.
+Release Gate is fail-closed for:
 
-External canonical URLs/emails should remain consistent:
+- required documents;
+- open dependency risk;
+- unchecked applicable release checklist items;
+- core tests.
+
+Do not describe formatting changes to Markdown checklist rows as a way to bypass the gate. Source contracts protect nested/case/indentation behavior.
+
+## 21. Links
+
+Prefer relative links for repository-local documentation.
+
+Canonical external identity values:
 
 - repository: `https://github.com/sanskarIN/CareNest`;
 - creator: `https://www.github.com/sanskarIN`;
-- support: `supportramsandesh@gmail.com`;
 - business: `sanskarin@outlook.in`;
-- funding: `https://buymeacoffee.com/sanskarIN`.
+- support: `supportramsandesh@gmail.com`;
+- voluntary support: `https://buymeacoffee.com/sanskarIN`.
 
-## New feature documentation checklist
+## 22. New feature documentation checklist
 
 For a new feature, document where applicable:
 
 1. user-visible purpose;
-2. local/remote data flow;
-3. persisted fields/schema;
-4. service/layer ownership;
-5. permissions/platform behavior;
-6. security/privacy considerations;
-7. backup/restore behavior;
-8. export/delete behavior;
-9. notification behavior;
-10. accessibility/localization;
-11. automated tests;
-12. manual release checks;
-13. store disclosure changes;
-14. known limitations;
-15. release workflow/evidence impact when applicable.
+2. non-clinical boundary;
+3. local/external data flow;
+4. stored fields/schema;
+5. layer/service ownership;
+6. permissions/platform behavior;
+7. security/privacy implications;
+8. backup/restore behavior;
+9. export/delete behavior;
+10. reminder behavior;
+11. accessibility/localization;
+12. automated tests;
+13. manual release checks;
+14. store disclosure changes;
+15. limitations;
+16. release workflow/evidence impact.
 
-## Schema changes
+## 23. Schema-change documentation
 
 A schema change should update:
 
 - `DATABASE_SCHEMA.md`;
-- architecture/application flow if relevant;
+- architecture/application flow where relevant;
 - backup/restore compatibility docs;
-- privacy/data lifecycle docs if new data category;
-- testing guide/fixtures;
-- release notes/status/checklists.
+- privacy/data lifecycle for new data categories;
+- tests/fixtures;
+- release compatibility/checklist/status;
+- `CHANGELOG.md` and handoff.
 
-## Security-sensitive changes
+## 24. Security-sensitive change documentation
 
-A security-sensitive change should review/update:
+Review/update as applicable:
 
 - `SECURITY_MODEL.md`;
 - `THREAT_MODEL.md`;
-- `LOGGING_PRIVACY.md` if logging changes;
-- dependency risk register if dependencies change;
+- `LOGGING_PRIVACY.md`;
+- `DEPENDENCY_RISK_REGISTER.md`;
 - security release review;
 - tests/contracts;
-- release workflow/evidence documentation if the security gate changes.
+- release workflow/evidence docs.
 
-## Documentation review checklist
+## 25. Configuration/package change documentation
 
-Before merging/pushing documentation:
+When build/package/workflow/platform configuration changes:
 
-- implementation claims are supported by source/evidence;
-- no manual task is falsely checked complete;
-- medical-safety wording is preserved;
+- update `CONFIGURATION_REFERENCE.md`;
+- update setup/troubleshooting if commands/toolchain changed;
+- update dependency risk/migration docs if package graph changed;
+- update tests/contracts;
+- create new exact-head verification before using the newer source as a release baseline.
+
+## 26. Documentation review checklist
+
+Before committing documentation:
+
+- implementation claims match source/evidence;
+- current PR/test/run numbers are correct;
+- no manual task is falsely checked;
+- medical-safety wording remains intact;
 - privacy/encryption wording is precise;
-- dependency risk/remediation state is current;
-- source remediation and packaged compatibility are not conflated;
-- reminder persistence/OS scheduler reconciliation wording is current;
-- exact-tag/release-evidence behavior matches workflow source;
-- links work conceptually/paths exist;
-- current baseline evidence numbers are consistent;
-- new docs are linked from `docs/README.md`;
-- root README points to the documentation hub;
-- changelog/status/handoff are updated when appropriate.
+- dependency security and packaged compatibility are separated;
+- reminder persisted/OS reconciliation wording is current;
+- exact-tag/Release Evidence wording matches workflows;
+- links/paths exist conceptually;
+- new major docs are indexed from `docs/README.md`;
+- root README points to the documentation hub/complete reference;
+- changelog/status/handoff are updated when appropriate;
+- historical evidence is retained.
 
-## Handoff record
+## 27. Handoff record
 
-`what_changed.md` is the detailed implementation/handoff record used for long-running project continuation.
+`what_changed.md` is the detailed active continuation record.
 
-It should record:
+It should contain:
 
-- important commits;
+- important commit SHAs/messages;
 - source fixes;
 - verification failures/successes;
 - exact run evidence;
 - documentation/release changes;
 - remaining blockers;
-- environment limitations.
+- environment/tool limitations.
 
-It must remain factual and must not describe unperformed work as completed.
+When old content is replaced for clarity, preserve the prior exact content under `docs/history/`.
 
-## Current verification lineage
+## 28. Documentation completeness audit
 
-### Authoritative completed bug-audit baseline
+The repository-wide documentation inventory is recorded in:
 
-PR #54 verified source/base SHA:
+`docs/releases/DOCUMENTATION_AUDIT_20260814.md`
 
-`4490f3f86752841d436e981b29279970c90c947b`
+The operational checklist is:
 
-Evidence:
+`docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md`
 
-- CareNest CI #503 / `31766059137`: success;
-- 122 unit + 39 integration + 100 UI-contract = 261 core tests;
-- Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
-- CodeQL #503 / `31766059215`: success;
-- unsuppressed Dependency Audit #35 / `31766059132`: success.
+These documents establish documentation completeness, not production release completion.
 
-PR #54 was marker-only and closed without merge.
+## 29. Current production blockers
 
-### Later release-engineering hardening
+Even with complete documentation and green PR #56 source, production `1.0.0` remains blocked on actual evidence for:
 
-Release workflow, tests, quality/preflight scripts, and documentation changed after PR #54, so PR #54 cannot be used as verification for the newer release-engineering source.
+- supported-platform manual testing;
+- real notification delivery/recovery;
+- packaged SQLite/encrypted-data compatibility;
+- accessibility;
+- current store policy/disclosures;
+- signing/signed artifact provenance;
+- exact production-tag Release Gate/Release Evidence;
+- final version/build/checksum/publication work.
 
-Superseded PR #55 demonstrated 122 unit + 39 integration + 116 UI-contract = 277 core tests, Android/Windows, CodeQL #547 / `31769940053`, and unsuppressed Dependency Audit #38 / `31769940039` before further confirmed release-tooling/documentation fixes required a new exact-source verification.
-
-The final current `main` head must receive a complete marker-only matrix before it becomes the new authoritative release-engineering baseline.
+No documentation checkbox can substitute for those operations.
