@@ -42,7 +42,7 @@ public sealed class MedicineServiceTests
     }
 
     [Fact]
-    public async Task SaveScheduleAsync_ReplacesFutureMaterializationAndRebuilds()
+    public async Task SaveScheduleAsync_PreservesRowsForPlatformReconciliationAndRebuilds()
     {
         var repository = new RecordingRepository();
         var reminders = new ReminderCoordinatorSpy();
@@ -65,9 +65,11 @@ public sealed class MedicineServiceTests
         Assert.Same(schedule, repository.SavedSchedule);
         Assert.Same(times, repository.SavedScheduleTimes);
         Assert.Equal(Now.UtcDateTime, schedule.UpdatedUtc);
-        Assert.Equal(schedule.Id, repository.DeletedFutureScheduleId);
-        Assert.Equal(Now.UtcDateTime, repository.DeletedFutureFromUtc);
+        Assert.Null(repository.DeletedFutureScheduleId);
         Assert.Equal(1, reminders.RebuildCount);
+        var audit = Assert.Single(repository.AuditEntries);
+        Assert.Equal(nameof(MedicineSchedule), audit.EntityType);
+        Assert.Equal(schedule.Id, audit.EntityId);
     }
 
     [Fact]
@@ -126,7 +128,7 @@ public sealed class MedicineServiceTests
     }
 
     [Fact]
-    public async Task DeleteAsync_DeletesCascadeAuditsAndRebuilds()
+    public async Task DeleteAsync_CancelsFutureRequestsBeforeCascadeAndAudits()
     {
         var repository = new RecordingRepository();
         var reminders = new ReminderCoordinatorSpy();
@@ -134,10 +136,27 @@ public sealed class MedicineServiceTests
 
         await service.DeleteAsync("medicine-1");
 
+        Assert.Equal(new[] { "medicine-1" }, reminders.CancelledMedicineIds);
         Assert.Equal("medicine-1", repository.DeletedMedicineId);
         var audit = Assert.Single(repository.AuditEntries);
         Assert.Equal(AuditAction.Deleted, audit.Action);
         Assert.Equal("medicine-1", audit.EntityId);
+        Assert.Equal(0, reminders.RebuildCount);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_CascadeFails_RebuildsReminderRequestsForCompensation()
+    {
+        var repository = new RecordingRepository
+        {
+            DeleteMedicineFailure = new InvalidOperationException("test failure")
+        };
+        var reminders = new ReminderCoordinatorSpy();
+        var service = new MedicineService(repository, reminders, new FixedTimeProvider(Now));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync("medicine-1"));
+
+        Assert.Equal(new[] { "medicine-1" }, reminders.CancelledMedicineIds);
         Assert.Equal(1, reminders.RebuildCount);
     }
 
@@ -172,6 +191,8 @@ public sealed class MedicineServiceTests
         public StockAdjustment? SavedStockAdjustment { get; private set; }
 
         public string? DeletedMedicineId { get; private set; }
+
+        public Exception? DeleteMedicineFailure { get; init; }
 
         public List<AuditEntry> AuditEntries { get; } = [];
 
@@ -226,6 +247,11 @@ public sealed class MedicineServiceTests
         public override Task DeleteMedicineCascadeAsync(string medicineId, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (DeleteMedicineFailure is not null)
+            {
+                return Task.FromException(DeleteMedicineFailure);
+            }
+
             DeletedMedicineId = medicineId;
             return Task.CompletedTask;
         }
