@@ -25,7 +25,7 @@ jobs:
 
       - name: Prepare evidence directory
         shell: bash
-        run: mkdir -p artifacts/test-results artifacts/dependencies
+        run: mkdir -p artifacts/test-results artifacts/dependencies artifacts/source
 
       - name: Record source and toolchain identity
         shell: bash
@@ -33,8 +33,12 @@ jobs:
           set -euo pipefail
           git rev-parse HEAD > artifacts/commit-sha.txt
           git status --porcelain=v1 > artifacts/git-status.txt
+          git ls-files > artifacts/source/tracked-files.txt
+          git ls-files -z | sort -z | xargs -0 sha256sum > artifacts/source/tracked-files-SHA256SUMS
           dotnet --info > artifacts/dotnet-info.txt
           printf '%s\n' "${GITHUB_REF}" > artifacts/github-ref.txt
+          printf '%s\n' "${GITHUB_RUN_ID}" > artifacts/github-run-id.txt
+          printf '%s\n' "${GITHUB_RUN_ATTEMPT}" > artifacts/github-run-attempt.txt
 
       - name: Run unit tests with TRX evidence
         run: >-
@@ -68,6 +72,9 @@ jobs:
           dotnet list src/CareNest.Domain/CareNest.Domain.csproj package --include-transitive --format json > artifacts/dependencies/domain.json
           dotnet list src/CareNest.Application/CareNest.Application.csproj package --include-transitive --format json > artifacts/dependencies/application.json
           dotnet list src/CareNest.Infrastructure/CareNest.Infrastructure.csproj package --include-transitive --format json > artifacts/dependencies/infrastructure.json
+          dotnet list tests/CareNest.UnitTests/CareNest.UnitTests.csproj package --include-transitive --format json > artifacts/dependencies/unit-tests.json
+          dotnet list tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj package --include-transitive --format json > artifacts/dependencies/integration-tests.json
+          dotnet list tests/CareNest.UiTests/CareNest.UiTests.csproj package --include-transitive --format json > artifacts/dependencies/ui-tests.json
 
       - name: Record evidence checksums
         shell: bash
@@ -81,4 +88,4 @@ jobs:
           name: carenest-release-evidence-${{ github.sha }}
           path: artifacts/
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90
