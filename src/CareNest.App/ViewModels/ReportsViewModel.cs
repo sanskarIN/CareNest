@@ -51,12 +51,19 @@ public sealed class ReportsViewModel : ObservableViewModel
     public Task LoadAsync() =>
         RunAsync(async ct =>
         {
+            var selectedId = SelectedProfile?.Id;
             Profiles.Clear();
             foreach (var profile in await _profiles.ListAsync(ct))
             {
                 Profiles.Add(profile);
             }
-            SelectedProfile ??= Profiles.FirstOrDefault();
+
+            SelectedProfile = selectedId is null
+                ? Profiles.FirstOrDefault(x => x.IsPrimary) ?? Profiles.FirstOrDefault()
+                : Profiles.FirstOrDefault(x => x.Id == selectedId)
+                    ?? Profiles.FirstOrDefault(x => x.IsPrimary)
+                    ?? Profiles.FirstOrDefault();
+
             StatusMessage = Profiles.Count == 0 ? "Create a profile before exporting reports." : null;
         }, "CareNest could not load report options.");
 
