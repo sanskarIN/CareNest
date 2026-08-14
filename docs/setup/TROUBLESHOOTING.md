@@ -22,6 +22,49 @@ Check in this order:
 
 CareNest cannot guarantee notification delivery when a device is powered off, force-stopped, heavily battery restricted, denied permission, blocked by platform policy, or otherwise prevented by the OS.
 
+## A reminder still appears after a schedule/state change
+
+Persisted CareNest occurrence state and the operating-system scheduled request are separate surfaces.
+
+Current reconciliation rules attempt to cancel an existing platform request before replacement, suppression, or invalidation.
+
+Check:
+
+- whether the old occurrence still records a platform notification identifier;
+- whether platform cancellation failed;
+- whether the schedule/medicine/profile state still makes the occurrence valid;
+- quiet-hour changes;
+- whether the app has completed a startup/rebuild recovery pass;
+- target OS notification settings/capabilities.
+
+A platform cancellation failure intentionally leaves the state retryable instead of falsely reporting successful cleanup.
+
+## A Taken/Skipped/Delayed/Missed action failed
+
+Handled reminder actions use cancellation-first ordering.
+
+CareNest first attempts to cancel the existing platform request, then persists the handled state. If a later persistence step fails after cancellation, CareNest attempts non-cancelled previous-state restoration and reminder rebuild.
+
+If both the original action and recovery fail, an aggregate error can be surfaced rather than falsely reporting a consistent result.
+
+Troubleshoot using synthetic data and privacy-safe logs. Do not log medicine/profile names, private notes, reminder identifiers, exception messages, or stack traces merely to diagnose platform cancellation/recovery.
+
+## Snoozed reminder disappears or fires at the original time
+
+For a valid snoozed occurrence, `SnoozedUntilUtc` is the effective due time.
+
+Check:
+
+- the snooze value exists;
+- the snooze value is UTC at the application boundary;
+- the snooze value is in the future when the action is created;
+- the schedule/medicine/profile remains eligible;
+- platform cancellation of the old request succeeded;
+- replacement scheduling succeeded and is not suppressed by quiet hours;
+- startup/rebuild recovery ran after an interrupted action.
+
+The old `ScheduledUtc` is historical schedule identity; it should not make a future snooze disappear simply because the original time has passed.
+
 ## A schedule exists but no automatic reminder is expected
 
 Confirm whether the schedule is `AsNeeded`.
@@ -77,7 +120,8 @@ Review:
 - manufacturer-specific background restrictions;
 - force-stop state;
 - reboot behavior;
-- time/time-zone changes.
+- time/time-zone changes;
+- platform cancellation/replacement behavior after schedule edits or handled actions.
 
 A successful CI build cannot prove real delivery on every Android device/vendor policy.
 
@@ -88,6 +132,8 @@ Use `docs/releases/MANUAL_TEST_MATRIX.md` for release evidence.
 The current Windows fallback does not claim reliable notification delivery while CareNest is not running.
 
 If reminders work while the app is open but not when closed, review the documented Windows limitation rather than presenting it as a guaranteed background service.
+
+For same-ID replacement issues, verify that an older timer does not remove a newer replacement owner and that cancellation/disposal lifetime follows the current in-process notification implementation.
 
 ## Build fails before MAUI compilation
 
@@ -133,6 +179,12 @@ dotnet workload install maui-ios
 dotnet workload install maui-maccatalyst
 ```
 
+For current Windows CI, the repository installs:
+
+```powershell
+dotnet workload install maui
+```
+
 Do not require unrelated workloads on a target-limited host.
 
 ## Target-framework propagation errors
@@ -173,14 +225,14 @@ Use explicit API-level guards/null checks/platform-correct code.
 
 Treat analyzer output as a real finding until understood.
 
-Historical CI has exposed legitimate issues such as non-generic enum validation and eager logging argument evaluation.
+Historical CI has exposed legitimate issues such as non-generic enum validation, eager logging argument evaluation, transaction-helper cancellation-token ordering, semaphore ownership, and constant-array allocation in test contracts.
 
 Preferred response:
 
 - fix source;
 - add regression test if useful;
 - narrow only truly advisory rule configuration;
-- re-run exact-head verification after runtime/test changes.
+- re-run exact-head verification after runtime/test/workflow/release-script changes.
 
 ## `dotnet format` fails
 
@@ -222,22 +274,72 @@ Important implementation facts:
 
 If a package/provider update changes behavior, follow `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
 
-## Dependency Audit shows SQLitePCLRaw advisory
+## Dependency Audit reports the old SQLite advisory again
 
-Known tracked advisory:
+The intended current RC1 graph no longer relies on the former `GHSA-2m69-gcr7-jv3q` audit suppression.
 
-`GHSA-2m69-gcr7-jv3q`
+Expected source policy includes:
 
-Current dependency path resolves native `2.1.11`.
+- `SQLitePCLRaw.lib.e_sqlite3` at `3.53.3` or later compatible reviewed floor;
+- Android native/provider leaves and selected providers at `2.1.12` or later compatible reviewed floor;
+- central transitive pinning enabled;
+- no old `NuGetAuditSuppress` entry.
 
-The exact `NuGetAuditSuppress` entry is not a fix.
+If the advisory reappears:
+
+1. inspect `Directory.Packages.props` and the resolved transitive graph;
+2. run `SqliteDependencySecurityContractTests`;
+3. run unsuppressed `dotnet restore -p:NuGetAudit=true -p:NuGetAuditMode=all`;
+4. audit the Android MAUI graph as well as platform-neutral/test graphs;
+5. compare with `docs/security/DEPENDENCY_RISK_REGISTER.md`;
+6. do **not** restore the old suppression just to make CI green;
+7. if a new compatible remediation changes native/provider behavior, repeat packaged existing-database/encrypted-document/backup/reminder compatibility testing.
 
 Read:
 
 - `docs/security/DEPENDENCY_RISK_REGISTER.md`;
 - `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
 
-Do not randomly pin a package version that is unavailable or incompatible just to silence audit output.
+## Local quality/preflight audit fails
+
+Both `quality-gate` and `release-preflight` scripts treat dependency audit as blocking.
+
+Do not replace the failure with `|| true`, warning-only output, or a wildcard audit suppression.
+
+For a selected MAUI target, `CARENEST_TARGET` causes release preflight to audit that app graph before the optional Release build.
+
+## Release Evidence workflow fails
+
+The Release Evidence workflow intentionally attempts all core evidence components, uploads available evidence with `if: always()`, and then applies an aggregate failure gate.
+
+A failed run can therefore still have a useful evidence artifact.
+
+Check:
+
+- unit/integration/UI TRX files;
+- dependency inventories;
+- tracked workspace integrity result;
+- source/ref/run metadata;
+- SHA-256 manifests;
+- the final aggregate failure message.
+
+Artifact existence does not mean release approval. The run itself must be successful for release evidence to be accepted.
+
+Artifact names include commit SHA, GitHub Actions run ID, and run attempt so reruns can be distinguished.
+
+## Release tag fails a required workflow
+
+Tags matching `v*` run the exact tagged source through CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence.
+
+If one fails:
+
+- do not publish/promote the failing tag as a successful production release;
+- preserve the failed evidence;
+- fix source/configuration on a new commit;
+- re-run exact-source/manual checks as applicable;
+- use the corrected approved commit/tag.
+
+Do not weaken the tag gate to make an already failing release appear successful.
 
 ## Restore is rejected
 
@@ -247,7 +349,7 @@ Restore can be rejected when:
 - version is unsupported;
 - password is wrong;
 - authentication/tamper validation fails;
-- package/schema validation fails.
+- package/schema/topology validation fails.
 
 CareNest should validate before overwriting current local data.
 
@@ -271,6 +373,21 @@ For release testing verify:
 - target storage permissions were available.
 
 Use a clean installation for meaningful restore qualification.
+
+## Existing data fails after SQLite native/provider update
+
+Treat this as a production-blocking compatibility defect even if NuGet audit is green.
+
+Using synthetic data:
+
+- verify SQLite integrity;
+- verify profiles/medicines/schedules/reminders/logs/appointments/documents/stock/tags/settings;
+- verify reminder rebuild/reconciliation;
+- verify existing encrypted document access through the unchanged key path;
+- verify current and canonical pre-remediation backup restore where available;
+- record exact package/build/source/device evidence.
+
+Do not solve a data-compatibility regression by silently downgrading/restoring a vulnerable dependency path without security review.
 
 ## Document cannot open
 
