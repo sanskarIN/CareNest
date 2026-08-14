@@ -5,7 +5,11 @@ using CareNest.Domain.Rules;
 
 namespace CareNest.Application.Services;
 
-public sealed class ProfileService(ICareNestRepository repository, IDocumentStore documentStore, TimeProvider timeProvider) : IProfileService
+public sealed class ProfileService(
+    ICareNestRepository repository,
+    IDocumentStore documentStore,
+    IReminderCoordinator reminders,
+    TimeProvider timeProvider) : IProfileService
 {
     public Task<IReadOnlyList<PersonProfile>> ListAsync(CancellationToken cancellationToken = default) =>
         repository.GetProfilesAsync(false, cancellationToken);
@@ -35,8 +39,25 @@ public sealed class ProfileService(ICareNestRepository repository, IDocumentStor
         var profile = await repository.GetProfileAsync(id, cancellationToken);
         var documents = await repository.GetDocumentsAsync(id, cancellationToken);
 
-        cancellationToken.ThrowIfCancellationRequested();
-        await repository.DeleteProfileCascadeAsync(id, cancellationToken);
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await reminders.CancelFutureForProfileAsync(id, cancellationToken);
+            await repository.DeleteProfileCascadeAsync(id, cancellationToken);
+        }
+        catch (Exception primaryFailure)
+        {
+            var recoveryFailure = await TryRestoreReminderRequestsAsync();
+            if (recoveryFailure is not null)
+            {
+                throw new AggregateException(
+                    "Profile deletion failed and reminder requests could not be fully restored.",
+                    primaryFailure,
+                    recoveryFailure);
+            }
+
+            throw;
+        }
 
         var completionFailures = new List<Exception>();
         var encryptedFiles = documents
@@ -82,6 +103,19 @@ public sealed class ProfileService(ICareNestRepository repository, IDocumentStor
             throw new AggregateException(
                 "The profile records were deleted, but one or more local cleanup steps could not be completed.",
                 completionFailures);
+        }
+    }
+
+    private async Task<Exception?> TryRestoreReminderRequestsAsync()
+    {
+        try
+        {
+            await reminders.RebuildAsync(cancellationToken: CancellationToken.None);
+            return null;
+        }
+        catch (Exception recoveryFailure)
+        {
+            return recoveryFailure;
         }
     }
 }
