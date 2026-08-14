@@ -7,6 +7,8 @@ internal sealed class ReminderCoordinatorSpy : IReminderCoordinator
 {
     public int RebuildCount { get; private set; }
 
+    public int RestoreCount { get; private set; }
+
     public DateTime? LastRebuildFromUtc { get; private set; }
 
     public List<string> CancelledMedicineIds { get; } = [];
@@ -75,5 +77,19 @@ internal sealed class ReminderCoordinatorSpy : IReminderCoordinator
         return CancelProfileFailure is null
             ? Task.CompletedTask
             : Task.FromException(CancelProfileFailure);
+    }
+
+    public async Task TryRestoreReminderRequestsAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        RestoreCount++;
+        try
+        {
+            await RebuildAsync(cancellationToken: cancellationToken);
+        }
+        catch
+        {
+            // Mirrors the production compensation contract: restoration is best effort.
+        }
     }
 }
