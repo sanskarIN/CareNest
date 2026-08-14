@@ -58,13 +58,7 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
             DocumentContentNote = "Encrypted document contents are not embedded in this JSON. Export selected documents separately from CareNest Documents."
         };
 
-        Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
-        await using var stream = File.Create(outputPath);
-        await JsonSerializer.SerializeAsync(
-            stream,
-            payload,
-            ExportJsonOptions,
-            cancellationToken);
+        await WriteJsonAtomicallyAsync(outputPath, payload, cancellationToken);
         return outputPath;
     }
 
@@ -337,5 +331,52 @@ public sealed class ReportService(ICareNestRepository repository) : IReportServi
 
         await CsvWriter.WriteAsync(outputPath, rows, cancellationToken);
         return outputPath;
+    }
+
+    private static async Task WriteJsonAtomicallyAsync<T>(
+        string outputPath,
+        T payload,
+        CancellationToken cancellationToken)
+    {
+        var directory = Path.GetDirectoryName(outputPath);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var partialPath = outputPath + $".{Guid.NewGuid():N}.partial";
+        try
+        {
+            await using (var stream = File.Create(partialPath))
+            {
+                await JsonSerializer.SerializeAsync(
+                    stream,
+                    payload,
+                    ExportJsonOptions,
+                    cancellationToken);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            File.Move(partialPath, outputPath, overwrite: true);
+        }
+        finally
+        {
+            TryDeleteFile(partialPath);
+        }
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // Best-effort cleanup of an incomplete plaintext export.
+        }
     }
 }
