@@ -34,24 +34,52 @@ public sealed class ProfileService(ICareNestRepository repository, IDocumentStor
     {
         var profile = await repository.GetProfileAsync(id, cancellationToken);
         var documents = await repository.GetDocumentsAsync(id, cancellationToken);
+
+        cancellationToken.ThrowIfCancellationRequested();
         await repository.DeleteProfileCascadeAsync(id, cancellationToken);
 
-        foreach (var document in documents)
+        var completionFailures = new List<Exception>();
+        var encryptedFiles = documents
+            .Select(document => document.EncryptedFileName)
+            .Append(profile?.PhotoPath)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Cast<string>()
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        foreach (var encryptedFile in encryptedFiles)
         {
-            await documentStore.DeleteAsync(document.EncryptedFileName, cancellationToken);
+            try
+            {
+                await documentStore.DeleteAsync(encryptedFile, CancellationToken.None);
+            }
+            catch (Exception cleanupFailure)
+            {
+                completionFailures.Add(cleanupFailure);
+            }
         }
 
-        if (!string.IsNullOrWhiteSpace(profile?.PhotoPath))
+        try
         {
-            await documentStore.DeleteAsync(profile.PhotoPath, cancellationToken);
+            await repository.AddAuditEntryAsync(new AuditEntry
+            {
+                EntityType = nameof(PersonProfile),
+                EntityId = id,
+                Action = AuditAction.Deleted,
+                EventUtc = timeProvider.GetUtcNow().UtcDateTime,
+                SafeSummary = "Profile and associated local records deleted"
+            }, CancellationToken.None);
         }
-        await repository.AddAuditEntryAsync(new AuditEntry
+        catch (Exception auditFailure)
         {
-            EntityType = nameof(PersonProfile),
-            EntityId = id,
-            Action = AuditAction.Deleted,
-            EventUtc = timeProvider.GetUtcNow().UtcDateTime,
-            SafeSummary = "Profile and associated local records deleted"
-        }, cancellationToken);
+            completionFailures.Add(auditFailure);
+        }
+
+        if (completionFailures.Count > 0)
+        {
+            throw new AggregateException(
+                "The profile records were deleted, but one or more local cleanup steps could not be completed.",
+                completionFailures);
+        }
     }
 }
