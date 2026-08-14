@@ -1,0 +1,5 @@
+CareNest exact-head verification marker
+Source: 4cf2aec989233d213ac7b1099a50d44e1acc3ca0
+Date: 2026-08-14
+Purpose: verify reminder reconciliation fixes after PR #44 exposed three integration failures.
+This marker is verification-only and must not be merged.
