@@ -1,5 +1,7 @@
 # CareNest
 
+> **Current authoritative automated baseline — 2026-08-14:** marker-only PR #56 verified source/base `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa` with **285/285 core tests** (122 unit + 39 integration + 124 UI-contract/policy), Android/Windows/iOS simulator/Mac Catalyst Release builds, CodeQL #571 / `31770929382`, and unsuppressed Dependency Audit #41 / `31770929383` all successful. PR #56 was closed without merge; its marker is not part of `main`. PR #54 remains the historical authoritative runtime bug-audit checkpoint. See [`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) and [`docs/COMPLETE_PROJECT_DOCUMENTATION.md`](docs/COMPLETE_PROJECT_DOCUMENTATION.md).
+
 CareNest is an open-source, local-first health organizer built with .NET MAUI and C#. It helps people organize medicine reminders, appointments, health documents, stock/refill notes, reports, backups, and multiple local family profiles without requiring a CareNest account or CareNest network service.
 
 [![Support CareNest on Buy Me a Coffee](src/CareNest.App/Resources/Images/carenest_support.svg)](https://buymeacoffee.com/sanskarIN)
@@ -16,7 +18,7 @@ The earlier README statement that PR #43 was a fully green automated baseline wa
 
 The defects exposed by the continuing 2026-08-14 audit were corrected on `main`, including reminder effective-due/stale-request reconciliation, platform cancellation/compensation, appointment persistence compensation, cancellation-first reminder actions, report-cache cleanup, analyzer corrections, and SQLite native/provider dependency remediation.
 
-The authoritative final automated bug-audit baseline is marker-only PR #54, closed without merge after all required gates succeeded:
+The authoritative final automated **runtime bug-audit** baseline is marker-only PR #54, closed without merge after all required gates succeeded:
 
 - CareNest CI #503 / run `31766059137`: success;
 - formatting: success;
@@ -31,12 +33,14 @@ The authoritative final automated bug-audit baseline is marker-only PR #54, clos
 - CodeQL #503 / run `31766059215`: success;
 - unsuppressed Dependency Audit #35 / run `31766059132`: success.
 
-PR #53 independently completed a duplicate green verification of the same final runtime/test graph, but PR #54 is the recorded authoritative checkpoint. Verification marker files from these PRs are not part of `main`.
+PR #53 independently completed a duplicate green verification of the same final runtime/test graph, but PR #54 is the recorded authoritative runtime bug-audit checkpoint. Later release-engineering source was verified by PR #56 as stated at the top of this README. Verification marker files from these PRs are not part of `main`.
 
 See:
 
+- [`docs/COMPLETE_PROJECT_DOCUMENTATION.md`](docs/COMPLETE_PROJECT_DOCUMENTATION.md)
 - [`PROJECT_STATUS.md`](PROJECT_STATUS.md)
 - [`what_changed.md`](what_changed.md)
+- [`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md)
 - [`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md)
 - [`docs/releases/BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/BUG_AUDIT_VERIFICATION_20260814.md)
 - [`docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md)
@@ -84,7 +88,7 @@ The previously tracked SQLite native dependency exception has been remediated in
 - Android `BroadcastReceiver.GoAsync()` recovery lifetime protection.
 - Windows in-process reminder fallback protected against replacement/cancellation/disposal timer races.
 - Independent startup recovery boundaries for medicine, appointment and backup reminder recovery.
-- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-integrity, direct-service, backup-topology, authenticated-stream, recurrence, snapshot-integrity, report-export, transaction, dependency-security and platform-lifecycle quality gates.
+- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-integrity, direct-service, backup-topology, authenticated-stream, recurrence, snapshot-integrity, report-export, transaction, dependency-security, platform-lifecycle, release-workflow, release-preflight, quality-gate, Git-setup, and production Release Gate contracts.
 
 ## Technology
 
@@ -119,13 +123,14 @@ build/scripts/
 
 ## Documentation
 
-The documentation hub is [`docs/README.md`](docs/README.md).
+The documentation hub is [`docs/README.md`](docs/README.md). The complete whole-project reference is [`docs/COMPLETE_PROJECT_DOCUMENTATION.md`](docs/COMPLETE_PROJECT_DOCUMENTATION.md).
 
 Important current references:
 
 - [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — current automated baseline and real production blockers.
 - [`what_changed.md`](what_changed.md) — complete active continuation handoff.
-- [`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — authoritative final PR #54 automated evidence.
+- [`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — authoritative PR #56 release-engineering evidence.
+- [`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — historical final PR #54 runtime bug-audit evidence.
 - [`docs/releases/BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/BUG_AUDIT_VERIFICATION_20260814.md) — 2026-08-14 bug-audit evidence and corrections.
 - [`docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — defect-to-test map.
 - [`docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md) — security/privacy-relevant audit notes.
@@ -228,7 +233,7 @@ Current controls include:
 - central transitive pinning of maintained SQLite native/provider leaves;
 - removal of the exact advisory `NuGetAuditSuppress` entry;
 - an automated dependency-security contract that rejects restoration of the old native/provider floor or audit suppression;
-- successful unsuppressed Dependency Audit #35 / run `31766059132` on the final verified source;
+- successful unsuppressed Dependency Audit #41 / run `31770929383` on the authoritative PR #56 source;
 - continued existing-database/backup/platform validation in the release checklist.
 
 See:
@@ -240,13 +245,15 @@ This remediation does not change CareNest into a networked database product and 
 
 ## Release engineering
 
-The automated 2026-08-14 runtime/test/dependency source baseline is fully green under PR #54, but automated source verification is necessary rather than sufficient for public production promotion.
+The automated 2026-08-14 release-engineering source baseline is fully green under PR #56, but automated source verification is necessary rather than sufficient for public production promotion.
 
-Still required include real-device/accessibility checks, packaged existing-database and encrypted-data compatibility checks, current store-policy review, signing/package work, store metadata, and final Release Evidence for the exact promoted commit.
+Still required include real-device/accessibility checks, packaged existing-database and encrypted-data compatibility checks, current store-policy review, signing/package work, store metadata, and final Release Evidence for the exact promoted commit/tag.
+
+Production tags matching `v*` are configured to run the exact tagged commit through CareNest CI, CodeQL, Dependency Audit, Release Gate, and CareNest Release Evidence. A tag is not production approval until every applicable automated and manual gate has completed successfully.
 
 See:
 
-- [`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md)
+- [`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md)
 - [`docs/releases/RELEASE_PROCESS.md`](docs/releases/RELEASE_PROCESS.md)
 - [`docs/releases/RELEASE_CHECKLIST.md`](docs/releases/RELEASE_CHECKLIST.md)
 - [`docs/releases/RELEASE_EVIDENCE.md`](docs/releases/RELEASE_EVIDENCE.md)
