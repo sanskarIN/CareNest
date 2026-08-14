@@ -15,7 +15,7 @@ public sealed class ProfileServiceTests
     public async Task SaveAsync_NewProfile_PersistsCreatedAuditAndUtcTouch()
     {
         var repository = new RecordingRepository();
-        var service = new ProfileService(repository, new DocumentStoreSpy(), new FixedTimeProvider(Now));
+        var service = CreateService(repository, new DocumentStoreSpy(), out _);
         var profile = new PersonProfile { Id = "profile-1", Name = "Alex" };
 
         await service.SaveAsync(profile);
@@ -33,7 +33,7 @@ public sealed class ProfileServiceTests
     {
         var profile = new PersonProfile { Id = "profile-1", Name = "Alex" };
         var repository = new RecordingRepository { ExistingProfile = profile };
-        var service = new ProfileService(repository, new DocumentStoreSpy(), new FixedTimeProvider(Now));
+        var service = CreateService(repository, new DocumentStoreSpy(), out _);
 
         await service.SaveAsync(profile);
 
@@ -44,15 +44,16 @@ public sealed class ProfileServiceTests
     }
 
     [Fact]
-    public async Task DeleteAsync_RemovesProfileDocumentsAndPhotoThenAuditsDeletion()
+    public async Task DeleteAsync_CancelsFutureRemindersBeforeCascadeThenCleansFiles()
     {
         var profile = ProfileWithPhoto();
         var repository = RepositoryWithDocuments(profile);
         var documentStore = new DocumentStoreSpy();
-        var service = new ProfileService(repository, documentStore, new FixedTimeProvider(Now));
+        var service = CreateService(repository, documentStore, out var reminders);
 
         await service.DeleteAsync(profile.Id);
 
+        Assert.Equal(new[] { profile.Id }, reminders.CancelledProfileIds);
         Assert.Equal(profile.Id, repository.DeletedProfileId);
         Assert.Equal(ExpectedDeletedFiles, documentStore.DeletedFiles);
         var audit = Assert.Single(repository.AuditEntries);
@@ -67,7 +68,7 @@ public sealed class ProfileServiceTests
         var repository = RepositoryWithDocuments(profile);
         var documentStore = new DocumentStoreSpy();
         documentStore.DeleteFailures.Add("doc-1.cndoc");
-        var service = new ProfileService(repository, documentStore, new FixedTimeProvider(Now));
+        var service = CreateService(repository, documentStore, out _);
 
         var failure = await Assert.ThrowsAsync<AggregateException>(() =>
             service.DeleteAsync(profile.Id));
@@ -76,6 +77,33 @@ public sealed class ProfileServiceTests
         Assert.Equal(ExpectedDeletedFiles, documentStore.DeletedFiles);
         Assert.Single(repository.AuditEntries);
         Assert.Single(failure.InnerExceptions);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_CascadeFails_RebuildsReminderRequestsWithoutCallerCancellation()
+    {
+        var profile = ProfileWithPhoto();
+        var repository = RepositoryWithDocuments(profile);
+        repository.DeleteProfileFailure = new InvalidOperationException("test failure");
+        var service = CreateService(repository, new DocumentStoreSpy(), out var reminders);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync(profile.Id));
+
+        Assert.Equal(new[] { profile.Id }, reminders.CancelledProfileIds);
+        Assert.Equal(1, reminders.RebuildCount);
+    }
+
+    private static ProfileService CreateService(
+        RecordingRepository repository,
+        DocumentStoreSpy documentStore,
+        out ReminderCoordinatorSpy reminders)
+    {
+        reminders = new ReminderCoordinatorSpy();
+        return new ProfileService(
+            repository,
+            documentStore,
+            reminders,
+            new FixedTimeProvider(Now));
     }
 
     private static PersonProfile ProfileWithPhoto() =>
@@ -105,6 +133,8 @@ public sealed class ProfileServiceTests
 
         public string? DeletedProfileId { get; private set; }
 
+        public Exception? DeleteProfileFailure { get; set; }
+
         public IReadOnlyList<CareDocument> Documents { get; init; } = Array.Empty<CareDocument>();
 
         public List<AuditEntry> AuditEntries { get; } = [];
@@ -131,6 +161,11 @@ public sealed class ProfileServiceTests
         public override Task DeleteProfileCascadeAsync(string profileId, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (DeleteProfileFailure is not null)
+            {
+                return Task.FromException(DeleteProfileFailure);
+            }
+
             DeletedProfileId = profileId;
             return Task.CompletedTask;
         }
