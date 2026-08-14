@@ -10,6 +10,7 @@ public interface IReminderCoordinator
     Task<IReadOnlyList<ReminderPreview>> GetUpcomingAsync(string? profileId, int take = 20, CancellationToken cancellationToken = default);
     Task CancelFutureForMedicineAsync(string medicineId, CancellationToken cancellationToken = default);
     Task CancelFutureForProfileAsync(string profileId, CancellationToken cancellationToken = default);
+    Task TryRestoreReminderRequestsAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed record ReminderPreview(
