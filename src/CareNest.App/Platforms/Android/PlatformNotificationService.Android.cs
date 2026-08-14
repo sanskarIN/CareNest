@@ -388,16 +388,28 @@ public sealed class CareNestSystemEventReceiver : BroadcastReceiver
             return;
         }
 
+        var pendingResult = GoAsync();
         _ = Task.Run(async () =>
         {
-            await coordinator.RebuildAsync(cancellationToken: CancellationToken.None);
-            if (appointments is not null)
+            try
             {
-                await appointments.RebuildRemindersAsync(CancellationToken.None);
+                await coordinator.RebuildAsync(cancellationToken: CancellationToken.None);
+                if (appointments is not null)
+                {
+                    await appointments.RebuildRemindersAsync(CancellationToken.None);
+                }
+                if (backups is not null)
+                {
+                    await backups.SyncAsync(requestPermission: false, cancellationToken: CancellationToken.None);
+                }
             }
-            if (backups is not null)
+            catch
             {
-                await backups.SyncAsync(requestPermission: false, cancellationToken: CancellationToken.None);
+                // A later foreground/startup recovery pass can retry rebuilding platform requests.
+            }
+            finally
+            {
+                pendingResult?.Finish();
             }
         });
     }
