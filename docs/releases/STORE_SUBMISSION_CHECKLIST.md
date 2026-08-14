@@ -1,6 +1,6 @@
 # CareNest Store Submission Checklist
 
-This checklist separates source completeness from the platform/store work that requires current policy review, signing credentials, developer accounts, package identity, and real-device evidence.
+This checklist separates source completeness from the platform/store work that requires current policy review, signing credentials, developer accounts, package identity, packaged-data compatibility, and real-device evidence.
 
 ## Before packaging
 
@@ -8,12 +8,32 @@ This checklist separates source completeness from the platform/store work that r
 - [ ] Complete `docs/releases/RELEASE_CHECKLIST.md`.
 - [ ] Complete applicable rows in `docs/releases/MANUAL_TEST_MATRIX.md`.
 - [ ] Run `build/scripts/release-preflight.sh` or `build/scripts/release-preflight.ps1` on a fully provisioned host.
-- [ ] Confirm CareNest CI and CodeQL are green for the exact source commit being packaged.
-- [ ] Re-run dependency audit and review `docs/security/DEPENDENCY_RISK_REGISTER.md`.
-- [ ] Resolve or explicitly block release for any high-severity dependency advisory that remains applicable.
+- [ ] Confirm the complete exact-source CareNest CI matrix is green for the commit being packaged.
+- [ ] Confirm CodeQL is green for the exact source commit being packaged.
+- [ ] Confirm unsuppressed Dependency Audit is green for the exact source commit being packaged.
+- [ ] Review `docs/security/DEPENDENCY_RISK_REGISTER.md` and `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
+- [ ] Complete representative packaged SQLite existing-data/encrypted-data compatibility evidence after the native/provider remediation.
+- [ ] Resolve or explicitly block release for any dependency advisory that remains applicable under the release policy.
 - [ ] Review third-party notices/licenses.
 - [ ] Verify package/application identifiers are final and owned by the publisher.
 - [ ] Verify signing secrets/certificates/provisioning profiles are stored outside the repository.
+
+## Packaged SQLite/data compatibility
+
+The former `GHSA-2m69-gcr7-jv3q` source exception is remediated and the old audit suppression is removed. Store readiness still requires packaged compatibility evidence because dependency security and existing-data integrity are different release properties.
+
+Using fictional/synthetic data:
+
+- [ ] Upgrade/open a representative installation containing pre-remediation RC1 SQLite data.
+- [ ] Verify profiles, medicines, schedules, reminder occurrences, logs, appointments, documents, stock, tags and settings remain readable/editable.
+- [ ] Verify SQLite integrity after upgrade.
+- [ ] Verify reminder rebuild/reconciliation after upgrade.
+- [ ] Verify existing encrypted document payloads remain decryptable through the unchanged key path.
+- [ ] Verify a new encrypted backup/restore round-trip.
+- [ ] Verify a canonical synthetic pre-remediation backup where available and compatible.
+- [ ] Record target platform, package/build, source SHA, package graph, date and non-sensitive result notes.
+
+Any corruption, migration failure, encrypted-document failure, backup incompatibility, or reminder-state regression blocks store promotion even when vulnerability audit is green.
 
 ## Store listing claims
 
@@ -58,7 +78,9 @@ Before each store submission:
 - [ ] Verify minimum/target Android versions and permissions in the final manifest.
 - [ ] Confirm notification permission flow on supported Android versions.
 - [ ] Confirm exact-alarm/battery diagnostics remain accurate for the shipping target SDK/device behavior.
-- [ ] Test upgrade from the previous public build if one exists.
+- [ ] Test cancellation-first Taken/Skipped/Delayed/Missed/Snoozed actions against actual Android scheduled requests.
+- [ ] Test stale-request cleanup after schedule/state changes and medicine/profile deletion.
+- [ ] Test upgrade from the previous public/pre-remediation representative build using fictional data.
 - [ ] Test fresh install and restore from a user-created CareNest backup.
 - [ ] Validate launcher icon, splash, adaptive icon and store graphics.
 - [ ] Run Play pre-launch/device testing where available and review crashes/ANRs without uploading real health data.
@@ -69,7 +91,9 @@ Before each store submission:
 - [ ] Produce signed MSIX/package with trusted certificate outside repository.
 - [ ] Verify install, launch, update and uninstall on supported Windows versions.
 - [ ] Verify the app does not promise guaranteed reminders while closed if the current Windows implementation cannot guarantee them.
+- [ ] Verify in-process reminder cancellation/replacement and cancellation-first action behavior.
 - [ ] Verify file picker/share/export flows with standard Windows permissions.
+- [ ] Verify packaged existing-data/encrypted-data compatibility after the SQLite native/provider update.
 - [ ] Validate icons, display name, privacy/support links and architecture targets.
 
 ## iOS packaging
@@ -77,8 +101,10 @@ Before each store submission:
 - [ ] Finalize bundle identifier/team/signing configuration.
 - [ ] Build/archive with production distribution credentials outside source control.
 - [ ] Test notification permission denial/grant and delivery on physical iPhone/iPad as applicable.
+- [ ] Test cancellation-first handled actions, snooze replacement and stale request reconciliation.
 - [ ] Test background/foreground transitions and time-zone changes.
 - [ ] Verify document picker/share/export behavior.
+- [ ] Verify packaged existing-data/encrypted-data compatibility after the SQLite native/provider update.
 - [ ] Review App Store external-link/funding policy for the exact submitted build and storefronts.
 - [ ] Complete App Privacy answers from actual runtime behavior.
 - [ ] Validate app icon, launch screen, screenshots and age/category metadata.
@@ -88,19 +114,38 @@ Before each store submission:
 - [ ] Finalize bundle identifier/team/signing/notarization requirements.
 - [ ] Build/archive with distribution credentials outside source control.
 - [ ] Test install/launch and notification permission behavior on supported macOS hardware.
+- [ ] Test cancellation-first handled actions and snooze/stale-request reconciliation.
 - [ ] Test keyboard navigation, file picker/export and app lock cold start.
+- [ ] Verify packaged existing-data/encrypted-data compatibility after the SQLite native/provider update.
 - [ ] Review external funding-link policy for the selected Mac distribution channel.
 - [ ] Validate icons/screenshots/privacy/support metadata.
+
+## Exact approved tag gates
+
+Create the final `v*` tag only after applicable pre-tag manual/signing/store preparation is complete and the exact commit is approved for tagging.
+
+The tag is expected to trigger:
+
+- [ ] CareNest CI for the exact tagged commit.
+- [ ] CodeQL for the exact tagged commit.
+- [ ] Dependency Audit for the exact tagged commit.
+- [ ] Release Gate for the exact tagged commit.
+- [ ] CareNest Release Evidence for the exact tagged commit.
+
+Do not publish/promote the GitHub/store release until all required tag-triggered workflows are successful.
+
+If a tag workflow fails, preserve evidence, fix source/configuration on a new commit, repeat required verification/manual checks, and create/use the corrected approved tag rather than moving or disguising the failed tag.
 
 ## Release artifacts
 
 - [ ] Generate release notes from `CHANGELOG.md` and `docs/releases/NEXT_STEPS.md` status.
 - [ ] Record exact Git commit SHA used for every package.
-- [ ] Record CI run IDs used as automated evidence.
+- [ ] Record CI, CodeQL, Dependency Audit, Release Gate and Release Evidence run IDs used as automated evidence.
+- [ ] Record the Release Evidence artifact name; it includes commit SHA, run ID and run attempt.
 - [ ] Record signing/package checksums in the private release process where appropriate; do not commit private keys.
-- [ ] Create GitHub release/tag only after the release decision is complete.
+- [ ] Confirm signed package provenance points to the exact approved/tagged commit.
 - [ ] Preserve rollback/recovery instructions for rejected store submissions or post-release defects.
 
 ## Final publication rule
 
-Do not describe a store build as final `1.0.0` merely because source compilation is green. Publication requires the applicable manual/device/accessibility/privacy/security/signing/store-policy checks above, plus an explicit decision on all open dependency advisories.
+Do not describe a store build as final `1.0.0` merely because source compilation is green. Publication requires the applicable automated exact-tag gates, manual device/accessibility/privacy/security/signing/store-policy checks, packaged existing-data/encrypted-data compatibility evidence, and no unresolved release-blocking dependency risk.
