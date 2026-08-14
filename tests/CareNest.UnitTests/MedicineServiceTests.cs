@@ -8,6 +8,7 @@ namespace CareNest.UnitTests;
 public sealed class MedicineServiceTests
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 13, 9, 30, 0, TimeSpan.Zero);
+    private static readonly string[] ExpectedMedicineIds = ["medicine-1"];
 
     [Fact]
     public async Task SaveAsync_NewMedicine_PersistsCreatedAuditAndRebuildsReminders()
@@ -152,7 +153,7 @@ public sealed class MedicineServiceTests
 
         await service.DeleteAsync("medicine-1");
 
-        Assert.Equal(new[] { "medicine-1" }, reminders.CancelledMedicineIds);
+        Assert.Equal(ExpectedMedicineIds, reminders.CancelledMedicineIds);
         Assert.Equal("medicine-1", repository.DeletedMedicineId);
         var audit = Assert.Single(repository.AuditEntries);
         Assert.Equal(AuditAction.Deleted, audit.Action);
@@ -172,7 +173,7 @@ public sealed class MedicineServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync("medicine-1"));
 
-        Assert.Equal(new[] { "medicine-1" }, reminders.CancelledMedicineIds);
+        Assert.Equal(ExpectedMedicineIds, reminders.CancelledMedicineIds);
         Assert.Equal(1, reminders.RebuildCount);
     }
 
