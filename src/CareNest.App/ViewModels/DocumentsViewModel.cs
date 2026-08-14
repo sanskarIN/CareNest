@@ -288,9 +288,11 @@ public sealed class DocumentsViewModel : ObservableViewModel
 
         return RunAsync(async ct =>
         {
+            var directory = Path.Combine(FileSystem.Current.CacheDirectory, "Exports");
+            Directory.CreateDirectory(directory);
             var path = await _documents.ExportToTemporaryFileAsync(
                 row.Id,
-                FileSystem.Current.CacheDirectory,
+                directory,
                 ct);
 
             await _files.ShareFileAsync(
