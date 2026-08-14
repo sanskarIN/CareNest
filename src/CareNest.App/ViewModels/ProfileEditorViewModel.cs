@@ -137,16 +137,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
     public Task DeleteAsync() =>
         RunAsync(async ct =>
         {
-            await _photoGate.WaitAsync(ct);
-            try
-            {
-                await DeleteStagedPhotoIfNeededAsync();
-                ClearPhotoPreview();
-            }
-            finally
-            {
-                _photoGate.Release();
-            }
+            await DiscardPendingPhotoAsync();
 
             if (_profileId is not null)
             {
@@ -160,10 +151,18 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
         await _photoGate.WaitAsync();
         try
         {
-            await DeleteStagedPhotoIfNeededAsync();
+            try
+            {
+                await DeleteStagedPhotoIfNeededAsync();
+            }
+            catch
+            {
+                // Best-effort cleanup. The staged reference is still detached below.
+            }
+
             await TryDeletePendingObsoletePhotoAsync();
             _photoEncryptedFileName = _persistedPhotoEncryptedFileName;
-            ClearPhotoPreview();
+            TryClearPhotoPreview();
         }
         finally
         {
@@ -208,7 +207,27 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
                     throw new InvalidDataException("Profile photos must be 10 MB or smaller.");
                 }
 
-                await DeleteStagedPhotoIfNeededAsync();
+                try
+                {
+                    await DeleteStagedPhotoIfNeededAsync();
+                }
+                catch (Exception previousCleanupFailure)
+                {
+                    try
+                    {
+                        await _documentStore.DeleteAsync(stored.EncryptedFileName, CancellationToken.None);
+                    }
+                    catch (Exception newCleanupFailure)
+                    {
+                        throw new AggregateException(
+                            "CareNest could not replace the staged profile photo and could not fully clean the new encrypted payload.",
+                            previousCleanupFailure,
+                            newCleanupFailure);
+                    }
+
+                    throw;
+                }
+
                 _photoEncryptedFileName = stored.EncryptedFileName;
                 await LoadPhotoPreviewAsync(ct);
                 StatusMessage = "Profile photo encrypted and staged locally. Save the profile to keep this change.";
@@ -227,7 +246,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
             {
                 await DeleteStagedPhotoIfNeededAsync();
                 _photoEncryptedFileName = null;
-                ClearPhotoPreview();
+                TryClearPhotoPreview();
                 StatusMessage = "Profile photo removal staged. Save the profile to keep this change.";
             }
             finally
@@ -241,7 +260,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
         PhotoDisplayPath = null;
         if (string.IsNullOrWhiteSpace(_photoEncryptedFileName))
         {
-            ClearPhotoPreview();
+            TryClearPhotoPreview();
             return;
         }
 
@@ -281,8 +300,14 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
         }
 
         var staged = _photoEncryptedFileName;
-        await _documentStore.DeleteAsync(staged, CancellationToken.None);
-        _photoEncryptedFileName = _persistedPhotoEncryptedFileName;
+        try
+        {
+            await _documentStore.DeleteAsync(staged, CancellationToken.None);
+        }
+        finally
+        {
+            _photoEncryptedFileName = _persistedPhotoEncryptedFileName;
+        }
     }
 
     private async Task TryDeletePendingObsoletePhotoAsync()
@@ -305,15 +330,25 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
         }
     }
 
-    private void ClearPhotoPreview()
+    private void TryClearPhotoPreview()
     {
-        var path = PhotoPreviewPath();
-        if (File.Exists(path))
+        try
         {
-            File.Delete(path);
+            var path = PhotoPreviewPath();
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
         }
-        PhotoDisplayPath = null;
-        OnPropertyChanged(nameof(HasPhoto));
+        catch
+        {
+            // Best-effort plaintext cache cleanup must not block profile lifecycle operations.
+        }
+        finally
+        {
+            PhotoDisplayPath = null;
+            OnPropertyChanged(nameof(HasPhoto));
+        }
     }
 
     private string PhotoPreviewPath()
