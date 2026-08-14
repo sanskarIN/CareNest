@@ -37,10 +37,26 @@ public sealed class AppLockSecurityContractTests
         Assert.Contains("previousSalt = await secretStore.GetBytesAsync", source, StringComparison.Ordinal);
         Assert.Contains("previousVerifier = await secretStore.GetBytesAsync", source, StringComparison.Ordinal);
         Assert.Contains("catch (Exception updateFailure)", source, StringComparison.Ordinal);
-        Assert.Contains("RestoreBytesAsync(", source, StringComparison.Ordinal);
-        Assert.Contains("RestoreStringAsync(", source, StringComparison.Ordinal);
+        Assert.Contains("RestoreSnapshotOrThrowAsync(", source, StringComparison.Ordinal);
+        Assert.Contains("rollbackFailures.Insert(0, primaryFailure)", source, StringComparison.Ordinal);
         Assert.Contains("CancellationToken.None", source, StringComparison.Ordinal);
-        Assert.Contains("rollbackFailures.Insert(0, updateFailure)", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AppLock_DisableRestoresPreviousSecureStorageStateAfterRemovalFailure()
+    {
+        var source = RepositoryLocator.Read("src", "CareNest.App", "Services", "AppLockService.cs");
+        var disableMethod = source[source.IndexOf(
+            "public async Task DisableAsync(",
+            StringComparison.Ordinal)..];
+
+        Assert.Contains("previousEnabled = await secretStore.GetStringAsync", disableMethod, StringComparison.Ordinal);
+        Assert.Contains("previousSalt = await secretStore.GetBytesAsync", disableMethod, StringComparison.Ordinal);
+        Assert.Contains("previousVerifier = await secretStore.GetBytesAsync", disableMethod, StringComparison.Ordinal);
+        Assert.Contains("catch (Exception disableFailure)", disableMethod, StringComparison.Ordinal);
+        Assert.Contains("RestoreSnapshotOrThrowAsync(", disableMethod, StringComparison.Ordinal);
+        Assert.Contains("ZeroIfPresent(previousSalt)", disableMethod, StringComparison.Ordinal);
+        Assert.Contains("ZeroIfPresent(previousVerifier)", disableMethod, StringComparison.Ordinal);
     }
 
     [Fact]
