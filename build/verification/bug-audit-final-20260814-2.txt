@@ -1,0 +1,10 @@
+CareNest exact-head verification marker
+
+Source/base SHA: 4490f3f86752841d436e981b29279970c90c947b
+Verification branch: ci/carenest-final-bug-audit-2-20260814
+Date: 2026-08-14
+
+This branch adds only this marker beyond the source/base commit and must not be merged.
+Required gates: formatting, unit tests, integration tests, UI-contract/policy tests, Android Release, Windows Release, iOS simulator Release, Mac Catalyst Release, CodeQL, and unsuppressed Dependency Audit.
+
+SQLite advisory status must be derived from the resolved dependency graph and the unsuppressed audit on this exact verification source; this marker makes no independent claim that external advisory metadata has changed.
