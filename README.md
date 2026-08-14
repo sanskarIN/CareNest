@@ -14,7 +14,7 @@ CareNest is currently tracked as:
 
 The earlier README statement that PR #43 was a fully green automated baseline was incorrect. GitHub Actions records show that PR #43 passed formatting, platform builds, CodeQL, and Dependency Audit, but its core CI failed during integration testing and the UI-contract suite was skipped. PR #43 is therefore **not** release evidence.
 
-The reminder-reconciliation defects exposed by that failed run have been corrected on `main`, together with follow-up architecture, compensation, test, and analyzer fixes. A fresh marker-only exact-head verification is required before this README will name a new fully green source baseline.
+The reminder-reconciliation defects exposed by that failed run have been corrected on `main`, together with follow-up platform-cancellation, compensation, appointment-reminder, report-cache, analyzer, and failure-recovery fixes. The current exact-source verification checkpoint is PR #53. Until every required PR #53 job completes successfully, it is a verification candidate rather than a promoted release baseline.
 
 See:
 
@@ -24,7 +24,7 @@ See:
 - [`docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md)
 - [`docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md)
 
-The successful dependency audit does **not** mean every tracked advisory is fixed. `GHSA-2m69-gcr7-jv3q` remains open in the dependency risk register.
+The previously tracked SQLite native dependency advisory has been remediated in the current source graph: the maintained native/provider leaves are centrally pinned, the exact NuGet audit suppression has been removed, and a regression contract prevents the old dependency/suppression baseline from silently returning. Final production promotion still requires the complete automated matrix and the normal manual existing-database/backup/device checks.
 
 ## Highlights
 
@@ -39,12 +39,16 @@ The successful dependency audit does **not** mean every tracked advisory is fixe
 - Snooze timestamps must be explicit future UTC values.
 - Snoozed rows use snooze due time for upcoming/overdue handling.
 - Rebuild explicitly reconciles SQLite reminder rows with existing operating-system scheduled requests.
+- Reminder actions cancel the old platform request before committing handled state and attempt non-cancelled restoration if later persistence/scheduling fails.
 - Medicine/profile delete flows cancel future platform requests before database cascade and compensate if the cascade fails.
+- Medicine/profile save flows reconcile platform reminders before non-critical audit bookkeeping can fail the operation.
+- Appointment reminder persistence is compensated so database/platform state can be reconciled when later steps fail.
 - Appointment `StartsUtc` requires explicit UTC; local/unspecified ticks are not silently relabeled.
 - Appointment rebuild does not repeatedly prompt for notification permission.
 - Encrypted local document vault with failure-compensating import behavior.
 - Missing/corrupt document master key plus existing encrypted payload fails closed instead of silently creating a replacement key.
 - Decrypted temporary document exports use the managed `Exports` cache directory.
+- Shared report-cache files are removed after successful external sharing where the application still owns the temporary copy.
 - New encrypted document/backup payloads use authenticated chunked AEAD framing v2; legacy v1 remains readable for compatibility.
 - Strict decrypted-backup archive topology validation before extraction.
 - Backup completion is distinguished from later best-effort local bookkeeping.
@@ -62,7 +66,7 @@ The successful dependency audit does **not** mean every tracked advisory is fixe
 - Android `BroadcastReceiver.GoAsync()` recovery lifetime protection.
 - Windows in-process reminder fallback protected against replacement/cancellation/disposal timer races.
 - Independent startup recovery boundaries for medicine, appointment and backup reminder recovery.
-- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-integrity, direct-service, backup-topology, authenticated-stream, recurrence, snapshot-integrity, report-export, transaction and platform-lifecycle quality gates.
+- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-integrity, direct-service, backup-topology, authenticated-stream, recurrence, snapshot-integrity, report-export, transaction, dependency-security and platform-lifecycle quality gates.
 
 ## Technology
 
@@ -170,7 +174,8 @@ Important invariants include:
 - explicit future-UTC snoozes;
 - DST gap/overlap handling;
 - no invented replacement time for an invalid local clock time;
-- reconciliation of stale platform requests after schedule/state/policy changes.
+- reconciliation of stale platform requests after schedule/state/policy changes;
+- cancellation-first handled-state transitions with compensation when a later step fails.
 
 ## Encrypted stream compatibility
 
@@ -195,20 +200,30 @@ Read:
 
 The optional app lock is a local privacy barrier. It is not represented as transparent whole-SQLite-database encryption or a replacement for device security.
 
-## Open dependency risk
+## SQLite dependency remediation
 
-`GHSA-2m69-gcr7-jv3q` remains tracked for the current SQLitePCLRaw native dependency path.
+The previously tracked `GHSA-2m69-gcr7-jv3q` SQLite native dependency path is remediated in the current source graph.
 
-A narrowly scoped audit suppression is not remediation. See:
+Current controls include:
+
+- central transitive pinning of maintained SQLite native/provider leaves;
+- removal of the exact advisory `NuGetAuditSuppress` entry;
+- an automated dependency-security contract that rejects restoration of the old native/provider floor or audit suppression;
+- unsuppressed Dependency Audit verification;
+- continued existing-database/backup/platform validation in the release checklist.
+
+See:
 
 - [`docs/security/DEPENDENCY_RISK_REGISTER.md`](docs/security/DEPENDENCY_RISK_REGISTER.md)
 - [`docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`](docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md)
+
+This remediation does not change CareNest into a networked database product and does not intentionally change the SQLite schema, health-record semantics, encrypted-document format, or backup archive format.
 
 ## Release engineering
 
 Automated source verification is necessary but not sufficient for public production promotion.
 
-Still required include real-device/accessibility checks, current store-policy review, signing/package work, store metadata, final Release Evidence, and explicit dependency-risk disposition.
+Still required include real-device/accessibility checks, existing-database and encrypted-data compatibility checks, current store-policy review, signing/package work, store metadata, and final Release Evidence for the exact promoted commit.
 
 See:
 
