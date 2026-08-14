@@ -187,7 +187,7 @@ Remediation commits:
 - `e939d5bd912d09ffa150c804519c15e2506b7bd7` — audit-suppression removal;
 - `04868965c43d8a6d09b40075d92f20da9b26e32a` — regression contract.
 
-Unsuppressed Dependency Audit succeeded during multiple remediation checkpoints, including PR #47, PR #48, PR #50, and the current PR #53 dependency-audit run. Superseded PRs are retained as historical evidence only; the complete latest-source build/test/CodeQL matrix remains the release-level automated gate.
+Unsuppressed Dependency Audit succeeded during multiple remediation checkpoints, including PR #47, PR #48 and PR #50. The authoritative final automated source evidence is PR #54 Dependency Audit #35 / run `31766059132`, which succeeded without the former suppression together with a fully green build/test/platform matrix.
 
 The package remediation intentionally does not change CareNest's schema, health-record semantics, encrypted-document framing, backup archive format, network boundary, or account model.
 
@@ -198,7 +198,7 @@ See:
 - `docs/security/DEPENDENCY_RISK_REGISTER.md`;
 - `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
 
-## Automated verification correction
+## Automated verification correction and final status
 
 PR #43 was originally described as the final green exact-head reference for source `6e920f38972155ba9eaa6693f6ad948ebf6d1db7`. That description was incorrect and is superseded by the actual GitHub Actions records.
 
@@ -228,6 +228,21 @@ Those runtime defects were fixed in commit:
 
 Later checkpoints intentionally continued finding/fixing platform reconciliation and analyzer issues rather than reusing PR #43 as proof. PRs #46 and #49 exposed additional lifecycle/analyzer failures; PRs #47/#48/#50 exercised the SQLite remediation while `main` was still moving; PRs #51/#52 were superseded exact-source markers.
 
-The current marker-only automated candidate is PR #53. Its source includes the subsequent reminder action cancellation/recovery work and the SQLite remediation. It becomes an authoritative automated baseline only if every required formatting/test/platform/CodeQL/unsuppressed-audit gate is green on that source. Its marker file must not be merged.
+PR #53 independently completed a duplicate green final-source verification. The authoritative final marker-only checkpoint is PR #54:
 
-Manual real-device, encrypted-data compatibility, accessibility, store-policy, signing and production-promotion gates remain separate even after a fully green automated source verification.
+- CareNest CI #503 / `31766059137`: success;
+- formatting: success;
+- unit tests: 122 passed;
+- integration tests: 39 passed;
+- UI-contract/policy tests: 100 passed;
+- total: 261 passed;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL #503 / `31766059215`: success;
+- unsuppressed Dependency Audit #35 / `31766059132`: success.
+
+PR #54 was closed without merge after evidence capture, so its verification marker is not part of production source.
+
+Manual real-device, encrypted-data compatibility, accessibility, store-policy, signing and production-promotion gates remain separate even after this fully green automated source verification.
