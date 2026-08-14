@@ -7,6 +7,11 @@ internal static class CsvWriter
     public static string Escape(object? value)
     {
         var text = value?.ToString() ?? string.Empty;
+        if (value is string)
+        {
+            text = NeutralizeFormulaLikeText(text);
+        }
+
         if (text.Contains('"'))
         {
             text = text.Replace("\"", "\"\"", StringComparison.Ordinal);
@@ -40,5 +45,23 @@ internal static class CsvWriter
                 string.Join(',', row.Select(Escape)).AsMemory(),
                 cancellationToken);
         }
+    }
+
+    private static string NeutralizeFormulaLikeText(string text)
+    {
+        var index = 0;
+        while (index < text.Length && char.IsWhiteSpace(text[index]))
+        {
+            index++;
+        }
+
+        if (index >= text.Length)
+        {
+            return text;
+        }
+
+        return text[index] is '=' or '+' or '-' or '@'
+            ? "'" + text
+            : text;
     }
 }
