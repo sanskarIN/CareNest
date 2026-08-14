@@ -13,6 +13,7 @@ Public promotion requires the exact candidate commit to satisfy:
 - Dependency Audit;
 - dependency-risk review;
 - manual device behavior;
+- packaged existing-database/encrypted-data compatibility where applicable;
 - accessibility checks;
 - notification limitation checks;
 - security review;
@@ -25,13 +26,20 @@ Public promotion requires the exact candidate commit to satisfy:
 
 Current product target: `1.0.0-rc.1`.
 
-Latest exact runtime/test source verified through PR #30:
+The authoritative 2026-08-14 bug-audit baseline is PR #54, which completed:
 
-`c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`
+- 122 unit tests;
+- 39 integration tests;
+- 100 UI-contract/policy tests;
+- 261 total core automated tests;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release;
+- CodeQL;
+- unsuppressed Dependency Audit.
 
-That baseline passed 141 core tests, all four platform Release builds, CodeQL, and Dependency Audit.
-
-Later documentation-only commits are not represented as newer runtime-source verification.
+Later release-engineering workflow/script hardening requires a new exact-source verification before the current `main` head is promoted. Historical PR #54 remains evidence for the earlier runtime/test graph; it is not permission to skip verification after workflow/test/configuration changes.
 
 ## Stage 1 — freeze intended scope
 
@@ -42,7 +50,8 @@ Before final release work:
 3. stop adding unrelated features;
 4. review `PROJECT_STATUS.md` and `docs/releases/NEXT_STEPS.md`;
 5. identify every open Priority 0 blocker;
-6. confirm the SQLite dependency-risk decision remains explicit/open until actually resolved.
+6. confirm the SQLite source remediation remains present and the former audit suppression has not returned;
+7. identify packaged existing-data/encrypted-data compatibility evidence still required before production promotion.
 
 ## Stage 2 — dependency/security review
 
@@ -55,7 +64,7 @@ Review:
 - `docs/security/LOGGING_PRIVACY.md`;
 - `SECURITY.md`.
 
-Do not call `NuGetAuditSuppress` remediation.
+Do not call `NuGetAuditSuppress` remediation and do not restore the former SQLite advisory suppression merely because manual compatibility evidence remains incomplete.
 
 If the SQLite dependency/provider changes:
 
@@ -65,6 +74,7 @@ If the SQLite dependency/provider changes:
 - rebuild Android/Windows/iOS/Mac Catalyst;
 - rerun CodeQL/Dependency Audit;
 - re-evaluate storage/backup behavior;
+- perform representative packaged existing-database/encrypted-data compatibility checks;
 - update risk register and migration plan.
 
 ## Stage 3 — run development preflight
@@ -81,7 +91,16 @@ or:
 ./build/scripts/release-preflight.ps1
 ```
 
-The preflight should cover source hygiene, formatting, dependency audit, core tests, and optional target build according to its documented configuration.
+The preflight is blocking for:
+
+- source hygiene;
+- platform-neutral formatting;
+- core Release builds;
+- all core test suites;
+- unsuppressed NuGet audit for the platform-neutral/test graph;
+- optional MAUI target audit before an optional target build when `CARENEST_TARGET` is provided.
+
+The preflight must not ignore dependency-audit failures.
 
 Record toolchain information:
 
@@ -94,7 +113,7 @@ Record toolchain information:
 
 ## Stage 4 — exact-head automated verification
 
-For any source/config/test change after the previous verified baseline, use the marker-only verification protocol.
+For any source/config/test/workflow change after the previous verified baseline, use the marker-only verification protocol.
 
 1. finish intended source on `main`;
 2. record exact source SHA;
@@ -115,7 +134,7 @@ For any source/config/test change after the previous verified baseline, use the 
    - Dependency Audit;
 8. close marker PR without merge.
 
-If any gate exposes a defect, fix the real source on `main`, close stale verification PR, and create a new exact-head verification.
+If any gate exposes a defect, fix the real source on `main`, close the stale verification PR, and create a new exact-head verification.
 
 Never merge the marker as production source.
 
@@ -131,6 +150,7 @@ Required categories include:
 - onboarding;
 - permission denied/granted;
 - reminder behavior;
+- cancellation-first reminder actions and recovery;
 - exact/inexact alarm diagnostics;
 - battery optimization;
 - reboot/time/time-zone recovery;
@@ -145,6 +165,7 @@ Required categories include:
 - navigation/resizing;
 - keyboard behavior;
 - reminder/fallback limitation messaging;
+- cancellation/replacement behavior for in-process reminder timers;
 - document operations;
 - backup/restore;
 - app lock;
@@ -154,6 +175,7 @@ Required categories include:
 
 - fresh install;
 - notification permission/delivery behavior;
+- cancellation-first reminder action behavior;
 - document share/picker;
 - backup/restore;
 - app lock;
@@ -165,6 +187,7 @@ Required categories include:
 
 - fresh install;
 - notifications;
+- cancellation/replacement behavior;
 - resizing;
 - keyboard/focus;
 - file operations;
@@ -174,7 +197,24 @@ Required categories include:
 
 Manual rows must record actual evidence; do not pre-check them based on CI.
 
-## Stage 6 — backup/restore qualification
+## Stage 6 — packaged SQLite/data compatibility qualification
+
+After any SQLite native/provider dependency change and before production promotion:
+
+1. prepare a representative packaged build with the intended dependency graph;
+2. start from a controlled installation/database containing fictional pre-remediation RC1 data;
+3. upgrade/open with the new build;
+4. verify profiles, medicines, schedules, reminder occurrences, medication logs, appointments, documents, stock, tags, and settings;
+5. verify SQLite integrity/readability;
+6. verify reminder rebuild/reconciliation;
+7. verify existing encrypted documents still decrypt through the unchanged key path;
+8. verify a new encrypted backup/restore round-trip;
+9. when a canonical synthetic pre-remediation backup exists, restore it too;
+10. record device/build/source evidence.
+
+A clean NuGet audit does not substitute for this compatibility qualification.
+
+## Stage 7 — backup/restore qualification
 
 On release packaging candidates:
 
@@ -189,7 +229,7 @@ On release packaging candidates:
 9. test corrupted/tampered backup where practical;
 10. inspect logs for secret/private-data exposure.
 
-## Stage 7 — accessibility qualification
+## Stage 8 — accessibility qualification
 
 Use `docs/design/ACCESSIBILITY.md`.
 
@@ -204,7 +244,7 @@ Verify representative:
 - destructive confirmation readability;
 - medical/reminder limitation text availability.
 
-## Stage 8 — store-policy review
+## Stage 9 — store-policy review
 
 Before submission, review current Apple App Store / Google Play requirements relevant to:
 
@@ -222,7 +262,7 @@ If a distribution channel disallows the in-app link, remove/disable that in-app 
 
 Repository funding links can remain where permitted.
 
-## Stage 9 — signing/package identity
+## Stage 10 — signing/package identity
 
 Signing material must stay outside Git.
 
@@ -248,7 +288,7 @@ Signing material must stay outside Git.
 - signing certificate/private key kept outside repository;
 - build intended MSIX/package/sideload artifact.
 
-## Stage 10 — store metadata/privacy disclosures
+## Stage 11 — store metadata/privacy disclosures
 
 Use `docs/releases/STORE_SUBMISSION_CHECKLIST.md`.
 
@@ -270,7 +310,7 @@ Do not claim whole-database encryption if the current implementation does not pr
 
 Do not claim guaranteed reminder delivery.
 
-## Stage 11 — security release review
+## Stage 12 — security release review
 
 Complete `docs/releases/SECURITY_RELEASE_REVIEW.md` for the exact candidate.
 
@@ -283,25 +323,30 @@ Record:
 - CodeQL run;
 - Dependency Audit run;
 - Release Evidence run;
-- SQLite advisory decision;
+- SQLite dependency/source-remediation decision;
+- packaged existing-data compatibility decision;
 - open security blockers;
 - approval decision.
 
-## Stage 12 — Release Evidence workflow
+## Stage 13 — Release Evidence workflow
 
 Run `CareNest Release Evidence` for the exact commit intended for release.
 
-Evidence should capture:
+Evidence captures:
 
-- source/ref identity;
+- source/ref/run identity;
+- tracked-file manifest and SHA-256 source checksums;
+- pre/post tracked-workspace status;
 - toolchain data;
-- test results;
-- dependency inventories;
-- checksums/evidence artifact.
+- TRX results for all three core suites;
+- transitive dependency inventories for platform-neutral source and test projects;
+- checksums for evidence files.
+
+The workflow attempts all core evidence components independently, uploads the artifact even when one of those components failed, then fails the run if any required evidence component did not succeed. Failed evidence artifacts are retained for diagnosis rather than hidden by fail-fast execution.
 
 Automated release evidence is provenance, not a substitute for manual/store/security approval.
 
-## Stage 13 — version metadata
+## Stage 14 — version metadata
 
 Only after the candidate is actually selected:
 
@@ -312,9 +357,9 @@ Only after the candidate is actually selected:
 - update `what_changed.md`;
 - record exact verification/evidence IDs.
 
-Avoid changing runtime source after final verification. If source changes, re-run exact-head verification.
+Avoid changing runtime/source/workflow/test configuration after final verification. If any such source changes, re-run exact-head verification.
 
-## Stage 14 — artifact checksums/archive
+## Stage 15 — artifact checksums/archive
 
 For directly distributed artifacts:
 
@@ -324,15 +369,43 @@ For directly distributed artifacts:
 - archive provenance/evidence;
 - retain secrets outside source artifacts/logs.
 
-## Stage 15 — tag and GitHub release
+## Stage 16 — create exact approved tag and run tag gates
 
-Create the final tag/release only after all applicable blocking checklist items are complete.
+Create the final `v*` tag only after applicable blocking manual/signing/store checklist items are complete and the candidate commit is approved for tagging.
 
 The tag must point to the exact approved commit.
 
-Do not tag a known failing/incomplete automated source or an unreviewed source commit.
+A `v*` tag automatically triggers the exact tagged source through:
 
-## Stage 16 — post-release monitoring
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
+
+Do not publish/promote the GitHub/store release until all required tag-triggered workflows are successful.
+
+If a tag-triggered gate fails:
+
+1. preserve its evidence;
+2. do not call the tag a successful production release;
+3. correct source/configuration on a new commit;
+4. re-run exact-source verification/manual checks as applicable;
+5. use the corrected approved commit/tag for release.
+
+Do not move or silently reuse a failed release tag as if the underlying source had not changed.
+
+## Stage 17 — GitHub/store release promotion
+
+After the exact tag gates are green:
+
+- confirm signed artifacts came from the exact tagged commit;
+- attach/check artifact checksums and provenance;
+- publish the GitHub release;
+- submit/promote store packages through the intended channels;
+- update final release status/evidence documents.
+
+## Stage 18 — post-release monitoring
 
 CareNest v1 has no hidden telemetry feedback loop.
 
@@ -366,7 +439,9 @@ For a production defect:
 7. rerun security/dependency checks;
 8. update changelog/release notes;
 9. build/sign from exact verified source;
-10. publish patch version.
+10. create the approved patch tag;
+11. require all tag-triggered CI/CodeQL/Dependency Audit/Release Gate/Release Evidence workflows green;
+12. publish patch version.
 
 ## Release blockers rule
 
