@@ -7,7 +7,9 @@ public sealed class AppLockSecurityContractTests
     {
         var source = RepositoryLocator.Read("src", "CareNest.App", "Services", "AppLockService.cs");
 
-        Assert.Contains("RandomNumberGenerator.GetBytes(16)", source, StringComparison.Ordinal);
+        Assert.Contains("private const int SaltSize = 16", source, StringComparison.Ordinal);
+        Assert.Contains("private const int VerifierSize = 32", source, StringComparison.Ordinal);
+        Assert.Contains("RandomNumberGenerator.GetBytes(SaltSize)", source, StringComparison.Ordinal);
         Assert.Contains("Rfc2898DeriveBytes.Pbkdf2", source, StringComparison.Ordinal);
         Assert.Contains("210_000", source, StringComparison.Ordinal);
         Assert.Contains("HashAlgorithmName.SHA256", source, StringComparison.Ordinal);
@@ -60,6 +62,24 @@ public sealed class AppLockSecurityContractTests
     }
 
     [Fact]
+    public void AppLock_VerificationFailsClosedForInvalidPinOrCorruptSecureMaterial()
+    {
+        var source = RepositoryLocator.Read("src", "CareNest.App", "Services", "AppLockService.cs");
+        var verifyMethod = source[source.IndexOf(
+            "public async Task<bool> VerifyPinAsync(",
+            StringComparison.Ordinal)..source.IndexOf(
+            "public async Task DisableAsync(",
+            StringComparison.Ordinal)];
+
+        Assert.Contains("if (!IsValidPin(pin))", verifyMethod, StringComparison.Ordinal);
+        Assert.Contains("return false", verifyMethod, StringComparison.Ordinal);
+        Assert.Contains("salt is not { Length: SaltSize }", verifyMethod, StringComparison.Ordinal);
+        Assert.Contains("expected is not { Length: VerifierSize }", verifyMethod, StringComparison.Ordinal);
+        Assert.Contains("VerifierSize", verifyMethod, StringComparison.Ordinal);
+        Assert.DoesNotContain("expected.Length", verifyMethod, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AppLock_DoesNotPersistPlaintextPin()
     {
         var source = RepositoryLocator.Read("src", "CareNest.App", "Services", "AppLockService.cs");
@@ -85,7 +105,7 @@ public sealed class AppLockSecurityContractTests
     {
         var source = RepositoryLocator.Read("src", "CareNest.App", "Services", "AppLockService.cs");
 
-        Assert.Contains("pin.Length is < 6 or > 32", source, StringComparison.Ordinal);
+        Assert.Contains("pin.Length is >= 6 and <= 32", source, StringComparison.Ordinal);
         Assert.Contains("pin.All(char.IsDigit)", source, StringComparison.Ordinal);
     }
 }
