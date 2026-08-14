@@ -1,0 +1,4 @@
+CareNest release-engineering final verification v2 marker
+Frozen source baseline: 4f1a0a14abb8f3405a2387317a89e8a2988a3eaa
+Purpose: verify hardened exact-tag workflows, failure-preserving Release Evidence, blocking local audits, fail-closed Git setup and Release Gate contracts, current reminder/SQLite architecture documentation, and the unchanged CareNest runtime graph together.
+This marker is verification-only and must not be merged into main.
