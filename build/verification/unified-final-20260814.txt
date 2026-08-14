@@ -1,0 +1,4 @@
+CareNest unified verification marker
+Source baseline: 04868965c43d8a6d09b40075d92f20da9b26e32a
+Purpose: verify reminder reconciliation, appointment/report hardening, and unsuppressed patched SQLite dependency graph together.
+This marker is verification-only and must not be merged into main.
