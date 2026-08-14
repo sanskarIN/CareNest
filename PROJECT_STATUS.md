@@ -8,48 +8,61 @@ CareNest remains a local-first organizational application. It does not diagnose 
 
 ## Current automated source baseline
 
-The earlier statement that PR #43 was the final fully green 2026-08-14 source baseline was incorrect. Actual PR #43 CareNest CI #448 / run `31764449533` failed in integration testing and the UI-contract/policy suite was skipped. PR #43 is historical failure evidence, not release evidence.
+The authoritative automated baseline is now marker-only PR #56:
 
-The completed authoritative automated baseline is marker-only PR #54:
-
-`Verify final CareNest bug-audit source`
+`Verify complete CareNest release-engineering source`
 
 PR:
 
-`https://github.com/sanskarIN/CareNest/pull/54`
+`https://github.com/sanskarIN/CareNest/pull/56`
 
-Source/base SHA frozen for runtime/test/dependency verification:
+Frozen source/base SHA:
 
-`4490f3f86752841d436e981b29279970c90c947b`
+`4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
 
 Verification marker head:
 
-`929168a0a319b15d9e89997d86436d59ae731ad1`
+`e3bc621cea05364a69abee0dadbd71a67c17bddb`
 
 Marker path:
 
-`build/verification/bug-audit-final-20260814-2.txt`
+`build/verification/release-engineering-final-v2-20260814.txt`
 
-Later base movement visible in the PR merge ref was documentation-only and did not alter the verified runtime/test/dependency graph.
+Final PR #56 evidence:
 
-Final PR #54 evidence:
-
-- CareNest CI #503 / run `31766059137`: **success**;
+- CareNest CI #571 / run `31770929379`: **success**;
 - platform-neutral formatting: **success**;
 - unit tests: **122 passed, 0 failed, 0 skipped**;
 - integration tests: **39 passed, 0 failed, 0 skipped**;
-- UI-contract/policy tests: **100 passed, 0 failed, 0 skipped**;
-- total automated tests: **261 passed, 0 failed, 0 skipped**;
+- UI-contract/policy tests: **124 passed, 0 failed, 0 skipped**;
+- total automated core tests: **285 passed, 0 failed, 0 skipped**;
 - Android Release build: **success**;
 - Windows Release build: **success**;
 - iOS simulator Release build: **success**;
 - Mac Catalyst Release build: **success**;
-- CodeQL #503 / run `31766059215`: **success**;
-- unsuppressed Dependency Audit #35 / run `31766059132`: **success**, including platform-neutral and Android MAUI app dependency graphs.
+- CodeQL #571 / run `31770929382`: **success**;
+- unsuppressed Dependency Audit #41 / run `31770929383`: **success**.
 
-PR #54 was closed without merge after all required automated gates succeeded. Its verification marker is not part of `main`.
+PR #56 was closed without merge after all required automated gates succeeded. Its verification marker is not part of `main`.
 
-`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` is the concise authoritative evidence record.
+`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` is the authoritative release-engineering evidence record. PR #54 remains the authoritative historical runtime bug-audit baseline for the earlier runtime/test/dependency source, while PR #56 verifies that runtime graph together with the later workflow/test/build-script/release-policy hardening.
+
+## Release-engineering hardening now verified
+
+The PR #56 source adds or hardens the following release controls without changing CareNest's medical/local-first product boundary:
+
+- exact `v*` tag execution for CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence;
+- manual execution paths for CI/security/dependency workflows where configured;
+- PR-only dependency-diff metadata guarded from tag/manual runs;
+- failure-preserving Release Evidence with tracked-file manifests/checksums, source/ref/run identity, all three core TRX suites, dependency inventories, workspace-integrity evidence, and aggregate success after artifact upload;
+- rerun-safe Release Evidence artifact identity using commit SHA + Actions run ID + run attempt;
+- blocking unsuppressed NuGet audit in Bash/PowerShell release-preflight and quality-gate scripts;
+- optional MAUI target audit before target Release build in release preflight;
+- fail-closed PowerShell native-command handling;
+- repository-local Git setup rooted at the CareNest checkout, using and verifying `Sanskar` / `sanskarin@outlook.in`;
+- fail-closed production Release Gate matching for open dependency risk and nested unchecked checklist rows;
+- executable regression contracts for tag/manual workflow entry points, Release Evidence behavior, preflight/quality scripts, Git setup, Release Gate, and SQLite dependency policy;
+- architecture/security/setup/release documentation aligned with the verified reminder-reconciliation and SQLite-remediation behavior.
 
 ## 2026-08-14 correctness and failure-safety audit completed in source
 
@@ -201,7 +214,7 @@ Relevant `main` commits:
 - `e939d5bd912d09ffa150c804519c15e2506b7bd7` — `security: remove resolved SQLite audit suppression`;
 - `04868965c43d8a6d09b40075d92f20da9b26e32a` — `test: guard patched SQLite dependency baseline`.
 
-The final source passed unsuppressed Dependency Audit #35 / run `31766059132`, all 261 automated tests, and all four target Release builds. This closes the previously tracked vulnerable resolved-graph path for this source. It does not claim external advisory metadata itself was changed.
+PR #56 passed unsuppressed Dependency Audit #41 / run `31770929383`, all 285 automated tests, and all four target Release builds. This keeps the formerly vulnerable resolved-graph path closed for the verified source.
 
 This does **not** mark manual packaged existing-database/backup/encrypted-document compatibility complete. Those remain production-release validation gates.
 
@@ -308,13 +321,13 @@ The audit used failure-driven marker-only checkpoints.
 
 ### PR #53
 
-- duplicate marker-only verification for the same final source boundary;
-- core, Android, Windows, CodeQL and unsuppressed Dependency Audit succeeded while Apple was still running;
-- closed unmerged after PR #54 became the authoritative completed matrix.
+- duplicate marker-only verification for the same final bug-audit source boundary;
+- completed a fully green duplicate final-source matrix;
+- closed unmerged; PR #54 retained as the authoritative bug-audit baseline.
 
 ### PR #54
 
-- **authoritative final automated bug-audit baseline**;
+- **authoritative completed runtime bug-audit baseline**;
 - CareNest CI #503 / `31766059137`: success;
 - 122 unit + 39 integration + 100 UI-contract = 261/261 tests passed;
 - Android Release: success;
@@ -326,10 +339,39 @@ The audit used failure-driven marker-only checkpoints.
 - closed unmerged after evidence capture;
 - marker is not part of `main`.
 
+### PR #55
+
+- first release-engineering hardening checkpoint;
+- formatting: success;
+- 122 unit + 39 integration + 116 UI-contract = 277/277 tests passed;
+- Android Release: success;
+- Windows Release: success;
+- CodeQL #547 / `31769940053`: success;
+- unsuppressed Dependency Audit #38 / `31769940039`: success;
+- closed unmerged as superseded while Apple was still running because the complete-file audit found additional legitimate release-tooling/documentation fixes;
+- not the final baseline.
+
+### PR #56
+
+- **authoritative final release-engineering baseline**;
+- frozen source/base `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
+- marker head `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
+- CareNest CI #571 / `31770929379`: success;
+- 122 unit + 39 integration + 124 UI-contract = 285/285 tests passed;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL #571 / `31770929382`: success;
+- unsuppressed Dependency Audit #41 / `31770929383`: success;
+- closed unmerged after evidence capture;
+- marker is not part of `main`.
+
 ## Current documentation entry points
 
 - `what_changed.md` — complete active handoff.
-- `docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` — authoritative final PR #54 evidence.
+- `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` — authoritative final PR #56 release-engineering evidence.
+- `docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` — historical authoritative PR #54 runtime bug-audit evidence.
 - `docs/releases/BUG_AUDIT_VERIFICATION_20260814.md` — complete 2026-08-14 bug-audit evidence and correction history.
 - `docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md` — defect-to-test map.
 - `docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md` — security/privacy bug-audit boundaries.
@@ -356,10 +398,12 @@ Still required:
 - manual iOS/iPadOS matrix;
 - manual Mac Catalyst matrix;
 - notification permission denied/granted and real-delivery checks;
+- cancellation-first reminder-action behavior against real platform notification scheduling and restart/recovery;
 - Android exact/inexact alarm, battery optimization, reboot, clock and time-zone checks;
 - packaged-target existing-database upgrade/SQLite compatibility checks with fictional data;
 - packaged-target document import/export and profile-photo checks;
 - packaged-target backup create/inspect/restore/wrong-password/tamper checks;
+- existing encrypted-document compatibility after the SQLite native/provider remediation;
 - legacy encrypted-format fixture verification where canonical historical fixtures are available;
 - screen-reader verification;
 - large-text/text-scaling verification;
@@ -370,8 +414,8 @@ Still required:
 - signing identities and credentials outside Git;
 - signed package generation and inspection;
 - store screenshots/listing/privacy/data-safety metadata;
-- exact promoted-commit Release Evidence workflow;
-- final version/build metadata, release notes, checksums, production tag and GitHub release.
+- exact approved production `v*` tag with successful CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence runs;
+- final version/build metadata, release notes, checksums, production tag and GitHub/store release.
 
 None of these manual/external gates is marked complete merely because automated CI/security analysis is green.
 
@@ -397,4 +441,4 @@ Any future networked feature requires a new consent/authentication/key/privacy/t
 
 The repository assembly environment does not provide local MAUI device simulators, signing credentials or store submission sessions. GitHub-hosted Actions is the authoritative automated compilation/test surface for the verified source.
 
-Manual device/accessibility/store/signing/release activities remain separate and are not claimed complete until actually performed.
+Manual device/accessibility/store/signing/packaged-data/release activities remain separate and are not claimed complete until actually performed.
