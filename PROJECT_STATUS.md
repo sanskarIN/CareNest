@@ -2,163 +2,268 @@
 
 ## Release target
 
-`1.0.0-rc.1` remains the current release candidate. The implementation is source-complete for the current v1 scope. Final public `1.0.0` promotion still requires the manual, store, signing, dependency, and release-evidence gates listed below.
+`1.0.0-rc.1` source-complete release candidate.
 
-## Preserved detailed history
+CareNest remains a local-first organizational application. It does not diagnose conditions, determine or infer dosage, recommend treatment, perform clinical interaction checking, create clinical risk scores, replace qualified professionals, or provide emergency services.
 
-The complete previous PR #33-era status is preserved unchanged at:
+## Current automated source baseline
 
-`docs/history/PROJECT_STATUS_through_PR33.md`
+The latest exact-head source verification is PR #43:
 
-Complete earlier handoffs are also preserved at:
+`Verify final CareNest 2026-08-14 bug audit source`
 
-- `docs/history/what_changed_full_through_phase8.md`
-- `docs/history/what_changed_documentation_through_20260812.md`
-- `docs/history/what_changed_through_pr33_20260813.md`
+Verification branch:
 
-The active status therefore advances the current baseline without discarding earlier detail.
+`ci/carenest-final-bug-audit-20260814`
 
-## Current exact automated source baseline
+Marker path:
 
-Source SHA:
+`build/verification/final-bug-audit-20260814.txt`
 
-`3b19ce08f509f27aca823469abc5b8a03ed2465a`
+PR #43 was closed without merge after all required workflow groups completed successfully. The verification marker is not part of `main`.
 
-Verification PR:
+Final required automated gates:
 
-`#36 — Verify final CareNest rc1 source head`
+- platform-neutral formatting: **success**;
+- complete unit-test suite: **success**;
+- complete integration-test suite: **success**;
+- complete UI-contract/policy suite: **success**;
+- Android Release build: **success**;
+- Windows Release build: **success**;
+- iOS simulator Release build: **success**;
+- Mac Catalyst Release build: **success**;
+- CodeQL: **success**;
+- Dependency Audit: **success**.
 
-Verification marker:
+GitHub Actions on PR #43 is the authoritative record for exact run IDs, job IDs, runner versions, timestamps, and final suite counts.
 
-`b89d4289172f1d4004f3b7017b7ebb90d5471b13`
+## 2026-08-14 correctness and failure-safety audit completed
 
-The marker-only PR was closed without merge after the full matrix passed.
+The final verified source includes the following additional hardening beyond the previous PR #36 baseline.
 
-### CareNest CI #362
+### App lock
 
-Run ID: `31701943543`
+- transactional-style secure-store snapshot/rollback for PIN replacement;
+- rollback for partial app-lock disable failures;
+- clearing of application-owned salt/verifier/derived buffers;
+- exact salt/verifier length checks;
+- fail-closed verification for invalid PIN shape or corrupt secure material;
+- no plaintext PIN persistence.
 
-- formatting: success;
-- UnitTests: 106 passed, 0 failed, 0 skipped;
-- IntegrationTests: 30 passed, 0 failed, 0 skipped;
-- UiTests: 56 passed, 0 failed, 0 skipped;
-- total core tests: 192 passed, 0 failed, 0 skipped;
+### Document vault and exports
+
+- missing/corrupt document master key fails closed when encrypted payloads already exist;
+- read/export paths never create a replacement key;
+- incomplete plaintext exports are removed after failed decrypt/export/audit operations;
+- successful decrypted document exports use the managed `Exports` cache directory;
+- Settings Clear Cache covers those successful temporary exports.
+
+### Profiles and photos
+
+- profile deletion attempts every associated encrypted payload cleanup after the database cascade;
+- cleanup/audit failures are aggregated instead of stopping at the first orphan;
+- staged/persisted/obsolete photo references are separated;
+- profile preview files use partial-file staging plus atomic move;
+- failed staged replacement compensates the newly imported payload;
+- profile-photo staging uses an app-lifetime/static synchronization gate;
+- page disappearance performs best-effort staged cleanup without crashing navigation.
+
+### Onboarding
+
+- optional PIN is validated before profile creation;
+- completion state is written last;
+- failed setup compensates app-lock/profile/completion state with non-cancelled cleanup;
+- incomplete rollback is surfaced as aggregate failure.
+
+### SQLite migrations and repository writes
+
+- migration DDL + schema-version update is transactional;
+- primary-profile write, cascade deletes, schedule/time replacement, occurrence batches, document/tag operations, emergency-contact cleanup and full structured-record clear use transaction boundaries where multi-step consistency matters;
+- transaction helper follows analyzer-required `CancellationToken` ordering;
+- critical full-data clear no longer depends on `VACUUM` succeeding after the delete transaction commits.
+
+### ViewModel refresh/input integrity
+
+- mutation paths use non-reentrant core refresh methods instead of nesting busy-guarded `LoadAsync` calls;
+- fresh profile/medicine selections are rebound by ID;
+- unsupported reminder action enum values are rejected before mutation;
+- undefined manual medication-log statuses are rejected before repository access.
+
+### Android lifecycle
+
+- boot/time/time-zone recovery uses `BroadcastReceiver.GoAsync()` and guaranteed `Finish()`;
+- asynchronous receiver failures are contained so later foreground/startup recovery can retry.
+
+### Windows lifecycle
+
+- fallback reminder timers are not linked to short-lived caller cancellation tokens;
+- cancellation and disposal ownership no longer race;
+- an old timer cannot remove a newer replacement with the same occurrence ID;
+- background notification display failures are contained.
+
+### Backup and restore
+
+- successful backup creation is not reported as failed solely because post-success local metadata recording fails;
+- successful restore is not reported as failed solely because post-success audit recording fails;
+- post-success bookkeeping is non-cancelled and best effort;
+- bookkeeping logs only safe operation text + exception type;
+- failed restore rolls the document key back to the exact prior byte state when prior bytes existed.
+
+### Reports
+
+- CSV string cells that look like spreadsheet formulas are neutralized before CSV escaping;
+- CSV, PDF and profile JSON final paths use partial-file staging plus atomic move;
+- incomplete plaintext reports are cleaned after failed writes/cancellation;
+- report profile selection is rebound against freshly loaded profile records.
+
+### Reminder planning
+
+- invalid daylight-saving interval anchors no longer shift forward to invented clock times;
+- cycle arithmetic uses widened integer math;
+- maximum date boundaries do not overflow interval scheduling.
+
+### Startup recovery
+
+- overdue reconciliation, medicine reminder rebuild, appointment reminder rebuild and backup reminder sync run through independent recovery boundaries;
+- caller cancellation still propagates;
+- one non-cancellation recovery failure does not stop later recovery steps.
+
+### Reminder platform reconciliation
+
+- snoozed reminders use `SnoozedUntilUtc` as their effective due time;
+- future snoozes remain upcoming even after the original due time passes;
+- overdue snoozes can transition to missed based on their actual snooze due time;
+- rebuild cancels existing platform requests before replacement/suppression/invalidation;
+- stale schedule alarms are reconciled instead of only deleting SQLite rows;
+- quiet-hours rebuild can cancel previously scheduled platform requests;
+- cancellation failures remain retryable;
+- medicine/profile delete flows cancel future platform requests before cascade deletion and attempt non-cancelled rebuild compensation if the cascade fails;
+- direct integration tests cover future snooze, overdue snooze and stale future-occurrence reconciliation behavior.
+
+## Verification checkpoint history
+
+The audit used failure-driven marker-only checkpoints.
+
+### PR #37
+
+- formatting succeeded;
+- unit suite reached 111 passing tests at that checkpoint;
+- CA1068 exposed invalid `CancellationToken` parameter ordering in the new transaction helper;
+- fixed directly; no analyzer suppression;
+- PR closed unmerged.
+
+### PR #39
+
+- exposed CA1001 on the profile-photo `SemaphoreSlim` ownership;
+- exposed a missing final newline in `ReminderPlanner.cs`;
+- its marker was accidentally merged before the failed evidence was fully acted on;
+- marker was explicitly removed from `main` by `549c77120c2ff792337cb842bf7a0912483816ed`;
+- PR #39 is not release evidence.
+
+### PR #40
+
 - Android Release: success;
 - Windows Release: success;
 - iOS simulator Release: success;
-- Mac Catalyst Release: success.
+- Mac Catalyst Release: success;
+- CodeQL: success;
+- Dependency Audit: success;
+- core formatting failed only because `EncryptedBackupService.cs` lacked its final newline;
+- source was corrected and PR closed unmerged rather than partially promoted.
 
-### Security/dependency workflows
+### PR #41
 
-- CodeQL #362 / run `31701943506`: success.
-- Dependency Audit #16 / run `31701943476`: success.
+- reminder-reconciliation checkpoint intentionally superseded by additional delete-flow work;
+- closed unmerged.
 
-The dependency result does not resolve the separately tracked SQLitePCLRaw advisory.
+### PR #42
 
-## Phase 9 status
+- bug-audit checkpoint intentionally superseded while the behavior audit was still changing source;
+- closed unmerged.
 
-Phase 9 preserves the verified PR #33 `ObservableViewModel` Settings architecture and adds the intended local-state lifecycle integrity controls plus two new UI-contract tests.
+### PR #43
 
-The lifecycle now keeps notification registration handling, encrypted-document file discovery, structured repository state, encrypted payload processing, document-key state, app-lock state, and onboarding navigation in the documented failure-safe order.
+- final frozen source;
+- all required workflow groups green;
+- closed unmerged;
+- current automated baseline.
 
-The exact source-to-PR33 comparison showed only these intended non-documentation differences:
+## Security dependency status
 
-- `src/CareNest.App/ViewModels/SettingsViewModel.cs`: 15 additions, 2 deletions;
-- `tests/CareNest.UiTests/SettingsLifecycleContractTests.cs`: new 45-line file.
-
-Authoritative Phase 9 references:
-
-- `docs/releases/SETTINGS_LIFECYCLE_VERIFICATION_20260813.md`
-- `docs/releases/PHASE9_VERIFICATION_EVIDENCE.md`
-- `docs/security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md`
-- `docs/testing/SETTINGS_LIFECYCLE_CONTRACT.md`
-- `docs/privacy/LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md`
-
-## Verification recovery record
-
-PR #34 was closed without merge when the lifecycle review identified one more secure-storage requirement before final verification.
-
-PR #35 is explicitly not release evidence. Its CI exposed an obsolete Settings implementation replacement through Android/Apple compilation failures. The failure was corrected rather than suppressed: the verified PR #33 Settings architecture was restored, the intended lifecycle delta was reapplied, and PR #36 then passed every required gate.
-
-## Previously verified hardening retained
-
-The current source also retains the complete prior service/appointment/document/backup/crypto/reminder/privacy hardening, including:
-
-- strict appointment UTC handling and permission fail-safe scheduling;
-- direct profile/medicine/appointment/document/backup-reminder service coverage;
-- document import compensation and key-buffer hygiene;
-- strict backup archive topology;
-- authenticated chunked AEAD framing v2 with authenticated terminal records;
-- legacy v1 read compatibility;
-- prefix-truncation and trailing-data rejection for v2 streams;
-- backup/document secret-buffer hygiene where managed-memory control permits;
-- deterministic reminder ownership, UTC, snooze, window, recurrence, and DST contracts;
-- privacy-minimized logging and global exception observation;
-- app-lock PBKDF2/fixed-time/verifier-buffer contracts;
-- local-first architecture and no hidden telemetry/network-client policy.
-
-Full implementation detail remains in the preserved handoffs and subsystem documentation.
-
-## Product boundary
-
-CareNest remains a local-first organizational application. It has no required CareNest account/backend, no automatic CareNest cloud synchronization, no silent caregiver sharing, and no hidden analytics/telemetry client.
-
-CareNest does not diagnose conditions, determine or infer medicine dosage, recommend treatment, perform clinical medication-interaction checking, create clinical risk scores, independently verify adherence, replace clinicians/pharmacists, provide emergency services, or guarantee notification delivery.
-
-Medicine strength and instruction values remain opaque user-entered text.
-
-## Voluntary project support
-
-Project support remains centralized at:
-
-`https://buymeacoffee.com/sanskarIN`
-
-Funding remains separate from health data and does not unlock medical functionality. Current Apple/Google store-policy review for the external support link remains a release-time requirement.
-
-## Open dependency risk
-
-Tracked advisory:
+The SQLite native dependency advisory remains OPEN:
 
 `GHSA-2m69-gcr7-jv3q`
 
-The current dependency path still includes SQLitePCLRaw native `2.1.11` through the current `sqlite-net-pcl` chain. The repository does not claim remediation.
+The current repository does **not** claim remediation.
 
-Authoritative files:
+- suppression is narrowly scoped to the exact advisory URL;
+- no blanket severity or wildcard audit suppression is used;
+- `docs/security/DEPENDENCY_RISK_REGISTER.md` remains authoritative;
+- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` remains the required remediation/regression plan;
+- final production promotion must explicitly resolve or block on this risk decision.
 
-- `docs/security/DEPENDENCY_RISK_REGISTER.md`
-- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`
+## Current documentation entry points
 
-## Documentation status
+- `what_changed.md` — complete active handoff.
+- `docs/releases/BUG_AUDIT_VERIFICATION_20260814.md` — complete 2026-08-14 bug-audit evidence and fix map.
+- `docs/releases/PHASE9_VERIFICATION_EVIDENCE.md` — previous PR #36 Settings lifecycle evidence.
+- `docs/releases/SETTINGS_LIFECYCLE_VERIFICATION_20260813.md` — previous Settings lifecycle verification details.
+- `docs/testing/SETTINGS_LIFECYCLE_CONTRACT.md` — Settings lifecycle regression contract.
+- `docs/security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md` — full local-data clear security model.
+- `docs/security/DEPENDENCY_RISK_REGISTER.md` — dependency risk source of truth.
+- `docs/releases/RELEASE_CHECKLIST.md` — release gates.
+- `docs/releases/NEXT_STEPS.md` — operational remaining work.
 
-Dedicated documentation covers the current user/product, architecture, storage, reminders/platform behavior, document vault, reports/exports, backup, privacy, security, accessibility, localization, design/store assets, development, troubleshooting, testing, release, funding, and historical-evidence areas. Start at `docs/README.md`.
+Historical handoffs remain under `docs/history/` and in Git history. The complete previous active Phase 9 handoff remains recoverable from the pre-audit `main` history and its referenced preserved snapshots.
 
-## Production gates still required
+## Production blockers that remain real
 
-1. Android manual device/emulator matrix.
-2. Windows manual matrix.
-3. iOS/iPadOS manual matrix.
-4. Mac Catalyst manual matrix.
-5. Notification permission/delivery and Android alarm/battery/reboot/time-zone checks.
-6. Packaged-target appointment, document, calendar, report, v2 encrypted-document, and backup/restore checks.
-7. Full local-state lifecycle verification on intended devices.
-8. Screen-reader, large-text, keyboard/focus, contrast/theme, and reduced-motion checks.
-9. Current Apple App Store policy review for the external voluntary support link.
-10. Current Google Play policy review for the external voluntary support link.
-11. Signing identities/credentials outside Git.
-12. Signed package build/inspection.
-13. Fictional-data store screenshots and store privacy/data-safety metadata.
-14. Final SQLitePCLRaw advisory disposition.
-15. `CareNest Release Evidence` for the exact production commit.
-16. Final production version/build metadata, release notes, checksums, tag, and GitHub release after applicable gates pass.
+The source is automated-release-candidate green. Public `1.0.0` production promotion still requires operational evidence that cannot be manufactured by source code alone:
 
-## Deferred future scope
+- manual Android device/emulator matrix;
+- manual Windows matrix;
+- manual iOS/iPadOS matrix;
+- manual Mac Catalyst matrix;
+- notification permission denied/granted and real-delivery checks;
+- Android exact/inexact alarm, battery optimization, reboot, clock and time-zone checks;
+- packaged-target document import/export and profile-photo checks;
+- packaged-target backup create/inspect/restore/wrong-password/tamper checks;
+- legacy encrypted-format fixture verification where canonical historical fixtures are available;
+- screen-reader verification;
+- large-text/text-scaling verification;
+- desktop keyboard/focus verification;
+- contrast/theme/reduced-motion verification;
+- current Apple App Store policy review for the optional external project-support link;
+- current Google Play policy review for the optional external project-support link;
+- signing identities and credentials outside Git;
+- signed package generation and inspection;
+- store screenshots/listing/privacy/data-safety metadata;
+- exact promoted-commit Release Evidence workflow;
+- final version/build metadata, release notes, checksums, production tag and GitHub release;
+- explicit resolution/decision for the open SQLitePCLRaw dependency risk.
 
-Cloud sync, remote caregiver collaboration, required accounts/mobile authentication, server-side health-record storage, silent remote sharing, hidden analytics/telemetry, diagnosis, dosage inference, treatment recommendations, medication-interaction claims, and clinical scoring remain outside v1.
+None of these manual/external gates is marked complete merely because automated CI is green.
 
-Any future networked feature requires a fresh consent/authentication/key/privacy/threat/export/store review.
+## Deferred scope
 
-## Environment note
+Still outside current v1:
 
-GitHub-hosted CI is the authoritative automated verification surface for the source baseline above. Manual device/accessibility/store/signing work is separate and is not claimed complete unless actually performed.
+- cloud synchronization;
+- remote caregiver collaboration;
+- required accounts/mobile-number authentication;
+- server-side health-record storage;
+- silent remote sharing;
+- hidden analytics/telemetry;
+- diagnosis;
+- dosage calculation/inference;
+- treatment recommendations;
+- medication-interaction claims;
+- clinical risk scoring.
 
-See `what_changed.md` for the active detailed continuation and `docs/history/` for preserved earlier complete records.
+Any future networked feature requires a new consent/authentication/key/privacy/threat/export/store review.
+
+## Environment truth
+
+The repository assembly environment does not provide local MAUI device simulators, signing credentials or store submission sessions. GitHub-hosted Actions is the authoritative automated compilation/test surface for the verified source.
+
+Manual device/accessibility/store/signing/release activities remain separate and are not claimed complete until actually performed.
