@@ -50,7 +50,7 @@ public sealed class ReminderReconciliationContractTests
             "Services",
             "MedicineService.cs");
         var start = source.IndexOf("public async Task SaveScheduleAsync(", StringComparison.Ordinal);
-        var end = source.IndexOf("public async Task AdjustStockAsync(", start, StringComparison.Ordinal);
+        var end = source.IndexOf("public async Task ApplyStockAdjustmentAsync(", start, StringComparison.Ordinal);
         Assert.True(start >= 0);
         Assert.True(end > start);
         var method = source[start..end];
