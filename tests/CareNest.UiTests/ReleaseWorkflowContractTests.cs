@@ -64,4 +64,15 @@ public sealed class ReleaseWorkflowContractTests
         Assert.Contains("if: always()", workflow[uploadIndex..finalGateIndex], StringComparison.Ordinal);
         Assert.Contains("retention-days: 90", workflow, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void ReleaseEvidence_ArtifactIdentityIncludesCommitRunAndAttempt()
+    {
+        var workflow = RepositoryLocator.Read(".github", "workflows", "release-evidence.yml");
+
+        Assert.Contains(
+            "carenest-release-evidence-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}",
+            workflow,
+            StringComparison.Ordinal);
+    }
 }
