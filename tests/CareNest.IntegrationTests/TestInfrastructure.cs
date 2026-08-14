@@ -17,6 +17,8 @@ internal sealed class MemorySecretStore : ISecretStore
 
     public byte[]? LastSetBytesInput { get; private set; }
 
+    public int SetBytesCallCount { get; private set; }
+
     public Task<byte[]?> GetBytesAsync(string key, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -33,6 +35,7 @@ internal sealed class MemorySecretStore : ISecretStore
     public Task SetBytesAsync(string key, byte[] value, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        SetBytesCallCount++;
         LastSetBytesInput = value;
         _bytes[key] = value.ToArray();
         return Task.CompletedTask;
