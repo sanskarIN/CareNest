@@ -14,6 +14,10 @@ internal sealed class NotificationServiceSpy : INotificationService
 
     public bool PermissionRequestResult { get; set; } = true;
 
+    public Exception? ScheduleFailure { get; set; }
+
+    public Exception? CancelFailure { get; set; }
+
     public int PermissionRequestCount { get; private set; }
 
     public int TestNotificationCount { get; private set; }
@@ -38,6 +42,11 @@ internal sealed class NotificationServiceSpy : INotificationService
     public Task ScheduleAsync(NotificationRequest request, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (ScheduleFailure is not null)
+        {
+            return Task.FromException(ScheduleFailure);
+        }
+
         Scheduled.Add(request);
         return Task.CompletedTask;
     }
@@ -46,7 +55,9 @@ internal sealed class NotificationServiceSpy : INotificationService
     {
         cancellationToken.ThrowIfCancellationRequested();
         CancelledOccurrenceIds.Add(occurrenceId);
-        return Task.CompletedTask;
+        return CancelFailure is null
+            ? Task.CompletedTask
+            : Task.FromException(CancelFailure);
     }
 
     public Task CancelAllAsync(CancellationToken cancellationToken = default)
