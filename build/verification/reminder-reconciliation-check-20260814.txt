@@ -1,0 +1,5 @@
+CareNest reminder-reconciliation checkpoint marker.
+
+Date: 2026-08-14
+Purpose: compile and test the current bug-audit source after reminder reconciliation, app-lock validation, managed document exports, startup recovery isolation, and backup rollback fixes.
+This marker is verification-only and must not be merged into main.
