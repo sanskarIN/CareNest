@@ -68,77 +68,92 @@ public sealed class MedicationLogViewModel : ObservableViewModel
     public ICommand SnoozeCommand { get; }
 
     public Task LoadAsync() =>
-        RunAsync(async ct =>
+        RunAsync(
+            LoadCoreAsync,
+            "CareNest could not load the medication log.");
+
+    private async Task LoadCoreAsync(CancellationToken ct)
+    {
+        await _reminders.MarkOverdueAsMissedAsync(ct);
+
+        var upcoming = await _reminders.GetUpcomingAsync(
+            null,
+            25,
+            ct);
+
+        Upcoming.Clear();
+        foreach (var item in upcoming)
         {
-            await _reminders.MarkOverdueAsMissedAsync(ct);
+            Upcoming.Add(item);
+        }
 
-            var upcoming = await _reminders.GetUpcomingAsync(
-                null,
-                25,
-                ct);
+        var profileRows = await _repository.GetProfilesAsync(true, ct);
+        var medicineRows = await _repository.GetMedicinesAsync(null, true, ct);
+        var selectedProfileId = SelectedProfile?.Id;
+        var selectedMedicineId = SelectedMedicine?.Id;
 
-            Upcoming.Clear();
-            foreach (var item in upcoming)
-            {
-                Upcoming.Add(item);
-            }
+        Profiles.Clear();
+        foreach (var profile in profileRows)
+        {
+            Profiles.Add(profile);
+        }
 
-            var profileRows = await _repository.GetProfilesAsync(true, ct);
-            var medicineRows = await _repository.GetMedicinesAsync(null, true, ct);
+        Medicines.Clear();
+        foreach (var medicine in medicineRows)
+        {
+            Medicines.Add(medicine);
+        }
 
-            if (Profiles.Count == 0)
-            {
-                foreach (var p in profileRows) Profiles.Add(p);
-            }
-            if (Medicines.Count == 0)
-            {
-                foreach (var m in medicineRows) Medicines.Add(m);
-            }
+        SelectedProfile = selectedProfileId is null
+            ? null
+            : Profiles.FirstOrDefault(x => x.Id == selectedProfileId);
+        SelectedMedicine = selectedMedicineId is null
+            ? null
+            : Medicines.FirstOrDefault(x => x.Id == selectedMedicineId);
 
-            DateTime? fromUtc;
-            DateTime? toUtc;
-            if (FilterSingleDate)
-            {
-                var localStart = DateTime.SpecifyKind(FilterDate.Date, DateTimeKind.Unspecified);
-                var localEnd = localStart.AddDays(1);
-                fromUtc = TimeZoneInfo.ConvertTimeToUtc(localStart, TimeZoneInfo.Local);
-                toUtc = TimeZoneInfo.ConvertTimeToUtc(localEnd, TimeZoneInfo.Local);
-            }
-            else
-            {
-                fromUtc = _timeProvider.GetUtcNow().UtcDateTime.AddDays(-90);
-                toUtc = null;
-            }
+        DateTime? fromUtc;
+        DateTime? toUtc;
+        if (FilterSingleDate)
+        {
+            var localStart = DateTime.SpecifyKind(FilterDate.Date, DateTimeKind.Unspecified);
+            var localEnd = localStart.AddDays(1);
+            fromUtc = TimeZoneInfo.ConvertTimeToUtc(localStart, TimeZoneInfo.Local);
+            toUtc = TimeZoneInfo.ConvertTimeToUtc(localEnd, TimeZoneInfo.Local);
+        }
+        else
+        {
+            fromUtc = _timeProvider.GetUtcNow().UtcDateTime.AddDays(-90);
+            toUtc = null;
+        }
 
-            var logs = await _repository.GetMedicationLogAsync(
-                SelectedProfile?.Id,
-                SelectedMedicine?.Id,
-                fromUtc,
-                toUtc,
-                ct);
+        var logs = await _repository.GetMedicationLogAsync(
+            SelectedProfile?.Id,
+            SelectedMedicine?.Id,
+            fromUtc,
+            toUtc,
+            ct);
 
-            var medicines = medicineRows.ToDictionary(x => x.Id);
-            var profiles = profileRows.ToDictionary(x => x.Id);
+        var medicines = medicineRows.ToDictionary(x => x.Id);
+        var profiles = profileRows.ToDictionary(x => x.Id);
 
-            Entries.Clear();
-            foreach (var log in logs.Take(250))
-            {
-                Entries.Add(new MedicationLogRow(
-                    log.Id,
-                    medicines.TryGetValue(log.MedicineId, out var medicine)
-                        ? medicine.Name
-                        : "Unknown medicine",
-                    profiles.TryGetValue(log.ProfileId, out var profile)
-                        ? profile.Name
-                        : "Unknown profile",
-                    log.Status,
-                    log.EventUtc,
-                    log.Note,
-                    log.ManuallyEdited));
-            }
-        },
-        "CareNest could not load the medication log.");
-
+        Entries.Clear();
+        foreach (var log in logs.Take(250))
+        {
+            Entries.Add(new MedicationLogRow(
+                log.Id,
+                medicines.TryGetValue(log.MedicineId, out var medicine)
+                    ? medicine.Name
+                    : "Unknown medicine",
+                log.ProfileId,
+                profiles.TryGetValue(log.ProfileId, out var profile)
+                    ? profile.Name
+                    : "Unknown profile",
+                log.Status,
+                log.EventUtc,
+                log.Note,
+                log.ManuallyEdited));
+        }
+    }
 
     private Task ClearFilterAsync()
     {
@@ -148,7 +163,6 @@ public sealed class MedicationLogViewModel : ObservableViewModel
         FilterDate = DateTime.Today;
         return LoadAsync();
     }
-
 
     public async Task<string> GetEditHistoryAsync(string id, CancellationToken cancellationToken = default)
     {
@@ -202,7 +216,7 @@ public sealed class MedicationLogViewModel : ObservableViewModel
                 SafeSummary = "Medication log entry manually edited"
             }, ct);
 
-            await LoadAsync();
+            await LoadCoreAsync(ct);
         },
         "CareNest could not update this medication log entry.");
 
@@ -222,7 +236,7 @@ public sealed class MedicationLogViewModel : ObservableViewModel
                 state,
                 cancellationToken: ct);
 
-            await LoadAsync();
+            await LoadCoreAsync(ct);
         },
         "CareNest could not update this reminder.");
     }
@@ -247,7 +261,7 @@ public sealed class MedicationLogViewModel : ObservableViewModel
                 until,
                 cancellationToken: ct);
 
-            await LoadAsync();
+            await LoadCoreAsync(ct);
         },
         "CareNest could not snooze this reminder.");
     }
