@@ -66,28 +66,12 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
             }
             catch (Exception updateFailure)
             {
-                var rollbackFailures = new List<Exception>();
-                await RestoreBytesAsync(
-                    SaltKey,
-                    previousSalt,
-                    rollbackFailures);
-                await RestoreBytesAsync(
-                    VerifierKey,
-                    previousVerifier,
-                    rollbackFailures);
-                await RestoreStringAsync(
-                    EnabledKey,
+                await RestoreSnapshotOrThrowAsync(
                     previousEnabled,
-                    rollbackFailures);
-
-                if (rollbackFailures.Count > 0)
-                {
-                    rollbackFailures.Insert(0, updateFailure);
-                    throw new AggregateException(
-                        "The app-lock PIN update failed and the previous secure-storage state could not be fully restored.",
-                        rollbackFailures);
-                }
-
+                    previousSalt,
+                    previousVerifier,
+                    updateFailure,
+                    "The app-lock PIN update failed and the previous secure-storage state could not be fully restored.");
                 throw;
             }
         }
@@ -140,9 +124,63 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
     public async Task DisableAsync(
         CancellationToken cancellationToken = default)
     {
-        await secretStore.RemoveAsync(EnabledKey, cancellationToken);
-        await secretStore.RemoveAsync(SaltKey, cancellationToken);
-        await secretStore.RemoveAsync(VerifierKey, cancellationToken);
+        string? previousEnabled = null;
+        byte[]? previousSalt = null;
+        byte[]? previousVerifier = null;
+
+        try
+        {
+            previousEnabled = await secretStore.GetStringAsync(
+                EnabledKey,
+                cancellationToken);
+            previousSalt = await secretStore.GetBytesAsync(
+                SaltKey,
+                cancellationToken);
+            previousVerifier = await secretStore.GetBytesAsync(
+                VerifierKey,
+                cancellationToken);
+
+            try
+            {
+                await secretStore.RemoveAsync(SaltKey, cancellationToken);
+                await secretStore.RemoveAsync(VerifierKey, cancellationToken);
+                await secretStore.RemoveAsync(EnabledKey, cancellationToken);
+            }
+            catch (Exception disableFailure)
+            {
+                await RestoreSnapshotOrThrowAsync(
+                    previousEnabled,
+                    previousSalt,
+                    previousVerifier,
+                    disableFailure,
+                    "Disabling app lock failed and the previous secure-storage state could not be fully restored.");
+                throw;
+            }
+        }
+        finally
+        {
+            ZeroIfPresent(previousSalt);
+            ZeroIfPresent(previousVerifier);
+        }
+    }
+
+    private async Task RestoreSnapshotOrThrowAsync(
+        string? enabled,
+        byte[]? salt,
+        byte[]? verifier,
+        Exception primaryFailure,
+        string aggregateMessage)
+    {
+        var rollbackFailures = new List<Exception>();
+        await RestoreBytesAsync(SaltKey, salt, rollbackFailures);
+        await RestoreBytesAsync(VerifierKey, verifier, rollbackFailures);
+        await RestoreStringAsync(EnabledKey, enabled, rollbackFailures);
+
+        if (rollbackFailures.Count > 0)
+        {
+            rollbackFailures.Insert(0, primaryFailure);
+            throw new AggregateException(aggregateMessage, rollbackFailures);
+        }
     }
 
     private async Task RestoreBytesAsync(
