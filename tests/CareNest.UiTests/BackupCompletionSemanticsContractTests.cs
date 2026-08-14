@@ -66,6 +66,30 @@ public sealed class BackupCompletionSemanticsContractTests
     }
 
     [Fact]
+    public void RestoreRollback_RestoresExactPriorDocumentKeyBytes()
+    {
+        var source = RepositoryLocator.Read(
+            "src",
+            "CareNest.Infrastructure",
+            "Backup",
+            "EncryptedBackupService.cs");
+        var restoreStart = source.IndexOf(
+            "public async Task RestoreEncryptedBackupAsync(",
+            StringComparison.Ordinal);
+        var decryptStart = source.IndexOf(
+            "private static async Task DecryptArchiveAsync(",
+            restoreStart,
+            StringComparison.Ordinal);
+        Assert.True(restoreStart >= 0);
+        Assert.True(decryptStart > restoreStart);
+        var restore = source[restoreStart..decryptStart];
+
+        Assert.Contains("if (oldDocumentKey is not null)", restore, StringComparison.Ordinal);
+        Assert.Contains("SetBytesAsync(SecretKeys.DocumentMasterKey, oldDocumentKey, CancellationToken.None)", restore, StringComparison.Ordinal);
+        Assert.DoesNotContain("oldDocumentKey is { Length: 32 }", restore, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void RestoreAudit_IsRecordedAfterDatabaseReplacementCompletes()
     {
         var source = RepositoryLocator.Read(
