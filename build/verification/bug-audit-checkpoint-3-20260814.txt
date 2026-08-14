@@ -1,0 +1,6 @@
+CareNest bug-audit checkpoint 3 verification marker.
+
+Exact source base: 7ac567fb11546db7701f328ae860880ddd5b6eef
+Date: 2026-08-14
+Purpose: compile, format, test, platform-build, CodeQL, and dependency-audit the corrected bug-fix checkpoint.
+This marker is verification-only and must not be merged into main.
