@@ -6,6 +6,7 @@ using CareNest.Domain.Entities;
 using CareNest.Infrastructure.Configuration;
 using CareNest.Infrastructure.Persistence;
 using CareNest.Shared;
+using Microsoft.Extensions.Logging;
 using SQLite;
 
 namespace CareNest.Infrastructure.Backup;
@@ -15,7 +16,8 @@ public sealed class EncryptedBackupService(
     ICareNestRepository repository,
     CareNestStorageOptions options,
     ISecretStore secretStore,
-    TimeProvider timeProvider) : IBackupService
+    TimeProvider timeProvider,
+    ILogger<EncryptedBackupService>? logger = null) : IBackupService
 {
     private static readonly byte[] Magic = "CNBK"u8.ToArray();
     private static readonly byte[] PayloadMagic = "CBPL"u8.ToArray();
@@ -116,14 +118,15 @@ public sealed class EncryptedBackupService(
                     CryptographicOperations.ZeroMemory(salt);
                 }
 
-                await repository.CreateBackupMetadataAsync(new BackupMetadata
-                {
-                    FormatVersion = AppConstants.BackupFormatVersion,
-                    SchemaVersion = schema,
-                    CreatedAtUtc = manifest.CreatedUtc,
-                    AppVersion = appVersion,
-                    DestinationHint = "User-selected destination"
-                }, cancellationToken);
+                await TryRecordBackupMetadataAsync(
+                    new BackupMetadata
+                    {
+                        FormatVersion = AppConstants.BackupFormatVersion,
+                        SchemaVersion = schema,
+                        CreatedAtUtc = manifest.CreatedUtc,
+                        AppVersion = appVersion,
+                        DestinationHint = "User-selected destination"
+                    });
             }
             finally
             {
@@ -278,6 +281,30 @@ public sealed class EncryptedBackupService(
                 }
             }
 
+            await TryRecordRestoreAuditAsync(manifest);
+        }
+        finally
+        {
+            TryDeleteDirectory(work);
+        }
+    }
+
+    private async Task TryRecordBackupMetadataAsync(BackupMetadata metadata)
+    {
+        try
+        {
+            await repository.CreateBackupMetadataAsync(metadata, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            LogBookkeepingFailure("Backup metadata recording", ex);
+        }
+    }
+
+    private async Task TryRecordRestoreAuditAsync(BackupManifest manifest)
+    {
+        try
+        {
             await repository.AddAuditEntryAsync(new AuditEntry
             {
                 EntityType = "Backup",
@@ -285,12 +312,26 @@ public sealed class EncryptedBackupService(
                 Action = Domain.Enums.AuditAction.Restored,
                 EventUtc = timeProvider.GetUtcNow().UtcDateTime,
                 SafeSummary = $"Backup format {manifest.FormatVersion} restored"
-            }, cancellationToken);
+            }, CancellationToken.None);
         }
-        finally
+        catch (Exception ex)
         {
-            TryDeleteDirectory(work);
+            LogBookkeepingFailure("Restore audit recording", ex);
         }
+    }
+
+    private void LogBookkeepingFailure(string operation, Exception exception)
+    {
+        if (logger is null || !logger.IsEnabled(LogLevel.Warning))
+        {
+            return;
+        }
+
+        var exceptionType = exception.GetType().FullName ?? "Unknown";
+        logger.LogWarning(
+            "{Operation} failed after the backup operation had already completed. ExceptionType={ExceptionType}. Health-record content and exception details were not logged.",
+            operation,
+            exceptionType);
     }
 
     private static async Task DecryptArchiveAsync(
@@ -429,28 +470,23 @@ public sealed class EncryptedBackupService(
 
     private static void ValidatePassword(string password)
     {
-        if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+        if (string.IsNullOrWhiteSpace(password) || password.Length < 10)
         {
-            throw new ArgumentException(
-                "Backup password must contain at least 8 characters.",
-                nameof(password));
+            throw new ArgumentException("Backup password must contain at least 10 characters.", nameof(password));
         }
     }
 
-    private static async Task ReadExactlyAsync(
-        Stream stream,
-        Memory<byte> buffer,
-        CancellationToken cancellationToken)
+    private static async Task ReadExactlyAsync(Stream source, Memory<byte> buffer, CancellationToken cancellationToken)
     {
-        var total = 0;
-        while (total < buffer.Length)
+        var offset = 0;
+        while (offset < buffer.Length)
         {
-            var read = await stream.ReadAsync(buffer[total..], cancellationToken);
+            var read = await source.ReadAsync(buffer[offset..], cancellationToken);
             if (read == 0)
             {
-                throw new EndOfStreamException();
+                throw new EndOfStreamException("Backup ended unexpectedly.");
             }
-            total += read;
+            offset += read;
         }
     }
 
@@ -465,7 +501,7 @@ public sealed class EncryptedBackupService(
         }
         catch
         {
-            // Best-effort cleanup. Never log user file names or document contents here.
+            // Best-effort cleanup of temporary backup material.
         }
     }
 }
