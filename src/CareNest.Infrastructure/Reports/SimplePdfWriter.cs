@@ -29,6 +29,7 @@ internal static class SimplePdfWriter
 
         foreach (var pageLines in pages)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var pageObjectNumber = objects.Count + 1;
             var contentObjectNumber = objects.Count + 2;
             pageObjectNumbers.Add(pageObjectNumber);
@@ -56,37 +57,52 @@ internal static class SimplePdfWriter
             Directory.CreateDirectory(directory);
         }
 
-        await using var stream = File.Create(path);
-        await stream.WriteAsync(Ascii("%PDF-1.4\n"), cancellationToken);
-
-        var offsets = new List<long> { 0 };
-
-        for (var i = 0; i < objects.Count; i++)
+        var partialPath = path + $".{Guid.NewGuid():N}.partial";
+        try
         {
-            offsets.Add(stream.Position);
-            await stream.WriteAsync(Ascii($"{i + 1} 0 obj\n"), cancellationToken);
-            await stream.WriteAsync(objects[i], cancellationToken);
-            await stream.WriteAsync(Ascii("\nendobj\n"), cancellationToken);
+            await using (var stream = File.Create(partialPath))
+            {
+                await stream.WriteAsync(Ascii("%PDF-1.4\n"), cancellationToken);
+
+                var offsets = new List<long> { 0 };
+
+                for (var i = 0; i < objects.Count; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    offsets.Add(stream.Position);
+                    await stream.WriteAsync(Ascii($"{i + 1} 0 obj\n"), cancellationToken);
+                    await stream.WriteAsync(objects[i], cancellationToken);
+                    await stream.WriteAsync(Ascii("\nendobj\n"), cancellationToken);
+                }
+
+                var xref = stream.Position;
+                await stream.WriteAsync(
+                    Ascii($"xref\n0 {objects.Count + 1}\n0000000000 65535 f \n"),
+                    cancellationToken);
+
+                for (var i = 1; i < offsets.Count; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await stream.WriteAsync(
+                        Ascii(
+                            $"{offsets[i].ToString("D10", CultureInfo.InvariantCulture)} 00000 n \n"),
+                        cancellationToken);
+                }
+
+                await stream.WriteAsync(
+                    Ascii(
+                        $"trailer\n<< /Size {objects.Count + 1} /Root 1 0 R >>\n" +
+                        $"startxref\n{xref}\n%%EOF"),
+                    cancellationToken);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            File.Move(partialPath, path, overwrite: true);
         }
-
-        var xref = stream.Position;
-        await stream.WriteAsync(
-            Ascii($"xref\n0 {objects.Count + 1}\n0000000000 65535 f \n"),
-            cancellationToken);
-
-        for (var i = 1; i < offsets.Count; i++)
+        finally
         {
-            await stream.WriteAsync(
-                Ascii(
-                    $"{offsets[i].ToString("D10", CultureInfo.InvariantCulture)} 00000 n \n"),
-                cancellationToken);
+            TryDeleteFile(partialPath);
         }
-
-        await stream.WriteAsync(
-            Ascii(
-                $"trailer\n<< /Size {objects.Count + 1} /Root 1 0 R >>\n" +
-                $"startxref\n{xref}\n%%EOF"),
-            cancellationToken);
     }
 
     private static string BuildContent(IEnumerable<string> lines)
@@ -154,5 +170,20 @@ internal static class SimplePdfWriter
         }
 
         return result;
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // Best-effort cleanup of an incomplete plaintext export.
+        }
     }
 }
