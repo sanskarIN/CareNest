@@ -121,50 +121,15 @@ public sealed class DocumentsViewModel : ObservableViewModel
     public ICommand ExportCommand { get; }
 
     public Task LoadAsync() =>
-        RunAsync(async ct =>
-        {
-            Profiles.Clear();
-            foreach (var profile in await _profiles.ListAsync(ct))
-            {
-                Profiles.Add(profile);
-            }
-
-            SelectedProfile ??= Profiles.FirstOrDefault(x => x.IsPrimary)
-                ?? Profiles.FirstOrDefault();
-
-            var profileNames = Profiles.ToDictionary(x => x.Id);
-            var documents = await _documents.ListAsync(null, ct);
-
-            _all.Clear();
-            foreach (var document in documents)
-            {
-                var tags = await _repository.GetDocumentTagsAsync(
-                    document.Id,
-                    ct);
-
-                _all.Add(new DocumentRow(
-                    document.Id,
-                    document.Title,
-                    profileNames.TryGetValue(document.ProfileId, out var profile)
-                        ? profile.Name
-                        : "Unknown profile",
-                    document.Category,
-                    document.FolderName,
-                    document.OriginalFileName,
-                    document.OriginalSizeBytes,
-                    string.Join(", ", tags.Select(x => x.Name))));
-            }
-
-            StorageUsageBytes = await Store.GetStorageUsageBytesAsync(ct);
-            ApplyFilter();
-        },
-        "CareNest could not load the document organizer.");
+        RunAsync(
+            LoadCoreAsync,
+            "CareNest could not load the document organizer.");
 
     public Task DeleteAsync(DocumentRow row) =>
         RunAsync(async ct =>
         {
             await _documents.DeleteAsync(row.Id, ct);
-            await LoadAsync();
+            await LoadCoreAsync(ct);
         },
         "CareNest could not delete this encrypted document.");
 
@@ -206,9 +171,51 @@ public sealed class DocumentsViewModel : ObservableViewModel
                 ids,
                 ct);
 
-            await LoadAsync();
+            await LoadCoreAsync(ct);
         },
         "CareNest could not update document tags.");
+
+    private async Task LoadCoreAsync(CancellationToken ct)
+    {
+        var selectedProfileId = SelectedProfile?.Id;
+        Profiles.Clear();
+        foreach (var profile in await _profiles.ListAsync(ct))
+        {
+            Profiles.Add(profile);
+        }
+
+        SelectedProfile = selectedProfileId is null
+            ? Profiles.FirstOrDefault(x => x.IsPrimary) ?? Profiles.FirstOrDefault()
+            : Profiles.FirstOrDefault(x => x.Id == selectedProfileId)
+                ?? Profiles.FirstOrDefault(x => x.IsPrimary)
+                ?? Profiles.FirstOrDefault();
+
+        var profileNames = Profiles.ToDictionary(x => x.Id);
+        var documents = await _documents.ListAsync(null, ct);
+
+        _all.Clear();
+        foreach (var document in documents)
+        {
+            var tags = await _repository.GetDocumentTagsAsync(
+                document.Id,
+                ct);
+
+            _all.Add(new DocumentRow(
+                document.Id,
+                document.Title,
+                profileNames.TryGetValue(document.ProfileId, out var profile)
+                    ? profile.Name
+                    : "Unknown profile",
+                document.Category,
+                document.FolderName,
+                document.OriginalFileName,
+                document.OriginalSizeBytes,
+                string.Join(", ", tags.Select(x => x.Name))));
+        }
+
+        StorageUsageBytes = await Store.GetStorageUsageBytesAsync(ct);
+        ApplyFilter();
+    }
 
     private Task ImportAsync() =>
         RunAsync(async ct =>
@@ -269,7 +276,7 @@ public sealed class DocumentsViewModel : ObservableViewModel
         Notes = string.Empty;
         FolderName = string.Empty;
         StatusMessage = "Document encrypted and stored locally.";
-        await LoadAsync();
+        await LoadCoreAsync(cancellationToken);
     }
 
     private Task ExportAsync(DocumentRow? row)
