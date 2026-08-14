@@ -1,0 +1,5 @@
+CareNest bug-audit checkpoint 4 verification marker.
+
+Date: 2026-08-14
+Purpose: verify the current source after reminder reconciliation, service delete cancellation, app-lock fail-closed validation, managed export cache, startup recovery isolation, backup rollback, report safety, and platform lifecycle fixes.
+This marker is verification-only and must not be merged into main.
