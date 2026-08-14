@@ -7,6 +7,14 @@ namespace CareNest.Infrastructure.Persistence;
 
 public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepository
 {
+    private static readonly string[] ClearAllTables =
+    [
+        "DocumentTag", "ScheduleTime", "ReminderOccurrence", "MedicationLogEntry",
+        "StockAdjustment", "MedicineSchedule", "Medicine", "Appointment",
+        "CareDocument", "Tag", "EmergencyContact", "BackupMetadata",
+        "AuditEntry", "PersonProfile", "AppSetting"
+    ];
+
     private SQLiteAsyncConnection Db => database.Connection;
 
     public Task InitializeAsync(CancellationToken cancellationToken = default) => database.InitializeAsync(cancellationToken);
@@ -27,38 +35,44 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
         return (await Db.QueryAsync<PersonProfile>("SELECT * FROM PersonProfile WHERE Id = ? LIMIT 1", id)).FirstOrDefault();
     }
 
-    public async Task SaveProfileAsync(PersonProfile profile, CancellationToken cancellationToken = default)
-    {
-        await Ready(cancellationToken);
-        if (profile.IsPrimary)
+    public Task SaveProfileAsync(PersonProfile profile, CancellationToken cancellationToken = default) =>
+        RunAtomicAsync(cancellationToken, connection =>
         {
-            await Db.ExecuteAsync("UPDATE PersonProfile SET IsPrimary = 0 WHERE Id <> ?", profile.Id);
-        }
-        await Db.InsertOrReplaceAsync(profile);
-    }
+            if (profile.IsPrimary)
+            {
+                connection.Execute("UPDATE PersonProfile SET IsPrimary = 0 WHERE Id <> ?", profile.Id);
+            }
+            connection.InsertOrReplace(profile);
+        });
 
-    public async Task DeleteProfileCascadeAsync(string profileId, CancellationToken cancellationToken = default)
-    {
-        await Ready(cancellationToken);
-        var medicines = await GetMedicinesAsync(profileId, true, cancellationToken);
-        foreach (var medicine in medicines)
+    public Task DeleteProfileCascadeAsync(string profileId, CancellationToken cancellationToken = default) =>
+        RunAtomicAsync(cancellationToken, connection =>
         {
-            await DeleteMedicineCascadeAsync(medicine.Id, cancellationToken);
-        }
+            var medicines = connection.Query<Medicine>(
+                "SELECT * FROM Medicine WHERE ProfileId = ?",
+                profileId);
+            foreach (var medicine in medicines)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                DeleteMedicineCascade(connection, medicine.Id, cancellationToken);
+            }
 
-        var documents = await GetDocumentsAsync(profileId, cancellationToken);
-        foreach (var document in documents)
-        {
-            await Db.ExecuteAsync("DELETE FROM DocumentTag WHERE DocumentId = ?", document.Id);
-            await Db.ExecuteAsync("DELETE FROM CareDocument WHERE Id = ?", document.Id);
-        }
+            var documents = connection.Query<CareDocument>(
+                "SELECT * FROM CareDocument WHERE ProfileId = ?",
+                profileId);
+            foreach (var document in documents)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                connection.Execute("DELETE FROM DocumentTag WHERE DocumentId = ?", document.Id);
+                connection.Execute("DELETE FROM CareDocument WHERE Id = ?", document.Id);
+            }
 
-        await Db.ExecuteAsync("DELETE FROM Appointment WHERE ProfileId = ?", profileId);
-        await Db.ExecuteAsync("DELETE FROM EmergencyContact WHERE ProfileId = ?", profileId);
-        await Db.ExecuteAsync("DELETE FROM MedicationLogEntry WHERE ProfileId = ?", profileId);
-        await Db.ExecuteAsync("DELETE FROM ReminderOccurrence WHERE ProfileId = ?", profileId);
-        await Db.ExecuteAsync("DELETE FROM PersonProfile WHERE Id = ?", profileId);
-    }
+            connection.Execute("DELETE FROM Appointment WHERE ProfileId = ?", profileId);
+            connection.Execute("DELETE FROM EmergencyContact WHERE ProfileId = ?", profileId);
+            connection.Execute("DELETE FROM MedicationLogEntry WHERE ProfileId = ?", profileId);
+            connection.Execute("DELETE FROM ReminderOccurrence WHERE ProfileId = ?", profileId);
+            connection.Execute("DELETE FROM PersonProfile WHERE Id = ?", profileId);
+        });
 
     public async Task<IReadOnlyList<Medicine>> GetMedicinesAsync(string? profileId = null, bool includeArchived = false, CancellationToken cancellationToken = default)
     {
@@ -92,20 +106,9 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
         await Db.InsertOrReplaceAsync(medicine);
     }
 
-    public async Task DeleteMedicineCascadeAsync(string medicineId, CancellationToken cancellationToken = default)
-    {
-        await Ready(cancellationToken);
-        var schedules = await Db.QueryAsync<MedicineSchedule>("SELECT * FROM MedicineSchedule WHERE MedicineId = ?", medicineId);
-        foreach (var schedule in schedules)
-        {
-            await DeleteScheduleAsync(schedule.Id, cancellationToken);
-        }
-
-        await Db.ExecuteAsync("DELETE FROM MedicationLogEntry WHERE MedicineId = ?", medicineId);
-        await Db.ExecuteAsync("DELETE FROM StockAdjustment WHERE MedicineId = ?", medicineId);
-        await Db.ExecuteAsync("DELETE FROM ReminderOccurrence WHERE MedicineId = ?", medicineId);
-        await Db.ExecuteAsync("DELETE FROM Medicine WHERE Id = ?", medicineId);
-    }
+    public Task DeleteMedicineCascadeAsync(string medicineId, CancellationToken cancellationToken = default) =>
+        RunAtomicAsync(cancellationToken, connection =>
+            DeleteMedicineCascade(connection, medicineId, cancellationToken));
 
     public async Task<IReadOnlyList<MedicineSchedule>> GetSchedulesForMedicineAsync(string medicineId, CancellationToken cancellationToken = default)
     {
@@ -119,18 +122,18 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
         return await Db.QueryAsync<MedicineSchedule>("SELECT * FROM MedicineSchedule WHERE Enabled = 1");
     }
 
-    public async Task SaveScheduleAsync(MedicineSchedule schedule, IReadOnlyCollection<ScheduleTime> times, CancellationToken cancellationToken = default)
-    {
-        await Ready(cancellationToken);
-        await Db.InsertOrReplaceAsync(schedule);
-        await Db.ExecuteAsync("DELETE FROM ScheduleTime WHERE MedicineScheduleId = ?", schedule.Id);
-        foreach (var time in times)
+    public Task SaveScheduleAsync(MedicineSchedule schedule, IReadOnlyCollection<ScheduleTime> times, CancellationToken cancellationToken = default) =>
+        RunAtomicAsync(cancellationToken, connection =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            time.MedicineScheduleId = schedule.Id;
-            await Db.InsertAsync(time);
-        }
-    }
+            connection.InsertOrReplace(schedule);
+            connection.Execute("DELETE FROM ScheduleTime WHERE MedicineScheduleId = ?", schedule.Id);
+            foreach (var time in times)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                time.MedicineScheduleId = schedule.Id;
+                connection.Insert(time);
+            }
+        });
 
     public async Task<IReadOnlyList<ScheduleTime>> GetScheduleTimesAsync(string scheduleId, CancellationToken cancellationToken = default)
     {
@@ -138,32 +141,34 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
         return await Db.QueryAsync<ScheduleTime>("SELECT * FROM ScheduleTime WHERE MedicineScheduleId = ? ORDER BY Hour, Minute", scheduleId);
     }
 
-    public async Task DeleteScheduleAsync(string scheduleId, CancellationToken cancellationToken = default)
-    {
-        await Ready(cancellationToken);
-        await Db.ExecuteAsync("DELETE FROM ReminderOccurrence WHERE ScheduleId = ?", scheduleId);
-        await Db.ExecuteAsync("DELETE FROM ScheduleTime WHERE MedicineScheduleId = ?", scheduleId);
-        await Db.ExecuteAsync("DELETE FROM MedicineSchedule WHERE Id = ?", scheduleId);
-    }
+    public Task DeleteScheduleAsync(string scheduleId, CancellationToken cancellationToken = default) =>
+        RunAtomicAsync(cancellationToken, connection =>
+            DeleteSchedule(connection, scheduleId));
 
     public async Task UpsertOccurrencesAsync(IEnumerable<ReminderOccurrence> occurrences, CancellationToken cancellationToken = default)
     {
-        await Ready(cancellationToken);
-        foreach (var occurrence in occurrences)
+        cancellationToken.ThrowIfCancellationRequested();
+        var materialized = occurrences.ToArray();
+        await RunAtomicAsync(cancellationToken, connection =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var existing = await GetOccurrenceByKeyAsync(occurrence.OccurrenceKey, cancellationToken);
-            if (existing is not null)
+            foreach (var occurrence in materialized)
             {
-                occurrence.Id = existing.Id;
-                occurrence.State = existing.State;
-                occurrence.StateChangedUtc = existing.StateChangedUtc;
-                occurrence.SnoozedUntilUtc = existing.SnoozedUntilUtc;
-                occurrence.PlatformNotificationId = existing.PlatformNotificationId;
-                occurrence.CreatedUtc = existing.CreatedUtc;
+                cancellationToken.ThrowIfCancellationRequested();
+                var existing = connection.Query<ReminderOccurrence>(
+                    "SELECT * FROM ReminderOccurrence WHERE OccurrenceKey = ? LIMIT 1",
+                    occurrence.OccurrenceKey).FirstOrDefault();
+                if (existing is not null)
+                {
+                    occurrence.Id = existing.Id;
+                    occurrence.State = existing.State;
+                    occurrence.StateChangedUtc = existing.StateChangedUtc;
+                    occurrence.SnoozedUntilUtc = existing.SnoozedUntilUtc;
+                    occurrence.PlatformNotificationId = existing.PlatformNotificationId;
+                    occurrence.CreatedUtc = existing.CreatedUtc;
+                }
+                connection.InsertOrReplace(occurrence);
             }
-            await Db.InsertOrReplaceAsync(occurrence);
-        }
+        });
     }
 
     public async Task<IReadOnlyList<ReminderOccurrence>> GetOccurrencesAsync(DateTime fromUtc, DateTime toUtc, string? profileId = null, CancellationToken cancellationToken = default)
@@ -294,12 +299,12 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
         await Db.InsertOrReplaceAsync(document);
     }
 
-    public async Task DeleteDocumentAsync(string id, CancellationToken cancellationToken = default)
-    {
-        await Ready(cancellationToken);
-        await Db.ExecuteAsync("DELETE FROM DocumentTag WHERE DocumentId = ?", id);
-        await Db.ExecuteAsync("DELETE FROM CareDocument WHERE Id = ?", id);
-    }
+    public Task DeleteDocumentAsync(string id, CancellationToken cancellationToken = default) =>
+        RunAtomicAsync(cancellationToken, connection =>
+        {
+            connection.Execute("DELETE FROM DocumentTag WHERE DocumentId = ?", id);
+            connection.Execute("DELETE FROM CareDocument WHERE Id = ?", id);
+        });
 
     public async Task<IReadOnlyList<Tag>> GetTagsAsync(CancellationToken cancellationToken = default)
     {
@@ -315,12 +320,20 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
 
     public async Task SetDocumentTagsAsync(string documentId, IEnumerable<string> tagIds, CancellationToken cancellationToken = default)
     {
-        await Ready(cancellationToken);
-        await Db.ExecuteAsync("DELETE FROM DocumentTag WHERE DocumentId = ?", documentId);
-        foreach (var tagId in tagIds.Distinct(StringComparer.Ordinal))
+        cancellationToken.ThrowIfCancellationRequested();
+        var distinctTagIds = tagIds.Distinct(StringComparer.Ordinal).ToArray();
+        await RunAtomicAsync(cancellationToken, connection =>
         {
-            await Db.ExecuteAsync("INSERT OR IGNORE INTO DocumentTag (DocumentId, TagId) VALUES (?, ?)", documentId, tagId);
-        }
+            connection.Execute("DELETE FROM DocumentTag WHERE DocumentId = ?", documentId);
+            foreach (var tagId in distinctTagIds)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                connection.Execute(
+                    "INSERT OR IGNORE INTO DocumentTag (DocumentId, TagId) VALUES (?, ?)",
+                    documentId,
+                    tagId);
+            }
+        });
     }
 
     public async Task<IReadOnlyList<Tag>> GetDocumentTagsAsync(string documentId, CancellationToken cancellationToken = default)
@@ -368,12 +381,12 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
         await Db.InsertOrReplaceAsync(contact);
     }
 
-    public async Task DeleteEmergencyContactAsync(string id, CancellationToken cancellationToken = default)
-    {
-        await Ready(cancellationToken);
-        await Db.ExecuteAsync("DELETE FROM EmergencyContact WHERE Id = ?", id);
-        await Db.ExecuteAsync("UPDATE PersonProfile SET EmergencyContactId = NULL WHERE EmergencyContactId = ?", id);
-    }
+    public Task DeleteEmergencyContactAsync(string id, CancellationToken cancellationToken = default) =>
+        RunAtomicAsync(cancellationToken, connection =>
+        {
+            connection.Execute("DELETE FROM EmergencyContact WHERE Id = ?", id);
+            connection.Execute("UPDATE PersonProfile SET EmergencyContactId = NULL WHERE EmergencyContactId = ?", id);
+        });
 
     public async Task<string?> GetSettingAsync(string key, CancellationToken cancellationToken = default)
     {
@@ -416,22 +429,57 @@ public sealed class CareNestRepository(SqliteDatabase database) : ICareNestRepos
 
     public async Task ClearAllAsync(CancellationToken cancellationToken = default)
     {
-        await Ready(cancellationToken);
-        var tables = new[]
+        await RunAtomicAsync(cancellationToken, connection =>
         {
-            "DocumentTag", "ScheduleTime", "ReminderOccurrence", "MedicationLogEntry",
-            "StockAdjustment", "MedicineSchedule", "Medicine", "Appointment",
-            "CareDocument", "Tag", "EmergencyContact", "BackupMetadata",
-            "AuditEntry", "PersonProfile", "AppSetting"
-        };
+            foreach (var table in ClearAllTables)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                connection.Execute($"DELETE FROM {table};");
+            }
+        });
 
-        foreach (var table in tables)
+        cancellationToken.ThrowIfCancellationRequested();
+        await Db.ExecuteAsync("VACUUM;");
+    }
+
+    private async Task RunAtomicAsync(
+        CancellationToken cancellationToken,
+        Action<SQLiteConnection> action)
+    {
+        await Ready(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        await Db.RunInTransactionAsync(connection =>
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await Db.ExecuteAsync($"DELETE FROM {table};");
+            action(connection);
+        });
+    }
+
+    private static void DeleteMedicineCascade(
+        SQLiteConnection connection,
+        string medicineId,
+        CancellationToken cancellationToken)
+    {
+        var schedules = connection.Query<MedicineSchedule>(
+            "SELECT * FROM MedicineSchedule WHERE MedicineId = ?",
+            medicineId);
+        foreach (var schedule in schedules)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            DeleteSchedule(connection, schedule.Id);
         }
 
-        await Db.ExecuteAsync("VACUUM;");
+        connection.Execute("DELETE FROM MedicationLogEntry WHERE MedicineId = ?", medicineId);
+        connection.Execute("DELETE FROM StockAdjustment WHERE MedicineId = ?", medicineId);
+        connection.Execute("DELETE FROM ReminderOccurrence WHERE MedicineId = ?", medicineId);
+        connection.Execute("DELETE FROM Medicine WHERE Id = ?", medicineId);
+    }
+
+    private static void DeleteSchedule(SQLiteConnection connection, string scheduleId)
+    {
+        connection.Execute("DELETE FROM ReminderOccurrence WHERE ScheduleId = ?", scheduleId);
+        connection.Execute("DELETE FROM ScheduleTime WHERE MedicineScheduleId = ?", scheduleId);
+        connection.Execute("DELETE FROM MedicineSchedule WHERE Id = ?", scheduleId);
     }
 
     private async Task Ready(CancellationToken cancellationToken)
