@@ -7,7 +7,7 @@ namespace CareNest.Application.Services;
 
 public sealed class MedicineService(
     ICareNestRepository repository,
-    IReminderCoordinator reminderCoordinator,
+    IReminderCoordinator reminders,
     TimeProvider timeProvider) : IMedicineService
 {
     public Task<IReadOnlyList<Medicine>> ListAsync(string? profileId = null, CancellationToken cancellationToken = default) =>
@@ -30,21 +30,54 @@ public sealed class MedicineService(
             EventUtc = timeProvider.GetUtcNow().UtcDateTime,
             SafeSummary = exists ? "Medicine record updated" : "Medicine record created"
         }, cancellationToken);
-        await reminderCoordinator.RebuildAsync(cancellationToken: cancellationToken);
+        await reminders.RebuildAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task SaveScheduleAsync(MedicineSchedule schedule, IReadOnlyCollection<ScheduleTime> times, CancellationToken cancellationToken = default)
+    public async Task SaveScheduleAsync(
+        MedicineSchedule schedule,
+        IReadOnlyCollection<ScheduleTime> times,
+        CancellationToken cancellationToken = default)
     {
         MedicineRules.ValidateSchedule(schedule, times);
         schedule.Touch(timeProvider.GetUtcNow().UtcDateTime);
         await repository.SaveScheduleAsync(schedule, times, cancellationToken);
-        await repository.DeleteFutureOccurrencesForScheduleAsync(schedule.Id, timeProvider.GetUtcNow().UtcDateTime, cancellationToken);
-        await reminderCoordinator.RebuildAsync(cancellationToken: cancellationToken);
+
+        // Rebuild owns platform-request reconciliation. Deleting future rows here would
+        // remove the information required to cancel obsolete platform notifications.
+        await reminders.RebuildAsync(cancellationToken: cancellationToken);
+
+        await repository.AddAuditEntryAsync(new AuditEntry
+        {
+            EntityType = nameof(MedicineSchedule),
+            EntityId = schedule.Id,
+            Action = AuditAction.Updated,
+            EventUtc = timeProvider.GetUtcNow().UtcDateTime,
+            ChangedFieldsCsv = "Schedule",
+            SafeSummary = "Medicine schedule updated"
+        }, cancellationToken);
     }
 
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        await repository.DeleteMedicineCascadeAsync(id, cancellationToken);
+        try
+        {
+            await reminders.CancelFutureForMedicineAsync(id, cancellationToken);
+            await repository.DeleteMedicineCascadeAsync(id, cancellationToken);
+        }
+        catch (Exception primaryFailure)
+        {
+            var recoveryFailure = await TryRestoreReminderRequestsAsync();
+            if (recoveryFailure is not null)
+            {
+                throw new AggregateException(
+                    "Medicine deletion failed and reminder requests could not be fully restored.",
+                    primaryFailure,
+                    recoveryFailure);
+            }
+
+            throw;
+        }
+
         await repository.AddAuditEntryAsync(new AuditEntry
         {
             EntityType = nameof(Medicine),
@@ -53,10 +86,14 @@ public sealed class MedicineService(
             EventUtc = timeProvider.GetUtcNow().UtcDateTime,
             SafeSummary = "Medicine record deleted"
         }, cancellationToken);
-        await reminderCoordinator.RebuildAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task ApplyStockAdjustmentAsync(string medicineId, decimal delta, string? reason, string? logEntryId = null, CancellationToken cancellationToken = default)
+    public async Task ApplyStockAdjustmentAsync(
+        string medicineId,
+        decimal delta,
+        string? reason,
+        string? logEntryId = null,
+        CancellationToken cancellationToken = default)
     {
         var medicine = await repository.GetMedicineAsync(medicineId, cancellationToken)
             ?? throw new InvalidOperationException("Medicine was not found.");
@@ -75,5 +112,18 @@ public sealed class MedicineService(
             Reason = reason,
             MedicationLogEntryId = logEntryId
         }, cancellationToken);
+    }
+
+    private async Task<Exception?> TryRestoreReminderRequestsAsync()
+    {
+        try
+        {
+            await reminders.RebuildAsync(cancellationToken: CancellationToken.None);
+            return null;
+        }
+        catch (Exception recoveryFailure)
+        {
+            return recoveryFailure;
+        }
     }
 }
