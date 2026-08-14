@@ -21,7 +21,14 @@ public partial class ProfileEditorPage : ContentPage, IQueryAttributable
     protected override async void OnDisappearing()
     {
         base.OnDisappearing();
-        await _viewModel.DiscardPendingPhotoAsync();
+        try
+        {
+            await _viewModel.DiscardPendingPhotoAsync();
+        }
+        catch
+        {
+            // Best-effort editor cleanup must not escape an async page lifecycle callback.
+        }
     }
 
     private async void AddContactClicked(object? sender, EventArgs e)
