@@ -8,12 +8,13 @@ namespace CareNest.App.ViewModels;
 
 public sealed class ProfileEditorViewModel : ObservableViewModel
 {
+    private static readonly SemaphoreSlim PhotoGate = new(1, 1);
+
     private readonly IProfileService _profiles;
     private readonly ICareNestRepository _repository;
     private readonly IDocumentStore _documentStore;
     private readonly IAppFileGateway _files;
     private readonly IAppNavigator _navigator;
-    private readonly SemaphoreSlim _photoGate = new(1, 1);
     private string? _profileId;
     private string _name = string.Empty;
     private DateTime _dateOfBirth = DateTime.Today.AddYears(-30);
@@ -148,7 +149,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
 
     public async Task DiscardPendingPhotoAsync()
     {
-        await _photoGate.WaitAsync();
+        await PhotoGate.WaitAsync();
         try
         {
             try
@@ -166,7 +167,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
         }
         finally
         {
-            _photoGate.Release();
+            PhotoGate.Release();
         }
     }
 
@@ -196,7 +197,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
                 throw new InvalidDataException("Choose a JPEG or PNG image.");
             }
 
-            await _photoGate.WaitAsync(ct);
+            await PhotoGate.WaitAsync(ct);
             try
             {
                 await using var input = await picked.OpenReadAsync(ct);
@@ -234,14 +235,14 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
             }
             finally
             {
-                _photoGate.Release();
+                PhotoGate.Release();
             }
         }, "CareNest could not store this profile photo.");
 
     private Task RemovePhotoAsync() =>
         RunAsync(async ct =>
         {
-            await _photoGate.WaitAsync(ct);
+            await PhotoGate.WaitAsync(ct);
             try
             {
                 await DeleteStagedPhotoIfNeededAsync();
@@ -251,7 +252,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
             }
             finally
             {
-                _photoGate.Release();
+                PhotoGate.Release();
             }
         }, "CareNest could not stage profile photo removal.");
 
@@ -371,7 +372,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
         RunAsync(async ct =>
         {
             string? obsoletePhoto = null;
-            await _photoGate.WaitAsync(ct);
+            await PhotoGate.WaitAsync(ct);
             try
             {
                 var profile = _profileId is null
@@ -409,7 +410,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
             }
             finally
             {
-                _photoGate.Release();
+                PhotoGate.Release();
             }
 
             await _navigator.GoBackAsync(ct);
