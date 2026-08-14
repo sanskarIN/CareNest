@@ -8,6 +8,10 @@ internal sealed class DocumentStoreSpy : IDocumentStore
 
     public byte[] ExportPayload { get; set; } = [];
 
+    public bool ThrowAfterExportWrite { get; set; }
+
+    public HashSet<string> DeleteFailures { get; } = new(StringComparer.Ordinal);
+
     public List<string> DeletedFiles { get; } = [];
 
     public List<string> StoredFiles { get; } = [];
@@ -50,12 +54,20 @@ internal sealed class DocumentStoreSpy : IDocumentStore
         CancellationToken cancellationToken = default)
     {
         await destination.WriteAsync(ExportPayload, cancellationToken);
+        if (ThrowAfterExportWrite)
+        {
+            throw new InvalidDataException("export failed after writing plaintext");
+        }
     }
 
     public Task DeleteAsync(string encryptedFileName, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         DeletedFiles.Add(encryptedFileName);
+        if (DeleteFailures.Contains(encryptedFileName))
+        {
+            throw new IOException("delete failed");
+        }
         return Task.CompletedTask;
     }
 }
