@@ -12,7 +12,8 @@ CareNest documentation should be:
 - clear about what is automated evidence vs manual release evidence;
 - discoverable from `docs/README.md` and root `README.md`;
 - maintained alongside behavior changes;
-- honest about known risks and limitations.
+- honest about known risks and limitations;
+- explicit when a former risk has been remediated in source but still has separate packaged-compatibility evidence outstanding.
 
 ## Canonical documentation hub
 
@@ -47,6 +48,8 @@ Examples:
 
 Architecture documentation should explain ownership, trust boundaries, data flow, failure modes, and project-layer responsibilities.
 
+For workflows that span SQLite/filesystem/secure storage/OS scheduling, document compensation/reconciliation behavior instead of implying a single transaction exists across those independent state surfaces.
+
 ### Security/privacy documentation
 
 Examples:
@@ -72,7 +75,7 @@ Examples:
 - store submission checklist;
 - release evidence/protocol.
 
-These documents must distinguish automated checks, manual checks, store-policy decisions, signing, and final release approval.
+These documents must distinguish automated checks, manual checks, store-policy decisions, signing, exact-tag gates, evidence retention, and final release approval.
 
 ## Medical-safety wording
 
@@ -95,12 +98,21 @@ Medicine strength/instruction text remains user-entered opaque text.
 
 Documentation should distinguish:
 
-- deterministic reminder occurrence materialization; and
-- operating-system notification delivery.
+- deterministic reminder occurrence materialization;
+- persisted CareNest reminder state; and
+- operating-system notification scheduling/delivery.
 
-Accurate wording can describe deterministic occurrence generation, explicit schedules, time-zone/DST behavior, and platform limitations.
+Accurate wording can describe deterministic occurrence generation, explicit schedules, time-zone/DST behavior, effective snooze due time, cancellation/replacement ordering, compensation/recovery, and platform limitations.
 
-Avoid unsupported promises such as `never miss a dose`.
+Current consistency language should reflect that:
+
+- `SnoozedUntilUtc` is the effective due time for a valid snooze;
+- CareNest cancels an old platform request before replacement, suppression, invalidation, or handled-state persistence;
+- platform cancellation failure remains retryable;
+- medicine/profile/appointment flows use compensation where database and OS scheduler state can fail independently;
+- handled reminder actions attempt non-cancelled previous-state/rebuild recovery if a later step fails.
+
+Avoid unsupported promises such as `never miss a dose` or wording that treats database state as proof the OS request changed successfully.
 
 ## Local-first wording
 
@@ -121,6 +133,8 @@ Be precise:
 
 - imported document payloads are encrypted;
 - manual backups are encrypted;
+- new encrypted document/backup streams use authenticated framing v2;
+- legacy framing v1 remains readable for compatibility;
 - app-lock verifier material is protected through secure storage;
 - SQLite database is **not** claimed to have transparent whole-database encryption.
 
@@ -128,12 +142,25 @@ Do not use `fully encrypted` for the entire product unless a future implementati
 
 ## Dependency-risk wording
 
-Known advisory `GHSA-2m69-gcr7-jv3q` remains open for the current SQLitePCLRaw native path until actually resolved/approved.
+The former `GHSA-2m69-gcr7-jv3q` CareNest source exception is remediated in the current RC1 graph.
+
+Accurate current wording:
+
+- `sqlite-net-pcl` remains on the existing application API path;
+- `SQLitePCLRaw.bundle_green` remains `2.1.11`;
+- central transitive pinning selects maintained native/provider leaves;
+- `SQLitePCLRaw.lib.e_sqlite3` is pinned to `3.53.3`;
+- Android native/provider leaves and selected providers are pinned to `2.1.12`;
+- the exact old `NuGetAuditSuppress` entry is removed;
+- `SqliteDependencySecurityContractTests` protects the package floor/suppression absence;
+- unsuppressed Dependency Audit is a required gate.
 
 Rules:
 
 - `NuGetAuditSuppress` is not a fix;
-- do not call a dependency upgraded unless the graph actually changed;
+- do not call a dependency upgraded unless the resolved graph actually changed;
+- do not describe source remediation as proof of packaged existing-database/encrypted-data compatibility;
+- do not reintroduce the old suppression merely because manual packaged compatibility work remains incomplete;
 - record exact package/provider evidence;
 - keep `DEPENDENCY_RISK_REGISTER.md` authoritative.
 
@@ -141,7 +168,8 @@ Rules:
 
 When citing automated verification include:
 
-- exact source SHA;
+- exact source/base SHA;
+- verification marker/head SHA when applicable;
 - PR number;
 - CI run number/ID;
 - test counts;
@@ -150,22 +178,28 @@ When citing automated verification include:
 - Dependency Audit run;
 - marker-only/closed-without-merge status when using the exact-head protocol.
 
-Do not attribute old verification to newer runtime source that has changed.
+Do not attribute old verification to newer runtime/test/workflow/package/build-script source that has changed.
+
+Workflow, test, build-script, package, and platform-configuration changes are verification-relevant even when application runtime code did not change.
 
 ## Documentation-only commits after a verified source
 
-If changes after an exact verified source SHA are documentation-only:
+If changes after an exact verified source SHA are truly documentation-only:
 
 - say they are documentation-only;
 - do not claim the later documentation head itself was platform-build verified unless it was;
-- use a commit comparison to prove no runtime/test/project/workflow/package/platform files changed;
-- keep the verified runtime source SHA separate from the documentation head SHA.
+- use a commit comparison to prove no runtime/test/project/workflow/package/platform/build-script files changed;
+- keep the verified source SHA separate from the documentation head SHA.
+
+This documentation-only exception does **not** apply when tests, workflows, release scripts, package files, project files, or platform configuration changed.
 
 ## Manual evidence wording
 
-Do not mark a manual device/accessibility/store/signing task complete unless it was actually performed.
+Do not mark a manual device/accessibility/store/signing/packaged-data task complete unless it was actually performed.
 
 `MANUAL_TEST_MATRIX.md` is an evidence record, not a statement of intent.
+
+A clean NuGet audit is not packaged SQLite upgrade evidence. A green platform compile is not real notification-delivery evidence.
 
 ## Store policy wording
 
@@ -216,7 +250,44 @@ Commands in documentation should:
 - match the current project layout;
 - use the repository's `CareNestTargetFramework` pattern for MAUI target builds;
 - avoid assuming all platform workloads are installed on every host;
+- match current CI-backed workload commands where practical;
+- treat unsuppressed dependency audit as blocking in release/quality-gate examples;
 - keep signing secrets outside command examples checked into Git.
+
+## Git identity wording
+
+Requested local maintainer identity:
+
+- name: `Sanskar`;
+- email: `sanskarin@outlook.in`.
+
+Document this as **repository-local** Git configuration (`git config --local`).
+
+Do not claim GitHub web/API/connector commits used that local email unless their commit metadata actually proves it. Authenticated connector commits can use the GitHub account identity.
+
+## Release workflow wording
+
+Production tags matching `v*` are intended to run the exact tagged commit through:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
+
+Release Evidence should be documented as:
+
+- source/ref/run provenance;
+- tracked-file manifest/checksums;
+- all three core TRX suites;
+- transitive dependency inventories;
+- workspace integrity;
+- evidence checksums;
+- upload of available evidence even when a component fails;
+- aggregate failure after the evidence upload;
+- artifact identity containing commit SHA, run ID, and run attempt.
+
+A failed Release Evidence run can have an artifact; artifact existence alone is never approval.
 
 ## Links
 
@@ -247,7 +318,8 @@ For a new feature, document where applicable:
 11. automated tests;
 12. manual release checks;
 13. store disclosure changes;
-14. known limitations.
+14. known limitations;
+15. release workflow/evidence impact when applicable.
 
 ## Schema changes
 
@@ -269,7 +341,8 @@ A security-sensitive change should review/update:
 - `LOGGING_PRIVACY.md` if logging changes;
 - dependency risk register if dependencies change;
 - security release review;
-- tests/contracts.
+- tests/contracts;
+- release workflow/evidence documentation if the security gate changes.
 
 ## Documentation review checklist
 
@@ -279,7 +352,10 @@ Before merging/pushing documentation:
 - no manual task is falsely checked complete;
 - medical-safety wording is preserved;
 - privacy/encryption wording is precise;
-- known dependency risk remains accurate;
+- dependency risk/remediation state is current;
+- source remediation and packaged compatibility are not conflated;
+- reminder persistence/OS scheduler reconciliation wording is current;
+- exact-tag/release-evidence behavior matches workflow source;
 - links work conceptually/paths exist;
 - current baseline evidence numbers are consistent;
 - new docs are linked from `docs/README.md`;
@@ -302,12 +378,28 @@ It should record:
 
 It must remain factual and must not describe unperformed work as completed.
 
-## Current verified source baseline
+## Current verification lineage
 
-Latest exact runtime/test source baseline:
+### Authoritative completed bug-audit baseline
 
-`c61f3c31c4ba33419c7b348fc8ee63a58eaa637b`
+PR #54 verified source/base SHA:
 
-Verified through PR #30 with CI #248, CodeQL #248, Dependency Audit #10, 141 core tests, and Android/Windows/iOS simulator/Mac Catalyst Release builds successful.
+`4490f3f86752841d436e981b29279970c90c947b`
 
-Documentation changes after that baseline do not replace the runtime source SHA unless runtime/test/project/workflow/package/platform files are changed and reverified.
+Evidence:
+
+- CareNest CI #503 / `31766059137`: success;
+- 122 unit + 39 integration + 100 UI-contract = 261 core tests;
+- Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- CodeQL #503 / `31766059215`: success;
+- unsuppressed Dependency Audit #35 / `31766059132`: success.
+
+PR #54 was marker-only and closed without merge.
+
+### Later release-engineering hardening
+
+Release workflow, tests, quality/preflight scripts, and documentation changed after PR #54, so PR #54 cannot be used as verification for the newer release-engineering source.
+
+Superseded PR #55 demonstrated 122 unit + 39 integration + 116 UI-contract = 277 core tests, Android/Windows, CodeQL #547 / `31769940053`, and unsuppressed Dependency Audit #38 / `31769940039` before further confirmed release-tooling/documentation fixes required a new exact-source verification.
+
+The final current `main` head must receive a complete marker-only matrix before it becomes the new authoritative release-engineering baseline.
