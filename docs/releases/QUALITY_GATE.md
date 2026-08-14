@@ -113,38 +113,38 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - Unsuppressed Dependency Audit passes.
 - Release Evidence artifacts are generated for the exact final release commit before production publication.
 
-## Current exact automated candidate
+## Current exact automated baseline
 
-The older PR #33 baseline is historical. The 2026-08-14 bug audit continued through reminder reconciliation/failure recovery, report-cache cleanup and SQLite dependency remediation.
+The older PR #33 baseline is historical. The 2026-08-14 bug audit continued through reminder reconciliation/failure recovery, appointment persistence compensation, report-cache cleanup, SQLite dependency remediation, and cancellation-first reminder action recovery.
 
-Latest exact runtime/test source covered by the current marker-only verification:
+Authoritative marker-only verification: PR #54 — `Verify final CareNest bug-audit source`.
 
-`da2aed19ee9224b8d8661f11520ab9396e2c005e`
+Verified runtime/test/dependency source/base SHA:
 
-Verification PR #53 marker head:
+`4490f3f86752841d436e981b29279970c90c947b`
 
-`f648bad8ea666dfb0a13e594577dee7a80d141c6`
+Verification marker head:
 
-Evidence already green:
+`929168a0a319b15d9e89997d86436d59ae731ad1`
 
-- CareNest CI #501 / `31766026734`: in progress overall only because Apple Release is still running;
-- platform-neutral formatting: success;
+Final evidence:
+
+- CareNest CI #503 / `31766059137`: **success**;
+- platform-neutral formatting: **success**;
 - **122 unit tests**: passed;
 - **39 integration tests**: passed;
 - **100 UI-contract/policy tests**: passed;
 - **261 total core tests**: passed;
-- Android Release: success;
-- Windows Release: success;
-- CodeQL #501 / `31766026573`: success;
-- Dependency Audit #34 / `31766026570`: success without the former SQLite audit suppression.
+- Android Release: **success**;
+- Windows Release: **success**;
+- iOS simulator Release: **success**;
+- Mac Catalyst Release: **success**;
+- CodeQL #503 / `31766059215`: **success**;
+- unsuppressed Dependency Audit #35 / `31766059132`: **success**, including platform-neutral and Android MAUI app dependency graphs.
 
-Remaining PR #53 automated work at this document update:
+PR #54 was closed without merge. Its verification marker is not part of `main`. Documentation-only commits after the source boundary do not alter the runtime/test/dependency graph exercised by PR #54.
 
-- iOS simulator Release: in progress;
-- Mac Catalyst Release: pending behind iOS;
-- overall CareNest CI conclusion: pending those Apple steps.
-
-PR #53 changes only its verification marker beyond its source snapshot and must be closed without merging the marker after all evidence is recorded.
+`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` records the final evidence in one place.
 
 ### Verification failures retained as evidence of gate behavior
 
@@ -157,8 +157,9 @@ PR #53 changes only its verification marker beyond its source snapshot and must 
 - PR #49 exposed CA1861 in new reminder reconciliation assertions; tests were corrected instead of suppressing the analyzer.
 - PRs #47/#48/#50 supplied useful unsuppressed SQLite-audit evidence while source was moving, but were not final combined-source baselines.
 - PRs #51/#52 were superseded when later runtime/test source changed.
+- PR #53 independently corroborated the final source but was closed as duplicate verification after PR #54 completed the full matrix.
 
-This automated candidate is necessary but not sufficient for final public release. The final promoted commit still needs fresh Release Evidence after all manual/store/signing/existing-data compatibility blockers are complete.
+This automated baseline is necessary but not sufficient for final public release. The exact promoted production commit still needs Release Evidence after all manual/store/signing/existing-data compatibility blockers are complete.
 
 ## Manual evidence
 
