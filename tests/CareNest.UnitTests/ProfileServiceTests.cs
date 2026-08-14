@@ -15,13 +15,14 @@ public sealed class ProfileServiceTests
     public async Task SaveAsync_NewProfile_PersistsCreatedAuditAndUtcTouch()
     {
         var repository = new RecordingRepository();
-        var service = CreateService(repository, new DocumentStoreSpy(), out _);
+        var service = CreateService(repository, new DocumentStoreSpy(), out var reminders);
         var profile = new PersonProfile { Id = "profile-1", Name = "Alex" };
 
         await service.SaveAsync(profile);
 
         Assert.Same(profile, repository.SavedProfile);
         Assert.Equal(Now.UtcDateTime, profile.UpdatedUtc);
+        Assert.Equal(1, reminders.RebuildCount);
         var audit = Assert.Single(repository.AuditEntries);
         Assert.Equal(AuditAction.Created, audit.Action);
         Assert.Equal(profile.Id, audit.EntityId);
@@ -33,14 +34,31 @@ public sealed class ProfileServiceTests
     {
         var profile = new PersonProfile { Id = "profile-1", Name = "Alex" };
         var repository = new RecordingRepository { ExistingProfile = profile };
-        var service = CreateService(repository, new DocumentStoreSpy(), out _);
+        var service = CreateService(repository, new DocumentStoreSpy(), out var reminders);
 
         await service.SaveAsync(profile);
 
+        Assert.Equal(1, reminders.RebuildCount);
         var audit = Assert.Single(repository.AuditEntries);
         Assert.Equal(AuditAction.Updated, audit.Action);
         Assert.Equal("profile", audit.ChangedFieldsCsv);
         Assert.Equal("Profile updated", audit.SafeSummary);
+    }
+
+    [Fact]
+    public async Task SaveAsync_AuditFails_AfterReminderReconciliation()
+    {
+        var repository = new RecordingRepository
+        {
+            AuditFailure = new InvalidOperationException("test audit failure")
+        };
+        var service = CreateService(repository, new DocumentStoreSpy(), out var reminders);
+        var profile = new PersonProfile { Id = "profile-1", Name = "Alex", IsArchived = true };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.SaveAsync(profile));
+
+        Assert.Same(profile, repository.SavedProfile);
+        Assert.Equal(1, reminders.RebuildCount);
     }
 
     [Fact]
@@ -135,6 +153,8 @@ public sealed class ProfileServiceTests
 
         public Exception? DeleteProfileFailure { get; set; }
 
+        public Exception? AuditFailure { get; set; }
+
         public IReadOnlyList<CareDocument> Documents { get; init; } = Array.Empty<CareDocument>();
 
         public List<AuditEntry> AuditEntries { get; } = [];
@@ -173,6 +193,11 @@ public sealed class ProfileServiceTests
         public override Task AddAuditEntryAsync(AuditEntry entry, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (AuditFailure is not null)
+            {
+                return Task.FromException(AuditFailure);
+            }
+
             AuditEntries.Add(entry);
             return Task.CompletedTask;
         }
