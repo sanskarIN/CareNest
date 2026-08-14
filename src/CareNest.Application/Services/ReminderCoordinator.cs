@@ -92,6 +92,20 @@ public sealed class ReminderCoordinator(
         string? note = null,
         CancellationToken cancellationToken = default)
     {
+        if (newState is not (
+            ReminderState.Snoozed or
+            ReminderState.Taken or
+            ReminderState.Skipped or
+            ReminderState.Delayed or
+            ReminderState.Missed or
+            ReminderState.Cancelled))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(newState),
+                newState,
+                "Reminder actions must be snoozed, taken, skipped, delayed, missed, or cancelled.");
+        }
+
         var occurrence = await repository.GetOccurrenceAsync(occurrenceId, cancellationToken)
             ?? throw new InvalidOperationException("Reminder occurrence was not found.");
         var now = timeProvider.GetUtcNow().UtcDateTime;
