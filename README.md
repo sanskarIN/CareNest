@@ -14,17 +14,35 @@ CareNest is currently tracked as:
 
 The earlier README statement that PR #43 was a fully green automated baseline was incorrect. GitHub Actions records show that PR #43 passed formatting, platform builds, CodeQL, and Dependency Audit, but its core CI failed during integration testing and the UI-contract suite was skipped. PR #43 is therefore **not** release evidence.
 
-The reminder-reconciliation defects exposed by that failed run have been corrected on `main`, together with follow-up platform-cancellation, compensation, appointment-reminder, report-cache, analyzer, and failure-recovery fixes. The current exact-source verification checkpoint is PR #53. Until every required PR #53 job completes successfully, it is a verification candidate rather than a promoted release baseline.
+The defects exposed by the continuing 2026-08-14 audit were corrected on `main`, including reminder effective-due/stale-request reconciliation, platform cancellation/compensation, appointment persistence compensation, cancellation-first reminder actions, report-cache cleanup, analyzer corrections, and SQLite native/provider dependency remediation.
+
+The authoritative final automated bug-audit baseline is marker-only PR #54, closed without merge after all required gates succeeded:
+
+- CareNest CI #503 / run `31766059137`: success;
+- formatting: success;
+- unit tests: 122 passed;
+- integration tests: 39 passed;
+- UI-contract/policy tests: 100 passed;
+- total automated tests: 261 passed;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL #503 / run `31766059215`: success;
+- unsuppressed Dependency Audit #35 / run `31766059132`: success.
+
+PR #53 independently completed a duplicate green verification of the same final runtime/test graph, but PR #54 is the recorded authoritative checkpoint. Verification marker files from these PRs are not part of `main`.
 
 See:
 
 - [`PROJECT_STATUS.md`](PROJECT_STATUS.md)
 - [`what_changed.md`](what_changed.md)
+- [`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md)
 - [`docs/releases/BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/BUG_AUDIT_VERIFICATION_20260814.md)
 - [`docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md)
 - [`docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md)
 
-The previously tracked SQLite native dependency advisory has been remediated in the current source graph: the maintained native/provider leaves are centrally pinned, the exact NuGet audit suppression has been removed, and a regression contract prevents the old dependency/suppression baseline from silently returning. Final production promotion still requires the complete automated matrix and the normal manual existing-database/backup/device checks.
+The previously tracked SQLite native dependency exception has been remediated in the verified source graph: maintained native/provider leaves are centrally pinned, the exact NuGet audit suppression has been removed, the dependency contract prevents the old dependency/suppression baseline from silently returning, and the final source passed unsuppressed Dependency Audit. Final production promotion still requires the normal manual existing-database/backup/device compatibility checks.
 
 ## Highlights
 
@@ -107,6 +125,7 @@ Important current references:
 
 - [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — current automated baseline and real production blockers.
 - [`what_changed.md`](what_changed.md) — complete active continuation handoff.
+- [`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — authoritative final PR #54 automated evidence.
 - [`docs/releases/BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/BUG_AUDIT_VERIFICATION_20260814.md) — 2026-08-14 bug-audit evidence and corrections.
 - [`docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — defect-to-test map.
 - [`docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md) — security/privacy-relevant audit notes.
@@ -202,14 +221,14 @@ The optional app lock is a local privacy barrier. It is not represented as trans
 
 ## SQLite dependency remediation
 
-The previously tracked `GHSA-2m69-gcr7-jv3q` SQLite native dependency path is remediated in the current source graph.
+The previously tracked `GHSA-2m69-gcr7-jv3q` SQLite native dependency path is remediated in the verified source graph.
 
 Current controls include:
 
 - central transitive pinning of maintained SQLite native/provider leaves;
 - removal of the exact advisory `NuGetAuditSuppress` entry;
 - an automated dependency-security contract that rejects restoration of the old native/provider floor or audit suppression;
-- unsuppressed Dependency Audit verification;
+- successful unsuppressed Dependency Audit #35 / run `31766059132` on the final verified source;
 - continued existing-database/backup/platform validation in the release checklist.
 
 See:
@@ -221,12 +240,13 @@ This remediation does not change CareNest into a networked database product and 
 
 ## Release engineering
 
-Automated source verification is necessary but not sufficient for public production promotion.
+The automated 2026-08-14 runtime/test/dependency source baseline is fully green under PR #54, but automated source verification is necessary rather than sufficient for public production promotion.
 
-Still required include real-device/accessibility checks, existing-database and encrypted-data compatibility checks, current store-policy review, signing/package work, store metadata, and final Release Evidence for the exact promoted commit.
+Still required include real-device/accessibility checks, packaged existing-database and encrypted-data compatibility checks, current store-policy review, signing/package work, store metadata, and final Release Evidence for the exact promoted commit.
 
 See:
 
+- [`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md)
 - [`docs/releases/RELEASE_PROCESS.md`](docs/releases/RELEASE_PROCESS.md)
 - [`docs/releases/RELEASE_CHECKLIST.md`](docs/releases/RELEASE_CHECKLIST.md)
 - [`docs/releases/RELEASE_EVIDENCE.md`](docs/releases/RELEASE_EVIDENCE.md)
