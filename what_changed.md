@@ -1,1332 +1,1172 @@
-# what_changed.md
+# CareNest — Active Complete Continuation Handoff
 
-## CareNest complete continuation handoff — 2026-08-14 final bug-audit state
+This file is the current detailed handoff for ongoing CareNest work.
 
-This is the active detailed CareNest handoff after the repository-wide 2026-08-14 correctness, failure-safety, privacy, persistence, export, backup, notification, platform-lifecycle and regression-test audit.
+The exact previous `what_changed.md` content that existed before the final documentation-completion pass is preserved byte-for-byte at:
 
-Repository: `https://github.com/sanskarIN/CareNest`  
-Branch: `main`  
-Release target: `1.0.0-rc.1`  
-Framework: .NET 10 / .NET MAUI  
-Primary language: C#  
-License: Apache-2.0  
-Business email: `sanskarin@outlook.in`  
-Support email: `supportramsandesh@gmail.com`  
-Creator: `https://github.com/sanskarIN`  
-Voluntary project support: `https://buymeacoffee.com/sanskarIN`  
-Watermark: `Made by the Sanskar`
+`docs/history/pre-complete-docs-20260814/what_changed.md`
+
+Earlier long-form handoffs are also preserved under `docs/history/`.
+
+This active file supersedes older **current-status** statements while retaining historical evidence through those archived files. It must not be interpreted as proof that unperformed manual/device/store/signing work has been completed.
 
 ---
 
-# Historical continuity — no earlier work discarded
+# 1. Project identity and current release line
 
-The new active handoff does not erase the earlier project record.
+- Project: **CareNest**
+- Repository: `https://github.com/sanskarIN/CareNest`
+- Default branch: `main`
+- Current release line: `1.0.0-rc.1`
+- Creator/GitHub profile: `https://github.com/sanskarIN`
+- Business email: `sanskarin@outlook.in`
+- Support email: `supportramsandesh@gmail.com`
+- Voluntary project support: `https://buymeacoffee.com/sanskarIN`
+- Watermark: `Made by the Sanskar`
+- License: Apache License 2.0
 
-Complete preserved/reference material already in the repository includes:
+Requested repository-local Git identity:
 
-- `docs/history/what_changed_full_through_phase8.md` — complete early implementation/hardening/verification history;
-- `docs/history/what_changed_documentation_through_20260812.md` — complete documentation-completion handoff;
-- `docs/history/what_changed_through_pr33_20260813.md` — exact previous long handoff through the PR #33 service/document/backup/AEAD-v2 baseline;
-- `docs/history/PROJECT_STATUS_through_PR33.md` — exact previous PR #33-era status snapshot;
-- `docs/history/README_through_PR33.md` — preserved previous README snapshot;
-- `docs/releases/SETTINGS_LIFECYCLE_VERIFICATION_20260813.md` — full Settings lifecycle recovery/verification record;
-- `docs/releases/PHASE9_VERIFICATION_EVIDENCE.md` — PR #36 Phase 9 exact-head evidence;
-- `docs/releases/POST_VERIFICATION_COMPARE_20260813.md` — previous post-verification documentation-only source-boundary evidence;
-- `docs/releases/CHANGELOG_PHASE9_20260813.md` — previous Phase 9 change record;
-- `docs/security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md` — local-data clear security model;
-- `docs/testing/SETTINGS_LIFECYCLE_CONTRACT.md` — Settings lifecycle regression contract;
-- `docs/privacy/LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md` — local privacy cleanup boundary.
+```bash
+git config --local user.name "Sanskar"
+git config --local user.email "sanskarin@outlook.in"
+```
 
-The pre-audit active handoff also remains recoverable from Git history. This file advances the active record rather than pretending the earlier implementation never existed.
+Current continuation commits created through the GitHub repository interface show author/committer metadata as `Sanskar <sanskarin@outlook.in>`.
 
 ---
 
-# Product and medical-safety boundary retained
+# 2. Product boundary that must not change accidentally
 
-CareNest remains a local-first organizational application.
+CareNest is a local-first organizational health app.
 
-CareNest does **not**:
+Current v1 intentionally does **not**:
 
 - diagnose conditions;
-- determine, calculate, or infer medicine dosage;
+- calculate or infer medicine dosage;
 - recommend treatment;
-- perform medication-interaction checking as a clinical feature;
+- perform clinical medication-interaction checking;
 - create clinical risk scores;
-- independently verify medication adherence;
-- replace a clinician or pharmacist;
+- replace a clinician/pharmacist;
 - provide emergency services;
-- guarantee reminder/notification delivery.
+- guarantee notification delivery;
+- require a CareNest account/backend;
+- automatically synchronize health records to a CareNest cloud service;
+- silently upload analytics/telemetry containing user state;
+- silently share health information with caregivers or other users.
 
-Medicine strength and instruction values remain opaque user-entered text.
+Medicine strength/instruction values remain opaque user-entered text.
 
-Reminder times, snoozes, stock estimates and reports remain based on explicit user-entered/configured values. The 2026-08-14 work changes software correctness/failure handling only; it introduces no medical interpretation.
-
----
-
-# Local-first/privacy boundary retained
-
-Current v1 still has:
-
-- no required CareNest account;
-- no required CareNest backend/server;
-- no automatic CareNest cloud synchronization;
-- no silent caregiver sharing;
-- no hidden analytics/telemetry client;
-- local SQLite structured records;
-- separately encrypted imported document payloads;
-- manual password-encrypted backups;
-- explicit user-controlled report/document/calendar sharing and export;
-- optional local app lock;
-- privacy-minimized logging/diagnostics.
-
-The SQLite database is not described as transparently whole-database encrypted. Document payloads and manual backup payloads retain separate authenticated-encryption boundaries.
+Reminder planning comes only from explicit user-entered schedule values.
 
 ---
 
-# Previous automated baseline before this bug audit
+# 3. Current source architecture
 
-The immediately preceding exact automated source baseline was PR #36, verified on 2026-08-13.
+Solution projects:
 
-PR #36 evidence included:
+```text
+src/CareNest.Shared
+src/CareNest.Domain
+src/CareNest.Application
+src/CareNest.Infrastructure
+src/CareNest.App
 
-- formatting success;
-- 106 unit tests;
-- 30 integration tests;
-- 56 UI-contract/policy tests;
-- 192 total core tests;
-- Android Release success;
-- Windows Release success;
-- iOS simulator Release success;
-- Mac Catalyst Release success;
-- CodeQL success;
-- Dependency Audit success.
+tests/CareNest.UnitTests
+tests/CareNest.IntegrationTests
+tests/CareNest.UiTests
+```
 
-PR #36 was marker-only and closed without merge.
+Intended dependency direction:
 
-The 2026-08-14 source work below supersedes PR #36 as the current automated baseline.
+```text
+CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure <- CareNest.App
+```
 
----
+Key rules:
 
-# 2026-08-14 bug-audit goals
+- platform-neutral projects do not depend on MAUI;
+- ViewModels do not issue SQL directly;
+- current local-first v1 runtime does not casually add network/telemetry clients;
+- deterministic reminder planning remains platform-neutral;
+- SQLite persisted reminder state and operating-system request state are treated as separate surfaces;
+- security/privacy/manual-release limits are documented rather than hidden.
 
-The user requested all project errors/bugs to be fixed and the complete project continued with maximum logical commits.
+Detailed references:
 
-The audit therefore reviewed and hardened, rather than merely cosmetically editing:
-
-- secure-store multi-key consistency;
-- document master-key behavior;
-- encrypted document export cleanup;
-- profile deletion cleanup;
-- profile photo staging and preview lifetime;
-- onboarding rollback;
-- SQLite migration consistency;
-- repository multi-step transaction boundaries;
-- full structured-data clear ordering;
-- ViewModel refresh/reentrancy;
-- reminder/medication-log enum input validation;
-- Android broadcast receiver async lifetime;
-- Windows reminder timer races;
-- backup/restore completion semantics and rollback;
-- CSV spreadsheet safety;
-- CSV/PDF/JSON partial-file behavior;
-- report selection refresh;
-- reminder planner DST/overflow edges;
-- startup recovery isolation;
-- SQLite-row ↔ OS-notification reconciliation;
-- medicine/profile deletion alarm cleanup;
-- direct behavioral regression tests;
-- repository-wide source policy scan;
-- exact-head formatting/tests/platform builds/CodeQL/dependency audit.
+- `docs/COMPLETE_PROJECT_DOCUMENTATION.md`
+- `docs/CODEBASE_REFERENCE.md`
+- `docs/architecture/ARCHITECTURE.md`
+- `docs/architecture/SERVICE_BOUNDARIES.md`
+- `docs/architecture/APPLICATION_FLOWS.md`
 
 ---
 
-# Detailed fix ledger
-
-## 1. App-lock PIN replacement rollback
-
-Commit:
-
-`fd0b5dfb5de289c8c8002aff5de45acdf77af043`
-
-App-lock PIN replacement now snapshots the previous:
-
-- enabled flag;
-- PBKDF2 salt;
-- verifier.
-
-If any new secure-store write fails, CareNest attempts non-cancelled restoration of the previous state.
-
-New/previous mutable salt/verifier buffers are cleared where application-owned managed-memory control permits.
-
-## 2. App-lock rollback/buffer contract
-
-Commit:
-
-`ab2aa0055ab97f85f4815f4854eafd0c87035f8e`
-
-Automated contracts protect secure-store rollback and mutable-buffer clearing.
-
-## 3. App-lock disable rollback
-
-Commit:
-
-`93aaea2d59d6611e9499fc29cb2d422741fced64`
-
-Disable snapshots previous app-lock material and restores it if removal fails part way through.
-
-## 4. App-lock disable rollback contract
-
-Commit:
-
-`9ba5a821610ed79df2da2b41bc1857d60014a2bd`
-
-Regression coverage protects partial-disable compensation.
-
-## 5. App-lock corrupt-material fail-closed verification
-
-Later audit hardening further requires:
-
-- salt exactly 16 bytes;
-- verifier exactly 32 bytes;
-- invalid entered PIN shape rejected before PBKDF verification;
-- corrupt/missing stored material returns false instead of deriving from an attacker/corruption-controlled length;
-- PBKDF output remains exactly 32 bytes;
-- no plaintext PIN persistence;
-- numeric 6–32 digit policy retained.
-
-`tests/CareNest.UiTests/AppLockSecurityContractTests.cs` protects these invariants.
-
----
-
-# Document-vault key safety
-
-## 6. Fail closed instead of silently replacing a missing document key
-
-Commit:
-
-`69d925b197de281f1c29cfd8d63e4f28687b60a9`
-
-Behavior:
-
-- read/export never creates a replacement master key;
-- import creates a key only when no existing encrypted payload depends on one;
-- existing `.cndoc` payloads plus a missing/corrupt key fail closed.
-
-This prevents CareNest from creating a new unrelated key that would strand existing encrypted documents.
-
-## 7. Document-key persistence tracking
-
-Commit:
-
-`707286412775d2aefd2ec175baa4afb36b0a7b04`
-
-Regression support tracks secure-store key persistence behavior.
-
-## 8. Document-key integration tests
-
-Commit:
-
-`23dc160b8dba2c6720e5ebb81f394c20ca51709e`
-
-Integration coverage includes missing/invalid key behavior, no silent replacement, tamper handling and mutable key-buffer hygiene.
-
----
-
-# Plaintext document export cleanup
-
-## 9. Failed export removes plaintext artifacts
-
-Commit:
-
-`94430a17b696bc18b8e6e83825dfd316d30292b1`
-
-`DocumentService.ExportToTemporaryFileAsync` now cleans plaintext output created by a failed decrypt/export/audit operation.
-
-If the primary operation and cleanup both fail, incomplete cleanup is surfaced instead of silently ignored.
-
-## 10. Document-store failure injection
-
-Commit:
-
-`0da854fe74b11fa9a992e770c340a2eed4a61548`
-
-The document-store test double can inject failures for cleanup regression tests.
-
-## 11. Plaintext export cleanup unit coverage
-
-Commit:
-
-`4020edadee7a754bb71138a603509d1dccdcaa85`
-
-Unit tests cover partial/complete plaintext cleanup on failed export paths.
-
-## 12. Successful document exports use managed cache
-
-Later audit work routes successful decrypted temporary exports into:
-
-`FileSystem.Current.CacheDirectory/Exports`
-
-instead of the cache root.
-
-Settings Clear Cache already owns the `Exports` directory, so successful temporary decrypted exports now participate in user-visible cache cleanup.
-
-`tests/CareNest.UiTests/DocumentExportCacheContractTests.cs` protects this boundary.
-
----
-
-# Profile deletion cleanup
-
-## 13. Attempt all encrypted-file cleanup after database cascade
-
-Commit:
-
-`5e9d2cda8efa551b749e21cde3064f5bbed0b918`
-
-After the structured profile cascade succeeds, CareNest attempts every associated encrypted document/profile-photo cleanup with `CancellationToken.None`.
-
-One cleanup failure does not stop later cleanup attempts or deletion bookkeeping.
-
-## 14. Nullable cleanup correctness
-
-Commit:
-
-`011fa03ba18e5c4d453f388817e4f755aa11b7c0`
-
-Nullable encrypted-file cleanup handling was corrected.
-
-## 15. Profile deletion cleanup regression test
-
-Commit:
-
-`877308e0a0fc93d99ebe5eda9fed5ca34adc8661`
-
-A test verifies that one encrypted-file failure still allows later payload cleanup and audit attempt.
-
-Later reminder reconciliation work also cancels future profile platform requests before cascade deletion and attempts non-cancelled rebuild compensation if the cascade fails.
-
----
-
-# Profile photo staging lifecycle
-
-A series of logical commits separated persisted/staged/obsolete encrypted photo references, added staging synchronization, atomic preview replacement and best-effort page-disappearance cleanup.
-
-Important final behavior:
-
-- persisted encrypted photo is not deleted before profile save commits the replacement;
-- old staged payload cleanup happens before accepting a new staged reference;
-- if old staged cleanup fails, the newly imported payload is compensated;
-- plaintext preview uses `.partial` then atomic move;
-- preview cleanup cannot block profile lifecycle;
-- page disappearance attempts staged cleanup;
-- final synchronization gate is app-lifetime/static.
-
-Checkpoint PR #39 later proved that instance ownership of the semaphore triggered CA1001. The fix changed the gate to:
-
-`private static readonly SemaphoreSlim PhotoGate = new(1, 1);`
-
-Important related commits include:
-
-- `0b55e27b10a8ff181bb00255f4e99b37c45d78f4` — static/app-lifetime photo staging gate;
-- `0edf5a0347f6620decb4e9b1d182488f047948a3` — contract updated for shared gate.
-
-Regression file:
-
-`tests/CareNest.UiTests/ProfilePhotoLifecycleContractTests.cs`
-
----
-
-# SQLite migration atomicity
-
-## 16. Migration DDL + schema version use one transaction
-
-Commit:
-
-`7d34f4e676cd7c465ae6627ca7f831241a39d2a3`
-
-A migration cannot partly apply DDL and separately claim its schema version.
-
-## 17. Migration transaction contracts
-
-Commit:
-
-`0612af1c317197fc4ae8f107c296077208ac2186`
-
-Regression contracts protect the migration boundary.
-
----
-
-# Atomic repository multi-step writes
-
-## 18. Shared atomic repository helper
-
-Commit:
-
-`3b7412baab822c6c8aca5dffb81cce05caa003e7`
-
-Multi-step repository changes moved behind a common transaction boundary.
-
-Protected operations include profile/schedule/cascade/tag/contact/full-clear paths where partial persistence would create an inconsistent local model.
-
-## 19. Transaction rollback integration coverage
-
-Commit:
-
-`a665aafa6e1175d04159772d33ca844ed043ed23`
-
-Integration tests exercise rollback for primary-profile and schedule/time multi-step changes.
-
-## 20. CA1068 correction
-
-PR #37 exposed CA1068 because the transaction helper did not place `CancellationToken` last.
-
-Fix commit:
-
-`c2aa8bc74230c17726766534f5bdb01990d1bfba`
-
-Final helper shape:
-
-`RunAtomicAsync(Action<SQLiteConnection> action, CancellationToken cancellationToken)`
-
-No analyzer suppression was added.
-
-## 21. Full clear no longer depends on VACUUM
-
-Commit:
-
-`a4517419b45a59999caef071c64be39d5379747e`
-
-`ClearAllAsync` now performs the critical structured-data transition transactionally but does not make later privacy cleanup depend on `VACUUM` succeeding after the delete transaction has already committed.
-
-Regression coverage lives in:
-
-`tests/CareNest.UiTests/RepositoryTransactionContractTests.cs`
-
----
-
-# ViewModel refresh/reentrancy fixes
-
-## Medication log
-
-Commit:
-
-`dace1c608ba17aee7bb70d171807536b580ea15c`
-
-Mutation/filter paths use a non-reentrant `LoadCoreAsync` rather than calling a second busy-guarded `LoadAsync` while the current operation is still inside `RunAsync`.
-
-Fresh profile/medicine selections are rebound by ID.
-
-## Documents
-
-Equivalent non-reentrant refresh/reselection behavior was applied to `DocumentsViewModel`.
-
-This prevents successful mutations from failing to refresh merely because the ViewModel is still marked busy by the outer operation.
-
----
-
-# Reminder action validation
-
-Commit:
-
-`1f46fdf8...` in the bug-audit history introduced strict action-state validation.
-
-`HandleOccurrenceAsync` accepts only:
-
-- Snoozed;
-- Taken;
-- Skipped;
-- Delayed;
-- Missed;
-- Cancelled.
-
-`Scheduled` and undefined enum values are rejected before state/platform mutation.
-
-Unit coverage protects the boundary.
-
----
-
-# Medication-log status validation
-
-Manual edit now checks `Enum.IsDefined(status)` before repository access.
-
-Undefined `MedicationLogStatus` values fail with an argument-range error instead of being persisted.
-
-Regression file:
-
-`tests/CareNest.UiTests/MedicationLogInputContractTests.cs`
-
----
-
-# Onboarding rollback
-
-Commit:
-
-`cd48d1ac...` in the bug-audit history hardened onboarding order and compensation.
-
-Final setup order:
-
-1. validate input/PIN;
-2. create primary profile;
-3. optional app-lock state;
-4. default settings;
-5. onboarding-complete flag last.
-
-Failure attempts non-cancelled cleanup of partial state and aggregates rollback failures.
-
-Regression coverage:
-
-`tests/CareNest.UiTests/OnboardingRollbackContractTests.cs`
-
----
-
-# Android broadcast receiver lifetime
-
-The boot/time/time-zone receiver previously launched asynchronous rebuild work after `OnReceive` without extending receiver lifetime.
-
-Final behavior:
-
-- call `GoAsync()`;
-- run reminder/appointment/backup recovery asynchronously;
-- contain non-fatal background failures;
-- always call `pendingResult?.Finish()` in `finally`.
-
-Regression file:
-
-`tests/CareNest.UiTests/AndroidReceiverLifecycleContractTests.cs`
-
-Later checkpoint platform evidence demonstrated Android Release compilation success before the final PR #43 full-green verification.
-
----
-
-# Windows reminder timer race fixes
-
-Final in-process fallback behavior:
-
-- scheduled timer owns its own CTS;
-- timer lifetime is not linked to the caller's short-lived cancellation token;
-- token is captured before background work;
-- cancellation cancels but does not prematurely dispose;
-- background owner disposes;
-- old same-ID timer removes the dictionary entry only if it is still the current owner;
-- background notification display failures are contained.
-
-Regression file:
-
-`tests/CareNest.UiTests/WindowsNotificationTimerContractTests.cs`
-
-Windows Release compiled successfully in checkpoint PR #40 and again in final PR #43.
-
----
-
-# Backup completion semantics
-
-The audit distinguished primary encrypted operation completion from later local bookkeeping.
-
-Final behavior:
-
-- completely written encrypted backup remains a successful backup even if local backup metadata recording fails afterward;
-- fully committed restore remains a successful restore even if post-restore audit recording fails afterward;
-- those bookkeeping operations use `CancellationToken.None` after primary success;
-- failure logging records fixed operation text + exception type only;
-- exception message, stack trace and health-record details are not logged;
-- actual crypto/tamper/password/filesystem/secure-store/database failures remain fatal.
-
-Regression file:
-
-`tests/CareNest.UiTests/BackupCompletionSemanticsContractTests.cs`
-
----
-
-# Exact previous key restoration on failed backup restore
-
-A failed restore now rolls the document master key back to the exact previous secure-store byte state whenever previous bytes existed.
-
-The rollback no longer restores only a `{ Length: 32 }` previous value and silently removes a pre-existing malformed value.
-
-The failed operation therefore does not normalize unrelated pre-existing state.
-
-This invariant is protected in `BackupCompletionSemanticsContractTests.cs`.
-
----
-
-# CSV spreadsheet formula neutralization
-
-`CsvWriter` now treats string cells whose first non-whitespace character is one of:
-
-- `=`;
-- `+`;
-- `-`;
-- `@`
-
-as formula-like portable spreadsheet input and prefixes the exported representation so common spreadsheet software treats it as text.
-
-The stored CareNest value is not modified.
-
-Numeric values remain numeric.
-
-Integration coverage was added to `ReportExportTests.cs`.
-
----
-
-# Atomic plaintext report writers
-
-Final report generation uses staging + atomic move for:
-
-- CSV;
-- PDF;
-- profile JSON.
-
-Cancellation/serialization/write failure cannot leave the incomplete staging file presented under the final output filename.
-
-Incomplete plaintext staging is deleted best effort in `finally`.
-
-Regression file:
-
-`tests/CareNest.UiTests/ReportExportSafetyContractTests.cs`
-
----
-
-# Report profile refresh
-
-`ReportsViewModel` stores the current selected profile ID before refreshing, reloads fresh profile rows, then reselects:
-
-1. same ID if present;
-2. primary profile;
-3. first profile.
-
-It no longer indefinitely retains a stale profile object after the collection refreshes.
-
----
-
-# Reminder planner edge cases
-
-## DST-gap interval anchor
-
-`EveryNHours` used to shift an invalid daylight-saving start anchor forward by one hour.
-
-That violated CareNest's existing deterministic rule that an invalid local clock time is not replaced with an invented reminder time.
-
-Final behavior:
-
-- invalid DST-gap anchor → no generated interval occurrence until the user chooses a valid anchor;
-- no hidden +1 hour substitution.
-
-## Cycle integer overflow
-
-Cycle on/off arithmetic now widens user-entered integer values to `long` before addition/modulo.
-
-## Maximum date boundary
-
-Interval scheduling compares nullable date bounds without adding beyond `DateTime.MaxValue`.
-
-Unit regression file:
-
-`tests/CareNest.UnitTests/ReminderPlannerEdgeCaseTests.cs`
-
-Coverage includes:
-
-- New York 2026 spring-forward 02:30 interval anchor;
-- `int.MaxValue` cycle on/off counts;
-- `DateTime.MaxValue.Date` schedule/medicine end boundary.
-
----
-
-# Startup recovery independence
-
-Startup recovery used to share one failure boundary for multiple independent recovery operations.
-
-Final recovery steps:
-
-- `overdue-reminder-reconciliation`;
-- `medicine-reminder-rebuild`;
-- `appointment-reminder-rebuild`;
-- `backup-reminder-sync`.
-
-Each is run independently.
-
-`OperationCanceledException` propagates; other failures are contained so later recovery work still executes.
-
-Logging remains privacy-safe: fixed step + exception type, no health content/message/stack trace.
-
-Regression file:
-
-`tests/CareNest.UiTests/StartupRecoveryContractTests.cs`
-
----
-
-# Reminder reconciliation — major final correctness fix
-
-SQLite reminder rows and operating-system scheduled requests are separate state surfaces. The audit added explicit reconciliation between them.
-
-## Effective due time
-
-- Scheduled → `ScheduledUtc`;
-- Snoozed with explicit snooze due → `SnoozedUntilUtc`.
-
-This fixes the case where a snoozed reminder's original time is already in the past but its snoozed time is still future.
-
-## Upcoming behavior
-
-Future snoozes remain in upcoming reminders according to their snooze due time.
-
-## Overdue behavior
-
-An overdue snooze can transition to Missed based on the snoozed due time.
-
-## Rebuild behavior
-
-For actionable future rows, rebuild:
-
-1. calculates current schedule validity;
-2. attempts to cancel the existing platform request;
-3. only after successful cancellation decides whether to cancel/suppress/replace it;
-4. leaves cancellation failures retryable;
-5. cancels stale occurrences that are no longer produced by the current schedule;
-6. cancels previously scheduled platform requests when current quiet-hour policy says not to schedule a replacement;
-7. schedules a replacement only when the row is still valid and due outside quiet hours.
-
-## Snooze validity
-
-Snoozed rows remain valid only while their schedule/medicine/profile context remains active and their effective due date remains within current user-entered date bounds.
-
-## Schedule save
-
-`MedicineService.SaveScheduleAsync` intentionally does **not** delete old future occurrence rows before rebuild.
-
-Those old rows retain the occurrence IDs needed to cancel stale OS-level platform requests safely.
-
-## Medicine save
-
-Medicine save runs reminder reconciliation before non-critical audit bookkeeping so a state/date change cannot leave an obsolete platform request solely because later audit persistence failed.
-
-## Medicine delete
-
-- cancel future platform requests for that medicine first;
-- attempt database cascade;
-- on cascade failure, best-effort non-cancelled rebuild restores platform requests for still-existing records;
-- on success, deletion audit runs afterward.
-
-## Profile save/delete
-
-Profile archive/unarchive changes trigger reconciliation when a coordinator is available.
-
-Profile deletion:
-
-- cancels future profile platform requests before cascade;
-- compensates with non-cancelled rebuild if cascade fails;
-- retains the existing exhaustive encrypted-file cleanup behavior after successful cascade.
-
-## Platform failure logging
-
-Platform scheduling/cancellation failure logging records operation category + exception type only.
-
-Caller cancellation is propagated instead of swallowed.
-
-Regression source-contract file:
-
-`tests/CareNest.UiTests/ReminderReconciliationContractTests.cs`
-
-Direct integration behavior file:
-
-`tests/CareNest.IntegrationTests/ReminderReconciliationBehaviorTests.cs`
-
-Direct behavior scenarios include:
-
-- future snooze whose original due time is already past;
-- overdue snooze becoming missed;
-- stale future occurrence cancelled/marked Cancelled and not rescheduled.
-
----
-
-# Repository-wide static policy scan
-
-A refreshed public `main` snapshot was downloaded after the source audit and scanned separately from Actions.
-
-The scan checked runtime/test/workflow files for:
-
-- common sync-over-async patterns;
-- `Thread.Sleep`;
-- `NotImplementedException`;
-- TODO/FIXME placeholders in runtime source;
-- direct runtime network clients;
-- telemetry clients;
-- common full-exception logging overloads;
-- obsolete PR #35 Settings architecture symbols;
-- common signing/secret artifacts;
-- failed/superseded 2026-08-14 verification markers remaining on `main`;
-- missing final newlines in committed source/workflow files.
-
-GitHub-hosted formatting/build/test/CodeQL remains the authoritative automated verification surface.
-
----
-
-# Checkpoint verification history
-
-The audit deliberately used failure-driven exact-head marker branches rather than suppressing failures.
-
-## PR #37 — failed/superseded
-
-Checkpoint source:
-
-`d6d81baa74ba37887129dc137aa6d325f625dcbc`
-
-Observed:
-
-- formatting: success;
-- unit tests: 111 passed at this checkpoint;
-- CA1068 exposed transaction-helper token ordering during later compilation.
-
-Action:
-
-- helper/call sites corrected;
-- no analyzer suppression;
-- PR closed unmerged;
-- not release evidence.
-
-## PR #39 — failed/superseded, marker cleanup required
-
-Checkpoint source:
-
-`f3fdb123280ca62f1e4aa703e2b47ad4f628590c`
-
-Observed:
-
-- CA1001 on instance `SemaphoreSlim` ownership;
-- missing final newline in `ReminderPlanner.cs`.
-
-The verification marker was accidentally merged before the failed checks were fully acted on.
-
-Removal commit:
-
-`549c77120c2ff792337cb842bf7a0912483816ed` — failed checkpoint marker removed from `main`.
-
-Action:
-
-- static/app-lifetime profile-photo gate;
-- newline corrected;
-- PR #39 explicitly not release evidence.
-
-## PR #40 — partial successful platform evidence, not promoted
-
-Checkpoint source:
-
-`7ac567fb11546db7701f328ae860880ddd5b6eef`
-
-Observed:
-
-- Android Release: success;
-- Windows Release: success;
-- iOS simulator Release: success;
-- Mac Catalyst Release: success;
-- CodeQL: success;
-- Dependency Audit: success;
-- core formatting failed only because `EncryptedBackupService.cs` lacked its final newline;
-- core tests were skipped after formatting failed.
-
-Action:
-
-- newline corrected during later backup rollback edit;
-- checkpoint closed unmerged;
-- not release evidence.
-
-## PR #41 — superseded
-
-Reminder-reconciliation checkpoint was opened, then intentionally closed because further medicine/profile delete-flow source changes were already known.
-
-No partial promotion.
-
-## PR #42 — superseded
-
-Bug-audit checkpoint was intentionally closed because the audit still had confirmed source/test work remaining.
-
-No partial promotion.
-
-## PR #43 — final green exact-head source
-
-PR:
-
-`https://github.com/sanskarIN/CareNest/pull/43`
-
-Title:
-
-`Verify final CareNest 2026-08-14 bug audit source`
-
-Verification branch:
-
-`ci/carenest-final-bug-audit-20260814`
-
-Marker:
-
-`build/verification/final-bug-audit-20260814.txt`
-
-Result:
-
-- platform-neutral formatting: success;
-- complete unit suite: success;
-- complete integration suite: success;
-- complete UI-contract/policy suite: success;
-- Android Release: success;
-- Windows Release: success;
-- iOS simulator Release: success;
-- Mac Catalyst Release: success;
-- CodeQL: success;
-- Dependency Audit: success.
-
-PR #43 was closed without merge after success. Its marker is not part of `main`.
-
-GitHub Actions on PR #43 preserves the exact suite counts, run IDs, job IDs, runner/toolchain versions and timestamps.
-
----
-
-# New documentation-only bug-audit evidence
-
-After the source was frozen/verified, only Markdown evidence/status files were changed.
-
-Added:
-
-- `docs/releases/BUG_AUDIT_VERIFICATION_20260814.md` — full fix/checkpoint/verification report;
-- `docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md` — defect → source → test/contract mapping;
-- `docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md` — security/privacy-relevant audit boundaries.
-
-Updated:
-
-- `PROJECT_STATUS.md` — PR #43 promoted as current automated source baseline;
-- `what_changed.md` — this active complete handoff.
-
-Further documentation-only alignment may update README/changelog/documentation-index files without changing the PR #43 runtime/test baseline.
-
----
-
-# Open SQLite dependency risk — unchanged and still real
-
-Tracked advisory:
-
-`GHSA-2m69-gcr7-jv3q`
-
-The current `sqlite-net-pcl` dependency path still resolves the tracked SQLitePCLRaw native version documented in the risk register.
-
-The repository does **not** claim this advisory is fixed.
-
-The current narrow exact-advisory audit suppression is not remediation.
-
-Authoritative files:
-
-- `docs/security/DEPENDENCY_RISK_REGISTER.md`;
-- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
-
-Final production promotion must resolve or explicitly block on the documented dependency-risk decision.
-
----
-
-# Buy Me a Coffee / support integration retained
-
-Voluntary project support remains:
-
-`https://buymeacoffee.com/sanskarIN`
-
-Existing support integration remains separate from health data and app behavior:
-
-- centralized app constant;
-- in-app About support action;
-- `.github/FUNDING.yml`;
-- `BUY_ME_A_COFFEE.md`;
-- `SUPPORT.md`;
-- `docs/SUPPORT_CARENEST.md`;
-- CareNest support vector artwork;
-- repository/about support contracts.
-
-Support does not unlock medical advice, different reminder behavior, premium health behavior, support priority, or access to user health data.
-
-Current Apple/Google store-policy review for the optional external support link remains an external release gate.
-
----
-
-# Production blockers that remain real
-
-The source is now automated-release-candidate green under final PR #43.
-
-That does not make external/manual work magically complete.
-
-Still required:
-
-1. Android real-device/emulator manual matrix.
-2. Windows manual matrix.
-3. iOS/iPadOS manual matrix.
-4. Mac Catalyst manual matrix.
-5. Notification permission denied/granted checks.
-6. Real reminder delivery checks.
-7. Android exact/inexact alarm checks.
-8. Android battery optimization behavior.
-9. Android reboot recovery.
-10. Device clock/time-zone change behavior.
-11. Appointment reminder packaged-target behavior.
-12. Managed document import/export checks.
-13. Profile photo import/capture/change/remove checks.
-14. Report export/share checks.
-15. Encrypted backup create/inspect/restore checks.
-16. Wrong backup password checks.
-17. Tampered backup checks.
-18. Clean-install restore checks.
-19. Legacy encrypted-format fixture verification where canonical fixtures are available.
-20. Screen-reader checks.
-21. Large text/text scaling.
-22. Keyboard/focus desktop checks.
-23. Contrast/light/dark/system theme checks.
-24. Reduced-motion checks.
-25. Current Apple App Store external-support-link policy review.
-26. Current Google Play external-support-link policy review.
-27. Signing identities/credentials maintained outside Git.
-28. Signed package build and inspection.
-29. Store screenshots using fictional data.
-30. Store descriptions/privacy/data-safety disclosures.
-31. Final SQLitePCLRaw advisory disposition.
-32. `CareNest Release Evidence` workflow for the exact production commit.
-33. Final version/build metadata.
-34. Final release notes/checksums.
-35. Production tag/GitHub release only after applicable gates pass.
-
-No item above is marked complete merely because automated source verification succeeded.
-
----
-
-# Deferred v1 scope remains unchanged
-
-Still outside current v1:
-
-- cloud synchronization;
-- remote caregiver collaboration;
-- required accounts/mobile-number authentication;
-- server-side health-record storage;
-- silent remote sharing;
-- hidden analytics/telemetry;
-- diagnosis;
-- dosage calculation/inference;
-- treatment recommendations;
-- medication-interaction claims;
-- clinical risk scoring.
-
-Any future networked feature requires a new explicit consent/authentication/key/privacy/threat/export/store architecture review.
-
----
-
-# Environment truth
-
-The repository assembly environment does not provide local MAUI device simulators, signing credentials, or store submission sessions.
-
-GitHub-hosted Actions is the authoritative automated compilation/test surface for the final PR #43 source.
-
-Manual device/accessibility/store/signing/release work remains separate and is not claimed complete unless actually performed.
-
----
-
-# Current repository interpretation
-
-- CareNest `1.0.0-rc.1` remains source-complete for the current v1 scope.
-- PR #43 is the latest successful exact-head automated source verification.
-- Formatting, all core test suites, all four platform Release builds, CodeQL and Dependency Audit are green on the frozen final bug-audit source.
-- No failed/superseded bug-audit marker is intentionally part of `main`; the accidentally merged PR #39 marker was removed explicitly.
-- The repository contains direct behavioral and source-contract regression coverage for the major bug classes discovered during this audit.
-- The open SQLitePCLRaw advisory remains open.
-- Manual device/accessibility/store/signing/final-release work remains blocking.
-- No cloud/account/clinical-decision functionality was introduced by this audit.
-
-See `docs/releases/BUG_AUDIT_VERIFICATION_20260814.md` and `docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md` for the final evidence map.
-
----
-
-# Authoritative continuation correction — 2026-08-14
-
-This section **supersedes the stale PR #43 / open-SQLite statements above without deleting the historical handoff text**. The older text is intentionally retained so no previous work or evidence is shortened or lost.
-
-## PR #43 historical correction
-
-PR #43 was **not** the final green baseline.
-
-Actual required-gate evidence:
-
-- CareNest CI #448 / run `31764449533`: **failure**;
-- platform-neutral formatting: success;
-- unit tests: success;
-- integration tests: failure;
-- UI-contract/policy suite: skipped after the integration failure;
-- Android Release: success;
-- Windows Release: success;
-- iOS simulator Release: success;
-- Mac Catalyst Release: success;
-- CodeQL #448 / run `31764449600`: success;
-- Dependency Audit #23 / run `31764449574`: success.
-
-PR #43 was closed without merging its marker. It is retained as historical failure evidence only.
-
-## PR #44 — reminder defects independently reproduced
-
-PR #44 reproduced three real reminder-reconciliation defects from the PR #43-era source:
-
-1. a future snooze disappeared from upcoming reminders once the original scheduled time was in the past;
-2. an expired snooze remained `Snoozed` instead of becoming `Missed`;
-3. a stale future occurrence remained scheduled instead of being cancelled/reconciled.
-
-Primary correction:
-
-`4cf2aec989233d213ac7b1099a50d44e1acc3ca0` — `fix: reconcile snoozed and stale reminder occurrences`
-
-PR #44 was closed unmerged and is not release evidence.
-
-## PR #46 — broader platform-reminder lifecycle defects
-
-PR #46 progressed far enough to expose broader UI-contract failures around SQLite-row ↔ OS-request lifecycle handling.
-
-The resulting source hardening covers:
-
-- effective snooze due time;
-- cancellation before replacement/suppression/invalidation;
-- stale occurrence-row preservation until OS cancellation can occur;
-- medicine/profile future-reminder cancellation before cascade deletion;
-- non-cancelled rebuild compensation after persistence failure;
-- medicine/profile save-time reconciliation before non-critical audit bookkeeping.
-
-PR #46 was closed unmerged and is not release evidence.
-
-## Appointment reminder persistence compensation
-
-Later source also applies the reconciliation principle to appointments.
-
-Relevant commits:
-
-- `61772f968d8686e472b5849e77e0a3156936701d` — `fix: reconcile appointment reminders around persistence`;
-- `633b6bbca587fbc5030b940132b3112d7a73b458` — `test: cover appointment reminder persistence compensation`.
-
-The appointment database and OS scheduler are no longer treated as if they were one atomic persistence surface.
-
-## Shared report-cache cleanup
-
-Commit:
-
-`c844acdb63b5320344ff0d771d1365eaf7471f4a` — `security: remove shared report cache files after export`
-
-After the system share handoff returns, CareNest removes the application-owned temporary report file where it still controls that cache copy.
-
-This does not claim deletion of copies already controlled by another application, OS share destination, cloud provider chosen by the user, screenshot, backup or filesystem snapshot.
-
-## Reminder actions are cancellation-first and recoverable
-
-Commit:
-
-`1459d24314de4a2f2f4fa232deb4285bb8e33b23` — `fix: make reminder actions cancellation-first and recoverable`
-
-Final action ordering:
-
-1. cancel the old OS request first;
-2. persist the requested Taken/Skipped/Delayed/Missed/Snoozed/Cancelled state only after cancellation succeeds;
-3. schedule a replacement snooze only after persistence succeeds;
-4. if later persistence/scheduling fails, restore the previous occurrence state using non-cancelled compensation;
-5. attempt a non-cancelled reminder rebuild so a cancelled still-valid request can be restored;
-6. surface aggregate failure if recovery itself also fails rather than claiming consistency.
-
-Post-success audit bookkeeping does not undo an already completed user action merely because the audit row later fails.
-
-A user-configured stock-adjustment bookkeeping failure after a completed Taken action is contained and privacy-safely logged instead of falsifying the reminder action result.
-
-Failure-injection support/test commits:
-
-- `508adeb805d604274be8b069668429b6935f3fa6` — `test: support notification failure injection`;
-- `da2aed19ee9224b8d8661f11520ab9396e2c005e` — `test: verify reminder action cancellation and recovery ordering`.
-
-`da2aed19ee9224b8d8661f11520ab9396e2c005e` is the latest runtime/test source commit in the final verification lineage. Subsequent observed `main` commits through this handoff update are documentation-only.
-
-## Analyzer findings were fixed, not suppressed
-
-PR #49 exposed CA1861 in new medicine/profile reminder-reconciliation expectations.
-
-Corrections include:
-
-- `cc9465136bd7de0e55e14386c19fa849a3e56067`;
-- `834b2980167c41bc7e9c1ad69dc54ad5ccc7e53e`.
-
-The analyzer gate remained enabled.
-
-## SQLite dependency remediation — completed in source
-
-The earlier statement that `GHSA-2m69-gcr7-jv3q` remained protected only by a narrow suppression is no longer the current source state.
-
-The compatible source remediation on `main` is:
+# 4. Current SQLite dependency security state
+
+The former exact `GHSA-2m69-gcr7-jv3q` source exception is **remediated** in the current verified source graph.
+
+Current package intent:
+
+- `sqlite-net-pcl` `1.9.172`;
+- `SQLitePCLRaw.bundle_green` `2.1.11` as the compatible bundle/API path;
+- central transitive pinning enabled;
+- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
+- `SQLitePCLRaw.lib.e_sqlite3.android` `2.1.12`;
+- `SQLitePCLRaw.provider.e_sqlite3` `2.1.12`;
+- `SQLitePCLRaw.provider.sqlite3` `2.1.12`;
+- `SQLitePCLRaw.provider.dynamic_cdecl` `2.1.12`;
+- former exact `NuGetAuditSuppress` entry removed.
+
+Remediation commits from the bug-audit continuation:
 
 - `66cd701f84afd5021a28e7e3327b7da4fad249aa` — `fix: pin patched SQLite native dependency path`;
 - `e939d5bd912d09ffa150c804519c15e2506b7bd7` — `security: remove resolved SQLite audit suppression`;
 - `04868965c43d8a6d09b40075d92f20da9b26e32a` — `test: guard patched SQLite dependency baseline`.
 
-Current dependency strategy:
+`SqliteDependencySecurityContractTests` protects the maintained package floor and absence of the old advisory suppression.
 
-- `sqlite-net-pcl` remains `1.9.172`;
-- `SQLitePCLRaw.bundle_green` remains `2.1.11`;
-- central transitive pinning remains enabled;
-- `SQLitePCLRaw.lib.e_sqlite3` is pinned to `3.53.3`;
-- `SQLitePCLRaw.lib.e_sqlite3.android` is pinned to `2.1.12`;
-- `SQLitePCLRaw.provider.e_sqlite3`, `SQLitePCLRaw.provider.sqlite3`, and `SQLitePCLRaw.provider.dynamic_cdecl` are pinned to `2.1.12`;
-- the old exact `NuGetAuditSuppress` entry is removed from `Directory.Build.props`;
-- `tests/CareNest.UiTests/SqliteDependencySecurityContractTests.cs` prevents restoration of the old native/provider floor or suppression.
+Important distinction:
 
-Unsuppressed Dependency Audit evidence accumulated during the moving-source remediation:
+- source dependency remediation: complete and unsuppressed-audit green;
+- packaged existing-user-data compatibility: still a manual production release gate.
 
-- PR #47 Dependency Audit #28 / run `31765223239`: success;
-- PR #48 Dependency Audit #29 / run `31765388861`: success;
-- PR #50 Dependency Audit #31 / run `31765668949`: success.
+Do **not** restore the old audit suppression simply because packaged compatibility testing is still pending.
 
-Those PRs were closed/superseded for unrelated moving-source reasons and are not final release baselines.
+Primary references:
 
-The authoritative final dependency verification is PR #54 Dependency Audit #35 / run `31766059132`: success without the former advisory suppression, including the platform-neutral and Android MAUI dependency graphs.
+- `Directory.Packages.props`
+- `docs/security/DEPENDENCY_RISK_REGISTER.md`
+- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`
+- `docs/CONFIGURATION_REFERENCE.md`
 
-The dependency remediation does not introduce a CareNest server, account, telemetry client, remote database, cloud-sync requirement or user-controlled raw SQL path. It intentionally does not change schema semantics, encrypted-document framing or backup archive format.
+---
 
-Manual packaged existing-database, encrypted-document and backup compatibility checks remain separate production evidence.
+# 5. Current reminder/platform consistency model
 
-## PR #47 / #48 / #50 — dependency remediation checkpoints
+CareNest separates:
 
-These checkpoints demonstrated that the unsuppressed dependency graph could restore/audit while `main` was still changing.
+1. explicit user schedule intent;
+2. persisted `ReminderOccurrence` state;
+3. OS scheduled notification/alarm requests.
 
-PR #48 also had CodeQL success but its combined CI snapshot exposed a transient moving-base reminder-interface compile mismatch. The source was corrected/simplified rather than merging stale evidence.
+These are separate persistence/state surfaces.
 
-PR #50 again passed the unsuppressed audit but predated later analyzer-safe reminder tests.
+## Effective due time
 
-All were closed without merge.
+- normal Scheduled occurrence → `ScheduledUtc`;
+- valid Snoozed occurrence → `SnoozedUntilUtc`.
 
-## PR #51 / #52 / #53 — superseded or duplicate verification markers
+A future snooze remains upcoming after its original scheduled instant passes.
 
-- PR #51 was superseded by later appointment/reminder-action work and by the SQLite remediation being committed to `main`.
-- PR #52 already included the SQLite remediation but was superseded by later cancellation-first reminder action/failure-injection source.
-- PR #53 independently passed the same final runtime/test graph, including all 261 core tests, Android, Windows, iOS simulator, Mac Catalyst, CodeQL #501 / `31766026573`, and unsuppressed Dependency Audit #34 / `31766026570`. It is retained as duplicate corroboration, not the authoritative baseline.
+An overdue snooze is evaluated from the snooze due time rather than the stale original schedule time.
 
-All marker files remain unmerged.
+## Platform reconciliation
 
-## PR #54 — authoritative final automated bug-audit verification
+Current rules:
 
-PR:
+- cancel an existing OS request before replacement;
+- cancel before quiet-hours suppression;
+- cancel before invalidation;
+- cancellation failure remains retryable;
+- schedule edits retain enough old occurrence identity to cancel stale OS requests before final cleanup;
+- current planner output becomes authoritative only after reconciliation can occur safely.
 
-`https://github.com/sanskarIN/CareNest/pull/54`
+## Handled reminder actions
 
-Title:
+Taken, Skipped, Delayed, Missed, Snoozed and Cancelled use cancellation-first ordering:
 
-`Verify final CareNest bug-audit source`
+1. validate action/snooze input;
+2. cancel old OS request;
+3. persist handled state only after cancellation succeeds;
+4. for Snoozed, schedule the replacement after state persistence;
+5. if a later essential operation fails, attempt non-cancelled previous-state restoration;
+6. attempt non-cancelled reminder rebuild;
+7. surface aggregate recovery failure instead of claiming contradictory state is consistent.
 
-Verification branch:
+## Medicine/profile persistence compensation
 
-`ci/carenest-final-bug-audit-2-20260814`
+- future platform requests are cancelled before medicine/profile database cascade deletion;
+- if persistence fails after platform cancellation, non-cancelled rebuild compensation is attempted for records that remain;
+- save flows reconcile reminders before later non-critical audit bookkeeping.
+
+## Appointment persistence compensation
+
+- `Appointment.StartsUtc` must be actual `DateTimeKind.Utc`;
+- local/unspecified values are rejected rather than relabeled;
+- notification permission denial is not successful scheduling;
+- background rebuild does not repeatedly prompt while denied;
+- platform request state is compensated/reconciled around database persistence;
+- deletion cancels the platform request before deleting the appointment.
+
+Key reminder-related commits retained in final runtime source lineage include:
+
+- `4cf2aec989233d213ac7b1099a50d44e1acc3ca0` — `fix: reconcile snoozed and stale reminder occurrences`;
+- `61772f968d8686e472b5849e77e0a3156936701d` — `fix: reconcile appointment reminders around persistence`;
+- `633b6bbca587fbc5030b940132b3112d7a73b458` — `test: cover appointment reminder persistence compensation`;
+- `1459d24314de4a2f2f4fa232deb4285bb8e33b23` — `fix: make reminder actions cancellation-first and recoverable`;
+- `508adeb805d604274be8b069668429b6935f3fa6` — `test: support notification failure injection`;
+- `da2aed19ee9224b8d8661f11520ab9396e2c005e` — `test: verify reminder action cancellation and recovery ordering`.
+
+Analyzer-safe follow-up test fixes included:
+
+- `cc9465136bd7de0e55e14386c19fa849a3e56067`;
+- `834b2980167c41bc7e9c1ad69dc54ad5ccc7e53e`.
+
+References:
+
+- `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`
+- `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`
+- `docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`
+
+---
+
+# 6. Report/plaintext cache hardening
+
+Commit:
+
+- `c844acdb63b5320344ff0d771d1365eaf7471f4a` — `security: remove shared report cache files after export`.
+
+Current behavior:
+
+- report writers use partial-file staging and atomic final move;
+- failed/cancelled staging is cleaned best effort;
+- application-owned shared report cache is removed after share handoff where CareNest still owns it;
+- CareNest does not claim deletion of copies already owned by another app, cloud location, screenshot, backup or OS share service.
+
+---
+
+# 7. Encrypted document and backup security state
+
+New encrypted document/backup streams use chunked AES-256-GCM framing v2.
+
+Current properties:
+
+- authenticated data chunks;
+- authenticated terminal state in v2;
+- trailing bytes after terminal rejected;
+- legacy v1 read compatibility retained;
+- v1 historical ciphertext is not represented as retroactively upgraded;
+- strict decrypted backup archive topology validated before extraction;
+- wrong-password/tamper/truncation/trailing-data rejection;
+- protected document-recovery key portability in encrypted backup;
+- missing/corrupt document master key plus existing ciphertext fails closed;
+- application-owned mutable verifier/key/salt/crypto buffers cleared where practical;
+- document import and backup restore use compensating rollback across independent state surfaces.
+
+A future v1 migration/removal requires canonical historical fixtures plus explicit recovery/rollback verification.
+
+References:
+
+- `docs/architecture/DOCUMENT_VAULT.md`
+- `docs/architecture/BACKUP_AND_RESTORE.md`
+- `docs/security/SECURITY_MODEL.md`
+- `docs/security/THREAT_MODEL.md`
+- `docs/testing/TESTING_GUIDE.md`
+
+---
+
+# 8. Historical verification corrections
+
+PR #43 was previously described incorrectly in some documentation as fully green.
+
+Actual historical PR #43 result:
+
+- formatting/platform/CodeQL/audit had successes;
+- core CI failed during integration testing;
+- UI-contract suite was skipped;
+- PR #43 is **not** release evidence.
+
+Later failure-driven checkpoints exposed/fixed additional issues:
+
+- PR #44 reproduced future-snooze, overdue-snooze and stale-occurrence defects;
+- PR #46 exposed broader OS-reminder lifecycle source-contract defects;
+- PR #47 proved an unsuppressed SQLite dependency graph could audit successfully;
+- PR #48 passed unsuppressed audit/CodeQL but exposed a moving-base reminder interface compile mismatch;
+- PR #49 exposed CA1861 in reminder-reconciliation test source and was fixed without suppression;
+- PR #50 again passed unsuppressed SQLite audit but predated later source changes;
+- PRs #51/#52 were superseded as source changed;
+- PR #53 independently completed a fully green final runtime/test graph verification;
+- PR #54 became the authoritative recorded runtime bug-audit baseline.
+
+Failed/superseded markers were not treated as production source.
+
+---
+
+# 9. PR #54 — historical authoritative runtime bug-audit baseline
+
+PR #54: `Verify final CareNest bug-audit source`.
+
+Source/base SHA:
+
+`4490f3f86752841d436e981b29279970c90c947b`
 
 Marker head:
 
 `929168a0a319b15d9e89997d86436d59ae731ad1`
 
-Marker:
+Evidence:
 
-`build/verification/bug-audit-final-20260814-2.txt`
+- CareNest CI #503 / `31766059137`: success;
+- formatting: success;
+- UnitTests: 122 passed;
+- IntegrationTests: 39 passed;
+- UiTests/source-policy: 100 passed;
+- total: 261 passed;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL #503 / `31766059215`: success;
+- unsuppressed Dependency Audit #35 / `31766059132`: success.
 
-Final result:
+PR #54 was marker-only and closed without merge.
 
-- CareNest CI #503 / run `31766059137`: **success**;
-- platform-neutral formatting: **success**;
-- unit tests: **122 passed, 0 failed, 0 skipped**;
-- integration tests: **39 passed, 0 failed, 0 skipped**;
-- UI-contract/policy tests: **100 passed, 0 failed, 0 skipped**;
-- total core automated tests: **261 passed, 0 failed, 0 skipped**;
+PR #53 independently corroborated the same final runtime/test graph.
+
+PR #54 remains the historical authoritative runtime bug-audit source evidence.
+
+---
+
+# 10. Release-engineering hardening after PR #54
+
+Later work changed verification-relevant source including workflows, build/release scripts, tests and policy contracts.
+
+Therefore PR #54 could not be reused as the release-engineering baseline.
+
+Major hardening completed:
+
+## Exact production-tag coverage
+
+Production tags matching `v*` now run the exact tagged commit through:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
+
+## Dependency Audit event safety
+
+Pull-request-only dependency comparison logic is guarded so tag/manual runs do not dereference pull-request-only metadata.
+
+## Failure-preserving Release Evidence
+
+Release Evidence records:
+
+- source commit/ref;
+- run ID;
+- run attempt;
+- toolchain information;
+- tracked source manifest/checksums;
+- unit TRX;
+- integration TRX;
+- UI-contract/policy TRX;
+- transitive dependency inventories;
+- workspace integrity;
+- evidence checksums.
+
+Evidence components are attempted independently. Available evidence is uploaded before final aggregate pass/fail evaluation.
+
+Artifact identity includes commit SHA + run ID + run attempt.
+
+A failed run can have an artifact; artifact existence alone is not release approval.
+
+## Blocking local audits
+
+Bash and PowerShell quality/preflight scripts now treat unsuppressed NuGet audit failures as blocking.
+
+PowerShell explicitly checks native command exit status.
+
+## Repository-local Git setup
+
+Git helpers:
+
+- locate repository root;
+- require valid Git work tree;
+- use `git config --local`;
+- set `Sanskar` / `sanskarin@outlook.in`;
+- verify values;
+- fail on native Git errors.
+
+## Hardened Release Gate
+
+Release Gate is fail-closed for:
+
+- open dependency risk;
+- nested unchecked applicable checklist rows;
+- required security/evidence documents;
+- core tests.
+
+Matching is hardened against normal case/indentation/nesting variations.
+
+## Executable release-policy contracts
+
+`CareNest.UiTests` now includes contracts for:
+
+- release workflows/tags/manual triggers;
+- Dependency Audit event safety;
+- Release Evidence provenance/failure preservation/rerun identity;
+- blocking release-preflight audit;
+- clean-checkout/fail-closed quality gate;
+- repository-local Git setup;
+- Release Gate fail-closed matching.
+
+These additions increased UiTests/source-policy from 100 at PR #54 to 124 at PR #56.
+
+---
+
+# 11. PR #55 — superseded release-engineering checkpoint
+
+PR #55 proved an intermediate hardening snapshot:
+
+- formatting: success;
+- unit: 122 passed;
+- integration: 39 passed;
+- UI-contract/policy: 116 passed;
+- total: 277 passed;
+- Android Release: success;
+- Windows Release: success;
+- CodeQL #547 / `31769940053`: success;
+- unsuppressed Dependency Audit #38 / `31769940039`: success.
+
+The complete-file audit then found additional legitimate release-tooling/documentation corrections.
+
+PR #55 was closed without merge and is not the current baseline.
+
+---
+
+# 12. PR #56 — authoritative current automated release-engineering baseline
+
+PR #56: `Verify complete CareNest release-engineering source`.
+
+Verification branch:
+
+`ci/carenest-release-engineering-final-v2-20260814`
+
+Frozen source/base SHA:
+
+`4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
+
+Marker head:
+
+`e3bc621cea05364a69abee0dadbd71a67c17bddb`
+
+Marker file:
+
+`build/verification/release-engineering-final-v2-20260814.txt`
+
+Evidence:
+
+- CareNest CI #571 / `31770929379`: **success**;
+- formatting: **success**;
+- UnitTests: **122 passed, 0 failed, 0 skipped**;
+- IntegrationTests: **39 passed, 0 failed, 0 skipped**;
+- UiTests/source-policy: **124 passed, 0 failed, 0 skipped**;
+- total: **285 passed, 0 failed, 0 skipped**;
 - Android Release: **success**;
 - Windows Release: **success**;
 - iOS simulator Release: **success**;
 - Mac Catalyst Release: **success**;
-- CodeQL #503 / run `31766059215`: **success**;
-- unsuppressed Dependency Audit #35 / run `31766059132`: **success**.
+- CodeQL #571 / `31770929382`: **success**;
+- unsuppressed Dependency Audit #41 / `31770929383`: **success**.
 
-PR #54 is closed **without merge**. Its marker is not part of `main`.
+PR #56 was closed without merge after all required gates succeeded.
 
-PR #54 is the authoritative final automated source evidence for the 2026-08-14 bug-audit runtime/test graph. PR #53 is an independent duplicate green verification of the same final source boundary.
+Its verification marker is not part of `main`.
 
-## Documentation/status alignment commits from this continuation
+Authoritative evidence record:
 
-The active status/evidence surfaces were corrected rather than leaving PR #43/open-SQLite claims in place.
+`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`
 
-Notable documentation commits include:
+---
 
-- `985cb81e4a4a6b3ee626812f2588b2e0e86532cf` — correct post-bug-audit verification history;
-- `4490f3f86752841d436e981b29279970c90c947b` — record SQLite advisory remediation;
-- `e48e7616b3487340069872dbdc3a5a6cb3b0e58e` — record completed SQLite migration path;
-- `e8b40a3dd6f37554db982549d6805f64da962d43` — align README with SQLite remediation;
-- `4e22b215fd5fe676afa26270adf5c572fc720c24` — align security audit notes with remediation;
-- `b77ab44276c5939f44e340be36e6c428b5f670c0` — refresh RC1 next steps after dependency fix;
-- `3d2cd547736cb8850ae6eec601f809b953964f41` — correct and extend bug-audit verification;
-- `1f1113563f62a3fd1299c07a206a25c9efa335c4` — refresh security release review baseline;
-- `6292d4730ad0a22f353cf4a1172798ba01d4eb99` — refresh production quality gate;
-- `a7eb6584234052d4a11b89274b408f47399267c5` — refresh CareNest project status;
-- `43741de02dccea26aad790679ada51cc5607c9ee` — refresh release checklist for bug audit;
-- this commit — update the complete active `what_changed.md` handoff without deleting its earlier detail.
+# 13. Complete documentation pass — current continuation
 
-## Correct production blockers after final automated verification
+The user requested complete project documentation and all project code/documentation on GitHub `main` with commit messages.
 
-The source is now automated-release-candidate green under authoritative PR #54, but public `1.0.0` promotion remains blocked on evidence that cannot be manufactured by repository source changes alone.
+A full repository documentation audit was performed across:
 
-Still required:
+- root project/governance docs;
+- user docs;
+- architecture/ADRs;
+- privacy/data lifecycle;
+- security/threat/logging/dependency docs;
+- design/accessibility/localization/store assets;
+- setup/platform/troubleshooting/maintainer docs;
+- tests/contracts/plans;
+- release process/checklists/evidence;
+- source project/file trees;
+- central package/build configuration;
+- GitHub workflows and local scripts.
 
-1. Android real-device/emulator manual matrix.
-2. Windows manual matrix.
-3. iOS/iPadOS manual matrix.
-4. Mac Catalyst manual matrix.
-5. Notification permission denied/granted checks.
-6. Real reminder delivery checks.
-7. Cancellation-first reminder-action behavior on actual platform scheduling.
-8. Android exact/inexact alarm checks.
-9. Android battery optimization behavior.
-10. Android reboot recovery.
-11. Device clock/time-zone change behavior.
-12. Appointment reminder packaged-target behavior.
-13. Managed document import/export checks.
-14. Profile photo import/capture/change/remove checks.
-15. Report export/share and application-owned cache cleanup checks.
-16. Encrypted backup create/inspect/restore checks.
-17. Wrong backup password checks.
-18. Tampered backup checks.
-19. Clean-install restore checks.
-20. Representative packaged upgrade/install containing fictional pre-remediation SQLite data.
-21. Verification that profiles, medicines, schedules, reminder rows, logs, appointments, documents, stock and tags remain readable after the SQLite native/provider update.
-22. Verification that existing encrypted documents remain decryptable through the unchanged key path.
-23. Pre-remediation/current backup compatibility checks where canonical synthetic fixtures are available.
-24. Legacy encrypted-format fixture verification where canonical fixtures are available.
-25. Screen-reader checks.
-26. Large text/text scaling.
-27. Keyboard/focus desktop checks.
-28. Contrast/light/dark/system theme checks.
-29. Reduced-motion checks.
-30. Current Apple App Store external-support-link policy review.
-31. Current Google Play external-support-link policy review.
-32. Signing identities/credentials maintained outside Git.
-33. Signed package build and inspection.
-34. Store screenshots using fictional data.
-35. Store descriptions/privacy/data-safety disclosures.
-36. `CareNest Release Evidence` workflow for the exact production commit.
-37. Final version/build metadata.
-38. Final release notes/checksums.
-39. Production tag/GitHub release only after applicable gates pass.
+## New canonical documentation added
 
-The old list item “Final SQLitePCLRaw advisory disposition” is superseded: source remediation and unsuppressed audit verification are complete. The remaining SQLite-related release work is **packaged existing-data/encrypted-data compatibility evidence**, not permission to restore the old audit suppression.
+### Complete project reference
 
-## Final current repository interpretation
+Commit:
 
-- CareNest `1.0.0-rc.1` remains source-complete for the current v1 scope.
-- `da2aed19ee9224b8d8661f11520ab9396e2c005e` is the latest runtime/test source commit in the final bug-audit lineage; later observed `main` commits are documentation-only.
-- PR #54 is the authoritative final automated source verification for this continuation.
-- PR #53 independently corroborates the same final runtime/test graph and is also fully green, but #54 is the recorded authoritative checkpoint.
-- Formatting, **261 core tests**, Android, Windows, iOS simulator, Mac Catalyst, CodeQL and unsuppressed Dependency Audit are all green.
-- The former exact SQLite advisory audit suppression has been removed from current source.
-- The maintained SQLite native/provider floor is protected by regression tests.
-- Failed/superseded verification markers are not production source; PRs #53 and #54 are both closed without merge.
-- Manual device/accessibility/store/signing/existing-data compatibility/final-release evidence remains blocking.
-- No cloud/account/clinical-decision functionality was introduced by this audit.
+`06f6ae6968d01e272ab1c0b37190442df867c637`
 
-Primary final evidence surfaces:
+Message:
 
-- `docs/releases/BUG_AUDIT_VERIFICATION_20260814.md`;
-- `docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`;
-- `docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md`;
-- `docs/security/DEPENDENCY_RISK_REGISTER.md`;
-- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`;
-- `docs/releases/QUALITY_GATE.md`;
-- `docs/releases/RELEASE_CHECKLIST.md`;
-- `docs/releases/NEXT_STEPS.md`;
-- `PROJECT_STATUS.md`;
-- this complete `what_changed.md` handoff.
+`docs: add complete project documentation`
+
+File:
+
+`docs/COMPLETE_PROJECT_DOCUMENTATION.md`
+
+Covers product identity/scope, architecture, features, data, reminders, encryption, backup, security/privacy, setup/build/test, release, governance and documentation map.
+
+### Root README alignment
+
+Commit:
+
+`2796e2852c659f88e64666c7894c13cc08cda2e1`
+
+Message:
+
+`docs: promote PR56 in root README`
+
+README now distinguishes historical PR #54 runtime evidence from current PR #56 release-engineering evidence and links the complete project reference.
+
+### Concrete codebase/API reference
+
+Commit:
+
+`20649ff30bc1fb8b8c6321d725e492209e1a52eb`
+
+Message:
+
+`docs: add complete codebase reference`
+
+File:
+
+`docs/CODEBASE_REFERENCE.md`
+
+Maps:
+
+- Shared files;
+- Domain entities/rules;
+- Application contracts/services;
+- Infrastructure backup/document/persistence/report/security files;
+- MAUI composition/platform resources;
+- unit/integration/UI-policy test projects;
+- build scripts;
+- workflows;
+- central configuration;
+- where future code belongs;
+- forbidden architecture shortcuts.
+
+### Configuration/build/automation reference
+
+Commit:
+
+`37a179aaa2ad3d9a7ac944712cacb2e0d01a0183`
+
+Message:
+
+`docs: add configuration and automation reference`
+
+File:
+
+`docs/CONFIGURATION_REFERENCE.md`
+
+Documents:
+
+- exact current central package versions;
+- build/analyzer/CI properties;
+- NuGet audit policy;
+- target frameworks;
+- `CareNestTargetFramework`;
+- restore/build/test/format commands;
+- quality/preflight/Git scripts;
+- Android/Windows/iOS/Mac Catalyst configuration;
+- GitHub workflows;
+- `v*` release tag behavior;
+- secret/signing policy;
+- provenance expectations.
+
+### Maintainer operations manual
+
+Commit:
+
+`d7ca9b8400caf20ac506a9bfb81c8c3d58bc5da7`
+
+Message:
+
+`docs: add maintenance and operations manual`
+
+File:
+
+`docs/MAINTENANCE_AND_OPERATIONS.md`
+
+Covers:
+
+- routine maintenance;
+- issue triage;
+- bug-fix workflow;
+- reminder changes;
+- schema/SQLite dependency changes;
+- general dependency changes;
+- document/backup encryption changes;
+- logging/privacy review;
+- external support links;
+- accessibility/localization;
+- exact-head verification;
+- release candidate preparation;
+- production tags/evidence;
+- signing/store operations;
+- hotfixes;
+- rollback/recovery planning;
+- incident response.
+
+### Documentation audit
+
+Commit:
+
+`198c8355348aaee76c30781d51214ae355e1dae9`
+
+Message:
+
+`docs: record complete documentation audit`
+
+File:
+
+`docs/releases/DOCUMENTATION_AUDIT_20260814.md`
+
+Records the full documentation inventory and explicitly distinguishes documentation completeness from production release completeness.
+
+### Documentation hub
+
+Commit:
+
+`332f95610c80000c7f5f3ae01074877fb438cab6`
+
+Message:
+
+`docs: complete documentation hub index`
+
+`docs/README.md` now indexes all complete references, user docs, architecture, data, reminders, privacy/security, setup, testing, release and historical evidence.
+
+### Documentation checklist
+
+Commit:
+
+`22116ebc4057d1eab33fb123593072b17c7bb115`
+
+Message:
+
+`docs: complete documentation checklist for PR56`
+
+Updates the documentation completeness matrix to the PR #56 285-test source and adds codebase/configuration/automation/maintenance documentation categories.
+
+---
+
+# 14. Historical active-document preservation
+
+Before replacing remaining stale active references, exact pre-correction blobs were preserved under:
+
+`docs/history/pre-complete-docs-20260814/`
+
+Commit:
+
+`e7a7dde60a710ffc1fe25ce28a15aad1b72f0e3d`
+
+Message:
+
+`docs: preserve pre-completion documentation snapshots`
+
+Preserved files include:
+
+- `SECURITY_MODEL.md`;
+- `THREAT_MODEL.md`;
+- `DEVELOPMENT.md`;
+- `ARCHITECTURE.md`;
+- `NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`;
+- `DOCUMENTATION_STANDARDS.md`;
+- `CHANGELOG.md`;
+- prior `what_changed.md`.
+
+This means replacing stale active versions did not discard historical bytes.
+
+---
+
+# 15. Active reference finalization commits
+
+## Security architecture
+
+Commit:
+
+`7a783dd7f9edf15e2f0f0b9943d7289c209f051c`
+
+Message:
+
+`docs: finalize current security architecture`
+
+Active `docs/security/SECURITY_MODEL.md` now documents PR #56, current SQLite remediation, reminder integrity, encryption/backup/key behavior, Release Gate/Release Evidence, exact `v*` tags and remaining real security evidence.
+
+## Threat model
+
+Commit:
+
+`d30d707e2fbcf7e98bd2372cf6b3865debd41bd6`
+
+Message:
+
+`docs: finalize current threat model`
+
+Active `docs/security/THREAT_MODEL.md` now covers current local-first/data/encryption/reminder/platform/dependency/release-provenance threats and PR #56 evidence.
+
+## Development setup
+
+Commit:
+
+`24b621c114cf877d603c315bcd64b9e9e9c8d301`
+
+Message:
+
+`docs: finalize PR56 development setup`
+
+Active `docs/setup/DEVELOPMENT.md` now contains current package/toolchain/build/test/audit/Git/release commands and PR #56 totals instead of PR #55 pending-verification wording.
+
+## Architecture
+
+Commit:
+
+`998d03f784b6ec85d18991596df45012c89b4d79`
+
+Message:
+
+`docs: finalize current architecture reference`
+
+Active architecture now reflects current reminder compensation, SQLite provider state, encrypted document/backup security, platform/build/release boundaries and PR #56 evidence.
+
+## Notification/platform behavior
+
+Commit:
+
+`04cb7563949ba4a9f5d8cac46c08a84d94c844bd`
+
+Message:
+
+`docs: finalize notification platform behavior`
+
+Active notification docs now match implemented reconciliation/action/permission/recovery behavior and document Android/Windows/Apple manual release requirements.
+
+## Documentation standards
+
+Commit:
+
+`fb07250ab61d9ddcdb1760c862dd231d49100107`
+
+Message:
+
+`docs: finalize documentation standards`
+
+Standards now require accurate PR #56 verification wording, historical evidence preservation, precise SQLite/security/reminder language, and strict separation of documentation/CI from manual release evidence.
+
+## Changelog
+
+Commit:
+
+`926f9d5fe7e3ba8ba4482bb39edac2adc1906b36`
+
+Message:
+
+`docs: finalize release engineering changelog`
+
+Active changelog now includes PR #56 release-engineering hardening and documentation-completion work. The exact previous changelog is preserved in history.
+
+---
+
+# 16. Source tree audit completed during documentation work
+
+The repository source tree was re-audited rather than documenting from assumptions.
+
+## Shared source confirmed
+
+- `AppConstants.cs`
+- `Guard.cs`
+- `Result.cs`
+- `SecretKeys.cs`
+- `SettingKeys.cs`
+- `TimeProviderExtensions.cs`
+- project file.
+
+## Domain source confirmed
+
+Entities include:
+
+- `AppSetting`
+- `Appointment`
+- `AuditEntry`
+- `BackupMetadata`
+- `CareDocument`
+- `DocumentTag`
+- `EmergencyContact`
+- `MedicationLogEntry`
+- `Medicine`
+- `MedicineSchedule`
+- `PersonProfile`
+- `ReminderOccurrence`
+- `ScheduleTime`
+- `StockAdjustment`
+- `Tag`
+
+Rules include appointment, medicine/schedule and profile validation.
+
+## Application source confirmed
+
+Contracts include:
+
+- `ICareNestRepository`
+- `IInfrastructureServices`
+- `IReminderCoordinator`
+- `IUseCaseServices`
+
+Services include:
+
+- `AppointmentService`
+- `BackupReminderCoordinator`
+- `DocumentService`
+- `MedicineService`
+- `ProfileService`
+- `ReminderCoordinator`
+- `ReminderPlanner`
+
+## Infrastructure source confirmed
+
+Major files include:
+
+- `BackupArchiveValidator`
+- `BackupManifest`
+- `EncryptedBackupService`
+- `CareNestStorageOptions`
+- `EncryptedDocumentStore`
+- `CareNestRepository`
+- `SchemaInfo`
+- `SqliteDatabase`
+- `CsvWriter`
+- `ReportService`
+- `SimplePdfWriter`
+- `ChunkedAead`
+
+## MAUI source confirmed
+
+App composition/platform tree includes:
+
+- `App.xaml` / `.cs`
+- `MauiProgram.cs`
+- navigation/converters;
+- Android platform files and resources;
+- Windows platform files/manifests;
+- iOS platform files/plists;
+- Mac Catalyst platform files/plists;
+- branding/icon/support resources;
+- presentation/ViewModel/platform service tree.
+
+## Unit tests confirmed
+
+Concrete tests cover:
+
+- appointment/profile rules;
+- appointment service;
+- backup reminder coordinator;
+- document service;
+- medicine rules/service;
+- profile service;
+- reminder action recovery/validation;
+- reminder planner archived/boundary/DST/edge/ownership/property/UTC/main behavior;
+- schedule validation hardening;
+- deterministic repository/time/notification/document/reminder test doubles.
+
+Integration and UI/source-policy projects were also confirmed in the solution tree.
+
+---
+
+# 17. Central package/build configuration audited
+
+`Directory.Packages.props` currently contains:
+
+- `Microsoft.Maui.Controls` `10.0.20`;
+- `sqlite-net-pcl` `1.9.172`;
+- `SQLitePCLRaw.bundle_green` `2.1.11`;
+- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
+- `SQLitePCLRaw.lib.e_sqlite3.android` `2.1.12`;
+- `SQLitePCLRaw.provider.e_sqlite3` `2.1.12`;
+- `SQLitePCLRaw.provider.sqlite3` `2.1.12`;
+- `SQLitePCLRaw.provider.dynamic_cdecl` `2.1.12`;
+- `Microsoft.Extensions.Logging.Debug` `10.0.0`;
+- `Microsoft.Extensions.Logging.Abstractions` `10.0.0`;
+- `Microsoft.Extensions.DependencyInjection.Abstractions` `10.0.0`;
+- `Microsoft.NET.Test.Sdk` `17.14.1`;
+- `xunit` `2.9.3`;
+- `xunit.runner.visualstudio` `3.1.4`;
+- `coverlet.collector` `6.0.4`.
+
+Central transitive pinning is enabled.
+
+`Directory.Build.props` confirms:
+
+- latest C# language version;
+- nullable enabled;
+- implicit usings;
+- analyzers enabled at latest-recommended;
+- warnings-as-errors in CI;
+- deterministic builds;
+- ContinuousIntegrationBuild in CI;
+- repository/author metadata.
+
+---
+
+# 18. Current GitHub/release automation documented and retained
+
+Current key workflows:
+
+- `.github/workflows/ci.yml`
+- `.github/workflows/codeql.yml`
+- `.github/workflows/dependency-review.yml`
+- `.github/workflows/release-gate.yml`
+- `.github/workflows/release-evidence.yml`
+
+Current local scripts:
+
+- `build/scripts/quality-gate.sh`
+- `build/scripts/quality-gate.ps1`
+- `build/scripts/release-preflight.sh`
+- `build/scripts/release-preflight.ps1`
+- `build/scripts/setup-git.sh`
+- `build/scripts/setup-git.ps1`
+
+Production tag behavior:
+
+`v*` → exact tagged source through CI + CodeQL + Dependency Audit + Release Gate + Release Evidence.
+
+---
+
+# 19. Current documentation map
+
+Primary references:
+
+- `README.md`
+- `docs/README.md`
+- `docs/COMPLETE_PROJECT_DOCUMENTATION.md`
+- `docs/CODEBASE_REFERENCE.md`
+- `docs/CONFIGURATION_REFERENCE.md`
+- `docs/MAINTENANCE_AND_OPERATIONS.md`
+- `docs/releases/DOCUMENTATION_AUDIT_20260814.md`
+- `docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md`
+- `PROJECT_STATUS.md`
+- `CHANGELOG.md`
+- this `what_changed.md`.
+
+Architecture:
+
+- `docs/architecture/ARCHITECTURE.md`
+- `APPLICATION_FLOWS.md`
+- `SERVICE_BOUNDARIES.md`
+- `DATABASE_SCHEMA.md`
+- `DATA_STORAGE_AND_EXPORT.md`
+- `DOCUMENT_VAULT.md`
+- `BACKUP_AND_RESTORE.md`
+- `NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`
+- ADRs.
+
+Privacy/security:
+
+- `PRIVACY.md`
+- `SECURITY.md`
+- `docs/privacy/PRIVACY_MODEL.md`
+- `DATA_LIFECYCLE.md`
+- `LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md`
+- `docs/security/SECURITY_MODEL.md`
+- `THREAT_MODEL.md`
+- `LOGGING_PRIVACY.md`
+- `DEPENDENCY_RISK_REGISTER.md`
+- `FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md`.
+
+Testing:
+
+- `docs/testing/TESTING_GUIDE.md`
+- `TEST_PLAN.md`
+- `REMINDER_SCHEDULING_CONTRACT.md`
+- `SETTINGS_LIFECYCLE_CONTRACT.md`
+- `BUG_AUDIT_REGRESSION_MATRIX_20260814.md`.
+
+Release:
+
+- `docs/releases/RELEASE_PROCESS.md`
+- `RELEASE_CHECKLIST.md`
+- `QUALITY_GATE.md`
+- `MANUAL_TEST_MATRIX.md`
+- `SECURITY_RELEASE_REVIEW.md`
+- `STORE_SUBMISSION_CHECKLIST.md`
+- `RELEASE_EVIDENCE.md`
+- `VERIFICATION_BRANCH_PROTOCOL.md`
+- `NEXT_STEPS.md`
+- `SQLITE_DEPENDENCY_MIGRATION_PLAN.md`
+- `RELEASE_ENGINEERING_VERIFICATION_20260814.md`
+- `DOCUMENTATION_AUDIT_20260814.md`.
+
+---
+
+# 20. Manual/external production blockers — still open
+
+CareNest source/documentation is not the same thing as a published production release.
+
+Do **not** check these as complete until actual evidence exists.
+
+## Android
+
+- [ ] real device/emulator manual matrix;
+- [ ] notification permission denied/granted;
+- [ ] actual notification delivery;
+- [ ] future/overdue snooze behavior;
+- [ ] cancellation-first handled actions;
+- [ ] stale request cleanup after schedule changes;
+- [ ] medicine/profile delete OS-request cleanup;
+- [ ] exact/inexact alarm diagnostics;
+- [ ] battery optimization behavior;
+- [ ] reboot recovery;
+- [ ] clock/time-zone recovery;
+- [ ] force-stop/vendor limitation behavior;
+- [ ] packaged SQLite compatibility.
+
+## Windows
+
+- [ ] manual feature matrix;
+- [ ] running-app notification behavior;
+- [ ] documented closed-app limitation;
+- [ ] same-ID timer replacement/cancellation behavior;
+- [ ] cancellation-first actions;
+- [ ] restart/recovery;
+- [ ] packaged SQLite compatibility.
+
+## iOS / iPadOS
+
+- [ ] real device permission/delivery;
+- [ ] snooze/reconciliation/action behavior;
+- [ ] restart/time-zone behavior;
+- [ ] packaged SQLite compatibility;
+- [ ] notification preview privacy/accessibility;
+- [ ] production signing/provisioning.
+
+## Mac Catalyst
+
+- [ ] notification permission/delivery;
+- [ ] action/reconciliation behavior;
+- [ ] restart behavior;
+- [ ] keyboard/focus;
+- [ ] packaged SQLite compatibility;
+- [ ] signing/package behavior.
+
+## Packaged data/encryption compatibility
+
+- [ ] representative fictional pre-remediation SQLite upgrade/install;
+- [ ] SQLite integrity after package update;
+- [ ] all structured data readable;
+- [ ] reminder rebuild/reconciliation after upgrade;
+- [ ] existing encrypted document access through existing key path;
+- [ ] current backup create/restore;
+- [ ] wrong-password/tamper packaged behavior;
+- [ ] clean-install restore;
+- [ ] canonical pre-remediation backup compatibility where available;
+- [ ] canonical historical framing-v1 fixture checks where available;
+- [ ] new framing-v2 packaged behavior.
+
+## Accessibility
+
+- [ ] screen reader;
+- [ ] large text/text scaling;
+- [ ] keyboard/focus;
+- [ ] contrast;
+- [ ] light/dark/system themes;
+- [ ] reduced motion;
+- [ ] color-independent state/validation cues.
+
+## Store/policy
+
+- [ ] current Apple App Store support-link policy review;
+- [ ] current Google Play support-link policy review;
+- [ ] health-organizer/category wording review;
+- [ ] privacy/data-safety disclosures;
+- [ ] store screenshots using fictional data;
+- [ ] listing/support/privacy/terms/security links;
+- [ ] channel-specific support-link visibility if needed.
+
+## Signing/distribution
+
+- [ ] Android production keystore outside Git;
+- [ ] Apple certificates/provisioning outside Git;
+- [ ] Windows signing identity outside Git;
+- [ ] signed Android package;
+- [ ] signed iOS archive;
+- [ ] signed/notarized/store-ready Mac Catalyst package;
+- [ ] signed Windows package;
+- [ ] package identifiers/version/build metadata;
+- [ ] package checksums/provenance.
+
+## Exact final production release
+
+After all applicable pre-tag blockers and any resulting source/config changes:
+
+1. select exact approved production commit;
+2. if verification-relevant source changed after PR #56, complete a new exact-head marker verification;
+3. create approved `v*` tag pointing to exact commit;
+4. require tagged CareNest CI success;
+5. require tagged CodeQL success;
+6. require tagged unsuppressed Dependency Audit success;
+7. require tagged Release Gate success;
+8. require tagged CareNest Release Evidence success;
+9. record evidence artifact identity/checksums;
+10. verify signed package provenance;
+11. publish only after every applicable gate succeeds.
+
+A failed production tag must not be moved/relabelled to look successful.
+
+---
+
+# 21. Current interpretation
+
+- CareNest remains `1.0.0-rc.1`.
+- The local-first v1 implementation scope is source-complete for the current documented feature set.
+- PR #56 is the authoritative current automated release-engineering source baseline.
+- PR #54 remains historical runtime bug-audit evidence.
+- 285/285 core tests are green on PR #56.
+- Android/Windows/iOS simulator/Mac Catalyst Release builds are green on PR #56.
+- CodeQL and unsuppressed Dependency Audit are green on PR #56.
+- The former SQLite advisory suppression remains removed.
+- The maintained SQLite native/provider floor remains regression-protected.
+- Exact `v*` production tags now cover CI, CodeQL, Dependency Audit, Release Gate and Release Evidence.
+- Release Evidence preserves available failed-run diagnostics and identifies run attempts.
+- Local release/quality scripts treat dependency audit as blocking.
+- Repository-local Git setup is fail-closed and uses `Sanskar <sanskarin@outlook.in>`.
+- Release Gate matching is hardened against nested/case/indentation drift.
+- Complete project/codebase/configuration/maintenance documentation now exists.
+- Older pre-completion active docs are preserved byte-for-byte under `docs/history/pre-complete-docs-20260814/`.
+- No cloud/account/telemetry/clinical-decision functionality was added by this continuation.
+- Manual device/accessibility/store/signing/packaged-data/exact-production-tag evidence remains release-blocking until actually performed.
+
+---
+
+# 22. Next safe continuation order
+
+If continuing toward public `1.0.0`, use this order:
+
+1. keep `main` source/documentation stable unless a real defect is found;
+2. run final documentation/source-policy exact-head verification after the complete documentation pass;
+3. complete representative packaged SQLite/encrypted-data compatibility using fictional data;
+4. complete Android/Windows/iOS/Mac Catalyst manual matrices;
+5. complete accessibility testing;
+6. review current Apple/Google store policy/disclosures;
+7. configure signing outside Git;
+8. build/inspect signed packages;
+9. update only factual checklist/status evidence;
+10. if any verification-relevant source changes, re-run exact-head verification;
+11. select exact production commit;
+12. create `v*` production tag;
+13. require all tagged workflows including Release Gate/Release Evidence;
+14. publish only after every applicable gate is complete.
+
+Do not reintroduce the former SQLite audit suppression and do not weaken analyzer/audit/release gates to obtain a green result.
