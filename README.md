@@ -12,20 +12,9 @@ CareNest is currently tracked as:
 
 `1.0.0-rc.1`
 
-The latest exact-head automated source verification is **PR #43 — `Verify final CareNest 2026-08-14 bug audit source`**.
+The earlier README statement that PR #43 was a fully green automated baseline was incorrect. GitHub Actions records show that PR #43 passed formatting, platform builds, CodeQL, and Dependency Audit, but its core CI failed during integration testing and the UI-contract suite was skipped. PR #43 is therefore **not** release evidence.
 
-PR #43 was marker-only and was closed without merging its verification marker after all required automated gate groups completed successfully:
-
-- platform-neutral formatting;
-- complete unit-test suite;
-- complete integration-test suite;
-- complete UI-contract/policy suite;
-- Android Release build;
-- Windows Release build;
-- iOS simulator Release build;
-- Mac Catalyst Release build;
-- CodeQL;
-- Dependency Audit.
+The reminder-reconciliation defects exposed by that failed run have been corrected on `main`, together with follow-up architecture, compensation, test, and analyzer fixes. A fresh marker-only exact-head verification is required before this README will name a new fully green source baseline.
 
 See:
 
@@ -33,6 +22,7 @@ See:
 - [`what_changed.md`](what_changed.md)
 - [`docs/releases/BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/BUG_AUDIT_VERIFICATION_20260814.md)
 - [`docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md)
+- [`docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md)
 
 The successful dependency audit does **not** mean every tracked advisory is fixed. `GHSA-2m69-gcr7-jv3q` remains open in the dependency risk register.
 
@@ -113,7 +103,7 @@ Important current references:
 
 - [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — current automated baseline and real production blockers.
 - [`what_changed.md`](what_changed.md) — complete active continuation handoff.
-- [`docs/releases/BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/BUG_AUDIT_VERIFICATION_20260814.md) — final 2026-08-14 bug-audit evidence.
+- [`docs/releases/BUG_AUDIT_VERIFICATION_20260814.md`](docs/releases/BUG_AUDIT_VERIFICATION_20260814.md) — 2026-08-14 bug-audit evidence and corrections.
 - [`docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — defect-to-test map.
 - [`docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md) — security/privacy-relevant audit notes.
 - [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — complete user guide.
@@ -234,7 +224,7 @@ See:
 
 **[Buy Me a Coffee → https://buymeacoffee.com/sanskarIN](https://buymeacoffee.com/sanskarIN)**
 
-Support is voluntary and helps continued open-source design, testing, documentation, accessibility, platform maintenance, and future releases.
+If you want to voluntarily support CareNest, that support helps continued open-source design, testing, documentation, accessibility, platform maintenance, and future releases.
 
 Project support does not unlock medical advice, premium health behavior, different reminder behavior, support priority, or access to user health data.
 
