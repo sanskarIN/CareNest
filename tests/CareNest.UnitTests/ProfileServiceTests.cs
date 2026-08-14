@@ -10,6 +10,7 @@ public sealed class ProfileServiceTests
     private static readonly DateTimeOffset Now = new(2026, 8, 13, 9, 30, 0, TimeSpan.Zero);
     private static readonly string[] ExpectedDeletedFiles =
         ["doc-1.cndoc", "doc-2.cndoc", "profile-photo.cndoc"];
+    private static readonly string[] ExpectedProfileIds = ["profile-1"];
 
     [Fact]
     public async Task SaveAsync_NewProfile_PersistsCreatedAuditAndUtcTouch()
@@ -71,7 +72,7 @@ public sealed class ProfileServiceTests
 
         await service.DeleteAsync(profile.Id);
 
-        Assert.Equal(new[] { profile.Id }, reminders.CancelledProfileIds);
+        Assert.Equal(ExpectedProfileIds, reminders.CancelledProfileIds);
         Assert.Equal(profile.Id, repository.DeletedProfileId);
         Assert.Equal(ExpectedDeletedFiles, documentStore.DeletedFiles);
         var audit = Assert.Single(repository.AuditEntries);
@@ -107,7 +108,7 @@ public sealed class ProfileServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync(profile.Id));
 
-        Assert.Equal(new[] { profile.Id }, reminders.CancelledProfileIds);
+        Assert.Equal(ExpectedProfileIds, reminders.CancelledProfileIds);
         Assert.Equal(1, reminders.RebuildCount);
     }
 
