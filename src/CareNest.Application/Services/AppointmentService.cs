@@ -35,6 +35,13 @@ public sealed class AppointmentService(
             appointment,
             cancellationToken);
 
+        // Keep the platform request consistent with the committed appointment before
+        // nonessential audit bookkeeping can fail.
+        await ScheduleReminderIfNeededAsync(
+            appointment,
+            requestPermission: true,
+            cancellationToken);
+
         await repository.AddAuditEntryAsync(new AuditEntry
         {
             EntityType = nameof(Appointment),
@@ -47,24 +54,48 @@ public sealed class AppointmentService(
                 ? "Appointment updated"
                 : "Appointment created"
         }, cancellationToken);
-
-        await ScheduleReminderIfNeededAsync(
-            appointment,
-            requestPermission: true,
-            cancellationToken);
     }
 
     public async Task DeleteAsync(
         string id,
         CancellationToken cancellationToken = default)
     {
+        var existing = await repository.GetAppointmentAsync(id, cancellationToken);
+
         await notifications.CancelAsync(
             NotificationId(id),
             cancellationToken);
 
-        await repository.DeleteAppointmentAsync(
-            id,
-            cancellationToken);
+        try
+        {
+            await repository.DeleteAppointmentAsync(
+                id,
+                cancellationToken);
+        }
+        catch (Exception primaryFailure)
+        {
+            if (existing is null)
+            {
+                throw;
+            }
+
+            try
+            {
+                await ScheduleReminderIfNeededAsync(
+                    existing,
+                    requestPermission: false,
+                    CancellationToken.None);
+            }
+            catch (Exception recoveryFailure)
+            {
+                throw new AggregateException(
+                    "Appointment deletion failed and its reminder request could not be fully restored.",
+                    primaryFailure,
+                    recoveryFailure);
+            }
+
+            throw;
+        }
     }
 
     public async Task RebuildRemindersAsync(
@@ -106,8 +137,18 @@ public sealed class AppointmentService(
             throw new InvalidOperationException("Stored appointment start time must be UTC before reminder scheduling.");
         }
 
-        var due = appointment.StartsUtc
-            .AddMinutes(-appointment.ReminderMinutesBefore.Value);
+        DateTime due;
+        try
+        {
+            due = appointment.StartsUtc
+                .AddMinutes(-appointment.ReminderMinutesBefore.Value);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            throw new InvalidOperationException(
+                "Stored appointment reminder time is outside the supported date range.",
+                ex);
+        }
 
         if (due <= timeProvider.GetUtcNow().UtcDateTime)
         {
