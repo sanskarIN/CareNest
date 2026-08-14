@@ -100,53 +100,69 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - SQLite native/provider package floors are guarded by `SqliteDependencySecurityContractTests`.
 - The dependency remediation is not represented as proof of packaged existing-database/backup/device compatibility; those manual release checks remain separate.
 
+## Release-engineering quality controls
+
+- CareNest CI, CodeQL and Dependency Audit support exact `v*` tag execution.
+- CareNest CI, CodeQL and Dependency Audit expose manual execution paths where configured.
+- Dependency Audit does not dereference pull-request-only metadata during tag/manual runs.
+- Release Gate and Release Evidence support exact `v*` tags and manual execution.
+- Release Gate detects open dependency-risk status independent of indentation/case and detects nested unchecked checklist rows.
+- Release Gate requires the core release/status/security/evidence documents and all three core test suites.
+- Release Evidence records exact commit/ref/run/attempt identity.
+- Release Evidence records tracked-file manifests and SHA-256 source checksums.
+- Release Evidence attempts unit, integration, UI-contract, dependency-inventory, and workspace-integrity evidence independently.
+- Release Evidence uploads available evidence before the aggregate failure gate so a failed run remains diagnosable.
+- Release Evidence artifact names include commit SHA, run ID, and run attempt.
+- Release-preflight Bash/PowerShell scripts treat unsuppressed dependency audit failures as blocking.
+- Quality-gate Bash/PowerShell scripts work from a clean checkout and fail on required native-command errors.
+- Repository Git setup scripts use repository-local identity, verify `Sanskar` / `sanskarin@outlook.in`, and fail closed on native Git errors.
+- Executable UI-contract tests guard these workflow/script/release-policy expectations.
+
 ## Cross-platform automated evidence
 
 - Unit tests pass.
 - Integration tests pass.
-- UI/repository contract tests pass.
+- UI/repository/release-policy contract tests pass.
 - Android Release build passes.
 - Windows Release build passes.
 - iOS simulator Release build passes.
 - Mac Catalyst Release build passes.
 - CodeQL passes.
 - Unsuppressed Dependency Audit passes.
-- Release Evidence artifacts are generated for the exact final release commit before production publication.
+- Release Evidence artifacts are generated for the exact final production release commit/tag before publication.
 
 ## Current exact automated baseline
 
-The older PR #33 baseline is historical. The 2026-08-14 bug audit continued through reminder reconciliation/failure recovery, appointment persistence compensation, report-cache cleanup, SQLite dependency remediation, and cancellation-first reminder action recovery.
+Authoritative marker-only verification: PR #56 — `Verify complete CareNest release-engineering source`.
 
-Authoritative marker-only verification: PR #54 — `Verify final CareNest bug-audit source`.
+Frozen source/base SHA:
 
-Verified runtime/test/dependency source/base SHA:
-
-`4490f3f86752841d436e981b29279970c90c947b`
+`4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
 
 Verification marker head:
 
-`929168a0a319b15d9e89997d86436d59ae731ad1`
+`e3bc621cea05364a69abee0dadbd71a67c17bddb`
 
 Final evidence:
 
-- CareNest CI #503 / `31766059137`: **success**;
+- CareNest CI #571 / `31770929379`: **success**;
 - platform-neutral formatting: **success**;
 - **122 unit tests**: passed;
 - **39 integration tests**: passed;
-- **100 UI-contract/policy tests**: passed;
-- **261 total core tests**: passed;
+- **124 UI-contract/policy tests**: passed;
+- **285 total core tests**: passed;
 - Android Release: **success**;
 - Windows Release: **success**;
 - iOS simulator Release: **success**;
 - Mac Catalyst Release: **success**;
-- CodeQL #503 / `31766059215`: **success**;
-- unsuppressed Dependency Audit #35 / `31766059132`: **success**, including platform-neutral and Android MAUI app dependency graphs.
+- CodeQL #571 / `31770929382`: **success**;
+- unsuppressed Dependency Audit #41 / `31770929383`: **success**.
 
-PR #54 was closed without merge. Its verification marker is not part of `main`. Documentation-only commits after the source boundary do not alter the runtime/test/dependency graph exercised by PR #54.
+PR #56 was closed without merge. Its verification marker is not part of `main`.
 
-`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` records the final evidence in one place.
+`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` records the authoritative final release-engineering evidence. PR #54 remains the historical completed runtime bug-audit baseline.
 
-### Verification failures retained as evidence of gate behavior
+### Verification failures/supersession retained as evidence of gate behavior
 
 - PR #31 exposed CA1861 in new profile-service test source; it was fixed without analyzer suppression.
 - PR #39 exposed CA1001 and a formatter defect; the accidentally merged failed marker was explicitly removed from `main`.
@@ -157,11 +173,13 @@ PR #54 was closed without merge. Its verification marker is not part of `main`. 
 - PR #49 exposed CA1861 in new reminder reconciliation assertions; tests were corrected instead of suppressing the analyzer.
 - PRs #47/#48/#50 supplied useful unsuppressed SQLite-audit evidence while source was moving, but were not final combined-source baselines.
 - PRs #51/#52 were superseded when later runtime/test source changed.
-- PR #53 independently corroborated the final source but was closed as duplicate verification after PR #54 completed the full matrix.
+- PR #53 independently corroborated the final bug-audit source; PR #54 was retained as that audit's authoritative checkpoint.
+- PR #55 passed 277/277 core tests, Android, Windows, CodeQL and unsuppressed Dependency Audit but was intentionally superseded when the complete-file audit found further legitimate release-tooling/documentation fixes.
+- PR #56 is the authoritative completed release-engineering baseline.
 
-This automated baseline is necessary but not sufficient for final public release. The exact promoted production commit still needs Release Evidence after all manual/store/signing/existing-data compatibility blockers are complete.
+This automated baseline is necessary but not sufficient for final public release. The exact promoted production commit/tag still needs successful exact-tag Release Gate/Release Evidence after all applicable manual/store/signing/packaged-data blockers are complete.
 
-## Manual evidence
+## Manual evidence still required
 
 - Android device/emulator matrix complete.
 - Windows manual matrix complete.
@@ -186,14 +204,15 @@ This automated baseline is necessary but not sufficient for final public release
 - App lock cold-start flow tested.
 - Screen-reader, keyboard, large-text, reduced-motion and contrast checks complete.
 
-## Distribution evidence
+## Distribution evidence still required
 
 - Current Apple/Google policy review for the voluntary project-support link is complete.
 - Channel-specific support-link visibility follows current store rules.
 - Signing identities are supplied outside Git.
-- Signed packages are built from the exact verified commit.
+- Signed packages are built from the exact verified production commit.
 - Store listing/privacy/data-safety claims match actual implementation.
 - Release notes include known limitations and do not promise guaranteed reminder delivery.
 - Final package/release notes distinguish v2 new-write hardening from retained v1 read compatibility if that distinction is relevant to users/support.
+- Exact approved production `v*` tag completes CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence successfully.
 
 Any failed, unknown or stale required gate blocks final production promotion until it is resolved or explicitly documented as not applicable by the release owner.
