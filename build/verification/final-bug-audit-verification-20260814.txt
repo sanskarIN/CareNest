@@ -1,0 +1,6 @@
+CareNest exact-head verification marker
+Source/base: d26c0b034fa8b2df95285299f0db33a0f2e77f3f
+Runtime source includes reminder reconciliation, deletion compensation, profile/medicine save reconciliation, and analyzer fixes.
+Documentation includes corrected PR #43 evidence and explicit voluntary project-support wording.
+Date: 2026-08-14
+This marker is verification-only and must not be merged.
