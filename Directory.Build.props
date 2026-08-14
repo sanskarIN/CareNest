@@ -14,16 +14,4 @@
     <Company>CareNest</Company>
     <Copyright>Copyright © 2026 Sanskar</Copyright>
   </PropertyGroup>
-
-  <!--
-    Temporary, narrowly scoped NuGet audit exception.
-    sqlite-net-pcl 1.9.172 currently resolves SQLitePCLRaw 2.1.11, and NuGet reports
-    GHSA-2m69-gcr7-jv3q against the bundled native SQLite package. The attempted
-    2.1.12 pin does not exist on NuGet.org. Keep this exact advisory visible here
-    until the dependency chain publishes an available patched version or the
-    persistence layer is migrated. Do not broaden this suppression.
-  -->
-  <ItemGroup>
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
-  </ItemGroup>
 </Project>
