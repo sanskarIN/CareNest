@@ -282,24 +282,6 @@ public sealed class ReminderCoordinator(
             occurrence => string.Equals(occurrence.ProfileId, profileId, StringComparison.Ordinal),
             cancellationToken);
 
-    public async Task TryRestoreReminderRequestsAsync(CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        try
-        {
-            await RebuildAsync(cancellationToken: cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            LogOperationalWarning("Reminder restoration failed", ex);
-        }
-    }
-
     private async Task CancelFutureAsync(
         Func<ReminderOccurrence, bool> predicate,
         CancellationToken cancellationToken)
