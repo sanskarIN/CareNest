@@ -12,6 +12,7 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - Concrete ViewModels do not directly access SQLite infrastructure or create network clients.
 - Runtime source does not synchronously block on tasks through `.Wait()`, `.Result`, `GetAwaiter().GetResult()`, `Thread.Sleep`, `Task.WaitAll` or `Task.WaitAny` patterns.
 - New service behavior has direct platform-neutral tests where orchestration can be verified without MAUI/SQLite.
+- Analyzer findings exposed by marker-only verification are fixed in source/tests rather than hidden by weakening the analyzer gate.
 
 ## Product safety and scheduling integrity
 
@@ -30,6 +31,14 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - Representative DST gap/overlap coverage spans North America, Europe, Australia and New Zealand when those identifiers exist on the test host.
 - Deterministic property-style recurrence tests use fixed seeds/explicit synthetic schedules and remain reproducible.
 - Snooze actions require an explicit future UTC timestamp before persistence or platform scheduling.
+- Snoozed rows use `SnoozedUntilUtc` as their effective due time for upcoming and overdue behavior.
+- Rebuild cancels existing OS requests before replacement, suppression or invalidation.
+- Platform cancellation failure leaves reminder state retryable rather than falsely reconciled.
+- Schedule edits preserve old future occurrence identities until OS-request reconciliation can cancel stale requests.
+- Medicine/profile delete flows cancel future OS requests before cascade and compensate with non-cancelled rebuild if persistence fails.
+- Medicine/profile save flows reconcile reminders before non-critical audit bookkeeping can make an already-applied record transition appear failed.
+- Appointment persistence has explicit platform-reminder reconciliation/compensation coverage.
+- Reminder actions cancel the old OS request before committing handled state and use non-cancelled state/rebuild compensation when later persistence/snooze scheduling fails.
 - Appointment `StartsUtc` requires actual `DateTimeKind.Utc`; local/unspecified appointment clock values are rejected instead of relabeled.
 - Appointment time-zone identifiers are trimmed/validated separately from the UTC instant.
 - Notification permission is not requested during onboarding; it is requested only at an explicit reminder-capable action.
@@ -50,6 +59,9 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - An audit failure after metadata save attempts rollback of both metadata record and encrypted payload.
 - Rollback cleanup failure is surfaced rather than silently hidden.
 - Explicit export constrains the temporary output filename to a safe leaf filename.
+- Successful decrypted exports use managed cache ownership.
+- Failed/cancelled plaintext exports remove application-owned incomplete files best effort.
+- Application-owned report cache files are removed after share handoff where CareNest still controls the temporary copy.
 
 ## Backup/restore security
 
@@ -69,6 +81,8 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - Copied document-key buffers used during backup creation/restore are zeroed after use where practical.
 - WAL snapshot tests verify copied committed data and SQLite integrity rather than only file existence.
 - A pre-cancelled snapshot operation leaves no output file.
+- Primary encrypted backup/restore success is not falsely reported as failure only because later local bookkeeping/audit persistence fails.
+- Failed restore rolls the document key back to its exact prior byte state where prior bytes existed.
 
 ## Privacy/security
 
@@ -82,8 +96,9 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - Sensitive mutable caller-owned buffers are cleared where practical without claiming total process/OS-memory erasure.
 - SQLite migration/integrity tests pass.
 - CodeQL passes.
-- Dependency Audit passes apart from the explicitly tracked/narrowly suppressed SQLite advisory.
-- The SQLite advisory has an explicit release decision and is never represented as fixed unless a patched path is actually verified.
+- Dependency Audit passes without the former `GHSA-2m69-gcr7-jv3q` `NuGetAuditSuppress` exception.
+- SQLite native/provider package floors are guarded by `SqliteDependencySecurityContractTests`.
+- The dependency remediation is not represented as proof of packaged existing-database/backup/device compatibility; those manual release checks remain separate.
 
 ## Cross-platform automated evidence
 
@@ -94,39 +109,56 @@ CareNest must not be described as bug-free. A production release is acceptable o
 - Windows Release build passes.
 - iOS simulator Release build passes.
 - Mac Catalyst Release build passes.
+- CodeQL passes.
+- Unsuppressed Dependency Audit passes.
 - Release Evidence artifacts are generated for the exact final release commit before production publication.
 
-## Current exact automated baseline
+## Current exact automated candidate
 
-Latest exact runtime/test source:
+The older PR #33 baseline is historical. The 2026-08-14 bug audit continued through reminder reconciliation/failure recovery, report-cache cleanup and SQLite dependency remediation.
 
-`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
+Latest exact runtime/test source covered by the current marker-only verification:
 
-Verified by marker-only PR #33:
+`da2aed19ee9224b8d8661f11520ab9396e2c005e`
 
-- marker head `62a0050a2622e12a31d00842778af0bc96355482`;
-- CareNest CI #332 / `31691592300`: success;
+Verification PR #53 marker head:
+
+`f648bad8ea666dfb0a13e594577dee7a80d141c6`
+
+Evidence already green:
+
+- CareNest CI #501 / `31766026734`: in progress overall only because Apple Release is still running;
 - platform-neutral formatting: success;
-- 106 unit tests: passed;
-- 30 integration tests: passed;
-- 54 UI-contract/policy tests: passed;
-- **190 total core tests: passed**;
+- **122 unit tests**: passed;
+- **39 integration tests**: passed;
+- **100 UI-contract/policy tests**: passed;
+- **261 total core tests**: passed;
 - Android Release: success;
 - Windows Release: success;
-- iOS simulator Release: success;
-- Mac Catalyst Release: success;
-- CodeQL #332 / `31691592435`: success;
-- Dependency Audit #13 / `31691592302`: success.
+- CodeQL #501 / `31766026573`: success;
+- Dependency Audit #34 / `31766026570`: success without the former SQLite audit suppression.
 
-PR #33 changed only `build/verification/rc1-aead-v2-hardening-20260813.txt` beyond that source head and was closed without merge after success.
+Remaining PR #53 automated work at this document update:
+
+- iOS simulator Release: in progress;
+- Mac Catalyst Release: pending behind iOS;
+- overall CareNest CI conclusion: pending those Apple steps.
+
+PR #53 changes only its verification marker beyond its source snapshot and must be closed without merging the marker after all evidence is recorded.
 
 ### Verification failures retained as evidence of gate behavior
 
-PR #31 remains intentionally superseded. Its core formatting gate passed, but unit-test compilation exposed CA1861 in a new profile-service assertion. The test was corrected on `main`; the analyzer was not suppressed and PR #31 was closed unmerged.
+- PR #31 exposed CA1861 in new profile-service test source; it was fixed without analyzer suppression.
+- PR #39 exposed CA1001 and a formatter defect; the accidentally merged failed marker was explicitly removed from `main`.
+- PR #40 demonstrated platform/CodeQL/audit success but core formatting failed, so it was not promoted.
+- PR #43 was incorrectly described as green in earlier documentation; actual CareNest CI #448 failed integration tests and skipped the UI suite.
+- PR #44 reproduced future-snooze, overdue-snooze and stale-occurrence defects; source was fixed instead of reusing PR #43 evidence.
+- PR #46 exposed broader OS-reminder reconciliation contracts.
+- PR #49 exposed CA1861 in new reminder reconciliation assertions; tests were corrected instead of suppressing the analyzer.
+- PRs #47/#48/#50 supplied useful unsuppressed SQLite-audit evidence while source was moving, but were not final combined-source baselines.
+- PRs #51/#52 were superseded when later runtime/test source changed.
 
-PR #32 then verified the corrected service/document/backup source at 186 tests and all platform/security gates green before the later AEAD-v2 source changes required PR #33.
-
-This automated baseline is necessary but not sufficient for final public release. The final promoted commit still needs a fresh Release Evidence run after all manual/store/signing/dependency-risk blockers are cleared.
+This automated candidate is necessary but not sufficient for final public release. The final promoted commit still needs fresh Release Evidence after all manual/store/signing/existing-data compatibility blockers are complete.
 
 ## Manual evidence
 
@@ -138,7 +170,11 @@ This automated baseline is necessary but not sufficient for final public release
 - Appointment permission-denied/granted behavior tested on target platforms.
 - Android exact-alarm/battery/reboot behavior tested on representative devices.
 - Time-zone change behavior tested.
-- Snooze behavior tested against real platform notification scheduling.
+- Snooze and cancellation-first reminder-action behavior tested against real platform notification scheduling.
+- Representative upgrade/install containing fictional pre-remediation SQLite data tested.
+- Existing structured records remain readable after the SQLite native/provider update.
+- Existing encrypted documents remain decryptable after the dependency update.
+- Pre-remediation/current encrypted backup compatibility tested on packaged builds where canonical fixtures are available.
 - Document import/export/delete tested.
 - New v2 encrypted document read/write tested in packaged builds.
 - Legacy v1 document compatibility tested with a canonical historical fixture when available.
