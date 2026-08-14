@@ -31,6 +31,59 @@ public sealed class EncryptedDocumentStoreTests
     }
 
     [Fact]
+    public async Task Export_WhenDocumentKeyIsMissing_DoesNotCreateReplacementKey()
+    {
+        await using var store = await TestStore.CreateAsync();
+        await using var input = new MemoryStream(Encoding.UTF8.GetBytes("document"));
+        var stored = await store.Documents.ImportAsync(input, "a.txt", "text/plain");
+        await store.Secrets.RemoveAsync(SecretKeys.DocumentMasterKey);
+        var setCallsBeforeExport = store.Secrets.SetBytesCallCount;
+
+        await using var output = new MemoryStream();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.Documents.ExportDecryptedAsync(stored.EncryptedFileName, output));
+
+        Assert.Equal(setCallsBeforeExport, store.Secrets.SetBytesCallCount);
+        Assert.Null(await store.Secrets.GetBytesAsync(SecretKeys.DocumentMasterKey));
+    }
+
+    [Fact]
+    public async Task Import_WhenDocumentKeyIsMissingAndCiphertextExists_DoesNotCreateReplacementKey()
+    {
+        await using var store = await TestStore.CreateAsync();
+        await using var first = new MemoryStream(Encoding.UTF8.GetBytes("first"));
+        _ = await store.Documents.ImportAsync(first, "first.txt", "text/plain");
+        await store.Secrets.RemoveAsync(SecretKeys.DocumentMasterKey);
+        var setCallsBeforeImport = store.Secrets.SetBytesCallCount;
+
+        await using var second = new MemoryStream(Encoding.UTF8.GetBytes("second"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.Documents.ImportAsync(second, "second.txt", "text/plain"));
+
+        Assert.Equal(setCallsBeforeImport, store.Secrets.SetBytesCallCount);
+        Assert.Single(Directory.EnumerateFiles(store.Options.DocumentDirectory, "*.cndoc"));
+    }
+
+    [Fact]
+    public async Task Export_WhenDocumentKeyHasInvalidLength_DoesNotOverwriteIt()
+    {
+        await using var store = await TestStore.CreateAsync();
+        await using var input = new MemoryStream(Encoding.UTF8.GetBytes("document"));
+        var stored = await store.Documents.ImportAsync(input, "a.txt", "text/plain");
+        await store.Secrets.SetBytesAsync(SecretKeys.DocumentMasterKey, new byte[8]);
+        var setCallsBeforeExport = store.Secrets.SetBytesCallCount;
+
+        await using var output = new MemoryStream();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.Documents.ExportDecryptedAsync(stored.EncryptedFileName, output));
+
+        Assert.Equal(setCallsBeforeExport, store.Secrets.SetBytesCallCount);
+        var key = await store.Secrets.GetBytesAsync(SecretKeys.DocumentMasterKey);
+        Assert.NotNull(key);
+        Assert.Equal(8, key!.Length);
+    }
+
+    [Fact]
     public async Task TamperedCiphertext_FailsAuthentication()
     {
         await using var store = await TestStore.CreateAsync();
