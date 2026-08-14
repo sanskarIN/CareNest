@@ -76,9 +76,16 @@ public sealed class ReportsViewModel : ObservableViewModel
             }
 
             var path = OutputPath("profile-data", "json");
-            await _reports.CreateProfileDataJsonAsync(SelectedProfile.Id, path, ct);
-            await _files.ShareFileAsync(path, "CareNest profile data export", ct);
-            StatusMessage = "Profile data export created. Document contents are exported separately from Documents.";
+            try
+            {
+                await _reports.CreateProfileDataJsonAsync(SelectedProfile.Id, path, ct);
+                await _files.ShareFileAsync(path, "CareNest profile data export", ct);
+                StatusMessage = "Profile data export created and handed to the system share surface. The temporary CareNest copy was removed.";
+            }
+            finally
+            {
+                TryDelete(path);
+            }
         }, "CareNest could not create the profile data export.");
 
     private Task ExportProfileSummaryAsync() =>
@@ -90,9 +97,16 @@ public sealed class ReportsViewModel : ObservableViewModel
             }
 
             var path = OutputPath("profile-summary", "pdf");
-            await _reports.CreateProfileSummaryPdfAsync(SelectedProfile.Id, path, ct);
-            await _files.ShareFileAsync(path, "CareNest profile summary", ct);
-            StatusMessage = "Profile summary created. Review the privacy warning before sharing.";
+            try
+            {
+                await _reports.CreateProfileSummaryPdfAsync(SelectedProfile.Id, path, ct);
+                await _files.ShareFileAsync(path, "CareNest profile summary", ct);
+                StatusMessage = "Profile summary handed to the system share surface. The temporary CareNest copy was removed.";
+            }
+            finally
+            {
+                TryDelete(path);
+            }
         }, "CareNest could not create the profile summary.");
 
     private Task ExportCsvAsync(
@@ -101,9 +115,16 @@ public sealed class ReportsViewModel : ObservableViewModel
         RunAsync(async ct =>
         {
             var path = OutputPath(baseName, "csv");
-            await export(SelectedProfile?.Id, path, ct);
-            await _files.ShareFileAsync(path, $"CareNest {baseName.Replace('-', ' ')}", ct);
-            StatusMessage = "Report created from user-entered CareNest data.";
+            try
+            {
+                await export(SelectedProfile?.Id, path, ct);
+                await _files.ShareFileAsync(path, $"CareNest {baseName.Replace('-', ' ')}", ct);
+                StatusMessage = "Report handed to the system share surface. The temporary CareNest copy was removed.";
+            }
+            finally
+            {
+                TryDelete(path);
+            }
         }, "CareNest could not create the report.");
 
     private static string OutputPath(string baseName, string extension)
@@ -111,5 +132,20 @@ public sealed class ReportsViewModel : ObservableViewModel
         var directory = Path.Combine(FileSystem.Current.CacheDirectory, "Reports");
         Directory.CreateDirectory(directory);
         return Path.Combine(directory, $"carenest-{baseName}-{DateTime.UtcNow:yyyyMMdd-HHmmss}.{extension}");
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // Best-effort privacy cleanup; Settings can clear the Reports cache later.
+        }
     }
 }
