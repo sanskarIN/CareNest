@@ -14,6 +14,18 @@ public sealed class ReleaseWorkflowContractTests
         Assert.Contains("tags: [\"v*\"]", workflow, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("release-gate.yml")]
+    [InlineData("release-evidence.yml")]
+    public void ProductionReleaseWorkflows_SupportExactTagAndManualExecution(string workflowName)
+    {
+        var workflow = RepositoryLocator.Read(".github", "workflows", workflowName);
+
+        Assert.Contains("workflow_dispatch:", workflow, StringComparison.Ordinal);
+        Assert.Contains("tags:", workflow, StringComparison.Ordinal);
+        Assert.Contains("v*", workflow, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void DependencyAudit_PullRequestDiffStep_IsGuardedForTagAndManualRuns()
     {
