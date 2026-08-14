@@ -33,17 +33,29 @@ internal static class CsvWriter
             Directory.CreateDirectory(directory);
         }
 
-        await using var stream = File.Create(path);
-        await using var writer = new StreamWriter(
-            stream,
-            new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
-
-        foreach (var row in rows)
+        var partialPath = path + $".{Guid.NewGuid():N}.partial";
+        try
         {
+            await using (var stream = File.Create(partialPath))
+            await using (var writer = new StreamWriter(
+                stream,
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)))
+            {
+                foreach (var row in rows)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await writer.WriteLineAsync(
+                        string.Join(',', row.Select(Escape)).AsMemory(),
+                        cancellationToken);
+                }
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
-            await writer.WriteLineAsync(
-                string.Join(',', row.Select(Escape)).AsMemory(),
-                cancellationToken);
+            File.Move(partialPath, path, overwrite: true);
+        }
+        finally
+        {
+            TryDeleteFile(partialPath);
         }
     }
 
@@ -63,5 +75,20 @@ internal static class CsvWriter
         return text[index] is '=' or '+' or '-' or '@'
             ? "'" + text
             : text;
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // Best-effort cleanup of an incomplete plaintext export.
+        }
     }
 }
