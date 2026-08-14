@@ -45,11 +45,11 @@ xcodebuild -version
 
 ## Git maintainer identity
 
-Requested local identity:
+Requested repository-local identity:
 
 ```bash
-git config user.email "sanskarin@outlook.in"
-git config user.name "Sanskar"
+git config --local user.email "sanskarin@outlook.in"
+git config --local user.name "Sanskar"
 ```
 
 Repository helper scripts:
@@ -63,6 +63,10 @@ PowerShell:
 ```powershell
 ./build/scripts/setup-git.ps1
 ```
+
+Both helper scripts locate the repository root, use `--local`, fail on native Git errors, and verify the configured name/email.
+
+GitHub web/API/connector commits can use the authenticated GitHub account identity rather than the local repository identity; do not misrepresent those commits as having an arbitrary local email.
 
 ## Solution structure
 
@@ -167,6 +171,12 @@ Target framework:
 
 `net10.0-windows10.0.19041.0`
 
+On the current CI-backed setup, install the supported MAUI workload on the Windows host:
+
+```powershell
+dotnet workload install maui
+```
+
 Build:
 
 ```powershell
@@ -232,14 +242,51 @@ dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c 
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
-Current exact source baseline verified through PR #30:
+### Current verification lineage
 
-- UnitTests: 74;
-- IntegrationTests: 13;
-- UiTests: 54;
-- total: 141.
+The authoritative completed 2026-08-14 bug-audit baseline was PR #54:
+
+- UnitTests: 122;
+- IntegrationTests: 39;
+- UiTests: 100;
+- total: 261;
+- all four platform Release builds, CodeQL and unsuppressed Dependency Audit passed.
+
+Release-engineering hardening after PR #54 added workflow/script contracts. Superseded PR #55 already demonstrated:
+
+- UnitTests: 122 passed;
+- IntegrationTests: 39 passed;
+- UiTests: 116 passed;
+- total: 277 passed;
+- Android/Windows builds, CodeQL and unsuppressed Dependency Audit passed before later confirmed release-tooling/documentation fixes required a newer exact-source verification.
+
+The current `main` head must complete a fresh full marker-only verification before it becomes the next authoritative baseline.
 
 See `docs/testing/TESTING_GUIDE.md`.
+
+## Local quality gate
+
+Bash:
+
+```bash
+build/scripts/quality-gate.sh
+```
+
+PowerShell:
+
+```powershell
+./build/scripts/quality-gate.ps1
+```
+
+Both scripts are intended to work from a clean checkout and:
+
+- verify platform-neutral/test project formatting;
+- build platform-neutral source projects;
+- restore/run all three core test projects;
+- run blocking unsuppressed NuGet audit for the test dependency graphs;
+- fail on required native-command errors.
+
+They do not replace the MAUI platform matrix.
 
 ## Formatting
 
@@ -268,6 +315,8 @@ PowerShell:
 ./build/scripts/release-preflight.ps1
 ```
 
+Preflight treats the unsuppressed platform-neutral/test dependency audit as blocking. If `CARENEST_TARGET` is set, the selected MAUI target is audited before the target Release build.
+
 See the script and `docs/releases/RELEASE_PROCESS.md` for target configuration and expectations.
 
 ## Running/debugging the MAUI app
@@ -279,6 +328,9 @@ When debugging reminder behavior:
 - use synthetic medicine/profile data;
 - confirm selected schedule time zone;
 - confirm notification permission/capability;
+- distinguish persisted occurrence state from the operating-system scheduled request;
+- remember snoozed `SnoozedUntilUtc` is the effective due time;
+- verify cancellation-first handled actions before assuming a database state change means the OS request was removed;
 - do not assume OS delivery from planner occurrence generation alone;
 - use developer diagnostics/reminder rebuild tools where available.
 
@@ -294,23 +346,34 @@ Use fictional/synthetic records for tests/screenshots/reproduction.
 
 Package versions are centrally managed in `Directory.Packages.props` where applicable.
 
-Run dependency audit after package changes.
+Run unsuppressed dependency audit after package changes.
 
-### SQLite warning
+### SQLite native/provider path
 
-The current dependency graph tracks `GHSA-2m69-gcr7-jv3q` for SQLitePCLRaw native `2.1.11`.
+The formerly tracked `GHSA-2m69-gcr7-jv3q` source exception has been remediated in the current RC1 graph.
 
-The exact `NuGetAuditSuppress` entry is not remediation.
+Current intent includes:
 
-Before changing the SQLite provider/bundle chain, follow:
+- `sqlite-net-pcl` `1.9.172`;
+- `SQLitePCLRaw.bundle_green` `2.1.11`;
+- central transitive pinning;
+- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
+- Android native/provider leaves and selected providers at `2.1.12`;
+- no old advisory `NuGetAuditSuppress` entry.
+
+The package floor/suppression absence is protected by `SqliteDependencySecurityContractTests`.
+
+Before changing the SQLite provider/bundle/native chain, follow:
 
 `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
+
+Do not restore the old audit suppression merely because packaged existing-database/encrypted-data compatibility evidence is incomplete. Those manual checks are a separate production-release gate.
 
 ## Analyzer policy
 
 CI promotes applicable analyzer findings to build failures.
 
-Historical exact-head verification intentionally exposed real analyzer defects such as CA2263/CA1873 rather than broadly suppressing them.
+Historical exact-head verification intentionally exposed real analyzer defects rather than broadly suppressing them.
 
 If an analyzer fails:
 
@@ -319,12 +382,27 @@ If an analyzer fails:
 3. scope advisory-only exceptions narrowly when the rule is non-correctness guidance;
 4. never hide security/correctness issues with blanket suppression.
 
+## Release workflow behavior
+
+Production tags matching `v*` run the exact tagged commit through:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
+
+Release Evidence records tracked-source provenance/checksums, test TRX files, dependency inventories, workspace integrity and evidence checksums. It retains available evidence on a failed run and applies an aggregate failure gate after the upload.
+
+Workflow/test/build-script changes are verification-relevant source and require a new exact-head verification before they are used as a production baseline.
+
 ## Architecture rules for contributors
 
 - UI/ViewModels do not issue SQL directly.
 - Platform-neutral projects do not reference MAUI.
 - Runtime source does not add network/telemetry clients casually in local-first v1.
 - Reminder planner remains platform-neutral/deterministic.
+- Reminder platform request state is reconciled explicitly with persisted occurrence state.
 - Secrets remain outside normal settings/database where secure secret storage is required.
 - Medicine strength/instruction text remains opaque.
 - No diagnosis/treatment/dosage/interaction/risk-scoring feature is introduced.
@@ -337,7 +415,7 @@ Start at:
 
 `docs/README.md`
 
-When a behavior changes, update the relevant user/architecture/security/testing/release documents in the same work.
+When behavior, verification, dependency state, or release tooling changes, update the relevant user/architecture/security/testing/release documents in the same work.
 
 ## Do not commit
 
@@ -373,7 +451,7 @@ If platform-neutral tests pass while one platform fails, investigate that platfo
 
 ## Exact-head verification
 
-Major runtime/test changes that need a new verified baseline follow the marker-only protocol in:
+Runtime/test/project/workflow/package/platform/release-script changes that need a new verified baseline follow the marker-only protocol in:
 
 `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
 
