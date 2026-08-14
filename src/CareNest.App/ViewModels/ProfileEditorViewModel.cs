@@ -13,6 +13,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
     private readonly IDocumentStore _documentStore;
     private readonly IAppFileGateway _files;
     private readonly IAppNavigator _navigator;
+    private readonly SemaphoreSlim _photoGate = new(1, 1);
     private string? _profileId;
     private string _name = string.Empty;
     private DateTime _dateOfBirth = DateTime.Today.AddYears(-30);
@@ -23,7 +24,9 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
     private string _profileColor = "#5B7C6F";
     private bool _isPrimary;
     private bool _isExisting;
+    private string? _persistedPhotoEncryptedFileName;
     private string? _photoEncryptedFileName;
+    private string? _pendingObsoletePhotoEncryptedFileName;
     private string? _photoDisplayPath;
 
     public ProfileEditorViewModel(
@@ -68,9 +71,12 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
 
     public async Task LoadAsync(string? profileId)
     {
+        await DiscardPendingPhotoAsync();
         _profileId = string.IsNullOrWhiteSpace(profileId) ? null : profileId;
         if (_profileId is null)
         {
+            _persistedPhotoEncryptedFileName = null;
+            _photoEncryptedFileName = null;
             IsExisting = false;
             return;
         }
@@ -88,6 +94,7 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
             ProfileColor = profile.ProfileColor;
             IsPrimary = profile.IsPrimary;
             IsExisting = true;
+            _persistedPhotoEncryptedFileName = profile.PhotoPath;
             _photoEncryptedFileName = profile.PhotoPath;
             await LoadPhotoPreviewAsync(ct);
             await ReloadContactsAsync(ct);
@@ -130,12 +137,39 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
     public Task DeleteAsync() =>
         RunAsync(async ct =>
         {
+            await _photoGate.WaitAsync(ct);
+            try
+            {
+                await DeleteStagedPhotoIfNeededAsync();
+                ClearPhotoPreview();
+            }
+            finally
+            {
+                _photoGate.Release();
+            }
+
             if (_profileId is not null)
             {
                 await _profiles.DeleteAsync(_profileId, ct);
             }
             await _navigator.GoBackAsync(ct);
         }, "CareNest could not delete this profile and its local records.");
+
+    public async Task DiscardPendingPhotoAsync()
+    {
+        await _photoGate.WaitAsync();
+        try
+        {
+            await DeleteStagedPhotoIfNeededAsync();
+            await TryDeletePendingObsoletePhotoAsync();
+            _photoEncryptedFileName = _persistedPhotoEncryptedFileName;
+            ClearPhotoPreview();
+        }
+        finally
+        {
+            _photoGate.Release();
+        }
+    }
 
     private Task DeleteContactAsync(EmergencyContact? contact) =>
         RunAsync(async ct =>
@@ -144,7 +178,6 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
             await _repository.DeleteEmergencyContactAsync(contact.Id, ct);
             await ReloadContactsAsync(ct);
         }, "CareNest could not delete the emergency contact.");
-
 
     private Task ChangePhotoAsync(bool capture) =>
         RunAsync(async ct =>
@@ -164,55 +197,129 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
                 throw new InvalidDataException("Choose a JPEG or PNG image.");
             }
 
-            await using var input = await picked.OpenReadAsync(ct);
-            var stored = await _documentStore.ImportAsync(input, picked.FileName, picked.ContentType, ct);
-            if (stored.OriginalSizeBytes > 10 * 1024 * 1024)
+            await _photoGate.WaitAsync(ct);
+            try
             {
-                await _documentStore.DeleteAsync(stored.EncryptedFileName, ct);
-                throw new InvalidDataException("Profile photos must be 10 MB or smaller.");
-            }
+                await using var input = await picked.OpenReadAsync(ct);
+                var stored = await _documentStore.ImportAsync(input, picked.FileName, picked.ContentType, ct);
+                if (stored.OriginalSizeBytes > 10 * 1024 * 1024)
+                {
+                    await _documentStore.DeleteAsync(stored.EncryptedFileName, CancellationToken.None);
+                    throw new InvalidDataException("Profile photos must be 10 MB or smaller.");
+                }
 
-            var previous = _photoEncryptedFileName;
-            _photoEncryptedFileName = stored.EncryptedFileName;
-            if (!string.IsNullOrWhiteSpace(previous))
-            {
-                await _documentStore.DeleteAsync(previous, ct);
+                await DeleteStagedPhotoIfNeededAsync();
+                _photoEncryptedFileName = stored.EncryptedFileName;
+                await LoadPhotoPreviewAsync(ct);
+                StatusMessage = "Profile photo encrypted and staged locally. Save the profile to keep this change.";
             }
-            await LoadPhotoPreviewAsync(ct);
-            StatusMessage = "Profile photo encrypted and stored locally. Save the profile to keep the association.";
+            finally
+            {
+                _photoGate.Release();
+            }
         }, "CareNest could not store this profile photo.");
 
     private Task RemovePhotoAsync() =>
         RunAsync(async ct =>
         {
-            if (!string.IsNullOrWhiteSpace(_photoEncryptedFileName))
+            await _photoGate.WaitAsync(ct);
+            try
             {
-                await _documentStore.DeleteAsync(_photoEncryptedFileName, ct);
+                await DeleteStagedPhotoIfNeededAsync();
+                _photoEncryptedFileName = null;
+                ClearPhotoPreview();
+                StatusMessage = "Profile photo removal staged. Save the profile to keep this change.";
             }
-            _photoEncryptedFileName = null;
-            PhotoDisplayPath = null;
-            OnPropertyChanged(nameof(HasPhoto));
-            StatusMessage = "Profile photo removed locally. Save the profile to keep this change.";
-        }, "CareNest could not remove the profile photo.");
+            finally
+            {
+                _photoGate.Release();
+            }
+        }, "CareNest could not stage profile photo removal.");
 
     private async Task LoadPhotoPreviewAsync(CancellationToken ct)
     {
         PhotoDisplayPath = null;
         if (string.IsNullOrWhiteSpace(_photoEncryptedFileName))
         {
-            OnPropertyChanged(nameof(HasPhoto));
+            ClearPhotoPreview();
             return;
         }
 
-        var directory = Path.Combine(FileSystem.Current.CacheDirectory, "ProfilePreviews");
-        Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, $"{_profileId ?? "new"}.img");
-        await using (var output = File.Create(path))
+        var path = PhotoPreviewPath();
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        var partialPath = $"{path}.{Guid.NewGuid():N}.partial";
+
+        try
         {
-            await _documentStore.ExportDecryptedAsync(_photoEncryptedFileName, output, ct);
+            await using (var output = File.Create(partialPath))
+            {
+                await _documentStore.ExportDecryptedAsync(_photoEncryptedFileName, output, ct);
+            }
+
+            File.Move(partialPath, path, overwrite: true);
+            PhotoDisplayPath = path;
+            OnPropertyChanged(nameof(HasPhoto));
         }
-        PhotoDisplayPath = path;
+        finally
+        {
+            if (File.Exists(partialPath))
+            {
+                File.Delete(partialPath);
+            }
+        }
+    }
+
+    private async Task DeleteStagedPhotoIfNeededAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_photoEncryptedFileName) ||
+            string.Equals(
+                _photoEncryptedFileName,
+                _persistedPhotoEncryptedFileName,
+                StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var staged = _photoEncryptedFileName;
+        await _documentStore.DeleteAsync(staged, CancellationToken.None);
+        _photoEncryptedFileName = _persistedPhotoEncryptedFileName;
+    }
+
+    private async Task TryDeletePendingObsoletePhotoAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_pendingObsoletePhotoEncryptedFileName))
+        {
+            return;
+        }
+
+        try
+        {
+            await _documentStore.DeleteAsync(
+                _pendingObsoletePhotoEncryptedFileName,
+                CancellationToken.None);
+            _pendingObsoletePhotoEncryptedFileName = null;
+        }
+        catch
+        {
+            // Best-effort lifecycle cleanup. Full local-data reset also enumerates orphaned .cndoc files.
+        }
+    }
+
+    private void ClearPhotoPreview()
+    {
+        var path = PhotoPreviewPath();
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+        PhotoDisplayPath = null;
         OnPropertyChanged(nameof(HasPhoto));
+    }
+
+    private string PhotoPreviewPath()
+    {
+        var directory = Path.Combine(FileSystem.Current.CacheDirectory, "ProfilePreviews");
+        return Path.Combine(directory, $"{_profileId ?? "new"}.img");
     }
 
     private async Task ReloadContactsAsync(CancellationToken ct)
@@ -228,21 +335,48 @@ public sealed class ProfileEditorViewModel : ObservableViewModel
     private Task SaveAsync() =>
         RunAsync(async ct =>
         {
-            var profile = _profileId is null
-                ? new PersonProfile()
-                : await _profiles.GetAsync(_profileId, ct)
-                    ?? throw new InvalidOperationException("Profile was not found.");
-            profile.Name = Name;
-            profile.PhotoPath = _photoEncryptedFileName;
-            profile.DateOfBirth = HasDateOfBirth ? DateOfBirth.Date : null;
-            profile.BloodGroup = Clean(BloodGroup);
-            profile.AllergiesAndSensitivities = Clean(Allergies);
-            profile.Notes = Clean(Notes);
-            profile.ProfileColor = string.IsNullOrWhiteSpace(ProfileColor) ? "#5B7C6F" : ProfileColor.Trim();
-            profile.IsPrimary = IsPrimary;
-            await _profiles.SaveAsync(profile, ct);
-            _profileId = profile.Id;
-            IsExisting = true;
+            string? obsoletePhoto = null;
+            await _photoGate.WaitAsync(ct);
+            try
+            {
+                var profile = _profileId is null
+                    ? new PersonProfile()
+                    : await _profiles.GetAsync(_profileId, ct)
+                        ?? throw new InvalidOperationException("Profile was not found.");
+                profile.Name = Name;
+                profile.PhotoPath = _photoEncryptedFileName;
+                profile.DateOfBirth = HasDateOfBirth ? DateOfBirth.Date : null;
+                profile.BloodGroup = Clean(BloodGroup);
+                profile.AllergiesAndSensitivities = Clean(Allergies);
+                profile.Notes = Clean(Notes);
+                profile.ProfileColor = string.IsNullOrWhiteSpace(ProfileColor) ? "#5B7C6F" : ProfileColor.Trim();
+                profile.IsPrimary = IsPrimary;
+
+                await _profiles.SaveAsync(profile, ct);
+
+                obsoletePhoto = !string.IsNullOrWhiteSpace(_persistedPhotoEncryptedFileName) &&
+                    !string.Equals(
+                        _persistedPhotoEncryptedFileName,
+                        _photoEncryptedFileName,
+                        StringComparison.Ordinal)
+                    ? _persistedPhotoEncryptedFileName
+                    : null;
+
+                _profileId = profile.Id;
+                IsExisting = true;
+                _persistedPhotoEncryptedFileName = _photoEncryptedFileName;
+
+                if (obsoletePhoto is not null)
+                {
+                    _pendingObsoletePhotoEncryptedFileName = obsoletePhoto;
+                    await TryDeletePendingObsoletePhotoAsync();
+                }
+            }
+            finally
+            {
+                _photoGate.Release();
+            }
+
             await _navigator.GoBackAsync(ct);
         }, "CareNest could not save this profile. Check the fields and try again.");
 
