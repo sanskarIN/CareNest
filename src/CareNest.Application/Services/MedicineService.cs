@@ -22,6 +22,12 @@ public sealed class MedicineService(
         var exists = await repository.GetMedicineAsync(medicine.Id, cancellationToken) is not null;
         medicine.Touch(timeProvider.GetUtcNow().UtcDateTime);
         await repository.SaveMedicineAsync(medicine, cancellationToken);
+
+        // Persistence can change whether this medicine is active. Reconcile platform
+        // requests before nonessential audit bookkeeping so stale reminders are not
+        // left behind if the audit write itself fails.
+        await reminders.RebuildAsync(cancellationToken: cancellationToken);
+
         await repository.AddAuditEntryAsync(new AuditEntry
         {
             EntityType = nameof(Medicine),
@@ -30,7 +36,6 @@ public sealed class MedicineService(
             EventUtc = timeProvider.GetUtcNow().UtcDateTime,
             SafeSummary = exists ? "Medicine record updated" : "Medicine record created"
         }, cancellationToken);
-        await reminders.RebuildAsync(cancellationToken: cancellationToken);
     }
 
     public async Task SaveScheduleAsync(
