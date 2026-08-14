@@ -144,7 +144,6 @@ public sealed class MedicationLogViewModel : ObservableViewModel
                 medicines.TryGetValue(log.MedicineId, out var medicine)
                     ? medicine.Name
                     : "Unknown medicine",
-                log.ProfileId,
                 profiles.TryGetValue(log.ProfileId, out var profile)
                     ? profile.Name
                     : "Unknown profile",
