@@ -33,6 +33,14 @@ The detailed logging boundary is documented in `docs/security/LOGGING_PRIVACY.md
 
 ## Dependency security
 
-Known dependency advisories and any temporary, narrowly scoped audit exception are tracked in `docs/security/DEPENDENCY_RISK_REGISTER.md`. A suppression does not mean a vulnerability is fixed; it exists only to keep the remaining build and test pipeline observable while an upgrade or dependency migration is evaluated.
+Known dependency advisories, remediations, and any future temporary narrowly scoped audit exception are tracked in `docs/security/DEPENDENCY_RISK_REGISTER.md`.
 
-See `docs/security/THREAT_MODEL.md` for boundaries and residual risks.
+The previously tracked SQLite native dependency exception for `GHSA-2m69-gcr7-jv3q` has been remediated in the current RC1 source graph by centrally pinning maintained native/provider leaves and removing the exact `NuGetAuditSuppress` entry. `SqliteDependencySecurityContractTests` protects the maintained package floor and prevents silently restoring the old suppression.
+
+A suppression is never considered remediation. Any future exception must remain exact, temporary, documented, and release-blocking according to the risk decision. A successful vulnerability audit also does not replace packaged existing-database, encrypted-document, backup, or real-device compatibility testing after a native persistence-provider change.
+
+See:
+
+- `docs/security/DEPENDENCY_RISK_REGISTER.md`;
+- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`;
+- `docs/security/THREAT_MODEL.md`.
