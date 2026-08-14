@@ -46,21 +46,8 @@ public sealed class ProfileServiceTests
     [Fact]
     public async Task DeleteAsync_RemovesProfileDocumentsAndPhotoThenAuditsDeletion()
     {
-        var profile = new PersonProfile
-        {
-            Id = "profile-1",
-            Name = "Alex",
-            PhotoPath = "profile-photo.cndoc"
-        };
-        var repository = new RecordingRepository
-        {
-            ExistingProfile = profile,
-            Documents =
-            [
-                new CareDocument { Id = "doc-1", ProfileId = profile.Id, EncryptedFileName = "doc-1.cndoc" },
-                new CareDocument { Id = "doc-2", ProfileId = profile.Id, EncryptedFileName = "doc-2.cndoc" }
-            ]
-        };
+        var profile = ProfileWithPhoto();
+        var repository = RepositoryWithDocuments(profile);
         var documentStore = new DocumentStoreSpy();
         var service = new ProfileService(repository, documentStore, new FixedTimeProvider(Now));
 
@@ -72,6 +59,43 @@ public sealed class ProfileServiceTests
         Assert.Equal(AuditAction.Deleted, audit.Action);
         Assert.Equal(profile.Id, audit.EntityId);
     }
+
+    [Fact]
+    public async Task DeleteAsync_OneEncryptedFileCleanupFails_AttemptsAllRemainingFilesAndAudit()
+    {
+        var profile = ProfileWithPhoto();
+        var repository = RepositoryWithDocuments(profile);
+        var documentStore = new DocumentStoreSpy();
+        documentStore.DeleteFailures.Add("doc-1.cndoc");
+        var service = new ProfileService(repository, documentStore, new FixedTimeProvider(Now));
+
+        var failure = await Assert.ThrowsAsync<AggregateException>(() =>
+            service.DeleteAsync(profile.Id));
+
+        Assert.Equal(profile.Id, repository.DeletedProfileId);
+        Assert.Equal(ExpectedDeletedFiles, documentStore.DeletedFiles);
+        Assert.Single(repository.AuditEntries);
+        Assert.Single(failure.InnerExceptions);
+    }
+
+    private static PersonProfile ProfileWithPhoto() =>
+        new()
+        {
+            Id = "profile-1",
+            Name = "Alex",
+            PhotoPath = "profile-photo.cndoc"
+        };
+
+    private static RecordingRepository RepositoryWithDocuments(PersonProfile profile) =>
+        new()
+        {
+            ExistingProfile = profile,
+            Documents =
+            [
+                new CareDocument { Id = "doc-1", ProfileId = profile.Id, EncryptedFileName = "doc-1.cndoc" },
+                new CareDocument { Id = "doc-2", ProfileId = profile.Id, EncryptedFileName = "doc-2.cndoc" }
+            ]
+        };
 
     private sealed class RecordingRepository : RepositoryStub
     {
