@@ -11,6 +11,8 @@ CareNest separates two concepts:
 
 A successfully materialized reminder/appointment does not guarantee that the OS will display a notification.
 
+SQLite reminder/appointment state and operating-system scheduled-request state are separate persistence surfaces. CareNest explicitly reconciles them instead of assuming one atomic operation controls both.
+
 ## Common medicine-reminder flow
 
 ```text
@@ -42,7 +44,7 @@ If permission is denied:
 
 Appointments use a separate application-service path from medicine `ReminderOccurrence` materialization.
 
-The stored appointment start field is named `StartsUtc` and now has an explicit runtime/domain contract:
+The stored appointment start field is named `StartsUtc` and has an explicit runtime/domain contract:
 
 - `StartsUtc.Kind` must be `DateTimeKind.Utc`;
 - local or unspecified `DateTime` values are rejected;
@@ -63,6 +65,14 @@ When an explicit appointment save needs a future notification and diagnostics re
 Deleting an appointment cancels its CareNest platform notification registration before the appointment record is deleted.
 
 A stored non-UTC appointment encountered during reminder rebuild fails closed instead of being silently reinterpreted.
+
+### Appointment persistence compensation
+
+Appointment persistence and platform scheduling can fail independently.
+
+CareNest therefore reconciles appointment reminder state around persistence transitions rather than assuming the database and OS scheduler succeed/fail atomically.
+
+If later appointment persistence/scheduling work fails after one surface has changed, the service attempts compensation/reconciliation so a saved appointment and its platform request do not silently remain contradictory.
 
 ## Notification content privacy
 
@@ -86,6 +96,8 @@ Quiet hours are a user-controlled notification policy.
 
 If an occurrence/reminder is due inside configured quiet hours, supported scheduling may be suppressed according to the implementation.
 
+When rebuild finds an occurrence that previously had a platform request but is now suppressed by quiet hours, CareNest reconciles/cancels the old platform request rather than merely declining to create another request.
+
 Quiet hours do not rewrite underlying user-entered schedules or appointment start values.
 
 ## Follow-ups
@@ -104,10 +116,33 @@ Coordinator validation rejects:
 - local/unspecified `DateTime.Kind`;
 - a snooze time that is not in the future.
 
-After valid snooze:
+For a snoozed occurrence, `SnoozedUntilUtc` is the effective due time for upcoming/overdue behavior. The original `ScheduledUtc` remains historical schedule identity but does not make a future snooze disappear merely because the original time has passed.
 
-- existing platform notification registration is cancelled;
-- supported future snooze notification is registered if not suppressed by quiet hours.
+### Snooze transition ordering
+
+A snooze action uses cancellation-first ordering:
+
+1. cancel the old platform request;
+2. persist the snoozed state and explicit future `SnoozedUntilUtc`;
+3. schedule the replacement snooze request when eligible and not suppressed by quiet hours.
+
+If persistence or replacement scheduling fails after cancellation, CareNest attempts non-cancelled recovery of the previous occurrence state and a reminder rebuild so a still-actionable request can be restored.
+
+If recovery also fails, the operation surfaces failure rather than claiming database/platform consistency.
+
+## Taken/skipped/delayed/missed/cancelled action ordering
+
+Handled reminder actions use the same cancellation-first consistency rule:
+
+1. cancel the existing OS request;
+2. only after cancellation succeeds, persist the requested handled state;
+3. perform later logging/stock bookkeeping without falsely undoing an already completed reminder action.
+
+If platform cancellation fails, CareNest does not knowingly commit a handled state while the old request is still considered live.
+
+If later persistence fails after cancellation, CareNest attempts to restore the previous occurrence state and rebuild the still-valid platform request using non-cancelled compensation.
+
+A Taken/Skipped/Delayed/Missed state is organizational history, not clinical verification of adherence or consequence.
 
 ## Rebuild behavior
 
@@ -117,6 +152,7 @@ Reasons include:
 
 - app startup;
 - medicine schedule changes;
+- profile/medicine state changes;
 - appointment synchronization;
 - supported boot/restart events;
 - time/time-zone changes;
@@ -126,6 +162,34 @@ Reasons include:
 Medicine occurrence identity is deterministic to avoid duplicate application records for the same user schedule instance.
 
 Rebuild paths must not turn a denied notification permission into an implicit new permission prompt.
+
+### Existing-request reconciliation
+
+For an actionable reminder row that already has a platform notification identifier, rebuild attempts platform cancellation before replacement, suppression, or invalidation.
+
+This protects against stale OS alarms after:
+
+- schedule changes;
+- medicine/profile state/date changes;
+- quiet-hour policy changes;
+- stale persisted occurrence rows;
+- snooze/reschedule transitions.
+
+A cancellation failure leaves the occurrence retryable instead of falsely marking reconciliation complete.
+
+### Schedule-edit row preservation
+
+Schedule persistence intentionally keeps enough old future occurrence identity available until reconciliation has a chance to cancel obsolete OS requests.
+
+Deleting stale database rows first would lose the platform request IDs needed for deterministic cleanup.
+
+### Medicine/profile lifecycle compensation
+
+Medicine/profile deletion cancels future platform requests before the database cascade.
+
+If the database cascade then fails, CareNest attempts a non-cancelled reminder rebuild so still-existing structured records can regain their eligible platform registrations.
+
+Medicine/profile save flows reconcile reminder state before non-critical audit bookkeeping can make an already-applied primary record transition appear failed.
 
 # Android
 
@@ -166,6 +230,8 @@ Android receiver/integration handles supported system events such as:
 - time changes;
 - time-zone changes.
 
+The receiver uses `BroadcastReceiver.GoAsync()` and guarantees `Finish()` after its asynchronous recovery path completes/fails, so the system receiver lifetime is not intentionally abandoned while recovery is still running.
+
 The goal is to rebuild future registrations from stored explicit user intent.
 
 Stored schedule/appointment intent is not silently rewritten because the device zone changed.
@@ -187,6 +253,11 @@ Required checks include:
 - battery optimization;
 - reboot;
 - time/time-zone change;
+- future snooze after original due time;
+- cancellation-first Taken/Skipped/Delayed/Missed actions;
+- snooze replacement cancellation/order;
+- stale-request cleanup after schedule change;
+- medicine/profile deletion with future alarms;
 - notification tap/open behavior if applicable;
 - synthetic reminder delivery under representative device states.
 
@@ -225,6 +296,9 @@ Verify:
 - denied/granted states;
 - appointment denied/granted reminder behavior;
 - local notification scheduling;
+- cancellation-first handled actions;
+- snooze replacement;
+- stale request reconciliation after schedule/state changes;
 - app restart;
 - time-zone change behavior;
 - lock-screen privacy presentation;
@@ -239,6 +313,8 @@ Manual tests should cover:
 - notification permission;
 - appointment permission-denied behavior;
 - delivery while application state changes;
+- cancellation-first handled actions;
+- snooze/replacement reconciliation;
 - window/app restart;
 - time-zone handling;
 - notification privacy;
@@ -254,12 +330,17 @@ CareNest's current Windows fallback does not claim guaranteed reminder delivery 
 
 The app exposes this limitation through diagnostics/documentation rather than pretending to have a background scheduling guarantee it does not implement.
 
+The in-process timer fallback protects ownership so an older same-ID timer cannot remove a newer replacement entry. Caller cancellation and timer disposal ownership are separated to reduce replacement/cancellation races.
+
 ## Manual tests
 
 Verify:
 
 - in-process/open-app reminder behavior;
 - appointment reminder behavior;
+- same-ID replacement/cancellation races;
+- cancellation-first handled actions;
+- snooze replacement;
 - diagnostic wording;
 - no misleading background-delivery promise;
 - app restart behavior;
@@ -284,15 +365,19 @@ Platform APIs receive the resulting UTC time; delivery remains OS-dependent.
 
 ## Missed/overdue reconciliation
 
-CareNest can reconcile overdue scheduled medicine occurrences into Missed organizational state according to application logic.
+CareNest can reconcile overdue scheduled/snoozed medicine occurrences into Missed organizational state according to application logic.
+
+For snoozed rows, overdue evaluation uses the explicit snooze due time when present.
 
 A Missed state is local organizational history, not a clinical assessment of adherence or harm.
 
 ## Notification failure logging
 
-Platform scheduling exceptions are privacy-redacted.
+Platform scheduling/cancellation/recovery exceptions are privacy-redacted.
 
-CareNest logs safe operational metadata such as exception type/category when enabled and does not include occurrence/medicine identifiers in reminder scheduling failure logs.
+CareNest logs safe operational metadata such as operation category and exception type when enabled and does not include occurrence/medicine/profile identifiers, exception messages, or stack traces in reminder failure logs.
+
+Caller cancellation remains a real cancellation path rather than being swallowed as an ordinary notification failure.
 
 ## Test reminders
 
@@ -302,9 +387,22 @@ Success of one test does not guarantee future delivery under different permissio
 
 ## Automated evidence
 
-Exact source `4f5f9abe9d702fa33d6aba3f15c113febfebf95e` passed PR #33 verification, including direct appointment service/permission/UTC tests and all four Release platform builds.
+The authoritative 2026-08-14 bug-audit source baseline is marker-only PR #54:
 
-Automated platform compilation does **not** prove real notification delivery.
+- 122 unit tests;
+- 39 integration tests;
+- 100 UI-contract/policy tests;
+- 261 total core tests;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL: success;
+- unsuppressed Dependency Audit: success.
+
+Later workflow/test/build-script release-engineering hardening requires a fresh exact-source verification before the current `main` head is promoted.
+
+Automated platform compilation does **not** prove real notification delivery, cancellation timing on a real OS, or packaged upgrade compatibility.
 
 Final production release still requires manual evidence in `docs/releases/MANUAL_TEST_MATRIX.md`.
 
