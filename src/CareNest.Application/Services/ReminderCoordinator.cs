@@ -22,6 +22,7 @@ public sealed class ReminderCoordinator(
         }
 
         var horizon = now.AddDays(AppConstants.ReminderHorizonDays);
+        var plannedKeys = new HashSet<string>(StringComparer.Ordinal);
 
         var schedules = await repository.GetEnabledSchedulesAsync(cancellationToken);
         foreach (var schedule in schedules)
@@ -41,16 +42,42 @@ public sealed class ReminderCoordinator(
 
             var times = await repository.GetScheduleTimesAsync(schedule.Id, cancellationToken);
             var occurrences = planner.BuildOccurrences(medicine, schedule, times, profile, now, horizon);
+            foreach (var occurrence in occurrences)
+            {
+                plannedKeys.Add(occurrence.OccurrenceKey);
+            }
             await repository.UpsertOccurrencesAsync(occurrences, cancellationToken);
         }
 
-        var future = await repository.GetOccurrencesAsync(now, horizon, cancellationToken: cancellationToken);
+        var lookback = now.AddDays(-AppConstants.ReminderHorizonDays);
+        var future = await repository.GetOccurrencesAsync(lookback, horizon, cancellationToken: cancellationToken);
         var policy = await LoadNotificationPolicyAsync(cancellationToken);
         foreach (var occurrence in future.Where(x => x.State is ReminderState.Scheduled or ReminderState.Snoozed))
         {
             cancellationToken.ThrowIfCancellationRequested();
             var dueUtc = occurrence.SnoozedUntilUtc ?? occurrence.ScheduledUtc;
-            if (dueUtc <= now || IsInsideQuietHours(dueUtc, policy))
+            if (dueUtc <= now || dueUtc >= horizon)
+            {
+                continue;
+            }
+
+            var historicalSnooze = occurrence.State == ReminderState.Snoozed && occurrence.ScheduledUtc < now;
+            if (!historicalSnooze && !plannedKeys.Contains(occurrence.OccurrenceKey))
+            {
+                if (!await TryCancelPlatformNotificationAsync(occurrence.Id, cancellationToken))
+                {
+                    continue;
+                }
+
+                occurrence.State = ReminderState.Cancelled;
+                occurrence.StateChangedUtc = now;
+                occurrence.SnoozedUntilUtc = null;
+                occurrence.PlatformNotificationId = null;
+                await repository.SaveOccurrenceAsync(occurrence, cancellationToken);
+                continue;
+            }
+
+            if (IsInsideQuietHours(dueUtc, policy))
             {
                 continue;
             }
@@ -74,13 +101,7 @@ public sealed class ReminderCoordinator(
             }
             catch (Exception ex)
             {
-                if (logger.IsEnabled(LogLevel.Warning))
-                {
-                    var exceptionType = ex.GetType().FullName ?? "Unknown";
-                    logger.LogWarning(
-                        "Reminder scheduling failed. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
-                        exceptionType);
-                }
+                LogOperationalWarning("Reminder scheduling failed", ex);
             }
         }
     }
@@ -194,8 +215,11 @@ public sealed class ReminderCoordinator(
     public async Task MarkOverdueAsMissedAsync(CancellationToken cancellationToken = default)
     {
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var overdue = await repository.GetOccurrencesAsync(now.AddDays(-7), now.AddMinutes(-5), cancellationToken: cancellationToken);
-        foreach (var occurrence in overdue.Where(x => x.State == ReminderState.Scheduled))
+        var cutoff = now.AddMinutes(-5);
+        var overdue = await repository.GetOccurrencesAsync(now.AddDays(-7), cutoff, cancellationToken: cancellationToken);
+        foreach (var occurrence in overdue.Where(x =>
+                     x.State is ReminderState.Scheduled or ReminderState.Snoozed &&
+                     (x.SnoozedUntilUtc ?? x.ScheduledUtc) <= cutoff))
         {
             await HandleOccurrenceAsync(
                 occurrence.Id,
@@ -208,12 +232,19 @@ public sealed class ReminderCoordinator(
     public async Task<IReadOnlyList<ReminderPreview>> GetUpcomingAsync(string? profileId, int take = 20, CancellationToken cancellationToken = default)
     {
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var occurrences = await repository.GetOccurrencesAsync(now, now.AddDays(AppConstants.ReminderHorizonDays), profileId, cancellationToken);
+        var horizon = now.AddDays(AppConstants.ReminderHorizonDays);
+        var lookback = now.AddDays(-AppConstants.ReminderHorizonDays);
+        var occurrences = await repository.GetOccurrencesAsync(lookback, horizon, profileId, cancellationToken);
         var medicines = (await repository.GetMedicinesAsync(profileId, true, cancellationToken)).ToDictionary(x => x.Id);
         var profiles = (await repository.GetProfilesAsync(true, cancellationToken)).ToDictionary(x => x.Id);
 
         return occurrences
             .Where(x => x.State is ReminderState.Scheduled or ReminderState.Snoozed)
+            .Where(x =>
+            {
+                var dueUtc = x.SnoozedUntilUtc ?? x.ScheduledUtc;
+                return dueUtc >= now && dueUtc < horizon;
+            })
             .OrderBy(x => x.SnoozedUntilUtc ?? x.ScheduledUtc)
             .Take(Math.Clamp(take, 1, 100))
             .Select(x => new ReminderPreview(
@@ -289,13 +320,7 @@ public sealed class ReminderCoordinator(
             }
             catch (Exception ex)
             {
-                if (logger.IsEnabled(LogLevel.Warning))
-                {
-                    var exceptionType = ex.GetType().FullName ?? "Unknown";
-                    logger.LogWarning(
-                        "Low-stock reminder scheduling failed. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
-                        exceptionType);
-                }
+                LogOperationalWarning("Low-stock reminder scheduling failed", ex);
             }
         }
     }
@@ -329,6 +354,36 @@ public sealed class ReminderCoordinator(
         _ = TimeOnly.TryParse(endText, out var end);
 
         return new NotificationPolicy(quietEnabled, start, end, generic, persistent, playSound, vibrate);
+    }
+
+    private async Task<bool> TryCancelPlatformNotificationAsync(
+        string occurrenceId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await notificationService.CancelAsync(occurrenceId, cancellationToken);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            LogOperationalWarning("Stale reminder cancellation failed", ex);
+            return false;
+        }
+    }
+
+    private void LogOperationalWarning(string operation, Exception exception)
+    {
+        if (!logger.IsEnabled(LogLevel.Warning))
+        {
+            return;
+        }
+
+        var exceptionType = exception.GetType().FullName ?? "Unknown";
+        logger.LogWarning(
+            "{Operation}. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
+            operation,
+            exceptionType);
     }
 
     private static bool IsInsideQuietHours(DateTime dueUtc, NotificationPolicy policy)
