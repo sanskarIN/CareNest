@@ -4,15 +4,12 @@
 
 The earlier PR #33 reference is historical. The 2026-08-14 correctness audit continued through reminder reconciliation/failure recovery, appointment persistence compensation, report-cache cleanup, analyzer fixes, and SQLite dependency remediation.
 
-Current exact runtime/test source covered by verification:
-
-`da2aed19ee9224b8d8661f11520ab9396e2c005e`
-
-Verification PR: `#53`  
-Verification marker head: `f648bad8ea666dfb0a13e594577dee7a80d141c6`  
-CareNest CI run: `#501` / `31766026734`  
-CodeQL run: `#501` / `31766026573`  
-Dependency Audit run: `#34` / `31766026570`
+Authoritative verification PR: `#54`  
+Source/base SHA frozen for runtime/test/dependency verification: `4490f3f86752841d436e981b29279970c90c947b`  
+Verification marker head: `929168a0a319b15d9e89997d86436d59ae731ad1`  
+CareNest CI run: `#503` / `31766059137`  
+CodeQL run: `#503` / `31766059215`  
+Dependency Audit run: `#35` / `31766059132`
 
 Completed evidence:
 
@@ -23,14 +20,16 @@ Completed evidence:
 - [x] Total automated test cases in the core job — **261 passed, 0 failed, 0 skipped**.
 - [x] Android Release build.
 - [x] Windows Release build.
-- [ ] iOS simulator Release build — still running in PR #53 at this checklist update.
-- [ ] Mac Catalyst Release build — pending behind iOS in PR #53 at this checklist update.
+- [x] iOS simulator Release build.
+- [x] Mac Catalyst Release build.
 - [x] CodeQL analysis.
 - [x] Dependency Audit with the former `GHSA-2m69-gcr7-jv3q` audit suppression removed.
 
-PR #53 is a verification-only branch containing only `build/verification/final-bug-audit-verification-20260814.txt` beyond its source snapshot. It must be closed without merging after the full matrix completes and the evidence is recorded.
+PR #54 is a verification-only branch containing only `build/verification/bug-audit-final-20260814-2.txt` beyond its frozen source boundary. It was closed without merge after the full matrix completed. The marker is not part of `main`.
 
-The current source includes all previous repository/privacy/architecture/reminder/snapshot/app-lock/service/document/backup/AEAD-v2 hardening plus:
+PR #53 independently completed a duplicate green matrix for the same final runtime/test graph. PR #54 is the authoritative recorded checkpoint.
+
+The verified source includes all previous repository/privacy/architecture/reminder/snapshot/app-lock/service/document/backup/AEAD-v2 hardening plus:
 
 - app-lock multi-key rollback/fail-closed corrupt-material handling;
 - document-master-key fail-closed behavior;
@@ -57,8 +56,6 @@ The current source includes all previous repository/privacy/architecture/reminde
 - SQLite native/provider package remediation;
 - removal of the tracked SQLite NuGet audit suppression;
 - dependency-security regression contract protecting the patched package floor.
-
-The checkmarks above record only currently completed GitHub-hosted automated evidence. The Apple checkboxes remain intentionally open until the actual PR #53 job completes.
 
 Automated green status does not substitute for manual device, signing, accessibility, notification-delivery, current store-policy, encrypted-data compatibility, or packaged existing-database checks.
 
@@ -90,9 +87,10 @@ Historical sequence includes:
 - PR #49: exposed CA1861 in new reminder-reconciliation assertions; tests corrected rather than suppressing the analyzer.
 - PR #50: unsuppressed SQLite Dependency Audit #31 succeeded, but its source predated later analyzer-safe tests.
 - PR #51/#52: superseded as later runtime/test source changed.
-- PR #53: current candidate with 261 core tests, Android/Windows, CodeQL and unsuppressed Dependency Audit already green; Apple Release remains the only unfinished automated group at this checklist update.
+- PR #53: duplicate final-source verification; all required groups ultimately completed successfully, but PR #54 is the authoritative recorded checkpoint.
+- PR #54 / CI #503: **authoritative final automated bug-audit baseline**; 261/261 core tests, all four Release builds, CodeQL, and unsuppressed Dependency Audit succeeded.
 
-No failed/superseded verification marker is final release evidence.
+No failed/superseded verification marker is final release evidence, and no verification marker file is intended to enter `main`.
 
 ## Release-preparation additions now present
 
@@ -122,13 +120,14 @@ No failed/superseded verification marker is final release evidence.
 
 - [ ] Decide final `1.0.0` version/build metadata and release date.
 - [ ] Run `build/scripts/release-preflight.sh` or `build/scripts/release-preflight.ps1` on a fully provisioned development host.
-- [x] Platform-neutral `dotnet format --verify-no-changes` succeeds on the current PR #53 source snapshot.
+- [x] Platform-neutral `dotnet format --verify-no-changes` succeeds on the authoritative PR #54 source boundary.
 - [x] Required project restores used by completed automated tests/platform builds succeed on GitHub-hosted runners.
 - [x] NuGet dependency vulnerability audit runs successfully without the former tracked SQLite suppression.
 - [x] Automated repository policy confirms no `TODO`, `FIXME`, or `NotImplementedException` implementation markers in committed runtime source.
-- [ ] CareNest CI is fully green for the current exact source snapshot — Apple still pending at this checklist update.
-- [x] CodeQL is green for the current exact source snapshot.
-- [x] Dependency Audit is green for the current exact source snapshot.
+- [x] CareNest CI is fully green for the current RC1 bug-audit source boundary.
+- [x] CodeQL is green for the current RC1 bug-audit source boundary.
+- [x] Dependency Audit is green for the current RC1 bug-audit source boundary.
+- [ ] Re-run the complete automated matrix if any runtime/test/configuration source changes before production promotion.
 - [ ] Run the manual/tag-triggered `CareNest Release Evidence` workflow for the exact commit ultimately promoted to public `1.0.0`.
 
 ### Automated reminder, appointment, service, snapshot and app-lock coverage
@@ -201,7 +200,8 @@ No failed/superseded verification marker is final release evidence.
 - [x] Selected SQLitePCLRaw providers are pinned to `2.1.12`.
 - [x] The exact `GHSA-2m69-gcr7-jv3q` `NuGetAuditSuppress` entry is removed.
 - [x] `SqliteDependencySecurityContractTests` protects the package floor and suppression absence.
-- [x] Unsuppressed Dependency Audit succeeds on current PR #53.
+- [x] Unsuppressed Dependency Audit #35 / `31766059132` succeeds on authoritative PR #54.
+- [x] All 261 automated tests and four platform Release builds succeed on the same final source boundary.
 - [ ] Representative packaged upgrade/install with fictional pre-remediation data is manually verified.
 - [ ] Existing structured records are manually verified after the package update.
 - [ ] Existing encrypted document and backup workflows are manually verified on packaged targets.
@@ -300,6 +300,6 @@ Project-support URL:
 
 ## Release rule
 
-Do not tag or publish a final `1.0.0` build while an automated platform gate is failing/incomplete, while required manual checks are incomplete, while current store-policy review for the voluntary support link is unresolved, while signing/store identity is unfinished, while packaged SQLite existing-data compatibility has not been manually evidenced, or before exact promoted-commit Release Evidence exists.
+Do not tag or publish a final `1.0.0` build while a required automated gate for the exact production commit is failing/incomplete, while required manual checks are incomplete, while current store-policy review for the voluntary support link is unresolved, while signing/store identity is unfinished, while packaged SQLite existing-data compatibility has not been manually evidenced, or before exact promoted-commit Release Evidence exists.
 
-Automated green status is necessary but not sufficient for public release.
+The PR #54 automated RC1 baseline is fully green. Automated green status is necessary but not sufficient for public release.
