@@ -1,223 +1,241 @@
-# Threat Model
+# CareNest Threat Model
+
+This is the current threat model for CareNest `1.0.0-rc.1`. It covers local structured records, encrypted documents, manual backups, optional app lock, reminders/appointments, exports, dependency/security automation, and production release provenance.
+
+CareNest is organizational software. This threat model does not claim clinical correctness, emergency-service behavior, guaranteed reminders, or protection against a fully compromised device/OS.
+
+## Current automated evidence
+
+Authoritative release-engineering source: marker-only PR #56.
+
+- source/base: `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
+- marker head: `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
+- CareNest CI #571 / `31770929379`: success;
+- 122 unit + 39 integration + 124 UI-contract/policy = **285/285** tests;
+- Android, Windows, iOS simulator and Mac Catalyst Release builds: success;
+- CodeQL #571 / `31770929382`: success;
+- unsuppressed Dependency Audit #41 / `31770929383`: success.
+
+PR #56 was closed without merge. Its marker is not production source.
+
+PR #54 remains historical runtime bug-audit evidence; PR #55 is a superseded intermediate checkpoint.
 
 ## Assets
 
-- Local profile information.
-- User-entered medicine and appointment information.
-- Medication logs.
-- Imported health documents.
-- Backup archives.
-- App-lock verifier material.
-- Document encryption master key.
-- Backup password-derived key material while an operation is active.
-- Local reminder/appointment scheduling state.
-- Release/source provenance and signing/distribution evidence.
+- local profile/person data;
+- medicine/schedule data;
+- reminder occurrences and medication logs;
+- appointments;
+- stock/refill records;
+- document metadata/tags;
+- encrypted imported document payloads;
+- document master key;
+- backup archives;
+- backup password-derived key material during an operation;
+- app-lock salt/verifier state;
+- local settings/audit data;
+- notification/appointment platform request state;
+- release source identity, dependency state, workflow evidence and signing provenance.
 
-## Primary threats and controls
+## Trust boundaries
 
-| Threat | Control | Residual risk |
+### Primary trusted boundary
+
+- CareNest application process;
+- app sandbox/private local files;
+- app-owned SQLite database;
+- encrypted document payload storage;
+- app-owned temporary files while still owned by CareNest;
+- platform secure storage used through CareNest abstractions.
+
+### Separate/external boundary
+
+- operating-system notification service;
+- calendar/file/share/browser APIs;
+- user-selected external destinations;
+- third-party cloud drives/apps;
+- stores/distribution systems;
+- source hosting/build runners;
+- rooted/jailbroken/compromised device environments.
+
+## Threat/control matrix
+
+| Threat | Current controls | Residual risk |
 |---|---|---|
-| Casual access to an unlocked device | Optional app lock; generic notifications | OS snapshots, device compromise |
-| App-lock PIN guessing | Numeric PIN policy, random salt, PBKDF2-HMAC-SHA256 verifier, fixed-time comparison, verifier-buffer zeroing after checks, fail-closed malformed material | A short/weak PIN has limited entropy; a compromised device/secure store may permit offline guessing |
-| Partial secure-store app-lock update | Snapshot + non-cancelled rollback of enabled/salt/verifier state | Process/OS termination can interrupt compensation |
-| Stolen app files | OS sandbox; encrypted document bytes | SQLite database is not transparently encrypted |
-| Backup theft | Password-derived AES-256-GCM encryption | Weak user passwords can reduce practical protection |
-| Tampered backup | AEAD authentication + package/version/topology validation | Denial of service remains possible |
-| Encrypted-stream prefix truncation | New chunked AEAD framing v2 authenticates terminal record against next chunk counter | Existing legacy framing-v1 ciphertext remains readable and is not retroactively upgraded |
-| Trailing bytes after encrypted payload | Reader requires end-of-stream after terminal | Denial of service through malformed file remains possible |
-| Malicious backup ZIP topology | Strict manifest/database/key/top-level `.cndoc` allowlist, duplicate rejection, path containment | A fully valid but intentionally huge backup can still consume local resources within platform limits |
-| Incomplete document import | Compensating rollback removes DB record and encrypted payload on ordinary failure | Process/OS termination can interrupt cleanup outside managed exception handling |
-| Missing/corrupt document master key with existing ciphertext | Read/export fails closed; replacement key is not silently generated | Manual recovery may be impossible if the legitimate key is lost |
-| Plaintext export/cache persistence | Managed cache ownership, partial-file staging, failed-operation cleanup, report share cleanup | Copies already handed to external apps/locations/screenshots/backups are outside CareNest control |
-| Spreadsheet formula execution from exported user text | Formula-like CSV string prefixes are neutralized in portable output | Destination software can still transform/import data in its own ways |
-| Caller-owned key bytes remain in memory | `CryptographicOperations.ZeroMemory` on known mutable key/verifier/salt/crypto buffers | Runtime/OS/secure-store copies, swap/crash dumps, and compromised process memory are outside this guarantee |
-| Leaked document content in logs | Redaction rules; never log file bytes/notes | Third-party OS logs outside app control |
-| Duplicate reminders | Stable occurrence keys + idempotent upsert/schedule | OS notification subsystem can still behave differently |
-| Stale OS reminder after schedule/state change | Existing platform request cancelled before replacement/suppression/invalidation; old occurrence identity retained until reconciliation | OS cancellation can fail; state remains retryable and real device policy still applies |
-| Handled reminder state committed while old OS request remains live | Cancellation-first Taken/Skipped/Delayed/Missed/Snoozed/Cancelled transitions | Process/OS termination can occur between cross-surface steps; recovery is compensating, not globally atomic |
-| Reminder action fails after platform cancellation | Previous occurrence state restoration + non-cancelled rebuild attempt; aggregate failure on failed recovery | Abrupt process termination or OS scheduler failure can still require later startup/rebuild recovery |
-| Medicine/profile cascade fails after platform cancellation | Cancel before cascade + non-cancelled reminder rebuild compensation | Rebuild itself can fail and remains visible/retryable |
-| Appointment DB/platform reminder divergence | Appointment persistence compensation/reconciliation | Database and OS scheduler remain separate non-transactional surfaces |
-| Missed reminders | diagnostics, permission checks, rebuild, battery/exact-alarm warnings | shutdown, force-stop, policy restrictions |
-| Appointment clock-kind confusion | `StartsUtc` must be explicit UTC; local/unspecified values rejected | Incorrect user-entered date/time before UTC conversion can still be wrong; CareNest does not validate clinical consequence |
-| Scheduling after denied permission | Save-time permission result checked; rebuild does not prompt/schedule while denied | OS permission can change independently after CareNest checks |
-| Malicious imported file | treat as opaque bytes; no interpretation/execution | vulnerable external viewer after export |
-| Rooted/jailbroken device | explicit limitation | stronger attacker can bypass sandbox/secure store |
-| Shoulder surfing | lock + generic notification title | visible screen remains visible to nearby people |
-| External repository/policy/funding link | fixed HTTPS destinations, explicit user action, no health-data query parameters or automatic record upload | external sites have their own privacy, account, cookie, payment and availability risks |
-| Reintroduction of vulnerable SQLite native path | central transitive maintained native/provider pins, no former suppression, regression contract, unsuppressed Dependency Audit | A future package/advisory can create a new risk requiring fresh review |
-| SQLite native/provider update corrupts existing user data | automated persistence/backup tests + mandatory packaged existing-data/encrypted-data compatibility matrix | Hosted CI cannot prove every real installed database/device/provider combination |
-| Release tag bypasses candidate security/build gates | exact `v*` tag triggers CI, CodeQL, Dependency Audit, Release Gate, Release Evidence | Store/manual/signing approval can still be incomplete if maintainers ignore release policy |
-| Failed release evidence disappears before diagnosis | evidence components run independently, artifact upload uses failure-preserving `always()`, aggregate failure occurs after upload | GitHub artifact retention is finite; external archival policy remains maintainer responsibility |
-| Release evidence rerun ambiguity | artifact name includes commit SHA + Actions run ID + run attempt; evidence records run metadata | Human record-keeping can still cite the wrong run unless release records are reviewed |
+| Casual access to an unlocked device | Optional app lock; generic notification labels | Visible unlocked UI, OS snapshots and device compromise remain possible |
+| App-lock PIN guessing | Numeric PIN policy, random salt, PBKDF2-HMAC-SHA256, fixed-time comparison, verifier-buffer clearing | Weak numeric PIN entropy and compromised secure storage remain risks |
+| Partial app-lock secure-store update | Snapshot/rollback of multi-key state | Abrupt process/OS termination can interrupt compensation |
+| Raw app-private file theft | OS sandbox; encrypted imported document payloads | Structured SQLite is not transparently whole-database encrypted |
+| Stolen backup | Password-derived AES-256-GCM encryption | Weak user password reduces practical protection |
+| Tampered backup | AEAD authentication, strict package/topology validation | Malformed input can still cause denial of service within resource limits |
+| Encrypted stream prefix truncation | New framing v2 authenticates terminal record against next chunk counter | Legacy v1 remains readable and does not retroactively gain v2 terminal protection |
+| Trailing bytes after encrypted payload | Reader requires valid terminal and end-of-stream | Malformed files remain denial-of-service inputs |
+| Malicious backup ZIP topology | Strict allowlist, duplicate/nesting/extension/count checks, path containment | Structurally valid huge archives can consume local resources |
+| Missing/corrupt document key with existing ciphertext | Fail closed; no silent unrelated replacement key | Legitimate data can become unrecoverable if real key is lost |
+| Partial document import | DB/filesystem compensating rollback and aggregate failure | Process/OS termination can interrupt compensation |
+| Plaintext export/cache retention | Managed cache/staging, failure cleanup, report share cleanup | Copies already handed to another app/cloud/screenshot/backup are outside CareNest control |
+| Spreadsheet formula-like exported user text | Neutralize formula-like CSV string prefixes | Destination software can still transform/import data independently |
+| Key bytes remain in memory | Zero mutable caller-owned buffers where practical | Runtime/OS/secure-store/swap/crash-dump copies cannot be universally erased |
+| Sensitive logs | Logging privacy policy/contracts; safe category/type metadata | Third-party OS/platform logs are outside full app control |
+| Runtime network/telemetry creep | Source policy tests prohibit casual network/telemetry client introduction in local-first v1 | Future approved network features would create new threat surfaces and require new design |
+| Duplicate reminder materialization | Stable deterministic occurrence identity/upsert behavior | OS scheduler behavior can still differ from app expectations |
+| Stale OS request after schedule/state change | Cancel old platform request before replacement/suppression/invalidation; retain stale occurrence identity until reconciliation | OS cancellation itself can fail; retry/recovery remains necessary |
+| Handled state committed while old OS request remains active | Cancellation-first Taken/Skipped/Delayed/Missed/Snoozed/Cancelled transitions | Abrupt termination between independent state surfaces is still possible |
+| Reminder action fails after old request cancellation | Restore previous state and non-cancelled rebuild attempt; aggregate failure | Recovery can also fail or process can terminate before recovery |
+| Medicine/profile delete diverges from OS scheduler | Cancel future requests before DB cascade; rebuild compensation after persistence failure | Recovery can fail; database and OS scheduler are not one transaction |
+| Appointment DB/platform divergence | Explicit compensation/reconciliation | Same non-transactional cross-surface residual risk |
+| Future snooze disappears after original time | `SnoozedUntilUtc` used as effective due time | Incorrect user-entered snooze time can still be wrong; no clinical validation |
+| Scheduling after notification permission denial | Explicit permission result checked; rebuild does not prompt/schedule while denied | Permission can change externally between checks |
+| Appointment clock-kind reinterpretation | Require actual `DateTimeKind.Utc`; reject local/unspecified | User-entered wall-clock conversion can still be wrong before reaching service |
+| Missed notifications | diagnostics, permission/capability checks, recovery/rebuild, platform limitation messaging | Shutdown, force-stop, battery policy, OS restrictions can delay/prevent delivery |
+| Reintroduced vulnerable SQLite native path | Central maintained native/provider pins, suppression absence contract, unsuppressed audit | New future advisories/packages can introduce new risk |
+| SQLite native/provider update corrupts existing data | automated persistence/backup tests + mandatory packaged existing-data compatibility | Hosted CI cannot represent every installed database/device/provider combination |
+| Dependency audit bypass/suppression | blocking local/CI audit, release policy, source contracts | Maintainer could intentionally change policy; review and exact-source verification required |
+| Release tag bypasses candidate gates | exact `v*` tag triggers CI, CodeQL, Dependency Audit, Release Gate, Release Evidence | Manual/store/signing gates can still be ignored by a human if release policy is not followed |
+| Release checklist formatting bypass | fail-closed nested unchecked-row and open-risk detection | Any future parser change must remain covered by source contracts |
+| Failed release evidence disappears | evidence components attempted independently; upload runs before aggregate failure | GitHub artifact retention is finite and external archive discipline remains needed |
+| Release evidence rerun ambiguity | artifact identity includes commit SHA, run ID and run attempt | Human can still cite the wrong attempt without review |
+| Signing key exposure through source | repository secret/signing-file policy; signing kept outside Git | External CI/store/maintainer secret system compromise remains possible |
+| Store/funding link leaks health identifiers | fixed support URL, explicit user action, no health-data query parameters | Browser/provider receives normal network/account/payment metadata under its own policy |
 
-## Encrypted-stream framing boundary
+## Local-first threat boundary
 
-CareNest document and backup payload encryption uses chunked AES-256-GCM.
+No CareNest-owned backend exists in current v1. Therefore normal v1 threats do not include a CareNest server storing health records.
 
-### Framing version 2
+If accounts, synchronization, remote caregiver collaboration, analytics or server storage are added later, this threat model must be replaced/expanded before implementation.
 
-New encrypted streams use framing v2. Each data record authenticates:
+## Structured SQLite data
+
+Structured SQLite content is local and not advertised as whole-database encrypted.
+
+Protection depends on:
+
+- application sandbox;
+- device security/encryption;
+- repository access boundaries;
+- input validation;
+- transactional operations/migrations;
+- integrity-aware backup snapshots.
+
+A rooted/jailbroken/compromised device can bypass many of these controls.
+
+## SQLite dependency/provider boundary
+
+Current verified graph intent:
+
+- `sqlite-net-pcl` `1.9.172`;
+- `SQLitePCLRaw.bundle_green` `2.1.11`;
+- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
+- Android native/provider and selected provider leaves `2.1.12`;
+- central transitive pinning enabled;
+- no former exact `GHSA-2m69-gcr7-jv3q` audit suppression.
+
+`SqliteDependencySecurityContractTests` protects this policy.
+
+The green dependency graph and packaged existing-data compatibility are separate release requirements.
+
+## Encrypted stream framing boundary
+
+New encrypted document/backup streams use chunked AES-256-GCM framing v2.
+
+Each data record authenticates:
 
 - chunk counter;
-- chunk plaintext length;
-- ciphertext through AES-GCM tag.
+- plaintext length;
+- ciphertext/tag.
 
-The final terminal record has zero plaintext and its own authentication tag bound to the **next** chunk counter and zero length.
+The terminal record is authenticated with the next counter and zero length. Trailing bytes after the terminal are rejected.
 
-Security purpose: a valid prefix ending on a chunk boundary cannot be made to look like a complete v2 stream by merely inserting/reusing a zero-length terminator without possessing a valid terminal tag for that counter.
+Legacy framing v1 remains readable for historical compatibility. V1 is not represented as retroactively strengthened.
 
-The reader also rejects trailing bytes after the authenticated terminal.
+A future v1 migration/removal requires canonical historical fixtures, backup/recovery/rollback planning and explicit compatibility verification.
 
-### Legacy framing version 1
+## Backup topology boundary
 
-CareNest keeps v1 decryption for existing local documents/backups.
+Decryption success alone is insufficient for restore safety.
 
-Residual compatibility risk:
-
-- v1 used an unauthenticated zero-length terminal;
-- v1 ciphertext is not retroactively strengthened by the application update;
-- retaining v1 read support is a compatibility decision to avoid data loss;
-- a future v1-to-v2 migration requires explicit backup/recovery/rollback and historical-fixture verification before v1 support can be removed.
-
-This limitation is documented rather than representing all historical encrypted data as v2-protected.
-
-## Backup archive topology boundary
-
-Authenticated decryption alone does not mean every ZIP member should be accepted by the restore path.
-
-Before extraction, CareNest validates the decrypted package against the expected topology:
-
-```text
-manifest.json
-database/carenest.db
-secrets/document-master-key.bin
-documents/<top-level>.cndoc
-```
+Before extraction, CareNest validates the archive topology against the expected manifest/database/key/top-level-document layout.
 
 Controls reject:
 
 - duplicate entries;
-- missing manifest/database;
-- unsupported package format;
-- invalid schema/document count;
+- missing required manifest/database;
+- unsupported package versions;
+- invalid schema/document counts;
 - unexpected files;
 - nested document paths;
 - non-`.cndoc` document entries;
-- document-count mismatch;
-- missing/invalid 32-byte document key when required.
+- missing/invalid required document key.
 
-Extraction then performs full-path containment checks as defense in depth.
+Extraction also uses containment checks as defense in depth.
 
-Residual risk includes resource-exhaustion attempts using otherwise structurally valid large files. Platform/application size/resource limits and manual recovery behavior remain relevant.
+## Document import consistency boundary
 
-## Document-import consistency boundary
+Encrypted payload and SQLite metadata cannot share one filesystem+database ACID transaction.
 
-Encrypted document import is not one filesystem+SQLite ACID transaction.
+Normal flow uses compensating cleanup:
 
-Normal failure controls:
+1. create encrypted payload;
+2. save metadata;
+3. save audit;
+4. rollback payload on DB failure;
+5. rollback metadata + payload on later audit failure;
+6. use non-cancelled cleanup attempts where caller cancellation should not knowingly strand the new artifact;
+7. surface aggregate cleanup failure.
 
-1. encrypted payload is written;
-2. metadata is saved;
-3. audit is saved;
-4. database-save failure removes the new encrypted payload;
-5. audit failure after metadata save removes both the metadata row and encrypted payload;
-6. rollback cleanup uses non-cancelled cleanup attempts;
-7. incomplete rollback is surfaced explicitly.
-
-Residual risk: abrupt process termination, storage-device failure, OS crash, or permissions changing at the wrong instant can still leave artifacts requiring recovery/cleanup.
+Abrupt process/OS termination remains a residual consistency risk.
 
 ## Sensitive memory boundary
 
-CareNest explicitly clears mutable caller-owned cryptographic buffers when practical:
+`CryptographicOperations.ZeroMemory` is used on known mutable application-owned sensitive arrays where practical.
 
-- app-lock derived/retrieved verifier bytes;
-- document master-key copies returned by the secret-store abstraction;
-- generated document-key buffer if persistence fails;
-- backup password-derived key and random salt;
-- old/restored document-key copies used during backup restore;
-- chunked AEAD plaintext/ciphertext/tag/nonce/AAD work buffers.
+This is a lifetime-reduction control, not proof of full erasure from:
 
-`ZeroMemory` reduces known buffer lifetime. It does **not** claim complete erasure from:
-
-- garbage collector/runtime internal copies;
+- runtime internal copies;
 - platform secure-store internals;
-- OS/hardware caches;
+- OS/hardware cache;
 - swap/hibernation;
 - crash dumps;
-- a debugger/malware already controlling the process/device.
+- debugger/malware with process access.
 
 ## App-lock boundary
 
-CareNest app lock is a local privacy barrier for casual access. It is not represented as full-database encryption, device encryption, or protection against a rooted/jailbroken/otherwise compromised operating system.
+The app lock protects against casual local access. It does not replace device authentication/security and does not encrypt the entire SQLite database.
 
-The PIN itself is not stored. CareNest stores a random salt and a PBKDF2-HMAC-SHA256 verifier through the platform secret store, compares derived values with a fixed-time primitive, and clears derived/stored verifier buffers after verification where the managed runtime permits.
+A weak user-selected PIN has limited entropy. A compromised OS/secure store can defeat the intended boundary.
 
-Multi-key update/disable flows snapshot previous secure-store state and attempt non-cancelled rollback if a later key write/removal fails. Missing or malformed salt/verifier data fails closed instead of controlling derived-key length.
+## Reminder/platform integrity boundary
 
-A user-selected numeric PIN can still have limited entropy. The app lock therefore supplements platform device authentication and secure storage; it does not replace either one.
+Medicine reminders and appointments are organizational, not clinical alarms.
 
-## Appointment/reminder integrity boundary
+Planner controls include explicit ownership/time-zone/UTC/date/state/DST rules.
 
-Appointment and medicine reminders are organizational scheduling features, not clinical alarms.
+Platform reconciliation controls include:
 
-Planning controls include:
+- effective snooze due time;
+- cancellation before replacement/suppression/invalidation;
+- retryable cancellation failure;
+- stale ID retention until cancellation;
+- medicine/profile delete compensation;
+- appointment DB/platform compensation;
+- cancellation-first handled actions;
+- previous-state/rebuild recovery after later failures.
 
-- medicine planner ownership validation;
-- explicit UTC planner/rebuild/snooze contracts;
-- appointment `StartsUtc` explicit UTC contract;
-- no silent relabeling of local/unspecified appointment ticks;
-- denied notification permission does not become a platform scheduling attempt;
-- background rebuild does not repeatedly request notification permission;
-- deterministic DST handling for medicine schedules;
-- OS delivery limitations surfaced.
+OS permission, shutdown, force-stop, battery policy and vendor restrictions remain outside deterministic planner guarantees.
 
-Cross-surface reconciliation controls include:
+## External export/funding boundary
 
-- snoozed rows use `SnoozedUntilUtc` as effective due time;
-- platform cancellation precedes replacement/suppression/invalidation;
-- cancellation failure leaves state retryable;
-- stale occurrence identity is retained until old OS requests can be cancelled;
-- medicine/profile deletes compensate with non-cancelled rebuild when persistence fails after cancellation;
-- appointment persistence reconciles database/platform state;
-- handled reminder actions cancel the old OS request before committing state;
-- later action failures attempt previous-state restoration and rebuild.
+Explicit exports, calendar actions, browser actions and project-support links cross outside CareNest.
 
-Residual risk: device/OS notification policy, shutdown, force-stop, battery management, permission changes, incorrect user-entered scheduling data, or abrupt termination between database/OS operations can still prevent/delay a reminder or require later recovery.
+CareNest does not claim control over data after external handoff.
 
-## SQLite dependency/provider boundary
-
-The previously tracked native SQLite advisory path was remediated in source rather than hidden.
-
-Current maintained graph intent:
-
-- `sqlite-net-pcl` `1.9.172`;
-- `SQLitePCLRaw.bundle_green` `2.1.11`;
-- central transitive pinning enabled;
-- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
-- Android native/provider leaves `2.1.12`;
-- selected providers `2.1.12`;
-- no `NuGetAuditSuppress` entry for `GHSA-2m69-gcr7-jv3q`.
-
-`SqliteDependencySecurityContractTests` rejects restoring the old package floor/suppression.
-
-Automated risk evidence includes unsuppressed NuGet audits and the full core/platform matrix. Manual packaged upgrade tests remain required because dependency security and data compatibility are separate properties.
-
-If a future SQLite/provider change fixes a vulnerability but corrupts/misreads existing databases or breaks encrypted document/backup workflows, production promotion is blocked until both security and data integrity are acceptable.
+The voluntary support URL must remain separate from health functionality and must not contain CareNest health identifiers.
 
 ## Release automation boundary
 
-CareNest distinguishes candidate verification from production permission.
+Marker-only PR verification validates candidate source through formatting, tests, platform builds, CodeQL and Dependency Audit.
 
-Marker-only PR verification protects exact source changes through:
-
-- formatting;
-- unit/integration/UI-contract tests;
-- Android/Windows/iOS simulator/Mac Catalyst Release builds;
-- CodeQL;
-- Dependency Audit.
-
-Exact `v*` tags trigger the exact tagged commit through:
+Exact production tags matching `v*` run the exact tagged commit through:
 
 - CareNest CI;
 - CodeQL;
@@ -225,56 +243,58 @@ Exact `v*` tags trigger the exact tagged commit through:
 - Release Gate;
 - CareNest Release Evidence.
 
-Release Evidence captures source/ref/run identity, tracked-file manifests/checksums, all core TRX suites, dependency inventories, workspace integrity, and evidence checksums. Components are attempted independently; available evidence is uploaded with failure-preserving behavior before an aggregate pass/fail step.
+Release Evidence records exact source/run identity and retains available evidence even when a component fails.
 
-This automation does not replace manual device/accessibility/store/signing/package/data-compatibility approval.
+Automation does not replace manual device/accessibility/store/signing/package/data-compatibility approval.
 
-## External voluntary-support boundary
+## Out of scope for current v1 threat model
 
-The Buy Me a Coffee destination is fixed as `https://buymeacoffee.com/sanskarIN` through `AppConstants.FundingUrl` and is opened only after explicit user interaction. CareNest does not append profile IDs, medicine names, document metadata, reminder history, backup data, app-lock information, or other local health content to the URL.
-
-The funding provider is outside the CareNest trust boundary. Browser/network metadata and any information/payment details the user chooses to provide there are governed by that external service, not by CareNest.
-
-No embedded payment SDK, payment token, API secret, or funding-provider credential is stored in the CareNest source/runtime for this link.
-
-## Automated evidence
-
-### Authoritative bug-audit baseline
-
-PR #54 completed the fully green 2026-08-14 runtime/test/dependency baseline:
-
-- CareNest CI #503 / `31766059137`: success;
-- 122 unit + 39 integration + 100 UI-contract = 261 tests passed;
-- Android/Windows/iOS simulator/Mac Catalyst Release builds passed;
-- CodeQL #503 / `31766059215`: success;
-- unsuppressed Dependency Audit #35 / `31766059132`: success.
-
-### Release-engineering checkpoint
-
-PR #55 verified the first release-engineering hardening snapshot far enough to prove:
-
-- formatting success;
-- 122 unit tests passed;
-- 39 integration tests passed;
-- 116 UI-contract/policy tests passed;
-- 277 total core tests passed;
-- Android Release passed;
-- Windows Release passed;
-- CodeQL #547 / `31769940053`: success;
-- unsuppressed Dependency Audit #38 / `31769940039`: success.
-
-PR #55 was closed unmerged as superseded after the complete-file audit found further legitimate release-tooling/documentation fixes. A new exact-source verification is required for the final current head.
-
-## Out of scope for v1
-
-- Server compromise, because no CareNest backend exists.
-- Cloud sharing/caregiver synchronization.
-- Clinical correctness or medical decision support.
-- Security/privacy guarantees for independently opened external websites after the user leaves the CareNest app surface.
-- Protection against a fully compromised/rooted/jailbroken device or malicious code already executing with equivalent privileges.
+- CareNest-owned server compromise because there is no required CareNest backend;
+- remote caregiver authorization/revocation because collaboration is not current v1 functionality;
+- clinical correctness because CareNest is not medical decision support;
+- security/privacy guarantees for external destinations after explicit user handoff;
+- protection from a fully compromised equivalent-privilege environment.
 
 ## Security review triggers
 
-A new review is mandatory before adding accounts, remote sync, analytics, crash uploads containing user state, document interpretation, sharing by default, medical decision support, an embedded web view for external services, payment/funding SDKs, purchase entitlements, biometric app-lock bypass/recovery, remote PIN recovery, automatic encrypted-data migration that drops v1 compatibility, or any external-link flow that transmits CareNest user data.
+A new security/privacy architecture review is mandatory before adding or materially changing:
 
-A new review is also mandatory before weakening release tag gates, dependency-audit behavior, evidence retention/provenance, or existing-data compatibility requirements.
+- accounts/authentication;
+- cloud synchronization;
+- remote caregiver collaboration;
+- analytics/crash state upload;
+- document interpretation;
+- medical decision support;
+- embedded external web/payment/funding SDKs;
+- biometric app-lock bypass/recovery;
+- remote PIN/key recovery;
+- automatic encrypted-data migration that drops historical compatibility;
+- raw SQL/import execution paths;
+- release tag/audit/evidence weakening.
+
+## Current remaining production security evidence
+
+Before final public `1.0.0`:
+
+- complete supported-platform manual testing;
+- verify actual notification permission/delivery/recovery limitations;
+- complete packaged SQLite existing-data compatibility;
+- complete encrypted document/backup compatibility;
+- complete accessibility/privacy presentation checks;
+- review current Apple/Google store policy/disclosures;
+- secure signing credentials outside Git;
+- inspect signed artifact provenance;
+- pass exact production-tag CI, CodeQL, audit, Release Gate and Release Evidence.
+
+## Related documents
+
+- `SECURITY.md`
+- `docs/security/SECURITY_MODEL.md`
+- `docs/security/LOGGING_PRIVACY.md`
+- `docs/security/DEPENDENCY_RISK_REGISTER.md`
+- `docs/privacy/PRIVACY_MODEL.md`
+- `docs/architecture/DOCUMENT_VAULT.md`
+- `docs/architecture/BACKUP_AND_RESTORE.md`
+- `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`
+- `docs/releases/SECURITY_RELEASE_REVIEW.md`
+- `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`
