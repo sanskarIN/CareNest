@@ -37,12 +37,22 @@ dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj -c Release --nolo
 dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c Release --nologo
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release --nologo
 
-say "Dependency advisory report"
-# Informational visibility only. The known SQLitePCLRaw advisory remains explicitly
-# tracked in docs/security/DEPENDENCY_RISK_REGISTER.md until the resolved graph is fixed.
-dotnet list src/CareNest.Infrastructure/CareNest.Infrastructure.csproj package --vulnerable --include-transitive || true
+say "Blocking dependency audit"
+for project in \
+  tests/CareNest.UnitTests/CareNest.UnitTests.csproj \
+  tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj \
+  tests/CareNest.UiTests/CareNest.UiTests.csproj; do
+  dotnet restore "$project" --nologo -p:NuGetAudit=true -p:NuGetAuditMode=all
+done
 
 if [[ -n "${CARENEST_TARGET:-}" ]]; then
+  say "Audit optional MAUI target: ${CARENEST_TARGET}"
+  dotnet restore src/CareNest.App/CareNest.App.csproj \
+    -p:CareNestTargetFramework="$CARENEST_TARGET" \
+    -p:NuGetAudit=true \
+    -p:NuGetAuditMode=all \
+    --nologo
+
   say "Optional MAUI Release build: ${CARENEST_TARGET}"
   dotnet build src/CareNest.App/CareNest.App.csproj \
     -f "$CARENEST_TARGET" \
@@ -52,4 +62,4 @@ if [[ -n "${CARENEST_TARGET:-}" ]]; then
 fi
 
 say "Preflight complete"
-printf '%s\n' "Automated checks completed. Manual device, accessibility, signing, store-policy, and dependency-risk release decisions are still required where applicable."
+printf '%s\n' "Automated source checks completed. Manual device, accessibility, signing, store-policy, and packaged existing-data/encrypted-data compatibility evidence are still required where applicable."
