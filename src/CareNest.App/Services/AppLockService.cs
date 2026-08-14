@@ -8,6 +8,8 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
     private const string EnabledKey = "applock.enabled";
     private const string SaltKey = "applock.salt";
     private const string VerifierKey = "applock.verifier";
+    private const int SaltSize = 16;
+    private const int VerifierSize = 32;
     private const int Iterations = 210_000;
 
     public async Task<bool> IsEnabledAsync(
@@ -41,13 +43,13 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
                 VerifierKey,
                 cancellationToken);
 
-            salt = RandomNumberGenerator.GetBytes(16);
+            salt = RandomNumberGenerator.GetBytes(SaltSize);
             verifier = Rfc2898DeriveBytes.Pbkdf2(
                 pin,
                 salt,
                 Iterations,
                 HashAlgorithmName.SHA256,
-                32);
+                VerifierSize);
 
             try
             {
@@ -93,13 +95,19 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
             return true;
         }
 
+        if (!IsValidPin(pin))
+        {
+            return false;
+        }
+
         var salt = await secretStore.GetBytesAsync(SaltKey, cancellationToken);
         var expected = await secretStore.GetBytesAsync(VerifierKey, cancellationToken);
         byte[]? actual = null;
 
         try
         {
-            if (salt is null || expected is null)
+            if (salt is not { Length: SaltSize } ||
+                expected is not { Length: VerifierSize })
             {
                 return false;
             }
@@ -109,7 +117,7 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
                 salt,
                 Iterations,
                 HashAlgorithmName.SHA256,
-                expected.Length);
+                VerifierSize);
 
             return CryptographicOperations.FixedTimeEquals(actual, expected);
         }
@@ -237,12 +245,14 @@ public sealed class AppLockService(ISecretStore secretStore) : IAppLockService
 
     private static void ValidatePin(string pin)
     {
-        if (pin.Length is < 6 or > 32 ||
-            !pin.All(char.IsDigit))
+        if (!IsValidPin(pin))
         {
             throw new ArgumentException(
                 "Use a numeric app-lock PIN containing 6 to 32 digits.",
                 nameof(pin));
         }
     }
+
+    private static bool IsValidPin(string pin) =>
+        pin.Length is >= 6 and <= 32 && pin.All(char.IsDigit);
 }
