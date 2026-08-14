@@ -73,25 +73,93 @@ public sealed class OnboardingViewModel : ObservableViewModel
                 return;
             }
 
-            await _profiles.SaveAsync(new PersonProfile
+            if (EnableLock && !IsValidPin(Pin))
+            {
+                StatusMessage = "Use a numeric app-lock PIN containing 6 to 32 digits.";
+                return;
+            }
+
+            var profile = new PersonProfile
             {
                 Name = ProfileName.Trim(),
                 IsPrimary = true
-            }, ct);
+            };
+            var profileAttempted = false;
+            var lockEnabled = false;
 
-            if (EnableLock)
+            try
             {
-                await _appLock.SetPinAsync(Pin, ct);
-            }
+                profileAttempted = true;
+                await _profiles.SaveAsync(profile, ct);
 
-            await _appState.SetOnboardingCompleteAsync(ct);
-            await _appState.SetBoolAsync(
-                SettingKeys.GenericNotificationLabels,
-                true,
-                ct);
+                if (EnableLock)
+                {
+                    await _appLock.SetPinAsync(Pin, ct);
+                    lockEnabled = true;
+                }
+
+                await _appState.SetBoolAsync(
+                    SettingKeys.GenericNotificationLabels,
+                    true,
+                    ct);
+                await _appState.SetOnboardingCompleteAsync(ct);
+            }
+            catch (Exception onboardingFailure)
+            {
+                var rollbackFailures = new List<Exception>();
+
+                if (lockEnabled)
+                {
+                    try
+                    {
+                        await _appLock.DisableAsync(CancellationToken.None);
+                    }
+                    catch (Exception cleanupFailure)
+                    {
+                        rollbackFailures.Add(cleanupFailure);
+                    }
+                }
+
+                if (profileAttempted)
+                {
+                    try
+                    {
+                        await _profiles.DeleteAsync(profile.Id, CancellationToken.None);
+                    }
+                    catch (Exception cleanupFailure)
+                    {
+                        rollbackFailures.Add(cleanupFailure);
+                    }
+                }
+
+                try
+                {
+                    await _appState.SetBoolAsync(
+                        SettingKeys.OnboardingComplete,
+                        false,
+                        CancellationToken.None);
+                }
+                catch (Exception cleanupFailure)
+                {
+                    rollbackFailures.Add(cleanupFailure);
+                }
+
+                if (rollbackFailures.Count > 0)
+                {
+                    rollbackFailures.Insert(0, onboardingFailure);
+                    throw new AggregateException(
+                        "Onboarding failed and the incomplete local setup could not be fully rolled back.",
+                        rollbackFailures);
+                }
+
+                throw;
+            }
 
             Pin = string.Empty;
             await _navigator.ResetToShellAsync(ct);
         },
         "CareNest could not complete onboarding.");
+
+    private static bool IsValidPin(string pin) =>
+        pin.Length is >= 6 and <= 32 && pin.All(char.IsDigit);
 }
