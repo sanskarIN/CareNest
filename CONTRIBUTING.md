@@ -2,7 +2,7 @@
 
 Thank you for improving CareNest.
 
-CareNest is a local-first .NET MAUI health-organization project. Contributions must preserve the project's medical-safety, privacy, security, and release-evidence boundaries.
+CareNest is a local-first .NET MAUI health-organization project. Contributions must preserve the project's medical-safety, privacy, security, reminder-consistency, and release-evidence boundaries.
 
 ## Read first
 
@@ -89,7 +89,11 @@ Architecture contract tests enforce these boundaries.
 
 ## Reminder contributions
 
-If changing reminders, review `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`.
+If changing reminders, review:
+
+- `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`;
+- `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`;
+- `docs/security/THREAT_MODEL.md`.
 
 Preserve:
 
@@ -103,9 +107,16 @@ Preserve:
 - deterministic identity;
 - DST gap/overlap rules;
 - future-UTC snooze contract;
+- snoozed `SnoozedUntilUtc` effective due time;
+- cancellation of an existing OS request before replacement, suppression, invalidation, or handled-state persistence;
+- retryable state when platform cancellation fails;
+- retention of stale occurrence identity until old OS requests can be reconciled;
+- medicine/profile/appointment database ↔ OS-scheduler compensation where those surfaces can fail independently;
+- cancellation-first Taken/Skipped/Delayed/Missed/Snoozed/Cancelled actions;
+- non-cancelled previous-state/rebuild compensation when a later handled-action step fails;
 - no clinical inference.
 
-Add regression tests for behavior changes.
+Add regression tests for behavior changes, including failure-injection/ordering tests when persistence and OS scheduling cross separate state surfaces.
 
 ## Persistence/schema contributions
 
@@ -131,7 +142,9 @@ Read:
 
 Use platform-supported/.NET authenticated cryptographic primitives rather than inventing custom crypto.
 
-Preserve wrong-password/tamper rejection and document-key portability.
+Preserve wrong-password/tamper/truncation/trailing-data rejection, strict backup topology validation, and document-key portability.
+
+New encrypted writes use authenticated chunked framing v2 while legacy v1 remains readable for compatibility until an explicit migration/deprecation decision is verified.
 
 ## App-lock contributions
 
@@ -142,6 +155,9 @@ Preserve:
 - PBKDF2-HMAC-SHA256 verifier;
 - fixed-time comparison;
 - verifier-buffer clearing where practical;
+- exact expected stored salt/verifier shape;
+- fail-closed malformed/missing secure material;
+- rollback around multi-key update/disable changes;
 - deletion of stored material when disabled;
 - explicit limitation that app lock is not whole-database/device encryption.
 
@@ -161,7 +177,7 @@ Routine logs should not contain:
 - PINs;
 - encryption keys;
 - full exception messages/stack traces from sensitive user-data workflows;
-- reminder record identifiers in scheduling-failure logs where avoidable.
+- reminder record identifiers in scheduling/cancellation/recovery failure logs where avoidable.
 
 ## Local development
 
@@ -180,6 +196,15 @@ dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c 
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
+Repository-local gates are also available:
+
+```bash
+build/scripts/quality-gate.sh
+build/scripts/release-preflight.sh
+```
+
+PowerShell equivalents live beside those scripts. The gates run blocking unsuppressed NuGet audit checks; do not change them back to warning-only behavior.
+
 For platform changes, build/smoke-test the affected MAUI target.
 
 ## Formatting
@@ -197,8 +222,8 @@ Do not rely on a full multi-target solution format/build on a host that lacks re
 Project maintainer local setup:
 
 ```bash
-git config user.name "Sanskar"
-git config user.email "sanskarin@outlook.in"
+git config --local user.name "Sanskar"
+git config --local user.email "sanskarin@outlook.in"
 ```
 
 Helper scripts:
@@ -206,7 +231,9 @@ Helper scripts:
 - `build/scripts/setup-git.sh`;
 - `build/scripts/setup-git.ps1`.
 
-GitHub web/API commits may use the authenticated account's commit identity. Do not rewrite other contributors' authorship.
+The helper scripts anchor themselves at the repository root, fail on native Git errors, set repository-local identity, and verify the configured values.
+
+GitHub web/API commits may use the authenticated account's commit identity. Do not rewrite other contributors' authorship or falsely claim a connector/API commit used an arbitrary local email.
 
 ## Commit messages
 
@@ -233,7 +260,7 @@ Use:
 
 - unit tests for deterministic domain/application logic;
 - integration tests for SQLite/crypto/files/backup/report integration;
-- UI/source contract tests for XAML, architecture, ViewModel, security/privacy/repository policies;
+- UI/source contract tests for XAML, architecture, ViewModel, security/privacy/repository/release workflow and script policies;
 - manual test matrix for real target-device behavior.
 
 See `docs/testing/TESTING_GUIDE.md`.
@@ -249,6 +276,8 @@ A PR description should include:
 - schema/migration impact;
 - backup/export impact;
 - platform impact;
+- dependency impact;
+- workflow/release impact;
 - tests run;
 - manual checks run;
 - known limitations;
@@ -260,23 +289,25 @@ Keep PRs reviewable and never include real user data.
 
 Do not broadly suppress analyzers/tests merely to obtain green status.
 
-Historical verification intentionally exposed and fixed real analyzer/path/privacy/nullability defects.
+Historical verification intentionally exposed and fixed real analyzer/path/privacy/nullability/reminder/release-policy defects.
 
 When CI fails:
 
-1. inspect failing log;
-2. fix source/test when legitimate;
+1. inspect the failing log;
+2. fix source/test/workflow when legitimate;
 3. rerun targeted checks;
-4. rerun full applicable matrix;
+4. rerun the full applicable exact-source matrix;
 5. update evidence if the verified source changed.
 
 ## Exact-head verification
 
-Major runtime/test hardening uses the marker-only verification protocol in:
+Runtime, test, workflow, package, platform configuration, or release-script hardening that changes verification-relevant source uses the marker-only protocol in:
 
 `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
 
 The verification branch adds one marker file beyond an exact `main` source SHA. The marker PR is closed without merge.
+
+Documentation-only changes may be recorded separately only when they truly do not change runtime/test/project/workflow/package/platform/release-script behavior.
 
 ## Dependency updates
 
@@ -285,13 +316,28 @@ After package changes:
 - restore;
 - run tests;
 - run platform builds;
-- run Dependency Audit;
+- run unsuppressed Dependency Audit;
 - run CodeQL where applicable;
-- inspect transitive graph.
+- inspect the transitive graph;
+- record packaged compatibility evidence when native persistence/provider behavior changes.
 
 For SQLite-related changes follow `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
 
-Current `GHSA-2m69-gcr7-jv3q` risk must not be described as fixed unless the dependency/provider path is actually resolved and reverified.
+The formerly tracked `GHSA-2m69-gcr7-jv3q` source exception has been remediated: maintained native/provider leaves are centrally pinned, the exact audit suppression is removed, and `SqliteDependencySecurityContractTests` guards the package floor/suppression absence. Do not reintroduce the old suppression merely because packaged existing-data/encrypted-data compatibility work is still pending; that remaining work is a separate production-release gate.
+
+## Release workflow changes
+
+Production tags matching `v*` are designed to run the exact tagged source through:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
+
+Do not remove tag/manual entry points, weaken the Release Gate, make dependency audit warning-only, or make failed Release Evidence disappear without adding/updating executable regression contracts and re-running exact-source verification.
+
+Release Evidence should preserve failed-run evidence, identify commit/run/attempt, and apply aggregate success only after evidence upload.
 
 ## Documentation requirements
 
@@ -308,6 +354,8 @@ Update:
 - test guide/contract;
 - release checklists/status where required;
 - `what_changed.md` when a detailed handoff is requested.
+
+Do not leave old dependency/verification facts in active setup/security/architecture documents after a new authoritative source baseline supersedes them.
 
 ## Accessibility
 
