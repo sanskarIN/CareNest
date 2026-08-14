@@ -1,228 +1,406 @@
 # CareNest Documentation
 
-This directory is the documentation hub for CareNest `1.0.0-rc.1`.
+This directory is the canonical documentation hub for CareNest `1.0.0-rc.1`.
 
-CareNest is a local-first .NET MAUI family health organizer. It is an organizational product, not a diagnostic/treatment/dosage/interaction/clinical-risk system and not an emergency service.
+CareNest is a local-first .NET MAUI family health organizer. It is an organizational product, not a diagnostic, treatment, dosage-calculation, medication-interaction, clinical-risk, or emergency-service system.
 
-## Current verified source
+## Current authoritative automated source
 
-The authoritative current automated source reference is marker-only PR #56:
+The current automated release-engineering source reference is marker-only PR #56:
 
 - PR #56 — `Verify complete CareNest release-engineering source`;
 - verified source/base SHA — `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
 - verification marker head — `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
-- PR closed without merge after all required automated gates succeeded;
-- marker file did not enter `main`.
-
-Successful final gate groups:
-
 - CareNest CI #571 / `31770929379`: success;
-- platform-neutral formatting;
+- platform-neutral formatting: success;
 - 122 unit tests;
 - 39 integration tests;
 - 124 UI-contract/policy tests;
-- 285 total automated core tests;
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release;
-- CodeQL #571 / `31770929382`;
-- unsuppressed Dependency Audit #41 / `31770929383`.
+- 285 total core tests;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- CodeQL #571 / `31770929382`: success;
+- unsuppressed Dependency Audit #41 / `31770929383`: success.
 
-PR #54 remains the historical authoritative runtime bug-audit baseline for the earlier runtime/test/dependency graph. PR #56 verifies that graph together with the subsequent release-workflow, release-script, Git setup, Release Gate, and executable policy hardening.
+PR #56 was closed without merge; its marker did not enter `main`.
 
-See:
+PR #54 remains the historical authoritative runtime bug-audit baseline for the earlier 261-test runtime/test/dependency graph. PR #56 verifies that retained behavior together with subsequent release-workflow, release-script, Git-setup, Release Gate, and executable release-policy hardening.
 
-- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md)
-- [`../what_changed.md`](../what_changed.md)
-- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md)
-- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md)
-- [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md)
-- [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md)
-- [`security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](security/BUG_AUDIT_SECURITY_NOTES_20260814.md)
+The formerly tracked `GHSA-2m69-gcr7-jv3q` repository dependency exception is remediated in source. Maintained SQLite native/provider leaves are centrally pinned, the former exact audit suppression was removed, and PR #56 passed the unsuppressed audit. Packaged existing-database/encrypted-data compatibility remains a separate production release gate.
 
-The previously tracked `GHSA-2m69-gcr7-jv3q` repository dependency exception is remediated in the verified source graph: maintained SQLite native/provider leaves are centrally pinned, the exact audit suppression was removed, the dependency contract prevents restoration of the old floor/suppression, and PR #56 passed the unsuppressed audit. Manual packaged existing-database/encrypted-data compatibility remains a production release gate.
+## Primary project references
 
-## Start here
+Start with these four documents for a complete engineering view:
 
-### Users
+- [`COMPLETE_PROJECT_DOCUMENTATION.md`](COMPLETE_PROJECT_DOCUMENTATION.md) — end-to-end project reference: identity, features, boundaries, architecture, data, reminders, encryption, backup, setup, testing, release and documentation map.
+- [`CODEBASE_REFERENCE.md`](CODEBASE_REFERENCE.md) — concrete source-project/file map, responsibilities, test layers, workflows/scripts and change-placement rules.
+- [`CONFIGURATION_REFERENCE.md`](CONFIGURATION_REFERENCE.md) — central packages, build/analyzer/audit configuration, target frameworks, local commands, platform configuration, workflows, secrets and provenance.
+- [`MAINTENANCE_AND_OPERATIONS.md`](MAINTENANCE_AND_OPERATIONS.md) — routine maintenance, triage, dependency/schema/crypto/reminder changes, exact-head verification, release, signing, hotfix and incident operations.
 
-- [`USER_GUIDE.md`](USER_GUIDE.md) — complete user-facing behavior, privacy, reminder, backup, app-lock and limitation guide.
-- [`FEATURE_REFERENCE.md`](FEATURE_REFERENCE.md) — feature-by-feature implementation reference.
+Documentation-completeness evidence:
+
+- [`releases/DOCUMENTATION_AUDIT_20260814.md`](releases/DOCUMENTATION_AUDIT_20260814.md) — repository-wide documentation inventory and completeness audit.
+- [`releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md`](releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md) — operational documentation checklist.
+
+## Current status and handoff
+
+- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current automated baseline and real production blockers.
+- [`../what_changed.md`](../what_changed.md) — detailed active continuation/handoff ledger.
+- [`../CHANGELOG.md`](../CHANGELOG.md) — chronological change history.
+- [`../DECISIONS.md`](../DECISIONS.md) — consolidated architecture/engineering decisions.
+- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — authoritative PR #56 automated evidence.
+- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — historical authoritative PR #54 runtime bug-audit evidence.
+- [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — full 2026-08-14 failure-driven audit/checkpoint history.
+- [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — defect-to-test/contract map.
+- [`security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](security/BUG_AUDIT_SECURITY_NOTES_20260814.md) — security/privacy-relevant audit record.
+
+## User documentation
+
+- [`USER_GUIDE.md`](USER_GUIDE.md) — complete user-facing usage guide.
+- [`FEATURE_REFERENCE.md`](FEATURE_REFERENCE.md) — feature-by-feature behavior and limitations.
 - [`REPORTS_AND_EXPORTS.md`](REPORTS_AND_EXPORTS.md) — JSON/PDF/CSV/document/calendar export semantics and privacy boundaries.
-- [`GLOSSARY.md`](GLOSSARY.md) — shared terminology.
-- [`SUPPORT_CARENEST.md`](SUPPORT_CARENEST.md) — voluntary support/funding information.
-- [`../PRIVACY.md`](../PRIVACY.md) — root privacy policy.
-- [`../TERMS.md`](../TERMS.md) — root terms.
-- [`../SECURITY.md`](../SECURITY.md) — root security/reporting policy.
+- [`GLOSSARY.md`](GLOSSARY.md) — project terminology.
+- [`SUPPORT_CARENEST.md`](SUPPORT_CARENEST.md) — CareNest support/project-funding information.
+- [`../PRIVACY.md`](../PRIVACY.md) — public privacy policy.
+- [`../TERMS.md`](../TERMS.md) — public terms/limitations.
+- [`../SUPPORT.md`](../SUPPORT.md) — support channels.
+- [`../SECURITY.md`](../SECURITY.md) — security/reporting policy.
+- [`../BUY_ME_A_COFFEE.md`](../BUY_ME_A_COFFEE.md) — voluntary project-support information.
 
-### Developers and maintainers
+## Product safety boundary
 
-- [`setup/DEVELOPMENT.md`](setup/DEVELOPMENT.md) — primary commands/prerequisites.
-- [`setup/PLATFORM_SETUP.md`](setup/PLATFORM_SETUP.md) — Android/Windows/iOS/Mac Catalyst setup and manual platform checks.
-- [`setup/MAINTAINER_OPERATIONS.md`](setup/MAINTAINER_OPERATIONS.md) — maintainer workflow, Git identity, CI, dependencies, security and releases.
-- [`setup/TROUBLESHOOTING.md`](setup/TROUBLESHOOTING.md) — development/build/runtime troubleshooting.
-- [`DOCUMENTATION_STANDARDS.md`](DOCUMENTATION_STANDARDS.md) — documentation accuracy/evidence rules.
-- [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — contribution policy.
+CareNest does **not**:
+
+- diagnose conditions;
+- determine, calculate, or infer medicine dosage;
+- recommend treatment;
+- perform clinical medication-interaction checking;
+- create clinical risk scores;
+- independently verify adherence;
+- replace a clinician/pharmacist;
+- provide emergency services;
+- guarantee notification delivery.
+
+Medicine strength/instruction values remain opaque user-entered text. Reminder schedules are derived only from explicit user-entered schedule values.
+
+## Local-first/privacy boundary
+
+Current v1 documentation consistently describes:
+
+- no required CareNest account/backend;
+- no automatic CareNest cloud synchronization/upload;
+- no hidden runtime analytics/telemetry client;
+- local structured SQLite records;
+- separately encrypted imported document payloads;
+- password-encrypted manual backups;
+- explicit outbound export/share/calendar/browser actions;
+- generic notification labels by default;
+- privacy-minimized application logs.
+
+Exported/shared copies leave the CareNest protected boundary and can be retained by the chosen destination, OS, cloud service, screenshots or backups.
 
 ## Architecture
 
-- [`architecture/ARCHITECTURE.md`](architecture/ARCHITECTURE.md) — complete system overview/layering.
+- [`architecture/ARCHITECTURE.md`](architecture/ARCHITECTURE.md) — system overview and project dependency direction.
 - [`architecture/APPLICATION_FLOWS.md`](architecture/APPLICATION_FLOWS.md) — end-to-end runtime flows.
-- [`architecture/SERVICE_BOUNDARIES.md`](architecture/SERVICE_BOUNDARIES.md) — project/service/infrastructure responsibilities.
-- [`architecture/DATABASE_SCHEMA.md`](architecture/DATABASE_SCHEMA.md) — SQLite relationships, entities, migrations, WAL and snapshot model.
+- [`architecture/SERVICE_BOUNDARIES.md`](architecture/SERVICE_BOUNDARIES.md) — layer/service responsibilities.
+- [`architecture/DATABASE_SCHEMA.md`](architecture/DATABASE_SCHEMA.md) — SQLite entities, relationships, indexes, schema versions, migrations, WAL and snapshots.
 - [`architecture/DATA_STORAGE_AND_EXPORT.md`](architecture/DATA_STORAGE_AND_EXPORT.md) — storage/export/share boundaries.
-- [`architecture/BACKUP_AND_RESTORE.md`](architecture/BACKUP_AND_RESTORE.md) — encrypted backup/restore, strict topology and v1/v2 compatibility.
-- [`architecture/DOCUMENT_VAULT.md`](architecture/DOCUMENT_VAULT.md) — encrypted imported-document storage, key handling and export model.
-- [`architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — deterministic occurrence vs platform delivery and permission limitations.
-- [`architecture/ADR-0001-local-first.md`](architecture/ADR-0001-local-first.md) — local-first decision.
-- [`architecture/ADR-0002-reminder-occurrences.md`](architecture/ADR-0002-reminder-occurrences.md) — reminder materialization decision.
-- [`architecture/ADR-0003-encrypted-backup-format.md`](architecture/ADR-0003-encrypted-backup-format.md) — backup-format decision.
-- [`../DECISIONS.md`](../DECISIONS.md) — consolidated architectural/engineering decisions.
+- [`architecture/BACKUP_AND_RESTORE.md`](architecture/BACKUP_AND_RESTORE.md) — encrypted backup/restore package and compatibility model.
+- [`architecture/DOCUMENT_VAULT.md`](architecture/DOCUMENT_VAULT.md) — encrypted document storage/key/export model.
+- [`architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — persisted reminder state versus platform notification delivery.
+- [`architecture/ADR-0001-local-first.md`](architecture/ADR-0001-local-first.md) — local-first architecture decision.
+- [`architecture/ADR-0002-reminder-occurrences.md`](architecture/ADR-0002-reminder-occurrences.md) — reminder occurrence materialization decision.
+- [`architecture/ADR-0003-encrypted-backup-format.md`](architecture/ADR-0003-encrypted-backup-format.md) — encrypted backup format decision.
+
+### Intended dependency direction
+
+```text
+CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure <- CareNest.App
+```
+
+Platform-neutral projects do not depend on MAUI. ViewModels do not issue SQL directly. Local-first v1 runtime code does not casually add network/telemetry clients.
 
 ## Reminder scheduling and platform notifications
 
-- [`testing/REMINDER_SCHEDULING_CONTRACT.md`](testing/REMINDER_SCHEDULING_CONTRACT.md) — deterministic planner contract.
-- [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — stale-alarm/snooze/platform reconciliation regression map.
-- [`architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md) — permission/delivery/recovery/platform limitations.
-- [`FEATURE_REFERENCE.md`](FEATURE_REFERENCE.md) — feature-level reminder reference.
-- [`architecture/APPLICATION_FLOWS.md`](architecture/APPLICATION_FLOWS.md) — reminder materialization/reconciliation runtime flow.
+Primary references:
 
-Current audited reminder invariants additionally include:
+- [`testing/REMINDER_SCHEDULING_CONTRACT.md`](testing/REMINDER_SCHEDULING_CONTRACT.md)
+- [`architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`](architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md)
+- [`architecture/APPLICATION_FLOWS.md`](architecture/APPLICATION_FLOWS.md)
+- [`architecture/SERVICE_BOUNDARIES.md`](architecture/SERVICE_BOUNDARIES.md)
+- [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md)
 
-- snoozed rows use `SnoozedUntilUtc` as effective due time;
+Current audited invariants include:
+
+- explicit user-entered schedule values only;
+- ownership/UTC/date/state/DST validation;
+- invalid DST-gap times are not silently shifted to invented reminder times;
+- explicit future-UTC snooze requirement;
+- `SnoozedUntilUtc` is effective due time for a valid snooze;
 - future snoozes remain upcoming after original due time passes;
-- overdue snoozes can transition to missed;
-- rebuild cancels an existing platform request before replacement/suppression/invalidation;
-- stale schedule rows retain their IDs until OS-level cancellation can be attempted;
-- medicine/profile delete flows cancel future platform requests before cascade and compensate if the cascade fails;
-- medicine/profile save flows reconcile platform requests before non-critical audit bookkeeping;
-- appointment save/delete flows reconcile or compensate platform requests around persistence;
-- handled reminder actions cancel the old platform request before state persistence and attempt non-cancelled recovery if later essential work fails;
-- invalid DST-gap interval anchors do not invent a shifted time.
+- overdue snoozes use snooze due time;
+- existing platform requests are cancelled before replacement/suppression/invalidation;
+- cancellation failure remains retryable;
+- stale occurrence identity is retained long enough to cancel obsolete platform requests;
+- medicine/profile delete flows cancel future platform requests before database cascade and compensate when persistence fails;
+- medicine/profile save flows reconcile reminder state before non-critical audit bookkeeping;
+- appointment persistence/platform scheduling uses compensation;
+- Taken/Skipped/Delayed/Missed/Snoozed/Cancelled actions use cancellation-first ordering and non-cancelled recovery when later essential work fails.
+
+## SQLite and data storage
+
+Primary references:
+
+- [`architecture/DATABASE_SCHEMA.md`](architecture/DATABASE_SCHEMA.md)
+- [`architecture/DATA_STORAGE_AND_EXPORT.md`](architecture/DATA_STORAGE_AND_EXPORT.md)
+- [`security/DEPENDENCY_RISK_REGISTER.md`](security/DEPENDENCY_RISK_REGISTER.md)
+- [`releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`](releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md)
+- [`CONFIGURATION_REFERENCE.md`](CONFIGURATION_REFERENCE.md)
+
+Current dependency intent:
+
+- `sqlite-net-pcl` `1.9.172`;
+- `SQLitePCLRaw.bundle_green` `2.1.11`;
+- central transitive pinning enabled;
+- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
+- `SQLitePCLRaw.lib.e_sqlite3.android` `2.1.12`;
+- selected providers `2.1.12`;
+- former exact advisory audit suppression removed.
+
+A successful unsuppressed dependency audit is security evidence, not proof of packaged existing-database compatibility.
+
+## Encrypted document vault
+
+- [`architecture/DOCUMENT_VAULT.md`](architecture/DOCUMENT_VAULT.md)
+- [`security/SECURITY_MODEL.md`](security/SECURITY_MODEL.md)
+- [`security/THREAT_MODEL.md`](security/THREAT_MODEL.md)
+
+New encrypted document payloads use authenticated chunked AEAD framing v2. Legacy v1 remains readable where required for compatibility. Missing/corrupt document key plus existing encrypted payload fails closed; CareNest does not silently create an unrelated replacement key for existing ciphertext.
+
+Explicit decrypted export creates plaintext outside the encrypted vault boundary.
+
+## Backup and restore
+
+- [`architecture/BACKUP_AND_RESTORE.md`](architecture/BACKUP_AND_RESTORE.md)
+- [`security/SECURITY_MODEL.md`](security/SECURITY_MODEL.md)
+- [`testing/TESTING_GUIDE.md`](testing/TESTING_GUIDE.md)
+
+Manual backups use password-derived authenticated encryption, versioned package metadata, strict decrypted archive topology validation, SQLite snapshot integrity, protected document-recovery key material, and wrong-password/tamper/truncation/trailing-data rejection.
+
+Historical format compatibility is retained/documented rather than silently removed.
+
+## Reports and exports
+
+- [`REPORTS_AND_EXPORTS.md`](REPORTS_AND_EXPORTS.md)
+- [`architecture/DATA_STORAGE_AND_EXPORT.md`](architecture/DATA_STORAGE_AND_EXPORT.md)
+- [`privacy/PRIVACY_MODEL.md`](privacy/PRIVACY_MODEL.md)
+
+CSV formula-like user strings are neutralized in the portable spreadsheet representation. CSV/PDF/JSON generation uses staging plus atomic final move. Application-owned shared report cache files are removed after share handoff where CareNest still controls that temporary copy.
 
 ## Privacy and data lifecycle
 
-- [`privacy/PRIVACY_MODEL.md`](privacy/PRIVACY_MODEL.md) — complete local-first privacy architecture.
-- [`privacy/DATA_LIFECYCLE.md`](privacy/DATA_LIFECYCLE.md) — lifecycle from user entry/import through local use/export/backup/deletion.
-- [`privacy/LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md`](privacy/LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md) — CareNest-controlled cleanup boundary.
-- [`architecture/DATA_STORAGE_AND_EXPORT.md`](architecture/DATA_STORAGE_AND_EXPORT.md) — where data lives/how it leaves CareNest.
-- [`architecture/DOCUMENT_VAULT.md`](architecture/DOCUMENT_VAULT.md) — encrypted payload/explicit export boundary.
-- [`REPORTS_AND_EXPORTS.md`](REPORTS_AND_EXPORTS.md) — plaintext/portable export boundary.
-- [`../PRIVACY.md`](../PRIVACY.md) — user-facing policy.
+- [`privacy/PRIVACY_MODEL.md`](privacy/PRIVACY_MODEL.md)
+- [`privacy/DATA_LIFECYCLE.md`](privacy/DATA_LIFECYCLE.md)
+- [`privacy/LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md`](privacy/LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md)
+- [`architecture/DATA_STORAGE_AND_EXPORT.md`](architecture/DATA_STORAGE_AND_EXPORT.md)
+- [`../PRIVACY.md`](../PRIVACY.md)
 
-The 2026-08-14 audit routes successful decrypted document exports through the managed `Exports` cache, removes application-owned shared report cache files after share handoff where possible, and uses partial-file/atomic-move handling for generated plaintext reports/previews.
+These documents distinguish local application-owned data from user-exported/external copies and document deletion/cleanup limitations honestly.
 
 ## Security
 
-- [`security/SECURITY_MODEL.md`](security/SECURITY_MODEL.md) — technical security reference.
-- [`security/THREAT_MODEL.md`](security/THREAT_MODEL.md) — threats, controls and residual risks.
-- [`security/LOGGING_PRIVACY.md`](security/LOGGING_PRIVACY.md) — allowed/prohibited diagnostic content.
-- [`security/DEPENDENCY_RISK_REGISTER.md`](security/DEPENDENCY_RISK_REGISTER.md) — tracked dependency risks/remediation.
-- [`security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md`](security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md) — full local-data clear failure-safety model.
-- [`security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](security/BUG_AUDIT_SECURITY_NOTES_20260814.md) — app-lock/key/plaintext/platform-reconciliation audit notes.
-- [`../SECURITY.md`](../SECURITY.md) — root security/reporting policy.
-- [`releases/SECURITY_RELEASE_REVIEW.md`](releases/SECURITY_RELEASE_REVIEW.md) — final-release security review checklist.
+- [`security/SECURITY_MODEL.md`](security/SECURITY_MODEL.md)
+- [`security/THREAT_MODEL.md`](security/THREAT_MODEL.md)
+- [`security/LOGGING_PRIVACY.md`](security/LOGGING_PRIVACY.md)
+- [`security/DEPENDENCY_RISK_REGISTER.md`](security/DEPENDENCY_RISK_REGISTER.md)
+- [`security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md`](security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md)
+- [`security/BUG_AUDIT_SECURITY_NOTES_20260814.md`](security/BUG_AUDIT_SECURITY_NOTES_20260814.md)
+- [`releases/SECURITY_RELEASE_REVIEW.md`](releases/SECURITY_RELEASE_REVIEW.md)
+- [`../SECURITY.md`](../SECURITY.md)
 
-## Backup and data portability
+Security controls are documented separately from residual risk. App lock is a local privacy barrier, not whole-database encryption. A compromised/rooted/jailbroken OS/device remains outside the app’s strongest guarantees.
 
-- [`architecture/BACKUP_AND_RESTORE.md`](architecture/BACKUP_AND_RESTORE.md) — protected backup format and restore behavior.
-- [`architecture/DATA_STORAGE_AND_EXPORT.md`](architecture/DATA_STORAGE_AND_EXPORT.md) — JSON/PDF/CSV/document/calendar boundaries.
-- [`architecture/DOCUMENT_VAULT.md`](architecture/DOCUMENT_VAULT.md) — document payload/key portability.
-- [`REPORTS_AND_EXPORTS.md`](REPORTS_AND_EXPORTS.md) — report/export contracts.
-- [`privacy/PRIVACY_MODEL.md`](privacy/PRIVACY_MODEL.md) — privacy implications of portable copies.
+## Logging privacy
 
-The bug audit distinguishes primary backup/restore completion from later best-effort local bookkeeping and restores exact previous document-key bytes during failed restore rollback.
+See [`security/LOGGING_PRIVACY.md`](security/LOGGING_PRIVACY.md).
+
+Normal sensitive operation logs must not contain health notes/document contents/PINs/passwords/keys or routine full sensitive exception messages/stack traces. Fixed operation/category metadata and exception type names are preferred where diagnostics are necessary.
 
 ## Design, branding, accessibility and localization
 
-- [`design/DESIGN_SYSTEM.md`](design/DESIGN_SYSTEM.md) — design tokens/visual/interaction rules.
-- [`design/ACCESSIBILITY.md`](design/ACCESSIBILITY.md) — accessibility specification/manual checks.
-- [`design/LOCALIZATION.md`](design/LOCALIZATION.md) — resource architecture, translation/safety/RTL/testing strategy.
-- [`design/STORE_ASSETS.md`](design/STORE_ASSETS.md) — store screenshots/assets/claim/privacy guidance.
-- [`releases/BMC_HIGHLIGHT.md`](releases/BMC_HIGHLIGHT.md) — project-support presentation guidance.
-- [`../BUY_ME_A_COFFEE.md`](../BUY_ME_A_COFFEE.md) — root project-support page.
+- [`design/DESIGN_SYSTEM.md`](design/DESIGN_SYSTEM.md)
+- [`design/ACCESSIBILITY.md`](design/ACCESSIBILITY.md)
+- [`design/LOCALIZATION.md`](design/LOCALIZATION.md)
+- [`design/STORE_ASSETS.md`](design/STORE_ASSETS.md)
+- [`releases/BMC_HIGHLIGHT.md`](releases/BMC_HIGHLIGHT.md)
+- [`../BUY_ME_A_COFFEE.md`](../BUY_ME_A_COFFEE.md)
+
+Automated XAML/source semantics tests do not replace real screen-reader, text-scaling, keyboard/focus, contrast/theme and reduced-motion verification.
+
+## Developer setup
+
+- [`setup/DEVELOPMENT.md`](setup/DEVELOPMENT.md)
+- [`setup/PLATFORM_SETUP.md`](setup/PLATFORM_SETUP.md)
+- [`setup/TROUBLESHOOTING.md`](setup/TROUBLESHOOTING.md)
+- [`CONFIGURATION_REFERENCE.md`](CONFIGURATION_REFERENCE.md)
+
+Repository-local maintainer identity:
+
+```bash
+git config --local user.name "Sanskar"
+git config --local user.email "sanskarin@outlook.in"
+```
+
+Helpers:
+
+```bash
+build/scripts/setup-git.sh
+```
+
+```powershell
+./build/scripts/setup-git.ps1
+```
+
+GitHub web/API commits can use authenticated GitHub account metadata; do not misrepresent them as arbitrary local-email commits unless the commit metadata proves it.
+
+## Maintainer operations
+
+- [`MAINTENANCE_AND_OPERATIONS.md`](MAINTENANCE_AND_OPERATIONS.md) — primary current maintainer manual.
+- [`setup/MAINTAINER_OPERATIONS.md`](setup/MAINTAINER_OPERATIONS.md) — setup-oriented maintainer operations reference.
+- [`DOCUMENTATION_STANDARDS.md`](DOCUMENTATION_STANDARDS.md) — documentation accuracy/evidence rules.
+- [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — contribution policy.
 
 ## Testing and CI
 
-- [`testing/TESTING_GUIDE.md`](testing/TESTING_GUIDE.md) — automated/manual testing reference.
-- [`testing/TEST_PLAN.md`](testing/TEST_PLAN.md) — concise test plan.
-- [`testing/REMINDER_SCHEDULING_CONTRACT.md`](testing/REMINDER_SCHEDULING_CONTRACT.md) — reminder invariants.
-- [`testing/SETTINGS_LIFECYCLE_CONTRACT.md`](testing/SETTINGS_LIFECYCLE_CONTRACT.md) — Settings lifecycle contract.
-- [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — bug-class regression inventory.
-- [`releases/PHASE8_VERIFICATION_EVIDENCE.md`](releases/PHASE8_VERIFICATION_EVIDENCE.md) — preserved earlier Phase 8 evidence.
-- [`releases/PHASE9_VERIFICATION_EVIDENCE.md`](releases/PHASE9_VERIFICATION_EVIDENCE.md) — preserved PR #36 evidence.
-- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — historical authoritative PR #54 runtime bug-audit evidence.
-- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — authoritative PR #56 release-engineering evidence.
-- [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — complete audit/checkpoint history.
+- [`testing/TESTING_GUIDE.md`](testing/TESTING_GUIDE.md)
+- [`testing/TEST_PLAN.md`](testing/TEST_PLAN.md)
+- [`testing/REMINDER_SCHEDULING_CONTRACT.md`](testing/REMINDER_SCHEDULING_CONTRACT.md)
+- [`testing/SETTINGS_LIFECYCLE_CONTRACT.md`](testing/SETTINGS_LIFECYCLE_CONTRACT.md)
+- [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md)
 
-PR #56 is the current automated source reference. PR #54 remains the completed bug-audit runtime source reference; PR #43 remains historical failed-core evidence.
+Authoritative PR #56 core totals:
+
+- UnitTests: 122;
+- IntegrationTests: 39;
+- UiTests/source-policy: 124;
+- total: 285.
+
+The UiTests/source-policy suite includes architecture, repository, ViewModel, XAML/accessibility intent, logging/privacy, app-lock, reminder/platform, dependency-security, workflow, release-preflight, quality-gate, Git-setup and production Release Gate contracts.
+
+## Build/configuration automation
+
+- [`CONFIGURATION_REFERENCE.md`](CONFIGURATION_REFERENCE.md)
+- [`setup/DEVELOPMENT.md`](setup/DEVELOPMENT.md)
+- [`setup/PLATFORM_SETUP.md`](setup/PLATFORM_SETUP.md)
+
+Local quality gate:
+
+```bash
+build/scripts/quality-gate.sh
+```
+
+```powershell
+./build/scripts/quality-gate.ps1
+```
+
+Release preflight:
+
+```bash
+build/scripts/release-preflight.sh
+```
+
+```powershell
+./build/scripts/release-preflight.ps1
+```
+
+Dependency audit is blocking; it is not warning-only.
 
 ## Release engineering
 
-- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — authoritative final PR #56 release-engineering evidence.
-- [`releases/RELEASE_PROCESS.md`](releases/RELEASE_PROCESS.md) — end-to-end public release process.
+- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — PR #56 evidence.
+- [`releases/RELEASE_PROCESS.md`](releases/RELEASE_PROCESS.md) — end-to-end release process.
 - [`releases/RELEASE_CHECKLIST.md`](releases/RELEASE_CHECKLIST.md) — automated/manual promotion checklist.
 - [`releases/QUALITY_GATE.md`](releases/QUALITY_GATE.md) — production quality requirements.
-- [`releases/MANUAL_TEST_MATRIX.md`](releases/MANUAL_TEST_MATRIX.md) — device/accessibility/manual/SQLite-compatibility evidence matrix.
-- [`releases/STORE_SUBMISSION_CHECKLIST.md`](releases/STORE_SUBMISSION_CHECKLIST.md) — distribution-channel and exact-tag checks.
-- [`releases/SECURITY_RELEASE_REVIEW.md`](releases/SECURITY_RELEASE_REVIEW.md) — security approval record.
-- [`releases/RELEASE_EVIDENCE.md`](releases/RELEASE_EVIDENCE.md) — exact source/evidence/provenance workflow behavior.
-- [`releases/RELEASE_NOTES_TEMPLATE.md`](releases/RELEASE_NOTES_TEMPLATE.md) — release-notes template.
-- [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) — marker-only exact-head CI protocol.
-- [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md) — production blockers and roadmap.
-- [`releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`](releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md) — SQLite dependency remediation/compatibility plan.
-- [`releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md`](releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md) — documentation inventory/operational gates.
-- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — historical authoritative PR #54 automated bug-audit evidence.
-- [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — complete bug-audit checkpoint history.
+- [`releases/MANUAL_TEST_MATRIX.md`](releases/MANUAL_TEST_MATRIX.md) — platform/manual/accessibility/SQLite compatibility evidence matrix.
+- [`releases/SECURITY_RELEASE_REVIEW.md`](releases/SECURITY_RELEASE_REVIEW.md) — release security approval record.
+- [`releases/STORE_SUBMISSION_CHECKLIST.md`](releases/STORE_SUBMISSION_CHECKLIST.md) — distribution/store preparation.
+- [`releases/RELEASE_EVIDENCE.md`](releases/RELEASE_EVIDENCE.md) — exact-source evidence/provenance workflow behavior.
+- [`releases/RELEASE_NOTES_TEMPLATE.md`](releases/RELEASE_NOTES_TEMPLATE.md) — release-note template.
+- [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) — marker-only exact-head verification protocol.
+- [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md) — current blockers/roadmap.
+- [`releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`](releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md) — SQLite remediation and packaged compatibility plan.
+- [`releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md`](releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md) — documentation checklist.
+- [`releases/DOCUMENTATION_AUDIT_20260814.md`](releases/DOCUMENTATION_AUDIT_20260814.md) — final documentation audit.
 
-Exact production tags matching `v*` are configured to run CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence against the exact tagged commit. A tag is not production approval until every required tag workflow plus manual/device/accessibility/store/signing/packaged-data evidence succeeds.
+Production tags matching `v*` are configured to run the exact tagged commit through:
 
-## Project state and history
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
 
-- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current PR #56 automated baseline and real blockers.
-- [`../CHANGELOG.md`](../CHANGELOG.md) — version/change history.
-- [`../what_changed.md`](../what_changed.md) — active detailed handoff.
-- [`history/what_changed_full_through_phase8.md`](history/what_changed_full_through_phase8.md) — complete earlier implementation/hardening history.
-- [`history/what_changed_documentation_through_20260812.md`](history/what_changed_documentation_through_20260812.md) — documentation pass history.
-- [`history/what_changed_through_pr33_20260813.md`](history/what_changed_through_pr33_20260813.md) — preserved long PR #33 handoff.
-- [`../DECISIONS.md`](../DECISIONS.md) — engineering decisions.
+A tag is not production approval until every required automated and manual gate is actually complete.
+
+## Verification and historical evidence
+
+Current:
+
+- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — PR #56.
+
+Historical retained evidence includes:
+
+- [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — PR #54 runtime bug-audit baseline.
+- [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — detailed bug-audit checkpoint/failure history.
+- [`releases/PHASE8_VERIFICATION_EVIDENCE.md`](releases/PHASE8_VERIFICATION_EVIDENCE.md)
+- [`releases/PHASE9_VERIFICATION_EVIDENCE.md`](releases/PHASE9_VERIFICATION_EVIDENCE.md)
+- historical handoffs under [`history/`](history/).
+
+Failed/superseded checkpoints remain historical evidence and are not silently relabeled as release baselines.
 
 ## Current production blockers
 
-CareNest remains `1.0.0-rc.1`, not a final public production release.
+CareNest remains `1.0.0-rc.1`, not final public production `1.0.0`.
 
-Real remaining gates include:
+Real remaining evidence includes:
 
-- manual Android/Windows/iOS/iPadOS/Mac Catalyst verification;
-- manual notification permission/real-delivery/platform lifecycle checks;
-- cancellation-first reminder-action behavior against real platform scheduling/restart recovery;
-- packaged-target document/photo/report/backup checks;
-- representative packaged existing-database and encrypted-data compatibility checks after the SQLite native/provider remediation;
-- legacy encrypted-format fixture checks when canonical fixtures are available;
-- manual accessibility verification;
-- current Apple/Google store-policy review, including optional external project-support link;
-- signing/package identities and secrets outside Git;
+- Android real-device/emulator manual matrix;
+- Windows manual matrix;
+- iOS/iPadOS manual matrix;
+- Mac Catalyst manual matrix;
+- real notification permission/delivery/restart/platform lifecycle checks;
+- cancellation-first reminder action behavior against actual platform scheduling;
+- Android alarm/battery/reboot/time/time-zone checks;
+- packaged-target document/photo/report/backup behavior;
+- representative packaged SQLite existing-data upgrade/integrity/readability after native/provider remediation;
+- encrypted document and backup compatibility;
+- canonical historical encrypted-format/backup fixtures where available;
+- clean-install restore;
+- real accessibility testing;
+- current Apple/Google store-policy review, including optional external support link;
+- signing identities/credentials outside Git;
 - signed package generation/inspection;
-- store screenshots/listings/privacy/data-safety disclosures;
-- successful exact production `v*` tag CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence runs;
-- final release version/build metadata, notes, checksums, and publication.
+- store screenshots/listing/privacy/data-safety metadata;
+- successful exact production tag CI/CodeQL/audit/Release Gate/Release Evidence;
+- final version/build metadata, release notes, checksums and publication.
 
-The previous SQLite source exception itself is no longer an open source blocker; the remaining SQLite-related work is packaged/manual compatibility evidence.
-
-Use `PROJECT_STATUS.md`, `releases/NEXT_STEPS.md`, and `releases/RELEASE_CHECKLIST.md` as operational trackers.
+No documentation or CI commit should mark these complete without actual evidence.
 
 ## Documentation maintenance rule
 
 When behavior or release engineering changes:
 
 1. update the lowest-level technical document describing the behavior;
-2. update user-facing documentation if observable behavior changes;
-3. update security/privacy docs if data/trust boundaries change;
+2. update user-facing docs when observable behavior changes;
+3. update architecture/privacy/security docs when data/trust/failure boundaries change;
 4. update tests/contracts;
-5. update release status/evidence when verification changes;
-6. update this index for new major documents;
-7. update `what_changed.md` when a detailed handoff is requested;
-8. if runtime/test/workflow/package/resource/build-script source changes after an exact-head verification, run a fresh marker-only verification instead of reusing old evidence.
+5. update package/build/config references if relevant;
+6. update release status/evidence when verification changes;
+7. update this index for any new major reference;
+8. update `what_changed.md` for detailed continuation work;
+9. run a fresh marker-only exact-head verification whenever runtime/test/project/workflow/package/platform/build-script source changes after the current verified boundary.
 
-Documentation must not claim a manual test, store-policy decision, signing step, packaged compatibility result, or final production release is complete unless it actually occurred.
+Historical evidence should be preserved rather than silently rewritten. Current authoritative addenda/status documents should make the present state unambiguous.
