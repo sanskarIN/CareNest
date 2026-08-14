@@ -192,56 +192,31 @@ public sealed class SqliteDatabase : IAsyncDisposable
 
         if (current < 1)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            foreach (var statement in Migration1Statements)
-            {
-                await _connection.ExecuteAsync(statement);
-            }
-            await RecordVersionAsync(1);
+            await ApplyMigrationAsync(1, Migration1Statements, cancellationToken);
             current = 1;
         }
 
         if (current < 2)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            foreach (var statement in Migration2Statements)
-            {
-                await _connection.ExecuteAsync(statement);
-            }
-            await RecordVersionAsync(2);
+            await ApplyMigrationAsync(2, Migration2Statements, cancellationToken);
             current = 2;
         }
 
         if (current < 3)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            foreach (var statement in Migration3Statements)
-            {
-                await _connection.ExecuteAsync(statement);
-            }
-            await RecordVersionAsync(3);
+            await ApplyMigrationAsync(3, Migration3Statements, cancellationToken);
             current = 3;
         }
 
         if (current < 4)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            foreach (var statement in Migration4Statements)
-            {
-                await _connection.ExecuteAsync(statement);
-            }
-            await RecordVersionAsync(4);
+            await ApplyMigrationAsync(4, Migration4Statements, cancellationToken);
             current = 4;
         }
 
         if (current < 5)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            foreach (var statement in Migration5Statements)
-            {
-                await _connection.ExecuteAsync(statement);
-            }
-            await RecordVersionAsync(5);
+            await ApplyMigrationAsync(5, Migration5Statements, cancellationToken);
         }
 
         var integrity = await _connection.ExecuteScalarAsync<string>("PRAGMA integrity_check;");
@@ -252,14 +227,37 @@ public sealed class SqliteDatabase : IAsyncDisposable
         }
     }
 
+    private async Task ApplyMigrationAsync(
+        int version,
+        IReadOnlyList<string> statements,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (_connection is null)
+        {
+            throw new InvalidOperationException("Connection is unavailable.");
+        }
+
+        var appliedUtc = DateTime.UtcNow;
+        await _connection.RunInTransactionAsync(connection =>
+        {
+            foreach (var statement in statements)
+            {
+                connection.Execute(statement);
+            }
+
+            connection.Execute(
+                "INSERT OR REPLACE INTO SchemaInfo (Version, AppliedUtc) VALUES (?, ?)",
+                version,
+                appliedUtc);
+        });
+    }
+
     private async Task<int> GetCurrentVersionWithoutInitializeAsync()
     {
         var rows = await _connection!.QueryAsync<SchemaInfo>("SELECT Version, AppliedUtc FROM SchemaInfo ORDER BY Version DESC LIMIT 1");
         return rows.Count == 0 ? 0 : rows[0].Version;
     }
-
-    private Task<int> RecordVersionAsync(int version) =>
-        _connection!.ExecuteAsync("INSERT OR REPLACE INTO SchemaInfo (Version, AppliedUtc) VALUES (?, ?)", version, DateTime.UtcNow);
 
     private static void DeleteSidecars(string databasePath)
     {
