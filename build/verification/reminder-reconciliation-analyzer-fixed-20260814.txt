@@ -1,0 +1,5 @@
+CareNest exact-head verification marker
+Source: 834b2980167c41bc7e9c1ad69dc54ad5ccc7e53e
+Date: 2026-08-14
+Purpose: verify reminder reconciliation after CA1861 test fixes and profile/medicine save reconciliation.
+This marker is verification-only and must not be merged.
