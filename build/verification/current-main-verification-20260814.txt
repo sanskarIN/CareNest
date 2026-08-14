@@ -1,0 +1,5 @@
+CareNest exact-head verification marker
+Source: 6e920f38972155ba9eaa6693f6ad948ebf6d1db7
+Date: 2026-08-14
+Purpose: trigger full CI, CodeQL, and dependency audit for current main.
+This marker is verification-only and must not be merged.
