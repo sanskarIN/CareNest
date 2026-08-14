@@ -1,0 +1,5 @@
+CareNest complete documentation verification marker
+Date: 2026-08-14
+Frozen main/source head: 3e59516dab7a2401c071444a7b9a412bdc84e304
+Purpose: marker-only PR to verify the completed documentation/evidence alignment with all repository policy tests, platform Release builds, CodeQL, and unsuppressed Dependency Audit.
+This marker must not be merged into main.
