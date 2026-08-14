@@ -154,71 +154,117 @@ public sealed class ReminderCoordinator(
             }
         }
 
-        occurrence.State = newState;
-        occurrence.StateChangedUtc = now;
-        occurrence.SnoozedUntilUtc = newState == ReminderState.Snoozed ? snoozedUntilUtc : null;
-        await repository.SaveOccurrenceAsync(occurrence, cancellationToken);
+        var previousState = occurrence.State;
+        var previousStateChangedUtc = occurrence.StateChangedUtc;
+        var previousSnoozedUntilUtc = occurrence.SnoozedUntilUtc;
 
+        // Do not persist a handled state while the old OS request can still fire.
         await notificationService.CancelAsync(occurrenceId, cancellationToken);
-        occurrence.PlatformNotificationId = null;
-        if (newState == ReminderState.Snoozed)
+
+        try
         {
-            var policy = await LoadNotificationPolicyAsync(cancellationToken);
-            if (!IsInsideQuietHours(snoozedUntilUtc!.Value, policy))
+            occurrence.State = newState;
+            occurrence.StateChangedUtc = now;
+            occurrence.SnoozedUntilUtc = newState == ReminderState.Snoozed ? snoozedUntilUtc : null;
+            occurrence.PlatformNotificationId = null;
+            await repository.SaveOccurrenceAsync(occurrence, cancellationToken);
+
+            if (newState == ReminderState.Snoozed)
             {
-                await notificationService.ScheduleAsync(new NotificationRequest(
-                    occurrence.Id,
-                    snoozedUntilUtc.Value,
-                    "CareNest reminder",
-                    policy.GenericLabels
-                        ? "Open CareNest to review your snoozed reminder."
-                        : "A snoozed medicine reminder is due. Open CareNest for details.",
-                    policy.Persistent,
-                    "medicine",
-                    policy.PlaySound,
-                    policy.Vibrate), cancellationToken);
-                occurrence.PlatformNotificationId = occurrence.Id;
+                var policy = await LoadNotificationPolicyAsync(cancellationToken);
+                if (!IsInsideQuietHours(snoozedUntilUtc!.Value, policy))
+                {
+                    await notificationService.ScheduleAsync(new NotificationRequest(
+                        occurrence.Id,
+                        snoozedUntilUtc.Value,
+                        "CareNest reminder",
+                        policy.GenericLabels
+                            ? "Open CareNest to review your snoozed reminder."
+                            : "A snoozed medicine reminder is due. Open CareNest for details.",
+                        policy.Persistent,
+                        "medicine",
+                        policy.PlaySound,
+                        policy.Vibrate), cancellationToken);
+                    occurrence.PlatformNotificationId = occurrence.Id;
+                    await repository.SaveOccurrenceAsync(occurrence, cancellationToken);
+                }
+            }
+
+            if (newState is ReminderState.Taken or ReminderState.Skipped or ReminderState.Delayed or ReminderState.Missed)
+            {
+                var status = newState switch
+                {
+                    ReminderState.Taken => MedicationLogStatus.Taken,
+                    ReminderState.Skipped => MedicationLogStatus.Skipped,
+                    ReminderState.Delayed => MedicationLogStatus.Delayed,
+                    _ => MedicationLogStatus.Missed
+                };
+
+                var logEntry = new MedicationLogEntry
+                {
+                    ProfileId = occurrence.ProfileId,
+                    MedicineId = occurrence.MedicineId,
+                    ReminderOccurrenceId = occurrence.Id,
+                    Status = status,
+                    EventUtc = timeProvider.GetUtcNow().UtcDateTime,
+                    Note = note
+                };
+                await repository.SaveMedicationLogEntryAsync(logEntry, cancellationToken);
+
+                if (newState == ReminderState.Taken)
+                {
+                    try
+                    {
+                        await ApplyUserConfiguredStockChangeAsync(
+                            occurrence.MedicineId,
+                            logEntry.Id,
+                            cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogOperationalWarning("Taken-event stock adjustment failed", ex);
+                    }
+                }
             }
         }
-
-        await repository.SaveOccurrenceAsync(occurrence, cancellationToken);
-
-        if (newState is ReminderState.Taken or ReminderState.Skipped or ReminderState.Delayed or ReminderState.Missed)
+        catch (Exception primaryFailure)
         {
-            var status = newState switch
+            try
             {
-                ReminderState.Taken => MedicationLogStatus.Taken,
-                ReminderState.Skipped => MedicationLogStatus.Skipped,
-                ReminderState.Delayed => MedicationLogStatus.Delayed,
-                _ => MedicationLogStatus.Missed
-            };
+                occurrence.State = previousState;
+                occurrence.StateChangedUtc = previousStateChangedUtc;
+                occurrence.SnoozedUntilUtc = previousSnoozedUntilUtc;
+                occurrence.PlatformNotificationId = null;
+                await repository.SaveOccurrenceAsync(occurrence, CancellationToken.None);
+                await RebuildAsync(cancellationToken: CancellationToken.None);
+            }
+            catch (Exception recoveryFailure)
+            {
+                throw new AggregateException(
+                    "Reminder action failed and the previous reminder request could not be fully restored.",
+                    primaryFailure,
+                    recoveryFailure);
+            }
 
-            var logEntry = new MedicationLogEntry
+            throw;
+        }
+
+        try
+        {
+            await repository.AddAuditEntryAsync(new AuditEntry
             {
-                ProfileId = occurrence.ProfileId,
-                MedicineId = occurrence.MedicineId,
-                ReminderOccurrenceId = occurrence.Id,
-                Status = status,
+                EntityType = nameof(ReminderOccurrence),
+                EntityId = occurrence.Id,
+                Action = AuditAction.ReminderStateChanged,
                 EventUtc = timeProvider.GetUtcNow().UtcDateTime,
-                Note = note
-            };
-            await repository.SaveMedicationLogEntryAsync(logEntry, cancellationToken);
-
-            if (newState == ReminderState.Taken)
-            {
-                await ApplyUserConfiguredStockChangeAsync(occurrence.MedicineId, logEntry.Id, cancellationToken);
-            }
+                ChangedFieldsCsv = "State",
+                SafeSummary = $"Reminder state changed to {newState}"
+            }, CancellationToken.None);
         }
-
-        await repository.AddAuditEntryAsync(new AuditEntry
+        catch (Exception ex)
         {
-            EntityType = nameof(ReminderOccurrence),
-            EntityId = occurrence.Id,
-            Action = AuditAction.ReminderStateChanged,
-            EventUtc = timeProvider.GetUtcNow().UtcDateTime,
-            ChangedFieldsCsv = "State",
-            SafeSummary = $"Reminder state changed to {newState}"
-        }, cancellationToken);
+            LogOperationalWarning("Reminder action audit write failed", ex);
+        }
     }
 
     public async Task MarkOverdueAsMissedAsync(CancellationToken cancellationToken = default)
