@@ -23,17 +23,19 @@ dotnet workload list
 dotnet restore src/CareNest.Domain/CareNest.Domain.csproj
 ```
 
-The repository's Git setup scripts configure the requested maintainer identity:
+The repository's Git setup scripts configure the requested repository-local maintainer identity:
 
 ```bash
-git config user.name "Sanskar"
-git config user.email "sanskarin@outlook.in"
+git config --local user.name "Sanskar"
+git config --local user.email "sanskarin@outlook.in"
 ```
 
 Use:
 
 - `build/scripts/setup-git.sh`, or
 - `build/scripts/setup-git.ps1`.
+
+The helper scripts locate the repository root, fail on Git errors, and verify the configured values.
 
 ## Clone
 
@@ -57,6 +59,14 @@ dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c 
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
+For local policy/audit checks use:
+
+```bash
+build/scripts/quality-gate.sh
+```
+
+or the PowerShell equivalent. The local quality gate includes blocking unsuppressed NuGet audit for the core test dependency graphs.
+
 ## Why `CareNestTargetFramework` exists
 
 The MAUI application is multi-targeted. A host that only has one platform workload should not have to evaluate every unrelated target.
@@ -76,7 +86,7 @@ This keeps the platform-specific target narrow and prevents app target-framework
 
 ## Host
 
-Android development can be performed on a supported Windows/macOS host with the Android/.NET MAUI workload and Android SDK tooling.
+Android development can be performed on a supported Windows/macOS/Linux host with the Android/.NET MAUI workload and Android SDK tooling supported by the installed .NET SDK.
 
 ## Install workload
 
@@ -93,6 +103,17 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -p:CareNestTargetFramework=net10.0-android
 ```
 
+## Audit the Android app graph
+
+```bash
+dotnet restore src/CareNest.App/CareNest.App.csproj \
+  -p:CareNestTargetFramework=net10.0-android \
+  -p:NuGetAudit=true \
+  -p:NuGetAuditMode=all
+```
+
+This is the MAUI graph audited by the repository Dependency Audit workflow.
+
 ## Android-specific manual verification
 
 A release candidate must be tested for:
@@ -100,7 +121,11 @@ A release candidate must be tested for:
 - fresh install/onboarding;
 - notification permission denied;
 - notification permission granted;
-- reminder registration;
+- future snooze whose original due time has passed;
+- cancellation-first Taken/Skipped/Delayed/Missed actions;
+- snooze replacement cancellation/order;
+- stale OS request cleanup after schedule changes;
+- medicine/profile delete reminder cleanup;
 - exact/inexact alarm diagnostics;
 - battery-optimization diagnostics;
 - reboot reminder rebuild;
@@ -108,6 +133,7 @@ A release candidate must be tested for:
 - force-stop/OS limitation messaging;
 - file/document import/export/share;
 - encrypted backup/restore;
+- packaged SQLite existing-data compatibility after native/provider updates;
 - app-lock cold start;
 - large text/accessibility behavior.
 
@@ -121,11 +147,13 @@ Use a supported Windows development host with Visual Studio/Build Tools componen
 
 ## Install workload
 
+The current GitHub Actions Windows build installs the supported MAUI workload with:
+
 ```powershell
-dotnet workload install maui-windows
+dotnet workload install maui
 ```
 
-If the current .NET workload model on the host uses a different supported installation path, follow the installed SDK's workload guidance and repository CI as the source of truth for target commands.
+Use the installed .NET SDK/workload guidance if a future SDK changes the workload model. Keep local commands aligned with the repository CI that is actually proving the target.
 
 ## Build
 
@@ -148,8 +176,12 @@ Verify:
 - theme switching;
 - document picker/share behavior;
 - backup/restore;
+- packaged SQLite existing-data compatibility after native/provider updates;
 - app lock;
-- notification/fallback diagnostics.
+- in-process notification/fallback diagnostics;
+- same-ID timer replacement/cancellation;
+- cancellation-first handled reminder actions;
+- snooze replacement.
 
 The current Windows reminder path has explicit limitations and must not be described as guaranteed while the application is not running.
 
@@ -159,7 +191,7 @@ The current Windows reminder path has explicit limitations and must not be descr
 
 iOS builds require a compatible macOS/Xcode/.NET MAUI Apple toolchain.
 
-The GitHub-hosted CI currently uses a macOS runner compatible with the .NET 10 Apple workload. A local developer must use an Xcode version supported by the installed .NET Apple workload.
+The GitHub-hosted CI currently uses a macOS 26 runner compatible with the .NET 10 Apple workload. A local developer must use an Xcode version supported by the installed .NET Apple workload.
 
 ## Install workload
 
@@ -191,9 +223,15 @@ Verify:
 
 - notification permission denied/granted;
 - local notification scheduling/delivery behavior;
+- future snooze effective due time;
+- cancellation-first handled reminder actions;
+- snooze replacement;
+- stale request reconciliation after schedule/state changes;
 - app restart/rebuild behavior;
+- time-zone changes;
 - document picker/share;
 - backup/restore;
+- packaged SQLite existing-data compatibility after native/provider updates;
 - app lock;
 - Dynamic Type/text scaling;
 - VoiceOver/semantic labels;
@@ -229,8 +267,11 @@ Verify:
 - window resizing;
 - keyboard/focus behavior;
 - notifications;
+- cancellation-first reminder actions;
+- snooze/replacement reconciliation;
 - file operations;
 - backup/restore;
+- packaged SQLite existing-data compatibility after native/provider updates;
 - app lock;
 - theme/accessibility behavior.
 
@@ -260,7 +301,32 @@ or PowerShell:
 ./build/scripts/release-preflight.ps1
 ```
 
-Target-specific build behavior is controlled by the script's documented target parameter/environment option.
+The preflight treats unsuppressed NuGet audit as blocking. When `CARENEST_TARGET` is set, that target is audited before the optional MAUI Release build.
+
+Example Android target selection:
+
+```bash
+CARENEST_TARGET=net10.0-android build/scripts/release-preflight.sh
+```
+
+PowerShell:
+
+```powershell
+$env:CARENEST_TARGET = 'net10.0-android'
+./build/scripts/release-preflight.ps1
+```
+
+# Exact release tags
+
+Tags matching `v*` are configured to verify the exact tagged commit through:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Release Gate;
+- CareNest Release Evidence.
+
+A successful local platform build does not replace those exact-tag gates or the manual matrix.
 
 # Signing secrets
 
@@ -277,16 +343,29 @@ Never commit:
 
 Repository policy tests reject common secret/signing file patterns, but maintainers remain responsible for secret hygiene.
 
-# NuGet/SQLite advisory note
+# NuGet/SQLite dependency note
 
-The repository currently tracks `GHSA-2m69-gcr7-jv3q` for the SQLitePCLRaw native `2.1.11` path.
+The former `GHSA-2m69-gcr7-jv3q` source exception is resolved in the current RC1 dependency graph.
 
-The narrow `NuGetAuditSuppress` entry is not a vulnerability fix. Read:
+Current graph intent:
+
+- `sqlite-net-pcl` `1.9.172`;
+- `SQLitePCLRaw.bundle_green` `2.1.11`;
+- central transitive pinning enabled;
+- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
+- Android native/provider leaves and selected providers at `2.1.12`;
+- no old advisory `NuGetAuditSuppress` entry.
+
+`SqliteDependencySecurityContractTests` protects the maintained package floor and suppression absence.
+
+Read:
 
 - `docs/security/DEPENDENCY_RISK_REGISTER.md`;
 - `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
 
-Do not silently change SQLite provider/bundle versions without running the migration/regression matrix.
+Do not silently change SQLite provider/bundle/native versions without running the full migration/regression/platform/dependency matrix and packaged existing-data/encrypted-data compatibility checks.
+
+Do not restore the old suppression to bypass those manual checks.
 
 # Troubleshooting
 
@@ -298,5 +377,6 @@ When diagnosing:
 2. capture `dotnet workload list`;
 3. identify exact target framework;
 4. reproduce platform-neutral build/tests separately;
-5. verify Xcode/Android SDK/Windows tooling compatibility;
-6. avoid posting user health data or real backups in issue logs.
+5. run the blocking dependency audit;
+6. verify Xcode/Android SDK/Windows tooling compatibility;
+7. avoid posting user health data or real backups in issue logs.
