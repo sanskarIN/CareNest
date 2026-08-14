@@ -1,16 +1,24 @@
 name: Dependency Audit
 
 on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
   pull_request:
     branches: [main]
 
 permissions:
   contents: read
 
+concurrency:
+  group: dependency-audit-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   dependency-audit:
     name: Dependency audit
     runs-on: ubuntu-24.04
+    timeout-minutes: 40
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -18,6 +26,7 @@ jobs:
           fetch-depth: 0
 
       - name: Show dependency-file changes
+        if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
