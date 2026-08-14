@@ -29,23 +29,18 @@ public sealed class StartupCoordinator(
         var largeInterface = await appState.GetBoolAsync(CareNest.Shared.SettingKeys.LargeInterface, false, cancellationToken);
         await appState.SetLargeInterfaceAsync(largeInterface, cancellationToken);
 
-        try
-        {
-            await reminders.MarkOverdueAsMissedAsync(cancellationToken);
-            await reminders.RebuildAsync(cancellationToken: cancellationToken);
-            await appointments.RebuildRemindersAsync(cancellationToken);
-            await backupReminder.SyncAsync(requestPermission: false, cancellationToken: cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            if (logger.IsEnabled(LogLevel.Warning))
-            {
-                var exceptionType = ex.GetType().FullName ?? "Unknown";
-                logger.LogWarning(
-                    "Reminder recovery encountered a non-fatal error. ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
-                    exceptionType);
-            }
-        }
+        await RunRecoveryStepAsync(
+            "overdue-reminder-reconciliation",
+            () => reminders.MarkOverdueAsMissedAsync(cancellationToken));
+        await RunRecoveryStepAsync(
+            "medicine-reminder-rebuild",
+            () => reminders.RebuildAsync(cancellationToken: cancellationToken));
+        await RunRecoveryStepAsync(
+            "appointment-reminder-rebuild",
+            () => appointments.RebuildRemindersAsync(cancellationToken));
+        await RunRecoveryStepAsync(
+            "backup-reminder-sync",
+            () => backupReminder.SyncAsync(requestPermission: false, cancellationToken: cancellationToken));
 
         if (!await appState.IsOnboardingCompleteAsync(cancellationToken))
         {
@@ -55,5 +50,30 @@ public sealed class StartupCoordinator(
         return await appLock.IsEnabledAsync(cancellationToken)
             ? StartupDestination.Lock
             : StartupDestination.Shell;
+    }
+
+    private async Task RunRecoveryStepAsync(
+        string step,
+        Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            if (logger.IsEnabled(LogLevel.Warning))
+            {
+                var exceptionType = ex.GetType().FullName ?? "Unknown";
+                logger.LogWarning(
+                    "Startup recovery step failed non-fatally. Step={Step}; ExceptionType={ExceptionType}. Health record identifiers and exception details were not logged.",
+                    step,
+                    exceptionType);
+            }
+        }
     }
 }
