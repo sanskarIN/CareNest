@@ -102,8 +102,8 @@ Complete this review against the exact commit proposed for a public release.
 
 ## Dependency security
 
-- [ ] CodeQL passes for the exact release commit.
-- [ ] Dependency Audit passes for the exact release commit without the former `GHSA-2m69-gcr7-jv3q` suppression.
+- [ ] CodeQL passes for the exact production release commit/tag.
+- [ ] Dependency Audit passes for the exact production release commit/tag without the former `GHSA-2m69-gcr7-jv3q` suppression.
 - [ ] `docs/security/DEPENDENCY_RISK_REGISTER.md` was reviewed.
 - [ ] `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` was reviewed.
 - [x] `GHSA-2m69-gcr7-jv3q` source remediation was re-evaluated using available compatible native/provider paths.
@@ -111,8 +111,23 @@ Complete this review against the exact commit proposed for a public release.
 - [x] `SQLitePCLRaw.lib.e_sqlite3.android` and the selected providers are centrally pinned at or above `2.1.12` in the current source.
 - [x] The exact advisory `NuGetAuditSuppress` entry was removed rather than broadened.
 - [x] `SqliteDependencySecurityContractTests` protects the maintained native/provider floor and absence of the old suppression.
-- [x] Unsuppressed Dependency Audit checkpoints succeeded during remediation and the authoritative PR #54 Dependency Audit #35 / `31766059132` succeeded on the final verified source.
-- [ ] Final release evidence records the actual resolved dependency graph and manual existing-data compatibility results; it must not confuse a successful audit with packaged data/device validation.
+- [x] Authoritative PR #56 Dependency Audit #41 / `31770929383` succeeded on the fully verified release-engineering source.
+- [ ] Final production Release Evidence records the actual resolved dependency graph and manual existing-data compatibility results; it must not confuse a successful audit with packaged data/device validation.
+
+## Release-engineering security controls
+
+- [x] CareNest CI, CodeQL and Dependency Audit support exact `v*` release-tag execution.
+- [x] Dependency Audit guards pull-request-only metadata from manual/tag runs.
+- [x] Release Gate and Release Evidence support exact `v*` tag and manual execution.
+- [x] Release Gate detects open dependency-risk status without indentation/case bypass.
+- [x] Release Gate detects nested unchecked release-checklist items.
+- [x] Release Evidence records commit/ref/run/attempt identity and tracked-source SHA-256 provenance.
+- [x] Release Evidence attempts all core evidence components and uploads available evidence before its aggregate failure gate.
+- [x] Release Evidence artifact identity includes commit SHA + run ID + run attempt.
+- [x] Release-preflight/quality-gate scripts treat unsuppressed dependency audit failures as blocking.
+- [x] Git setup scripts use verified repository-local `Sanskar` / `sanskarin@outlook.in` identity and fail on native Git errors.
+- [x] Executable UI-contract tests guard release workflow/script/security policy.
+- [ ] Exact final production `v*` tag completes CareNest CI, CodeQL, Dependency Audit, Release Gate and Release Evidence successfully after all manual/store/signing blockers are resolved.
 
 ## Platform/distribution
 
@@ -125,68 +140,59 @@ Complete this review against the exact commit proposed for a public release.
 
 ## Current RC1 automated baseline
 
-The earlier PR #33 reference is historical. The 2026-08-14 audit continued through reminder reconciliation, failure compensation, report-cache cleanup, cancellation-first reminder action recovery, appointment persistence compensation and SQLite dependency remediation.
+Authoritative marker-only verification: PR #56 — `Verify complete CareNest release-engineering source`.
 
-Authoritative marker-only verification: PR #54 — `Verify final CareNest bug-audit source`.
+Frozen source/base SHA:
 
-Verified runtime/test/dependency source/base SHA:
-
-`4490f3f86752841d436e981b29279970c90c947b`
+`4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
 
 Marker head:
 
-`929168a0a319b15d9e89997d86436d59ae731ad1`
+`e3bc621cea05364a69abee0dadbd71a67c17bddb`
 
 Final automated evidence:
 
-- CareNest CI #503 / `31766059137` — **success**;
+- CareNest CI #571 / `31770929379` — **success**;
 - platform-neutral formatting — **success**;
 - **122 unit tests** — passed;
 - **39 integration tests** — passed;
-- **100 UI-contract/policy tests** — passed;
-- **261 total core tests** — passed;
+- **124 UI-contract/policy tests** — passed;
+- **285 total core tests** — passed;
 - Android Release — **success**;
 - Windows Release — **success**;
 - iOS simulator Release — **success**;
 - Mac Catalyst Release — **success**;
-- CodeQL #503 / `31766059215` — **success**;
-- Dependency Audit #35 / `31766059132` — **success** without the former SQLite advisory suppression, including the platform-neutral and Android MAUI app graphs.
+- CodeQL #571 / `31770929382` — **success**;
+- Dependency Audit #41 / `31770929383` — **success** without the former SQLite advisory suppression.
 
-PR #54 was closed without merge after the complete matrix passed. Its verification marker is not part of `main`. PR #53 is duplicate corroborating same-source evidence and was also closed without merge.
+PR #56 was closed without merge after the complete matrix passed. Its verification marker is not part of `main`.
 
-Verification history retained for auditability:
+PR #54 remains the historical authoritative runtime bug-audit baseline. PR #55 is a superseded but useful release-engineering checkpoint that passed 277/277 core tests, Android, Windows, CodeQL and unsuppressed Dependency Audit before additional confirmed release-tooling/documentation fixes required PR #56.
 
-- PR #31 was superseded after CA1861 was exposed in new test source; the analyzer finding was fixed instead of suppressed.
-- PR #32 verified the corrected service/document/backup hardening before later AEAD-v2 changes.
-- PR #33 was a green 2026-08-13 baseline but is no longer the latest runtime/test source.
-- PR #43 was incorrectly described as green; actual CareNest CI #448 failed in integration testing and the UI suite was skipped.
-- PR #44 reproduced future-snooze/overdue-snooze/stale-occurrence defects that were subsequently fixed.
-- PR #46 exposed broader platform-reminder lifecycle contract failures.
-- PR #49 exposed CA1861 in new reminder reconciliation assertions; the tests were corrected rather than suppressing the analyzer.
-- PRs #47/#48/#50 provided useful unsuppressed SQLite-audit evidence while `main` was moving, but were not final combined-source baselines.
-- PRs #51/#52 were superseded when later runtime/test source changed.
-- PR #53 independently corroborated the final graph but was closed as duplicate after PR #54 completed the full matrix.
+`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` is the authoritative automated evidence record for the current release-engineering source.
 
-`docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` is the authoritative automated evidence record for this audit.
-
-This automated reference still does not pre-approve a later production commit or complete the manual/device/accessibility/store/signing/SQLite-existing-data compatibility gates.
+This automated reference still does not pre-approve a later production commit/tag or complete the manual/device/accessibility/store/signing/SQLite-existing-data compatibility gates.
 
 ## Approval record
 
 ```text
 Version:
 Commit SHA:
+Tag:
 Reviewer:
 Review date:
 CareNest CI run:
 CodeQL run:
 Dependency Audit run:
+Release Gate run:
 Release Evidence run:
+Release Evidence artifact:
 Chunked AEAD framing decision:
 Legacy v1 compatibility decision:
 SQLite dependency source-remediation decision:
 SQLite packaged existing-data compatibility decision:
 Open security blockers:
 Approved for signing/package creation: yes/no
+Approved for publication: yes/no
 Notes:
 ```
