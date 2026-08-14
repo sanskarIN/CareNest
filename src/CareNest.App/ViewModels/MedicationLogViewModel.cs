@@ -187,6 +187,14 @@ public sealed class MedicationLogViewModel : ObservableViewModel
         string? note) =>
         RunAsync(async ct =>
         {
+            if (!Enum.IsDefined(status))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(status),
+                    status,
+                    "Medication log status is unsupported.");
+            }
+
             var entries = await _repository.GetMedicationLogAsync(
                 cancellationToken: ct);
 
