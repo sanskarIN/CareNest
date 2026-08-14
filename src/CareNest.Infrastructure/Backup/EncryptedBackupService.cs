@@ -258,7 +258,7 @@ public sealed class EncryptedBackupService(
                     Directory.Move(oldDocs, options.DocumentDirectory);
                 }
 
-                if (oldDocumentKey is { Length: 32 })
+                if (oldDocumentKey is not null)
                 {
                     await secretStore.SetBytesAsync(SecretKeys.DocumentMasterKey, oldDocumentKey, CancellationToken.None);
                 }
