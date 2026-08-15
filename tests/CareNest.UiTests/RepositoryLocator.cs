@@ -20,6 +20,9 @@ internal static class RepositoryLocator
         }
     }
 
+    public static string PathOf(params string[] segments) =>
+        Path.Combine(new[] { Root }.Concat(segments).ToArray());
+
     public static string Read(params string[] segments) =>
-        File.ReadAllText(Path.Combine(new[] { Root }.Concat(segments).ToArray()));
+        File.ReadAllText(PathOf(segments));
 }
