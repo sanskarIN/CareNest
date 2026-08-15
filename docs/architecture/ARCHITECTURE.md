@@ -6,24 +6,27 @@ CareNest `1.0.0-rc.1` is a local-first .NET MAUI application for organizing mult
 
 ## Current authoritative automated architecture baseline
 
-Marker-only PR #59 verifies the current executable/project/test/workflow/build-script source:
+Marker-only PR #61 verifies the current executable/project/test/workflow/build-script/artifact-generation source:
 
-- source/base: `8489d19734d6142054156d5b57f2713195c16b65`;
-- marker head: `ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`;
-- CareNest CI #622 / `31869214132`: success;
-- 122 unit + 39 integration + 149 UI-contract/policy = **310/310** tests;
+- source/base: `4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2`;
+- marker head: `19c82b813c375047cf1166487bc18a1bd2cd0e52`;
+- PR merge/event SHA: `c8ea9fef89d7b773f19bf13c64f349495be706ad`;
+- CareNest CI #650 / `31872610834`: success;
+- 122 unit + 39 integration + 157 UI-contract/policy = **318/318** tests;
 - default Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
-- CareNest Store Package Configuration #11 / `31869214047`: success;
+- CareNest Store Package Configuration #39 / `31872610789`: success;
 - funding-disabled Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
 - Bash store-package preflight executable-mode guard: success;
-- CodeQL #622 / `31869214042`: success;
-- unsuppressed Dependency Audit #44 / `31869214093`: success.
+- CareNest Store Inspection Artifacts #2 / `31872610786`: success;
+- Android verified-unsigned AAB, Windows unpackaged bundle, iOS simulator bundle and unsigned Mac Catalyst bundle: downloaded checksum/provenance inspection success;
+- CodeQL #650 / `31872610815`: success;
+- unsuppressed Dependency Audit #46 / `31872610791`: success.
 
-PR #59 was closed without merge and its marker is not part of `main`.
+PR #61 was closed without merge and its marker is not part of `main`.
 
-PR #58 remains historical package/store-policy hardening evidence, PR #56 remains historical release-engineering evidence, and PR #54 remains the historical runtime bug-audit baseline.
+PR #60 remains a superseded failure-driven artifact checkpoint. PR #59 remains historical store-safe compilation evidence, PR #58 remains historical package/store-policy hardening evidence, PR #56 remains historical release-engineering evidence, and PR #54 remains the historical runtime bug-audit baseline.
 
-See `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`.
+See `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`.
 
 ## Architecture goals
 
@@ -43,7 +46,8 @@ CareNest v1 architecture prioritizes:
 - explicit export/share/browser/calendar boundaries;
 - versioned persistence and encrypted-data compatibility;
 - exact-source CI/security/release evidence;
-- reproducible store-safe source configuration without source forks.
+- reproducible store-safe source configuration without source forks;
+- reproducible non-production store-inspection artifacts with exact source/checksum provenance.
 
 ## System context
 
@@ -152,13 +156,14 @@ Responsibilities include:
 - notification permission/capability diagnostics;
 - startup recovery;
 - Android/iOS/Mac Catalyst/Windows source/resources;
-- build-configurable optional external project-support visibility.
+- build-configurable optional external project-support visibility;
+- Windows-only portable inspection publish RID mapping.
 
 ### Test projects
 
 - `CareNest.UnitTests` — deterministic domain/application/direct service tests.
 - `CareNest.IntegrationTests` — SQLite/crypto/backup/document/report/reminder integration.
-- `CareNest.UiTests` — XAML/source/repository/architecture/privacy/security/release/store-package policy contracts; not a claim of full real-device UI automation.
+- `CareNest.UiTests` — XAML/source/repository/architecture/privacy/security/release/store-package/store-inspection policy contracts; not a claim of full real-device UI automation.
 
 Concrete files are mapped in `docs/CODEBASE_REFERENCE.md`.
 
@@ -184,6 +189,8 @@ ViewModels:
 - do not own platform notification internals;
 - use application/navigation/platform abstractions;
 - route unexpected errors through privacy-aware UI error handling.
+
+The About ViewModel's optional funding command is non-executable when `CARENEST_FUNDING_LINK` is not compiled into the store-safe build.
 
 ## Core data flow
 
@@ -502,7 +509,9 @@ Apple notification permission/OS behavior and production signing/provisioning ar
 
 `CareNestTargetFramework` narrows the active app target before restore/build so platform-specific runners do not require unrelated workloads and app target values do not leak into platform-neutral referenced projects.
 
-`CareNestShowFundingLink` controls the optional in-app external project-support surface. It defaults to `true`; `false` removes the funding compile symbol and hides the complete support card without changing organizer behavior.
+`CareNestShowFundingLink` controls the optional in-app external project-support surface. It defaults to `true`; `false` removes the funding compile symbol, hides the complete support card, and makes the funding command non-executable without changing organizer behavior.
+
+For Windows internal inspection publishing, `RuntimeIdentifierOverride` maps to `RuntimeIdentifier` only on the Windows target. This supports a portable self-contained `win-x64` inspection bundle without redefining other target RIDs.
 
 Fail-closed store-package wrappers require an explicit supported target, force `CARENEST_SHOW_FUNDING_LINK=false`, and delegate the standard release preflight.
 
@@ -523,12 +532,17 @@ Repository automation includes:
 - Bash store-package wrapper executable-mode verification;
 - CodeQL;
 - unsuppressed Dependency Audit;
+- Store Inspection Artifacts;
 - Release Gate;
 - CareNest Release Evidence.
 
 Default builds are exercised by `ci.yml`.
 
 Funding-disabled builds are exercised separately by `store-package-verification.yml`; this prevents a normal/default build from being mistaken for evidence that the store-safe configuration compiles.
+
+Internal package-shape evidence is exercised by `store-inspection-artifacts.yml`. It checks out the exact source head, separately records PR merge/event identity, creates SHA-256/provenance-bearing non-production artifacts, and does not inject production signing credentials.
+
+Android inspection staging excludes MAUI's `*-Signed.aab`, requires exactly one unsigned AAB candidate and rejects JAR-signature metadata. Windows output is unpackaged/self-contained; iOS output is simulator-only; Mac Catalyst output is unsigned.
 
 Major verification-relevant source changes use marker-only exact-head PR verification. Marker files are closed without merge and do not enter production source.
 
@@ -540,6 +554,7 @@ Production tags matching `v*` run the exact tagged commit through:
 - CodeQL;
 - Dependency Audit;
 - CareNest Store Package Configuration;
+- CareNest Store Inspection Artifacts;
 - Release Gate;
 - CareNest Release Evidence.
 
@@ -547,7 +562,7 @@ Release Evidence records source/ref/run/attempt identity, tracked source manifes
 
 Available evidence is retained before aggregate failure evaluation.
 
-Store Package Configuration proves funding-disabled source compilation only. It does not sign or publish artifacts and does not replace installed-package inspection.
+Store Package Configuration proves funding-disabled source compilation only. Store Inspection Artifacts proves reproducible internal package shapes/checksums/provenance. Neither signs or submits production packages and neither replaces installed-package inspection.
 
 ## External project-support boundary
 
@@ -574,6 +589,7 @@ Architecture principles:
 - keep logs privacy-minimized;
 - fix analyzer/audit/workflow failures rather than broadly suppressing them;
 - preserve historical persistence/encryption compatibility;
+- inspect generated artifacts rather than trusting workflow success alone;
 - keep manual/store/signing/data-compatibility limitations explicit.
 
 ## Future architecture
@@ -604,7 +620,9 @@ Any such feature requires new authentication, consent/revocation, deletion/expor
 - `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`
 - `docs/security/SECURITY_MODEL.md`
 - `docs/testing/TESTING_GUIDE.md`
+- `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`
 - `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`
 - `docs/releases/STORE_BUILD_POLICY.md`
 - `docs/releases/STORE_POLICY_REVIEW_20260815.md`
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md`
 - `DECISIONS.md`
