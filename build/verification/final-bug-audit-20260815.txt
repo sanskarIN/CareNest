@@ -1,0 +1,14 @@
+CareNest final exact-head automated verification marker
+Date: 2026-08-15
+Frozen main source: 9ec7b4e7d2150d9cc50be19f30464080318b16e8
+
+Purpose:
+- verify the exact merged main source after the final packaged-funding bug fix;
+- run normal CI builds and tests;
+- run store-candidate configuration builds;
+- run Android, Windows, and Apple inspection payload scans;
+- run scanner self-test, CodeQL, and unsuppressed Dependency Audit;
+- provide the final automated bug-audit baseline before documentation-only handoff updates.
+
+This marker contains no executable product change and must NOT be merged into main.
+Manual real-device, accessibility, signing, signed-package compatibility, store-review, and production-tag gates remain external.
