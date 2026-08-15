@@ -37,26 +37,20 @@ public sealed class ViewModelContractTests
     }
 
     [Fact]
-    public void AboutViewModel_UsesCentralizedPublicDestinationsAndPhysicalFundingPolicy()
+    public void AboutViewModel_UsesCentralizedProductAndSupportDestinationsWithoutFundingSurface()
     {
         var source = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "AboutViewModel.cs");
         var constants = RepositoryLocator.Read("src", "CareNest.Shared", "AppConstants.cs");
-        var enabled = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "FundingLinkPolicy.Enabled.cs");
-        var disabled = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "FundingLinkPolicy.Disabled.cs");
 
         Assert.Contains("AppConstants.RepositoryUrl", source, StringComparison.Ordinal);
         Assert.Contains("AppConstants.CreatorUrl", source, StringComparison.Ordinal);
         Assert.Contains("AppConstants.BusinessEmail", source, StringComparison.Ordinal);
         Assert.Contains("AppConstants.SupportEmail", source, StringComparison.Ordinal);
         Assert.DoesNotContain("buymeacoffee.com", source, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("CARENEST_FUNDING_LINK", source, StringComparison.Ordinal);
-        Assert.Contains("FundingLinkPolicy.CreateCommand(OpenAsync)", source, StringComparison.Ordinal);
-        Assert.Contains("FundingLinkPolicy.IsVisible", source, StringComparison.Ordinal);
-        Assert.Contains("private const string FundingUrl = \"https://buymeacoffee.com/sanskarIN\";", enabled, StringComparison.Ordinal);
-        Assert.Contains("openAsync(FundingUrl)", enabled, StringComparison.Ordinal);
-        Assert.DoesNotContain("buymeacoffee.com", disabled, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("Task.CompletedTask, static () => false", disabled, StringComparison.Ordinal);
-        Assert.DoesNotContain("AppConstants.FundingUrl", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("SupportProjectCommand", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("IsProjectSupportVisible", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("FundingLinkPolicy", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("FundingUrl", constants, StringComparison.Ordinal);
         Assert.DoesNotContain("buymeacoffee.com", constants, StringComparison.OrdinalIgnoreCase);
     }
 
