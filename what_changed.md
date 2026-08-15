@@ -1493,3 +1493,395 @@ The policy review itself is complete, but the following are still real release b
 13. publish only after every applicable production gate has actual evidence.
 
 Do not call CareNest bug-free or production-published solely from the 291-test automated matrix. The automated source baseline is green; the remaining manual, packaged, signing and external-store evidence is intentionally still release-blocking.
+
+---
+
+# 25. 2026-08-15 store-safe configuration workflow, exact verification, and active-doc alignment
+
+This section supersedes only current-state claims in older sections. It preserves all historical PR #54/#56/#58 evidence above and records the next exact source boundary and documentation work completed after section 24.
+
+## Store-safe workflow source
+
+A dedicated funding-disabled source compilation workflow was added so the conservative store configuration is independently tested instead of inferred from the normal/default Release build.
+
+Commit:
+
+`b1e70ce7d9014e77218b7b62a6800b08990a6ee0`
+
+Message:
+
+`ci: verify store-safe package configuration`
+
+Added:
+
+`.github/workflows/store-package-verification.yml`
+
+Workflow behavior:
+
+- runs for pull requests to `main`;
+- runs for pushes to `main` and `release/**`;
+- runs for exact `v*` tags;
+- supports manual `workflow_dispatch`;
+- sets `CARENEST_STORE_FUNDING_LINK=false`;
+- passes that value into `CareNestShowFundingLink`;
+- builds Android Release;
+- builds Windows Release;
+- builds iOS simulator Release;
+- builds Mac Catalyst Release;
+- intentionally does not upload unsigned artifacts;
+- intentionally does not run `dotnet publish`;
+- intentionally does not configure production signing credentials.
+
+## Store-package workflow contracts
+
+Commit:
+
+`1147607d5ddcfdd237a9361f3d3969530880c50d`
+
+Message:
+
+`test: guard store-safe package workflow`
+
+Added:
+
+`tests/CareNest.UiTests/StorePackageWorkflowContractTests.cs`
+
+The contracts protect:
+
+- pull-request/manual/`v*` entry points;
+- forced funding-disabled environment value;
+- propagation into `CareNestShowFundingLink`;
+- Android/Windows/iOS/Mac Catalyst target coverage;
+- iOS simulator rather than production signing behavior;
+- absence of artifact upload/publish/release behavior.
+
+Commit:
+
+`f66c66dd20473942872b386fe2c3b956b89fbe8e`
+
+Message:
+
+`test: require store package workflow on release tags`
+
+`ReleaseWorkflowContractTests` now treats the Store Package Configuration workflow as part of exact `v*`/manual source verification coverage.
+
+## Fail-closed local store-package preflight
+
+Bash wrapper commit:
+
+`b9f9f27ef6ed4860055345bc1cc851aa2494a8f4`
+
+Message:
+
+`build: add fail-closed store package preflight`
+
+PowerShell wrapper commit:
+
+`70b04d46a7d5dd1b53a5fab07bdf94f1327a1268`
+
+Message:
+
+`build: add PowerShell store package preflight`
+
+Added:
+
+- `build/scripts/store-package-preflight.sh`;
+- `build/scripts/store-package-preflight.ps1`.
+
+Both wrappers:
+
+- require explicit `CARENEST_TARGET`;
+- allow only `net10.0-android`, `net10.0-ios`, `net10.0-maccatalyst`, and `net10.0-windows10.0.19041.0`;
+- force `CARENEST_SHOW_FUNDING_LINK=false` after reading the caller environment;
+- delegate the existing release preflight instead of duplicating formatting/test/audit/target-build logic.
+
+Caller configuration cannot re-enable the funding surface through these wrappers.
+
+## Store-package preflight contracts
+
+Commit:
+
+`bc724779474d6c98985a33eb8c8c9e1210620480`
+
+Message:
+
+`test: guard store package preflight wrappers`
+
+Added:
+
+`tests/CareNest.UiTests/StorePackagePreflightContractTests.cs`
+
+Contracts protect:
+
+- forced false configuration;
+- explicit target requirement;
+- supported target allow-list;
+- delegation to standard release preflight;
+- rejection of caller override that would re-enable funding.
+
+## Store-build policy automation documentation
+
+Commit:
+
+`c11d2ceb51fe90b94b7e8fa4b3287d8681aaa14d`
+
+Message:
+
+`docs: document automated store-safe build verification`
+
+`docs/releases/STORE_BUILD_POLICY.md` now documents the dedicated workflow and local fail-closed wrappers as first-class release-engineering paths.
+
+## Executable-mode defect found and fixed
+
+The GitHub contents API initially created `build/scripts/store-package-preflight.sh` with Git mode `100644`, while its documented invocation executes the file directly.
+
+That would allow a real Unix-like host to fail with a permission error even though the shell content was correct.
+
+Commit:
+
+`8b88047cafca7f2cca34cbfc6da8bc6f645c214f`
+
+Message:
+
+`build: make store package preflight executable`
+
+The Bash wrapper was corrected to Git mode `100755`.
+
+Commit:
+
+`93d1f316441d007d161adc372b66bb1ce310f6b6`
+
+Message:
+
+`ci: verify store preflight executable mode`
+
+The Store Package Configuration workflow now runs:
+
+`test -x build/scripts/store-package-preflight.sh`
+
+Commit:
+
+`8489d19734d6142054156d5b57f2713195c16b65`
+
+Message:
+
+`test: require executable store preflight check`
+
+The workflow contract suite now requires that executable-mode CI guard.
+
+This commit became the frozen verification-relevant source boundary for PR #59.
+
+## PR #59 exact-head verification
+
+Verification branch:
+
+`ci/carenest-store-safe-final-20260815`
+
+Frozen source/base SHA:
+
+`8489d19734d6142054156d5b57f2713195c16b65`
+
+Marker/head SHA:
+
+`ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`
+
+Marker path:
+
+`build/verification/store-safe-package-final-20260815.txt`
+
+PR:
+
+`https://github.com/sanskarIN/CareNest/pull/59`
+
+PR #59 differed from the frozen source by exactly one marker file, 23 additions, 0 deletions, and one commit.
+
+PR #59 was closed without merge after all required gates succeeded. The marker never entered `main`.
+
+### CareNest CI #622
+
+Run ID:
+
+`31869214132`
+
+Result:
+
+**success**
+
+Exact core counts:
+
+- formatting: **success**;
+- UnitTests: **122 passed, 0 failed, 0 skipped**;
+- IntegrationTests: **39 passed, 0 failed, 0 skipped**;
+- UiTests/source-policy: **149 passed, 0 failed, 0 skipped**;
+- total: **310 passed, 0 failed, 0 skipped**.
+
+Default Release configuration:
+
+- Android: **success**;
+- Windows: **success**;
+- iOS simulator: **success**;
+- Mac Catalyst: **success**.
+
+### CareNest Store Package Configuration #11
+
+Run ID:
+
+`31869214047`
+
+Result:
+
+**success**
+
+Funding-disabled Release configuration:
+
+- Android with `CareNestShowFundingLink=false`: **success**;
+- Windows with `CareNestShowFundingLink=false`: **success**;
+- iOS simulator with `CareNestShowFundingLink=false`: **success**;
+- Mac Catalyst with `CareNestShowFundingLink=false`: **success**;
+- Bash store-package preflight executable-mode check: **success**.
+
+This is the first exact multi-platform proof that both the normal/default and store-safe funding-disabled source configurations compile on the same frozen source boundary.
+
+It is source compilation evidence, not proof of signed/installed store-package behavior.
+
+### CodeQL and Dependency Audit
+
+- CodeQL #622 / run `31869214042`: **success**;
+- unsuppressed Dependency Audit #44 / run `31869214093`: **success**.
+
+The audit completed both the platform-neutral and MAUI application dependency graphs without restoring the former SQLite advisory suppression.
+
+PR #59 supersedes PR #58 only as the latest exact automated source baseline. PR #58, PR #56, and PR #54 remain valid historical evidence for their own frozen source boundaries.
+
+## Permanent PR #59 evidence record
+
+Commit:
+
+`dd9c4cc69c7f5e4371566e7ea11787f1726f142b`
+
+Message:
+
+`docs: record PR59 store-safe configuration verification`
+
+Added:
+
+`docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`
+
+The evidence record distinguishes:
+
+- exact frozen executable/project/test/workflow/build-script source;
+- marker-only PR evidence;
+- normal/default source compilation;
+- funding-disabled store-safe source compilation;
+- CodeQL/dependency evidence;
+- manual/signing/installed-package/store approval work that remains open.
+
+## Active public/status documentation alignment
+
+The following documentation-only commits were layered after the verified executable source boundary without changing runtime/test/project/workflow/build-script source:
+
+- `aec6fbf559af2dec6f5734992302d7e0e28d3461` — `docs: promote PR59 store-safe verification baseline` — root `README.md`;
+- `b7a494004c8b35fa1c54eac82b4df33849c23ae1` — `docs: promote PR59 in project status` — `PROJECT_STATUS.md`;
+- `91f9ee53dca0cd5ea1306b315b3beecaea524f42` — `docs: promote PR59 in documentation hub` — `docs/README.md`;
+- `2df6b26a56fb877ae40f549c8c5d1bc5abfa5e40` — `docs: document PR59 store-safe automation baseline` — `docs/CONFIGURATION_REFERENCE.md`;
+- `1997c37da8d2b04e3f93c879afe6840d9ef1d37e` — `docs: advance next steps to PR59 baseline` — `docs/releases/NEXT_STEPS.md`;
+- `531bebd512151b6a3c68cc1004384ec10b082637` — `docs: promote PR59 in release checklist` — `docs/releases/RELEASE_CHECKLIST.md`;
+- `75ebcecb7c010ca0d1de82d32684e1a4b2834b2a` — `docs: record PR59 store-safe release verification` — `CHANGELOG.md`;
+- `e87f66fc002c1d246bcaf8b3539d3ecd3abe3101` — `docs: promote PR59 security baseline` — `docs/security/SECURITY_MODEL.md`;
+- `f65224ba5983bf28e7117028ea2d034e50f7baa2` — `docs: promote PR59 threat-model baseline` — `docs/security/THREAT_MODEL.md`;
+- `de62daf746f3c95444399b336a6b67a691dbe036` — `docs: promote PR59 development baseline` — `docs/setup/DEVELOPMENT.md`;
+- `aaf854f1279a41b7445ef672906042ea4098bd35` — `docs: promote PR59 architecture baseline` — `docs/architecture/ARCHITECTURE.md`;
+- `16627d1b257be2dda46f243542afec14ff59d533` — `docs: require PR59 verification wording` — `docs/DOCUMENTATION_STANDARDS.md`.
+
+These active references now require or describe:
+
+- PR #59 as the current exact automated source baseline;
+- 310/310 core tests;
+- four default Release target builds;
+- four funding-disabled store-safe Release target builds;
+- CodeQL #622;
+- unsuppressed Dependency Audit #44;
+- Store Package Configuration #11;
+- exact `v*` production-tag coverage including Store Package Configuration;
+- distinction between source compilation and signed/installed package evidence;
+- current conservative Apple/Google store-safe funding decision;
+- submission-time store-policy re-review;
+- signed/installed artifact inspection as a separate production gate.
+
+## Current Apple/Google support-link package decision
+
+The dated policy review remains:
+
+`docs/releases/STORE_POLICY_REVIEW_20260815.md`
+
+Current conservative decision:
+
+- normal/open-source/direct builds may retain `CareNestShowFundingLink=true` where the distribution channel permits it;
+- initial Apple App Store candidate: `CareNestShowFundingLink=false`;
+- initial Google Play candidate: `CareNestShowFundingLink=false`;
+- enable the external BMC card for a store package only when submission-time storefront/country/program-specific policy clearly permits it.
+
+PR #59 proves that the false source configuration compiles across all supported CI targets. It does not prove store approval or the UI state of an actual signed/installed package.
+
+## Current exact production-tag automated matrix
+
+Production tags matching `v*` are expected to run the exact tagged commit through:
+
+1. CareNest CI;
+2. CodeQL;
+3. Dependency Audit;
+4. CareNest Store Package Configuration;
+5. Release Gate;
+6. CareNest Release Evidence.
+
+A successful tag is still insufficient if required manual/package/signing/store evidence is incomplete.
+
+## Remaining production blockers after PR #59
+
+Still open unless actual evidence is recorded:
+
+- [ ] build the real Apple App Store candidate with the selected funding-disabled configuration;
+- [ ] build the real Google Play candidate with the selected funding-disabled configuration;
+- [ ] production signing identities/credentials outside Git;
+- [ ] inspect signed/installed store artifacts and confirm the BMC card is absent where disabled;
+- [ ] record actual package identifiers/version/build metadata;
+- [ ] record package checksums and signing/notarization/store provenance;
+- [ ] representative packaged SQLite existing-data upgrade/integrity/readability;
+- [ ] existing encrypted document/backup compatibility on packaged targets;
+- [ ] canonical historical encrypted document/backup fixtures where available;
+- [ ] Android manual device/emulator matrix;
+- [ ] Windows manual matrix;
+- [ ] iOS/iPadOS real-device matrix;
+- [ ] Mac Catalyst manual matrix;
+- [ ] real notification permission/delivery/restart/reboot/time-zone behavior;
+- [ ] accessibility with representative assistive technologies;
+- [ ] store screenshots/listing/privacy/data-safety metadata;
+- [ ] submission-time Apple App Store policy re-review;
+- [ ] submission-time Google Play policy re-review;
+- [ ] exact approved production `v*` tag;
+- [ ] tagged CareNest CI success;
+- [ ] tagged CodeQL success;
+- [ ] tagged unsuppressed Dependency Audit success;
+- [ ] tagged CareNest Store Package Configuration success;
+- [ ] tagged Release Gate success;
+- [ ] tagged Release Evidence success and recorded evidence artifact/checksums;
+- [ ] final publication evidence.
+
+## Current safe continuation order
+
+1. keep the PR #59 verified executable/project/test/workflow/build-script source stable unless a real defect is found;
+2. use `docs/releases/PACKAGED_RELEASE_VALIDATION.md` with fictional data for packaged SQLite/encrypted-data compatibility;
+3. configure production signing outside Git;
+4. produce the real store candidates with `CareNestShowFundingLink=false` under the current conservative policy decision;
+5. inspect the installed store candidates and record funding-link visibility, identity/version, checksum and signing provenance;
+6. complete Android, Windows, iOS/iPadOS and Mac Catalyst manual matrices;
+7. complete accessibility checks;
+8. complete store metadata/privacy/data-safety/listing evidence;
+9. repeat Apple/Google policy review at actual submission time;
+10. if any verification-relevant source changes after frozen SHA `8489d19734d6142054156d5b57f2713195c16b65`, create a fresh marker-only exact-head verification;
+11. select the exact approved production commit;
+12. create the non-movable approved `v*` tag;
+13. require the full tagged automated matrix including Store Package Configuration, Release Gate and Release Evidence;
+14. publish only after all applicable manual/external gates have actual evidence.
+
+CareNest remains `1.0.0-rc.1`. PR #59 is the current exact automated source baseline, not a claim that the app is bug-free, signed, store-approved, or publicly released.
