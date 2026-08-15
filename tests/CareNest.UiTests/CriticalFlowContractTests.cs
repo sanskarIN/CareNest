@@ -63,14 +63,18 @@ public sealed class CriticalFlowContractTests
     {
         var project = RepositoryLocator.Read("src", "CareNest.App", "CareNest.App.csproj");
         var source = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "AboutViewModel.cs");
+        var sharedConstants = RepositoryLocator.Read("src", "CareNest.Shared", "AppConstants.cs");
         var xaml = RepositoryLocator.Read("src", "CareNest.App", "Views", "AboutPage.xaml");
 
         Assert.Contains("CareNestShowFundingLink", project, StringComparison.Ordinal);
         Assert.Contains("CARENEST_FUNDING_LINK", project, StringComparison.Ordinal);
         Assert.Contains("#if CARENEST_FUNDING_LINK", source, StringComparison.Ordinal);
+        Assert.Contains("private const string FundingUrl = \"https://buymeacoffee.com/sanskarIN\";", source, StringComparison.Ordinal);
         Assert.Contains("IsProjectSupportVisible", source, StringComparison.Ordinal);
-        Assert.Contains("SupportProjectCommand = new AsyncCommand(() => OpenAsync(AppConstants.FundingUrl));", source, StringComparison.Ordinal);
+        Assert.Contains("SupportProjectCommand = new AsyncCommand(() => OpenAsync(FundingUrl));", source, StringComparison.Ordinal);
         Assert.Contains("SupportProjectCommand = new AsyncCommand(() => Task.CompletedTask, static () => false);", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("AppConstants.FundingUrl", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("buymeacoffee.com", sharedConstants, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("IsVisible=\"{Binding IsProjectSupportVisible}\"", xaml, StringComparison.Ordinal);
         Assert.Contains("Project support is voluntary", xaml, StringComparison.Ordinal);
         Assert.Contains("does not unlock medical advice", xaml, StringComparison.OrdinalIgnoreCase);
