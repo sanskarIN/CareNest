@@ -1,0 +1,15 @@
+CareNest exact-head store-safe payload verification marker v3
+
+Frozen source/base SHA:
+ab3844a5fa07efd66d78fcf604defc312f5f719b
+
+Verification purpose:
+- verify the Windows nested-build funding-policy propagation fix;
+- verify all core tests and default four-platform Release builds;
+- verify funding-disabled four-platform Release builds;
+- exercise the Store Inspection Artifacts payload scanner self-test;
+- generate Android/Windows/iOS simulator/Mac Catalyst internal inspection artifacts;
+- require the BMC funding marker to be absent from every inspected funding-disabled payload;
+- run CodeQL and unsuppressed Dependency Audit on the exact corrected source boundary.
+
+PR #64 exposed stale source-policy contracts. PR #65 then exposed a Windows publish inner-build property propagation defect because CareNest.App.dll still contained the funding marker. Both are intentionally superseded historical evidence. This marker is verification-only and must be closed without merge after evidence is recorded.
