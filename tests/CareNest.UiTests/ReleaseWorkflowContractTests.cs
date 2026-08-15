@@ -6,6 +6,7 @@ public sealed class ReleaseWorkflowContractTests
     [InlineData("ci.yml")]
     [InlineData("codeql.yml")]
     [InlineData("dependency-review.yml")]
+    [InlineData("store-package-verification.yml")]
     public void ExactReleaseVerificationWorkflows_SupportTagAndManualExecution(string workflowName)
     {
         var workflow = RepositoryLocator.Read(".github", "workflows", workflowName);
