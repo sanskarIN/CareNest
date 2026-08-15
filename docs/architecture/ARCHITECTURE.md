@@ -6,19 +6,24 @@ CareNest `1.0.0-rc.1` is a local-first .NET MAUI application for organizing mult
 
 ## Current authoritative automated architecture baseline
 
-Marker-only PR #56 verified the current release-engineering source:
+Marker-only PR #59 verifies the current executable/project/test/workflow/build-script source:
 
-- source/base: `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
-- marker head: `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
-- CareNest CI #571 / `31770929379`: success;
-- 122 unit + 39 integration + 124 UI-contract/policy = **285/285** tests;
-- Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
-- CodeQL #571 / `31770929382`: success;
-- unsuppressed Dependency Audit #41 / `31770929383`: success.
+- source/base: `8489d19734d6142054156d5b57f2713195c16b65`;
+- marker head: `ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`;
+- CareNest CI #622 / `31869214132`: success;
+- 122 unit + 39 integration + 149 UI-contract/policy = **310/310** tests;
+- default Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- CareNest Store Package Configuration #11 / `31869214047`: success;
+- funding-disabled Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- Bash store-package preflight executable-mode guard: success;
+- CodeQL #622 / `31869214042`: success;
+- unsuppressed Dependency Audit #44 / `31869214093`: success.
 
-PR #56 was closed without merge and its marker is not part of `main`.
+PR #59 was closed without merge and its marker is not part of `main`.
 
-PR #54 remains the historical runtime bug-audit baseline for the earlier 261-test source boundary.
+PR #58 remains historical package/store-policy hardening evidence, PR #56 remains historical release-engineering evidence, and PR #54 remains the historical runtime bug-audit baseline.
+
+See `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`.
 
 ## Architecture goals
 
@@ -37,7 +42,8 @@ CareNest v1 architecture prioritizes:
 - privacy-minimized logging;
 - explicit export/share/browser/calendar boundaries;
 - versioned persistence and encrypted-data compatibility;
-- exact-source CI/security/release evidence.
+- exact-source CI/security/release evidence;
+- reproducible store-safe source configuration without source forks.
 
 ## System context
 
@@ -145,13 +151,14 @@ Responsibilities include:
 - platform notification implementations;
 - notification permission/capability diagnostics;
 - startup recovery;
-- Android/iOS/Mac Catalyst/Windows source/resources.
+- Android/iOS/Mac Catalyst/Windows source/resources;
+- build-configurable optional external project-support visibility.
 
 ### Test projects
 
 - `CareNest.UnitTests` — deterministic domain/application/direct service tests.
 - `CareNest.IntegrationTests` — SQLite/crypto/backup/document/report/reminder integration.
-- `CareNest.UiTests` — XAML/source/repository/architecture/privacy/security/release-policy contracts; not a claim of full real-device UI automation.
+- `CareNest.UiTests` — XAML/source/repository/architecture/privacy/security/release/store-package policy contracts; not a claim of full real-device UI automation.
 
 Concrete files are mapped in `docs/CODEBASE_REFERENCE.md`.
 
@@ -495,20 +502,33 @@ Apple notification permission/OS behavior and production signing/provisioning ar
 
 `CareNestTargetFramework` narrows the active app target before restore/build so platform-specific runners do not require unrelated workloads and app target values do not leak into platform-neutral referenced projects.
 
+`CareNestShowFundingLink` controls the optional in-app external project-support surface. It defaults to `true`; `false` removes the funding compile symbol and hides the complete support card without changing organizer behavior.
+
+Fail-closed store-package wrappers require an explicit supported target, force `CARENEST_SHOW_FUNDING_LINK=false`, and delegate the standard release preflight.
+
 ## CI/security/release architecture
 
 Repository automation includes:
 
 - formatting;
 - 3 core test projects;
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release;
+- default Android Release;
+- default Windows Release;
+- default iOS simulator Release;
+- default Mac Catalyst Release;
+- funding-disabled Android Release;
+- funding-disabled Windows Release;
+- funding-disabled iOS simulator Release;
+- funding-disabled Mac Catalyst Release;
+- Bash store-package wrapper executable-mode verification;
 - CodeQL;
 - unsuppressed Dependency Audit;
 - Release Gate;
 - CareNest Release Evidence.
+
+Default builds are exercised by `ci.yml`.
+
+Funding-disabled builds are exercised separately by `store-package-verification.yml`; this prevents a normal/default build from being mistaken for evidence that the store-safe configuration compiles.
 
 Major verification-relevant source changes use marker-only exact-head PR verification. Marker files are closed without merge and do not enter production source.
 
@@ -519,12 +539,15 @@ Production tags matching `v*` run the exact tagged commit through:
 - CareNest CI;
 - CodeQL;
 - Dependency Audit;
+- CareNest Store Package Configuration;
 - Release Gate;
 - CareNest Release Evidence.
 
 Release Evidence records source/ref/run/attempt identity, tracked source manifests/checksums, TRX results, dependency inventories, workspace integrity and evidence checksums.
 
 Available evidence is retained before aggregate failure evaluation.
+
+Store Package Configuration proves funding-disabled source compilation only. It does not sign or publish artifacts and does not replace installed-package inspection.
 
 ## External project-support boundary
 
@@ -535,6 +558,8 @@ Canonical voluntary project-support URL:
 It is explicit user action and must not receive health-record identifiers through URL parameters.
 
 Project support does not change health behavior, reminder priority, emergency support or access to local records.
+
+The current 2026-08-15 Apple/Google policy review selects `CareNestShowFundingLink=false` for initial store candidates unless submission-time policy clearly permits the external link. The actual signed/installed package must still be inspected.
 
 ## Failure strategy
 
@@ -579,5 +604,7 @@ Any such feature requires new authentication, consent/revocation, deletion/expor
 - `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`
 - `docs/security/SECURITY_MODEL.md`
 - `docs/testing/TESTING_GUIDE.md`
-- `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`
+- `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`
+- `docs/releases/STORE_BUILD_POLICY.md`
+- `docs/releases/STORE_POLICY_REVIEW_20260815.md`
 - `DECISIONS.md`
