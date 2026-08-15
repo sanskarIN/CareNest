@@ -4,7 +4,7 @@
 
 CareNest is open source and may display an optional Buy Me a Coffee link for voluntary project support. Store policies can change, so release engineering must be able to hide that external support surface for a specific packaged build without forking the application or changing any health-organizer functionality.
 
-This document defines the source-controlled build switch and the evidence required before a store submission.
+This document defines the source-controlled build switch, automated store-safe compilation path, local fail-closed preflight wrappers, and the evidence required before a store submission.
 
 ## Product rule
 
@@ -68,7 +68,7 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
 
 The same property applies to iOS, Mac Catalyst, and Windows targets.
 
-## Release-preflight examples
+## General release-preflight examples
 
 Bash:
 
@@ -86,7 +86,66 @@ $env:CARENEST_SHOW_FUNDING_LINK = 'false'
 ./build/scripts/release-preflight.ps1
 ```
 
-Accepted values are exactly `true` and `false`. The preflight scripts fail closed for any other value.
+Accepted funding-link values are exactly `true` and `false`. The general release-preflight scripts fail closed for any other value.
+
+## Fail-closed store-package preflight
+
+For store candidates where the external support surface must be disabled, prefer the dedicated wrappers. They require an explicit supported target and force `CARENEST_SHOW_FUNDING_LINK=false`; a caller cannot override the wrapper back to `true`.
+
+Supported targets:
+
+- `net10.0-android`;
+- `net10.0-ios`;
+- `net10.0-maccatalyst`;
+- `net10.0-windows10.0.19041.0`.
+
+Bash example:
+
+```bash
+CARENEST_TARGET=net10.0-android \
+./build/scripts/store-package-preflight.sh
+```
+
+PowerShell example:
+
+```powershell
+$env:CARENEST_TARGET = 'net10.0-windows10.0.19041.0'
+./build/scripts/store-package-preflight.ps1
+```
+
+The wrappers delegate to the existing release preflight, so formatting, core builds, automated tests, unsuppressed dependency audit, target dependency restore, and the selected MAUI Release build remain governed by one underlying preflight implementation.
+
+These wrappers compile/test a source configuration. They do not configure signing, submit an app, create a production identity, or prove behavior on an installed store artifact.
+
+## Automated store-safe build verification
+
+`.github/workflows/store-package-verification.yml` continuously compiles the funding-disabled configuration for every supported MAUI target.
+
+It runs on:
+
+- pull requests to `main`;
+- pushes to `main` and `release/**`;
+- exact production-style `v*` tags;
+- manual `workflow_dispatch` runs.
+
+The workflow sets:
+
+`CARENEST_STORE_FUNDING_LINK=false`
+
+and passes that value into:
+
+`CareNestShowFundingLink`
+
+for:
+
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release.
+
+The iOS job intentionally uses the simulator runtime for unsigned source compilation. The workflow does not upload unsigned binaries, configure signing credentials, or publish release artifacts.
+
+The standard CareNest CI continues to compile the normal/default configuration. Together, the two workflows provide automated compilation coverage for both the normal source configuration and the store-safe funding-disabled configuration.
 
 ## Store-review decision
 
@@ -100,6 +159,8 @@ Before each Apple App Store or Google Play production submission:
 6. Record the selected property value with the package checksum and source commit.
 
 Do not infer store approval from an earlier release. Policy review is a per-release external gate.
+
+The dated 2026-08-15 review in `STORE_POLICY_REVIEW_20260815.md` currently selects `CareNestShowFundingLink=false` for the initial Apple App Store and Google Play candidates, subject to submission-time re-review.
 
 ## Required packaged verification
 
@@ -116,13 +177,21 @@ For a build with the link disabled:
 - GitHub repository, creator, business email, support email, privacy, terms, security, and third-party-notice surfaces remain available.
 - No health-organizer feature changes.
 
+A successful store-safe CI build does not prove these runtime UI observations. They must be checked on the actual candidate package.
+
 ## Automated contracts
 
 `tests/CareNest.UiTests/CriticalFlowContractTests.cs` protects the build-configurable visibility contract.
 
 `tests/CareNest.UiTests/PackageMetadataContractTests.cs` protects package identity, platform permission/privacy metadata, local-first Android network boundaries, and required branding assets.
 
-These tests reduce accidental source regressions but do not replace manual store-policy review or packaged target inspection.
+`tests/CareNest.UiTests/StorePackageWorkflowContractTests.cs` protects the funding-disabled multi-platform workflow, target coverage, unsigned simulator behavior, and non-publication boundary.
+
+`tests/CareNest.UiTests/StorePackagePreflightContractTests.cs` protects the fail-closed local wrappers, supported target allow-list, and forced funding-disabled setting.
+
+`tests/CareNest.UiTests/ReleaseWorkflowContractTests.cs` requires the store-package workflow to remain part of exact `v*` release-tag/manual workflow coverage.
+
+These tests reduce accidental source regressions but do not replace manual store-policy review, signing, package inspection, accessibility testing, or real-device behavior testing.
 
 ## Release evidence fields
 
@@ -134,6 +203,7 @@ Record at minimum:
 - package/application identifier;
 - application display version/build number;
 - `CareNestShowFundingLink` value;
+- store-package configuration workflow run ID/conclusion where applicable;
 - store-policy review date and conclusion;
 - package filename and SHA-256 checksum;
 - signing/notarization provenance where applicable;
