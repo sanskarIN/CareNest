@@ -14,8 +14,9 @@ Record before building:
 - intended release version;
 - intended target framework;
 - operating system and toolchain used to build;
-- `CareNestShowFundingLink` value;
 - whether the package is debug, release, signed test, TestFlight/internal, or production candidate.
+
+CareNest application packages are funding-surface-free by source policy; there is no per-package funding visibility toggle.
 
 Do not reuse a failed production tag. Do not move an approved production tag to a different commit.
 
@@ -24,16 +25,13 @@ Do not reuse a failed production tag. Do not move an approved production tag to 
 Bash example:
 
 ```bash
-CARENEST_TARGET=net10.0-android \
-CARENEST_SHOW_FUNDING_LINK=false \
-./build/scripts/release-preflight.sh
+CARENEST_TARGET=net10.0-android ./build/scripts/release-preflight.sh
 ```
 
 PowerShell example:
 
 ```powershell
 $env:CARENEST_TARGET = 'net10.0-windows10.0.19041.0'
-$env:CARENEST_SHOW_FUNDING_LINK = 'false'
 ./build/scripts/release-preflight.ps1
 ```
 
@@ -87,33 +85,30 @@ On every intended target:
 
 Record results in `MANUAL_TEST_MATRIX.md`.
 
-## 6. Store-support-link package test
+## 6. External-funding package boundary
 
 Follow `STORE_BUILD_POLICY.md`.
 
-If `CareNestShowFundingLink=true`:
+For every app package:
 
-- About shows the complete voluntary project-support card;
-- the destination is `https://buymeacoffee.com/sanskarIN`;
-- opening it requires explicit user action;
-- the copy states that support unlocks no medical/health feature.
-
-If `CareNestShowFundingLink=false`:
-
-- About hides the support image, button, URL, and support explanation;
-- the funding command is non-executable in the compiled store-safe configuration;
+- About must not expose a Buy Me a Coffee card, button, destination, or packaged funding artwork;
 - repository, creator, business/support email, privacy, terms, security, and notices remain available;
-- no organizer feature differs from the enabled build.
+- no organizer feature differs based on repository funding;
+- no file under the application runtime source tree should contain the canonical funding destination.
 
 For the exact unsigned/internal candidate source, require the Store Inspection Artifacts workflow to run `build/scripts/verify-store-safe-payload.py` against the Android AAB, Windows publish tree, iOS simulator bundle, and Mac Catalyst bundle before upload. Successful provenance must include:
 
+`external_funding_surface=absent_by_source_policy`
+
+and:
+
 `funding_url_payload_scan=passed`
 
-The scanner checks the canonical BMC marker in UTF-8 and UTF-16 encodings and inside ZIP/AAB entries. Its workflow self-test must also remain green for clean, UTF-8, UTF-16, nested ZIP/AAB, and missing-path cases.
+The scanner checks the canonical BMC marker in UTF-8 and UTF-16 encodings and inside ZIP/AAB entries. Its workflow self-test must remain green for clean, UTF-8, UTF-16, nested ZIP/AAB, and missing-path cases.
 
-Automated payload absence is stronger than source-property inspection, but it remains internal unsigned evidence. For the final signed candidate, repeat equivalent package inspection and manually verify the About UI. A signed package, store wrapping, or post-build transformation must not be assumed identical to the earlier internal artifact without evidence.
+Automated payload absence is stronger than source inspection alone, but it remains internal unsigned evidence. For the final signed candidate, repeat equivalent package inspection and manually verify the About UI. A signed package, store wrapping, or post-build transformation must not be assumed identical to the earlier internal artifact without evidence.
 
-Record the chosen property value, payload scan result, and package checksum together.
+Record the payload scan result and package checksum together.
 
 ## 7. Existing-data upgrade and SQLite compatibility
 
@@ -214,10 +209,12 @@ Before submission, review current rules for:
 - local health-data disclosure requirements;
 - notification/reminder claims;
 - privacy/data-safety declarations;
-- external voluntary project-support links;
+- external links that remain in the application/store listing;
 - screenshots and metadata accuracy.
 
-Record review date and the store policy source. If the external support link is not clearly allowed, package with `CareNestShowFundingLink=false` until the policy question is resolved.
+The CareNest application package itself has no external project-funding destination. Repository funding metadata is separate from the distributed app binary.
+
+Record review date and the store policy source.
 
 ## 13. Signing and secret handling
 
@@ -252,8 +249,7 @@ Before a production `v*` tag is approved, the release record must identify:
 - package checksums;
 - signing provenance;
 - current store-policy review;
-- `CareNestShowFundingLink` value per store package;
-- funding-disabled payload scan result for exact candidate source and final signed package inspection result;
+- funding-surface payload scan result for the exact candidate source and final signed package inspection result;
 - packaged SQLite/encrypted-data compatibility results;
 - accessibility results;
 - exact production tag;
@@ -266,3 +262,9 @@ Before a production `v*` tag is approved, the release record must identify:
 - tagged Release Evidence result.
 
 Do not call CareNest bug-free. Production promotion means the defined automated and manual gates are satisfied for the approved source/package boundary.
+
+## Current automated baseline
+
+See `FINAL_STORE_PAYLOAD_AND_BUG_AUDIT_VERIFICATION_20260815.md`.
+
+Executable source SHA `9ec7b4e7d2150d9cc50be19f30464080318b16e8` passed exact marker PR #68 with 325/325 tests, all normal/store-candidate platform builds, Android/Windows/Apple payload scans, CodeQL, and unsuppressed Dependency Audit.
