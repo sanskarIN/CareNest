@@ -1363,3 +1363,133 @@ This continuation does **not** mark complete:
 8. select the exact approved production commit;
 9. create a non-movable approved `v*` tag;
 10. require tagged CI, CodeQL, unsuppressed Dependency Audit, Release Gate and Release Evidence success before publication.
+
+---
+
+# 24. 2026-08-15 exact-head verification and store-policy review completion
+
+This section supersedes only the in-progress verification/policy status recorded earlier in section 23. It does not rewrite or remove any earlier history.
+
+## Frozen executable/source verification boundary
+
+The complete 2026-08-15 application/project/test/release-script continuation was frozen at:
+
+`826b79925dad4402f65fccfecd4a29b353b6e2f3`
+
+Verification branch:
+
+`ci/carenest-packaged-release-final-20260815`
+
+Marker/head SHA:
+
+`b92e3b79857db2f6cb8346fb881fe65b43f8453b`
+
+Marker path:
+
+`build/verification/packaged-release-store-policy-final-20260815.txt`
+
+Verification PR:
+
+`https://github.com/sanskarIN/CareNest/pull/58`
+
+PR #58 changed exactly one file: the marker. It was closed without merge after all required gates completed successfully. The verification marker therefore never entered `main`.
+
+## PR #58 exact automated evidence
+
+CareNest CI #608 / run `31867245796`: **success**.
+
+Exact core results:
+
+- platform-neutral formatting: **success**;
+- UnitTests: **122 passed, 0 failed, 0 skipped**;
+- IntegrationTests: **39 passed, 0 failed, 0 skipped**;
+- UiTests/source-policy: **130 passed, 0 failed, 0 skipped**;
+- total: **291 passed, 0 failed, 0 skipped**.
+
+Exact target Release results from the same PR source boundary:
+
+- Android Release: **success**;
+- Windows Release: **success**;
+- iOS simulator Release: **success**;
+- Mac Catalyst Release: **success**.
+
+Security/dependency results:
+
+- CodeQL #608 / run `31867245799`: **success**;
+- unsuppressed Dependency Audit #43 / run `31867245800`: **success**.
+
+The dependency audit completed both the platform-neutral and MAUI dependency graphs without restoring the former SQLite advisory suppression.
+
+PR #58 is therefore the latest authoritative exact automated source baseline for the 2026-08-15 packaged-release/store-policy continuation. PR #56 remains valid historical exact evidence for its own frozen 2026-08-14 source boundary, and PR #54 remains the historical runtime bug-audit baseline.
+
+Authoritative dated evidence file:
+
+`docs/releases/PACKAGED_RELEASE_HARDENING_VERIFICATION_20260815.md`
+
+Evidence-record commit:
+
+`7ad45c82e6cf2877d693fd8481591f9969082eba` — `docs: record PR58 packaged release verification`.
+
+Documentation-only commits after frozen SHA `826b79925dad4402f65fccfecd4a29b353b6e2f3` may record the already-completed evidence without changing the executable/project/test/workflow/build-script source verified by PR #58. Any later runtime, test, project, package, platform, workflow or build/release-script change requires a fresh exact-head verification before production promotion.
+
+## Apple and Google support-link policy review completed
+
+A dated review of current official Apple App Review Guidelines, current Google Play Payments policy guidance and the current Buy Me a Coffee provider fee model was recorded in:
+
+`docs/releases/STORE_POLICY_REVIEW_20260815.md`
+
+Policy-review commit:
+
+`0488c68899eb8c6b5ef0de1753d3d3552fd97871` — `docs: record 2026-08-15 store support policy review`.
+
+The current official Apple/Google optional gift/tip exceptions reviewed use literal conditions that the contribution be optional, provide no digital entitlement, and direct 100% of the relevant gift/contribution to the receiver/creator. The current Buy Me a Coffee provider model states a 5% platform transaction fee, so CareNest release engineering does not assume that its external BMC flow satisfies the literal 100% condition.
+
+Conservative current production-package decision:
+
+- normal/open-source/direct builds may retain the default `CareNestShowFundingLink=true` where their distribution channel permits it;
+- initial Apple App Store production candidate: `CareNestShowFundingLink=false`;
+- initial Google Play production candidate: `CareNestShowFundingLink=false`;
+- enable the external BMC card for a store package only if a current storefront/country/program-specific review or explicit store-review outcome clearly permits it.
+
+This policy review is source/release-engineering evidence, not Apple/Google approval. The actual submission-time policy must be rechecked because store policies/programs can change.
+
+## Store/package work that remains open
+
+The policy review itself is complete, but the following are still real release blockers:
+
+- [ ] actual Apple App Store candidate package built with `CareNestShowFundingLink=false`;
+- [ ] actual Google Play candidate package built with `CareNestShowFundingLink=false`;
+- [ ] packaged About-page inspection proving the BMC image/button/URL/card is absent;
+- [ ] representative packaged SQLite existing-data upgrade/integrity/readability;
+- [ ] canonical historical encrypted document/backup compatibility where fixtures exist;
+- [ ] Android manual device/emulator matrix;
+- [ ] Windows manual matrix;
+- [ ] iOS/iPadOS real-device matrix;
+- [ ] Mac Catalyst manual matrix;
+- [ ] actual reminder permission/delivery/restart/reboot/time-zone behavior;
+- [ ] accessibility with representative assistive technologies;
+- [ ] production signing credentials/identities outside Git;
+- [ ] signed package generation and provenance;
+- [ ] store screenshots/listing/privacy/data-safety metadata;
+- [ ] submission-time Apple/Google policy re-review;
+- [ ] exact approved production `v*` tag;
+- [ ] tagged CareNest CI, CodeQL, unsuppressed Dependency Audit, Release Gate and Release Evidence success;
+- [ ] final package checksums and publication evidence.
+
+## Current next safe continuation order
+
+1. keep the verified executable/project/test/workflow/build-script source stable unless a real defect is discovered;
+2. use `docs/releases/PACKAGED_RELEASE_VALIDATION.md` for packaged SQLite/encrypted-data and target smoke evidence;
+3. create Apple/Google store candidates with `CareNestShowFundingLink=false` under the current conservative decision;
+4. perform packaged About-page inspection and record package checksums/source/signing provenance;
+5. complete Android, Windows, iOS/iPadOS and Mac Catalyst manual matrices;
+6. complete accessibility checks;
+7. configure production signing outside Git and inspect signed artifacts;
+8. complete store metadata/privacy/data-safety/listing evidence;
+9. re-review the official store policy at actual submission time;
+10. if any verification-relevant source changes, repeat marker-only exact-head verification;
+11. select the exact approved production commit and create the non-movable approved `v*` tag;
+12. require tagged CI, CodeQL, unsuppressed Dependency Audit, Release Gate and Release Evidence success;
+13. publish only after every applicable production gate has actual evidence.
+
+Do not call CareNest bug-free or production-published solely from the 291-test automated matrix. The automated source baseline is green; the remaining manual, packaged, signing and external-store evidence is intentionally still release-blocking.
