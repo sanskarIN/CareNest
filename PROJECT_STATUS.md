@@ -6,9 +6,36 @@
 
 CareNest remains a local-first organizational application. It does not diagnose conditions, determine or infer dosage, recommend treatment, perform clinical interaction checking, create clinical risk scores, replace qualified professionals, or provide emergency services.
 
-## Current automated source baseline
+## Current `main` source after 2026-08-15 release-readiness continuation
 
-The authoritative automated baseline is now marker-only PR #56:
+The current `main` source is newer than the last completed marker-only exact-head verification baseline, PR #56.
+
+The 2026-08-15 continuation added source/test/release-script changes for store-specific packaging and package metadata/privacy contracts:
+
+- build-configurable voluntary project-support visibility through `CareNestShowFundingLink`;
+- default open-source builds keep the support surface enabled;
+- store packages can set `CareNestShowFundingLink=false` without a source fork;
+- package metadata/privacy contracts now protect application identity, target/minimum OS declarations, Android local-first permission boundaries, Apple purpose strings/transport posture, Windows package metadata, and required branding assets;
+- release-preflight scripts accept fail-closed `CARENEST_SHOW_FUNDING_LINK=true|false` and propagate it to optional MAUI restore/build;
+- `docs/releases/STORE_BUILD_POLICY.md` defines per-store support-link packaging/evidence policy;
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md` defines repeatable packaged/device/encrypted-data/accessibility/signing evidence procedures.
+
+Continuation commits through the first handoff update:
+
+- `35690d2f1fbe8bb56d91e718dab688fe4de6cc0d` — `feat: make voluntary funding link store-configurable`;
+- `7ccea4ff5367b3c4e94b156f989799d91d6f52ff` — `test: enforce package metadata and privacy contracts`;
+- `1fe68a73aaa41622391d8ff6e53171ca98dce055` — `build: pass store funding policy into release preflight`;
+- `0a9d994ea310f00d715684c993ee2d954dc0f081` — `docs: define store-specific funding-link build policy`;
+- `fe17e1ad752250d81d502ef7615fc1e652842e47` — `docs: add packaged release validation runbook`;
+- `db8536d9de125ae73f895ca1d1d6cbdb4de0ded0` — `docs: record packaged release hardening handoff`.
+
+Because application project configuration, presentation source, tests and release-preflight scripts changed after PR #56, PR #56 must not be described as exact-head verification of the current source. A new exact-head verification is required after this continuation stabilizes and before production promotion.
+
+This source-side mitigation does **not** mark current Apple/Google policy review, packaged target inspection, device/accessibility testing, signing, or production-tag evidence complete.
+
+## Last completed exact automated source baseline
+
+The last completed marker-only exact automated baseline is PR #56:
 
 `Verify complete CareNest release-engineering source`
 
@@ -45,9 +72,9 @@ Final PR #56 evidence:
 
 PR #56 was closed without merge after all required automated gates succeeded. Its verification marker is not part of `main`.
 
-`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` is the authoritative release-engineering evidence record. PR #54 remains the authoritative historical runtime bug-audit baseline for the earlier runtime/test/dependency source, while PR #56 verifies that runtime graph together with the later workflow/test/build-script/release-policy hardening.
+`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` is the authoritative release-engineering evidence record for that frozen source boundary. PR #54 remains the authoritative historical runtime bug-audit baseline for the earlier runtime/test/dependency source, while PR #56 verifies that runtime graph together with the later workflow/test/build-script/release-policy hardening that existed at its frozen source SHA.
 
-## Release-engineering hardening now verified
+## Release-engineering hardening verified at PR #56
 
 The PR #56 source adds or hardens the following release controls without changing CareNest's medical/local-first product boundary:
 
@@ -353,7 +380,7 @@ The audit used failure-driven marker-only checkpoints.
 
 ### PR #56
 
-- **authoritative final release-engineering baseline**;
+- **authoritative completed release-engineering baseline for its frozen source boundary**;
 - frozen source/base `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
 - marker head `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
 - CareNest CI #571 / `31770929379`: success;
@@ -365,12 +392,15 @@ The audit used failure-driven marker-only checkpoints.
 - CodeQL #571 / `31770929382`: success;
 - unsuppressed Dependency Audit #41 / `31770929383`: success;
 - closed unmerged after evidence capture;
-- marker is not part of `main`.
+- marker is not part of `main`;
+- superseded as exact-current-head evidence by later 2026-08-15 source/test/release-script changes, while remaining valid evidence for the frozen PR #56 source.
 
 ## Current documentation entry points
 
-- `what_changed.md` — complete active handoff.
-- `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` — authoritative final PR #56 release-engineering evidence.
+- `what_changed.md` — complete active handoff, including the 2026-08-15 continuation.
+- `docs/releases/STORE_BUILD_POLICY.md` — build-configurable voluntary project-support/store policy.
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md` — packaged/manual evidence runbook.
+- `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` — authoritative PR #56 release-engineering evidence for its frozen source.
 - `docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` — historical authoritative PR #54 runtime bug-audit evidence.
 - `docs/releases/BUG_AUDIT_VERIFICATION_20260814.md` — complete 2026-08-14 bug-audit evidence and correction history.
 - `docs/testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md` — defect-to-test map.
@@ -393,6 +423,7 @@ Source hardening and automated verification do not make external/manual work mag
 
 Still required:
 
+- new exact-head automated verification after the 2026-08-15 verification-relevant source changes stabilize;
 - manual Android device/emulator matrix;
 - manual Windows matrix;
 - manual iOS/iPadOS matrix;
@@ -411,6 +442,7 @@ Still required:
 - contrast/theme/reduced-motion verification;
 - current Apple App Store policy review for the optional external project-support link;
 - current Google Play policy review for the optional external project-support link;
+- packaged verification of the selected `CareNestShowFundingLink` value per distribution channel;
 - signing identities and credentials outside Git;
 - signed package generation and inspection;
 - store screenshots/listing/privacy/data-safety metadata;
@@ -439,6 +471,6 @@ Any future networked feature requires a new consent/authentication/key/privacy/t
 
 ## Environment truth
 
-The repository assembly environment does not provide local MAUI device simulators, signing credentials or store submission sessions. GitHub-hosted Actions is the authoritative automated compilation/test surface for the verified source.
+The repository assembly environment does not provide local MAUI device simulators, signing credentials or store submission sessions. GitHub-hosted Actions is the authoritative automated compilation/test surface for source changes, while completed marker-only exact-head verification remains the release evidence protocol.
 
 Manual device/accessibility/store/signing/packaged-data/release activities remain separate and are not claimed complete until actually performed.
