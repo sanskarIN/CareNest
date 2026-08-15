@@ -1,0 +1,23 @@
+CareNest exact-head verification marker
+
+Frozen source/base SHA: 8489d19734d6142054156d5b57f2713195c16b65
+Purpose: verify the complete 2026-08-15 store-safe package configuration continuation.
+
+This branch must differ from the frozen base only by this marker file.
+Required evidence:
+- platform-neutral formatting;
+- unit tests;
+- integration tests;
+- UI/source-policy tests;
+- normal/default Android Release;
+- normal/default Windows Release;
+- normal/default iOS simulator Release;
+- normal/default Mac Catalyst Release;
+- store-safe Android Release with CareNestShowFundingLink=false;
+- store-safe Windows Release with CareNestShowFundingLink=false;
+- store-safe iOS simulator Release with CareNestShowFundingLink=false;
+- store-safe Mac Catalyst Release with CareNestShowFundingLink=false;
+- CodeQL;
+- unsuppressed Dependency Audit.
+
+Verification-only marker. DO NOT MERGE this file into main.
