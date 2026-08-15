@@ -4,9 +4,11 @@ This directory is the canonical documentation hub for CareNest `1.0.0-rc.1`.
 
 CareNest is a local-first .NET MAUI family health organizer. It is an organizational product, not a diagnostic, treatment, dosage-calculation, medication-interaction, clinical-risk, or emergency-service system.
 
-## Current authoritative automated source
+## Current source and last completed exact verification
 
-The current automated release-engineering source reference is marker-only PR #56:
+The current `main` source is newer than marker-only PR #56 because the 2026-08-15 continuation changed application project configuration, About presentation source, UI/source-policy tests and release-preflight scripts for store/package release readiness.
+
+PR #56 therefore remains the **last completed exact automated baseline for its frozen source boundary**, not exact-head verification of the newer `main` source:
 
 - PR #56 — `Verify complete CareNest release-engineering source`;
 - verified source/base SHA — `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
@@ -26,9 +28,11 @@ The current automated release-engineering source reference is marker-only PR #56
 
 PR #56 was closed without merge; its marker did not enter `main`.
 
-PR #54 remains the historical authoritative runtime bug-audit baseline for the earlier 261-test runtime/test/dependency graph. PR #56 verifies that retained behavior together with subsequent release-workflow, release-script, Git-setup, Release Gate, and executable release-policy hardening.
+The 2026-08-15 source adds a build-configurable voluntary project-support surface (`CareNestShowFundingLink`), package identity/privacy contracts, release-preflight propagation of the store package policy, a store build policy, and a packaged release validation runbook. A new marker-only exact-head verification is required after this continuation stabilizes before production promotion.
 
-The formerly tracked `GHSA-2m69-gcr7-jv3q` repository dependency exception is remediated in source. Maintained SQLite native/provider leaves are centrally pinned, the former exact audit suppression was removed, and PR #56 passed the unsuppressed audit. Packaged existing-database/encrypted-data compatibility remains a separate production release gate.
+PR #54 remains the historical authoritative runtime bug-audit baseline for the earlier 261-test runtime/test/dependency graph.
+
+The formerly tracked `GHSA-2m69-gcr7-jv3q` repository dependency exception is remediated in source. Maintained SQLite native/provider leaves are centrally pinned, the former exact audit suppression was removed, and PR #56 passed the unsuppressed audit for its frozen source. Packaged existing-database/encrypted-data compatibility remains a separate production release gate.
 
 ## Primary project references
 
@@ -46,11 +50,13 @@ Documentation-completeness evidence:
 
 ## Current status and handoff
 
-- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current automated baseline and real production blockers.
-- [`../what_changed.md`](../what_changed.md) — detailed active continuation/handoff ledger.
+- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current source boundary, last completed exact baseline and real production blockers.
+- [`../what_changed.md`](../what_changed.md) — detailed active continuation/handoff ledger including the 2026-08-15 store/package hardening.
 - [`../CHANGELOG.md`](../CHANGELOG.md) — chronological change history.
 - [`../DECISIONS.md`](../DECISIONS.md) — consolidated architecture/engineering decisions.
-- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — authoritative PR #56 automated evidence.
+- [`releases/STORE_BUILD_POLICY.md`](releases/STORE_BUILD_POLICY.md) — build-configurable voluntary support surface and per-store evidence policy.
+- [`releases/PACKAGED_RELEASE_VALIDATION.md`](releases/PACKAGED_RELEASE_VALIDATION.md) — packaged/device/SQLite/encrypted-data/accessibility/signing validation runbook.
+- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — authoritative PR #56 automated evidence for its frozen source.
 - [`releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`](releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md) — historical authoritative PR #54 runtime bug-audit evidence.
 - [`releases/BUG_AUDIT_VERIFICATION_20260814.md`](releases/BUG_AUDIT_VERIFICATION_20260814.md) — full 2026-08-14 failure-driven audit/checkpoint history.
 - [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — defect-to-test/contract map.
@@ -281,20 +287,23 @@ GitHub web/API commits can use authenticated GitHub account metadata; do not mis
 - [`testing/SETTINGS_LIFECYCLE_CONTRACT.md`](testing/SETTINGS_LIFECYCLE_CONTRACT.md)
 - [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md)
 
-Authoritative PR #56 core totals:
+PR #56 core totals for its frozen source:
 
 - UnitTests: 122;
 - IntegrationTests: 39;
 - UiTests/source-policy: 124;
 - total: 285.
 
-The UiTests/source-policy suite includes architecture, repository, ViewModel, XAML/accessibility intent, logging/privacy, app-lock, reminder/platform, dependency-security, workflow, release-preflight, quality-gate, Git-setup and production Release Gate contracts.
+The 2026-08-15 continuation adds further UI/source-policy contracts, so those PR #56 totals must not be reused as the current-head count until the newer suite completes on an exact source boundary.
+
+The UiTests/source-policy suite includes architecture, repository, ViewModel, XAML/accessibility intent, logging/privacy, app-lock, reminder/platform, dependency-security, workflow, release-preflight, quality-gate, Git-setup, package-metadata/privacy and production Release Gate contracts.
 
 ## Build/configuration automation
 
 - [`CONFIGURATION_REFERENCE.md`](CONFIGURATION_REFERENCE.md)
 - [`setup/DEVELOPMENT.md`](setup/DEVELOPMENT.md)
 - [`setup/PLATFORM_SETUP.md`](setup/PLATFORM_SETUP.md)
+- [`releases/STORE_BUILD_POLICY.md`](releases/STORE_BUILD_POLICY.md)
 
 Local quality gate:
 
@@ -316,11 +325,21 @@ build/scripts/release-preflight.sh
 ./build/scripts/release-preflight.ps1
 ```
 
+Store-sensitive example:
+
+```bash
+CARENEST_TARGET=net10.0-android \
+CARENEST_SHOW_FUNDING_LINK=false \
+./build/scripts/release-preflight.sh
+```
+
 Dependency audit is blocking; it is not warning-only.
 
 ## Release engineering
 
-- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — PR #56 evidence.
+- [`releases/STORE_BUILD_POLICY.md`](releases/STORE_BUILD_POLICY.md) — per-store voluntary support-link build/evidence policy.
+- [`releases/PACKAGED_RELEASE_VALIDATION.md`](releases/PACKAGED_RELEASE_VALIDATION.md) — packaged release evidence runbook.
+- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — PR #56 frozen-source evidence.
 - [`releases/RELEASE_PROCESS.md`](releases/RELEASE_PROCESS.md) — end-to-end release process.
 - [`releases/RELEASE_CHECKLIST.md`](releases/RELEASE_CHECKLIST.md) — automated/manual promotion checklist.
 - [`releases/QUALITY_GATE.md`](releases/QUALITY_GATE.md) — production quality requirements.
@@ -347,9 +366,11 @@ A tag is not production approval until every required automated and manual gate 
 
 ## Verification and historical evidence
 
-Current:
+Last completed exact automated source verification:
 
-- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — PR #56.
+- [`releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — PR #56 frozen source.
+
+The 2026-08-15 continuation is intentionally documented as newer source pending a new exact-head verification.
 
 Historical retained evidence includes:
 
@@ -367,6 +388,7 @@ CareNest remains `1.0.0-rc.1`, not final public production `1.0.0`.
 
 Real remaining evidence includes:
 
+- new exact-head verification for the 2026-08-15 source/test/release-script boundary;
 - Android real-device/emulator manual matrix;
 - Windows manual matrix;
 - iOS/iPadOS manual matrix;
@@ -380,7 +402,8 @@ Real remaining evidence includes:
 - canonical historical encrypted-format/backup fixtures where available;
 - clean-install restore;
 - real accessibility testing;
-- current Apple/Google store-policy review, including optional external support link;
+- current Apple/Google store-policy review, including the optional external support link;
+- packaged inspection of the selected `CareNestShowFundingLink` value per store/channel;
 - signing identities/credentials outside Git;
 - signed package generation/inspection;
 - store screenshots/listing/privacy/data-safety metadata;
