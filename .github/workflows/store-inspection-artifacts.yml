@@ -21,6 +21,51 @@ env:
   CARENEST_SOURCE_REF: ${{ github.head_ref || github.ref_name }}
 
 jobs:
+  payload-scanner-self-test:
+    name: Store-safe payload scanner self-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.CARENEST_SOURCE_SHA }}
+      - name: Verify scanner positive, negative, archive, and fail-closed behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          python3 - "$tmp" <<'PY'
+          import sys
+          import zipfile
+          from pathlib import Path
+
+          root = Path(sys.argv[1])
+          marker = "buymeacoffee.com/sanskarIN"
+          (root / "clean.bin").write_bytes(b"CareNest store-safe payload")
+          (root / "utf8.bin").write_bytes(marker.encode("utf-8"))
+          (root / "utf16.bin").write_bytes(marker.encode("utf-16-le"))
+          with zipfile.ZipFile(root / "nested.aab", "w") as archive:
+              archive.writestr("base/assets/marker.txt", marker)
+          PY
+          python3 build/scripts/verify-store-safe-payload.py "$tmp/clean.bin"
+          if python3 build/scripts/verify-store-safe-payload.py "$tmp/utf8.bin"; then
+            echo "Scanner failed to reject a UTF-8 funding marker." >&2
+            exit 1
+          fi
+          if python3 build/scripts/verify-store-safe-payload.py "$tmp/utf16.bin"; then
+            echo "Scanner failed to reject a UTF-16 funding marker." >&2
+            exit 1
+          fi
+          if python3 build/scripts/verify-store-safe-payload.py "$tmp/nested.aab"; then
+            echo "Scanner failed to reject a funding marker inside a ZIP/AAB entry." >&2
+            exit 1
+          fi
+          if python3 build/scripts/verify-store-safe-payload.py "$tmp/does-not-exist"; then
+            echo "Scanner failed open for a missing payload path." >&2
+            exit 1
+          fi
+
   android-inspection:
     name: Android unsigned AAB inspection artifact
     runs-on: ubuntu-latest
