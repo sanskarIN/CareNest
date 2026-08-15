@@ -1,0 +1,11 @@
+CareNest documentation-head verification marker
+
+Purpose: verify the final PR #61 documentation/status/handoff alignment with repository source-policy tests and supported CI/security/build workflows.
+
+Documentation head/base SHA:
+74c9482207677ec71bcde5e28afbe7cf123ac905
+
+Executable/artifact source baseline remains:
+4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2
+
+This marker is verification-only and must not be merged into main.
