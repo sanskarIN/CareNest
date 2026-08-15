@@ -27,7 +27,7 @@ public sealed class BrandingAndLocalizationContractTests
     }
 
     [Fact]
-    public void RequiredBrandingAssets_ArePresentAndWellFormedSvg()
+    public void RequiredBrandingAssets_ArePresentAndWellFormedSvgWithoutFundingArtwork()
     {
         var relativePaths = new[]
         {
@@ -36,9 +36,7 @@ public sealed class BrandingAndLocalizationContractTests
             Path.Combine("src", "CareNest.App", "Resources", "Splash", "splash.svg"),
             Path.Combine("src", "CareNest.App", "Resources", "Images", "carenest_monochrome.svg"),
             Path.Combine("src", "CareNest.App", "Resources", "Images", "carenest_mark_light.svg"),
-            Path.Combine("src", "CareNest.App", "Resources", "Images", "carenest_mark_dark.svg"),
-            Path.Combine("src", "CareNest.App", "Resources", "Images", "carenest_support.svg"),
-            Path.Combine("src", "CareNest.App", "Resources", "Images", "buy_me_a_coffee_carenest.svg")
+            Path.Combine("src", "CareNest.App", "Resources", "Images", "carenest_mark_dark.svg")
         };
 
         foreach (var relativePath in relativePaths)
@@ -48,6 +46,11 @@ public sealed class BrandingAndLocalizationContractTests
             var exception = Record.Exception(() => XDocument.Load(fullPath));
             Assert.True(exception is null, $"Branding asset is not valid XML/SVG: {relativePath}: {exception}");
         }
+
+        Assert.False(File.Exists(RepositoryLocator.PathOf(
+            "src", "CareNest.App", "Resources", "Images", "carenest_support.svg")));
+        Assert.False(File.Exists(RepositoryLocator.PathOf(
+            "src", "CareNest.App", "Resources", "Images", "buy_me_a_coffee_carenest.svg")));
     }
 
     [Fact]
@@ -74,7 +77,7 @@ public sealed class BrandingAndLocalizationContractTests
     }
 
     [Fact]
-    public void BuyMeACoffeeArtwork_UsesOnlyTheFixedSupportDestinationInRepositoryMarkdown()
+    public void RepositoryFundingPages_UseOnlyTextLinksOutsideAppRuntime()
     {
         var expected = "https://buymeacoffee.com/sanskarIN";
         var pages = new[]
@@ -86,18 +89,24 @@ public sealed class BrandingAndLocalizationContractTests
         foreach (var page in pages)
         {
             Assert.Contains(expected, page, StringComparison.Ordinal);
-            Assert.Contains("buy_me_a_coffee_carenest.svg", page, StringComparison.Ordinal);
+            Assert.Contains("application package does not include or expose this external funding destination", page, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("buy_me_a_coffee_carenest.svg", page, StringComparison.Ordinal);
+            Assert.DoesNotContain("carenest_support.svg", page, StringComparison.Ordinal);
         }
     }
 
     [Fact]
-    public void AboutPage_UsesClickableRestoredSupportBadge()
+    public void AboutPage_PreservesProductSupportWithoutFundingBadge()
     {
         var about = RepositoryLocator.Read("src", "CareNest.App", "Views", "AboutPage.xaml");
 
-        Assert.Contains("<ImageButton Source=\"carenest_support.svg\"", about, StringComparison.Ordinal);
-        Assert.Contains("Command=\"{Binding SupportProjectCommand}\"", about, StringComparison.Ordinal);
-        Assert.Contains("Support CareNest on Buy Me a Coffee", about, StringComparison.Ordinal);
-        Assert.Contains("https://buymeacoffee.com/sanskarIN", about, StringComparison.Ordinal);
+        Assert.Contains("Open source and support", about, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding OpenRepositoryCommand}\"", about, StringComparison.Ordinal);
+        Assert.Contains("Command=\"{Binding SupportEmailCommand}\"", about, StringComparison.Ordinal);
+        Assert.DoesNotContain("carenest_support.svg", about, StringComparison.Ordinal);
+        Assert.DoesNotContain("buy_me_a_coffee_carenest.svg", about, StringComparison.Ordinal);
+        Assert.DoesNotContain("SupportProjectCommand", about, StringComparison.Ordinal);
+        Assert.DoesNotContain("Buy Me a Coffee", about, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("buymeacoffee.com", about, StringComparison.OrdinalIgnoreCase);
     }
 }
