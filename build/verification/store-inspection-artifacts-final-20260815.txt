@@ -1,0 +1,8 @@
+CareNest exact-head verification marker
+
+Purpose: exercise the store-safe inspection artifact workflow and the complete automated source/security/build matrix on the frozen source below.
+
+Frozen source/base SHA:
+e9f7ab64dd73d22ee5fe7e608d73d7cfcaf7fcff
+
+This marker is verification-only. It must not be merged into main.
