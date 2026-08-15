@@ -15,7 +15,11 @@ public sealed class AboutViewModel : ObservableViewModel
         _files = files;
         OpenRepositoryCommand = new AsyncCommand(() => OpenAsync(AppConstants.RepositoryUrl));
         OpenCreatorCommand = new AsyncCommand(() => OpenAsync(AppConstants.CreatorUrl));
+#if CARENEST_FUNDING_LINK
         SupportProjectCommand = new AsyncCommand(() => OpenAsync(AppConstants.FundingUrl));
+#else
+        SupportProjectCommand = new AsyncCommand(() => Task.CompletedTask, static () => false);
+#endif
         BusinessEmailCommand = new AsyncCommand(() => OpenAsync($"mailto:{AppConstants.BusinessEmail}"));
         SupportEmailCommand = new AsyncCommand(() => OpenAsync($"mailto:{AppConstants.SupportEmail}"));
         PrivacyCommand = new AsyncCommand(() => OpenAsync($"{AppConstants.RepositoryUrl}/blob/main/PRIVACY.md"));
