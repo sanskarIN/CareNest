@@ -1,6 +1,6 @@
 # CareNest
 
-> **Current authoritative automated baseline — 2026-08-15:** marker-only PR #59 verified source/base `8489d19734d6142054156d5b57f2713195c16b65` with **310/310 core tests** (122 unit + 39 integration + 149 UI-contract/policy), all four default Release builds, all four `CareNestShowFundingLink=false` store-safe Release builds, CodeQL #622 / `31869214042`, and unsuppressed Dependency Audit #44 / `31869214093` successful. Store Package Configuration #11 / `31869214047` is also green. PR #59 was closed without merge; its marker is not part of `main`. PR #58, PR #56, and PR #54 remain historical exact-source evidence for their frozen boundaries. See [`docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`](docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md) and [`docs/COMPLETE_PROJECT_DOCUMENTATION.md`](docs/COMPLETE_PROJECT_DOCUMENTATION.md).
+> **Current authoritative automated/source-inspection baseline — 2026-08-15:** marker-only PR #61 verified source/base `4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2` with **318/318 core tests** (122 unit + 39 integration + 157 UI-contract/policy), all four default Release builds, all four `CareNestShowFundingLink=false` store-safe Release builds, CodeQL #650 / `31872610815`, and unsuppressed Dependency Audit #46 / `31872610791` successful. Store Package Configuration #39 / `31872610789` and corrected Store Inspection Artifacts #2 / `31872610786` are also green. Downloaded Android/Windows/Apple internal artifacts had their payload checksums/provenance independently verified; they are deliberately unsigned/simulator/unpackaged inspection evidence, not production store packages. PR #61 was closed without merge; its marker is not part of `main`. PR #60 is a superseded artifact checkpoint, while PR #59, PR #58, PR #56, and PR #54 remain historical exact-source evidence for their frozen boundaries. See [`docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`](docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md) and [`docs/COMPLETE_PROJECT_DOCUMENTATION.md`](docs/COMPLETE_PROJECT_DOCUMENTATION.md).
 
 CareNest is an open-source, local-first health organizer built with .NET MAUI and C#. It helps people organize medicine reminders, appointments, health documents, stock/refill notes, reports, backups, and multiple local family profiles without requiring a CareNest account or CareNest network service.
 
@@ -33,13 +33,14 @@ The authoritative final automated **runtime bug-audit** baseline remains marker-
 - CodeQL #503 / run `31766059215`: success;
 - unsuppressed Dependency Audit #35 / run `31766059132`: success.
 
-PR #53 independently completed a duplicate green verification of the same final runtime/test graph, but PR #54 is the recorded authoritative runtime bug-audit checkpoint. Later release-engineering source was verified by PR #56, package/store-policy hardening by PR #58, and the current default-plus-store-safe source boundary by PR #59 as stated at the top of this README. Verification marker files from these PRs are not part of `main`.
+PR #53 independently completed a duplicate green verification of the same final runtime/test graph, but PR #54 is the recorded authoritative runtime bug-audit checkpoint. Later release-engineering source was verified by PR #56, package/store-policy hardening by PR #58, default-plus-store-safe compilation by PR #59, and the corrected current source/internal-artifact boundary by PR #61 as stated at the top of this README. PR #60 remains historical failure-driven evidence for defects found in the first inspection-artifact workflow. Verification marker files from these PRs are not part of `main`.
 
 See:
 
 - [`docs/COMPLETE_PROJECT_DOCUMENTATION.md`](docs/COMPLETE_PROJECT_DOCUMENTATION.md)
 - [`PROJECT_STATUS.md`](PROJECT_STATUS.md)
 - [`what_changed.md`](what_changed.md)
+- [`docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`](docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md)
 - [`docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`](docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md)
 - [`docs/releases/PACKAGED_RELEASE_HARDENING_VERIFICATION_20260815.md`](docs/releases/PACKAGED_RELEASE_HARDENING_VERIFICATION_20260815.md)
 - [`docs/releases/STORE_POLICY_REVIEW_20260815.md`](docs/releases/STORE_POLICY_REVIEW_20260815.md)
@@ -91,10 +92,13 @@ The previously tracked SQLite native dependency exception has been remediated in
 - Android `BroadcastReceiver.GoAsync()` recovery lifetime protection.
 - Windows in-process reminder fallback protected against replacement/cancellation/disposal timer races.
 - Independent startup recovery boundaries for medicine, appointment and backup reminder recovery.
-- Build-configurable voluntary project-support surface; store-safe builds can force `CareNestShowFundingLink=false` without changing health-organizer behavior.
+- Build-configurable voluntary project-support surface; store-safe builds force `CareNestShowFundingLink=false` without changing health-organizer behavior, hide the support card, and make the funding command non-executable.
 - Dedicated multi-platform store-safe CI compiles Android, Windows, iOS simulator, and Mac Catalyst with the external funding surface disabled.
+- Dedicated internal Store Inspection Artifacts workflow generates a verified-unsigned Android AAB, self-contained unpackaged Windows bundle, iOS simulator bundle, and unsigned Mac Catalyst bundle with exact source/checksum provenance.
+- Android inspection staging explicitly excludes MAUI's debug-signed `-Signed.aab` companion and refuses AAB signature metadata.
+- Pull-request artifact provenance distinguishes the exact source head from GitHub's temporary PR merge/event SHA.
 - Fail-closed Bash/PowerShell store-package preflight wrappers force the funding surface off for an explicit supported target and delegate the standard release preflight.
-- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-integrity, direct-service, backup-topology, authenticated-stream, recurrence, snapshot-integrity, report-export, transaction, dependency-security, platform-lifecycle, release-workflow, release-preflight, store-package-workflow/preflight, quality-gate, Git-setup, and production Release Gate contracts.
+- Automated formatting, architecture, repository-policy, data-model, ViewModel, branding, async-safety, logging-privacy, app-lock, reminder-integrity, direct-service, backup-topology, authenticated-stream, recurrence, snapshot-integrity, report-export, transaction, dependency-security, platform-lifecycle, release-workflow, release-preflight, store-package-workflow/preflight, store-inspection-artifact, quality-gate, Git-setup, and production Release Gate contracts.
 
 ## Technology
 
@@ -108,6 +112,7 @@ The previously tracked SQLite native dependency exception has been remediated in
 - CodeQL
 - Dependency Audit
 - store-package configuration verification
+- internal store-inspection artifact verification
 - release-evidence/release-gate workflows
 
 ## Repository layout
@@ -134,9 +139,10 @@ The documentation hub is [`docs/README.md`](docs/README.md). The complete whole-
 
 Important current references:
 
-- [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — current automated baseline and real production blockers.
+- [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — current automated/artifact baseline and real production blockers.
 - [`what_changed.md`](what_changed.md) — complete active continuation handoff.
-- [`docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`](docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md) — authoritative PR #59 default-plus-store-safe exact-source evidence.
+- [`docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`](docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md) — authoritative PR #61 exact-source/internal-artifact evidence.
+- [`docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`](docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md) — historical PR #59 default-plus-store-safe exact-source evidence.
 - [`docs/releases/PACKAGED_RELEASE_HARDENING_VERIFICATION_20260815.md`](docs/releases/PACKAGED_RELEASE_HARDENING_VERIFICATION_20260815.md) — historical PR #58 packaged-release hardening evidence.
 - [`docs/releases/STORE_POLICY_REVIEW_20260815.md`](docs/releases/STORE_POLICY_REVIEW_20260815.md) — current dated support-link policy review and conservative Apple/Google package decision.
 - [`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`](docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md) — historical PR #56 release-engineering evidence.
@@ -160,7 +166,7 @@ Important current references:
 - [`docs/design/ACCESSIBILITY.md`](docs/design/ACCESSIBILITY.md) — accessibility specification/manual checks.
 - [`docs/testing/TESTING_GUIDE.md`](docs/testing/TESTING_GUIDE.md) — automated/manual testing reference.
 - [`docs/releases/STORE_BUILD_POLICY.md`](docs/releases/STORE_BUILD_POLICY.md) — store-safe build policy/workflow/preflight.
-- [`docs/releases/PACKAGED_RELEASE_VALIDATION.md`](docs/releases/PACKAGED_RELEASE_VALIDATION.md) — packaged/manual evidence runbook.
+- [`docs/releases/PACKAGED_RELEASE_VALIDATION.md`](docs/releases/PACKAGED_RELEASE_VALIDATION.md) — packaged/manual evidence runbook plus internal inspection-artifact boundary.
 - [`docs/releases/RELEASE_PROCESS.md`](docs/releases/RELEASE_PROCESS.md) — production release process.
 - [`docs/releases/RELEASE_CHECKLIST.md`](docs/releases/RELEASE_CHECKLIST.md) — release gate checklist.
 - [`docs/releases/NEXT_STEPS.md`](docs/releases/NEXT_STEPS.md) — current operational work.
@@ -252,7 +258,7 @@ Current controls include:
 - central transitive pinning of maintained SQLite native/provider leaves;
 - removal of the exact advisory `NuGetAuditSuppress` entry;
 - an automated dependency-security contract that rejects restoration of the old native/provider floor or audit suppression;
-- successful unsuppressed Dependency Audit #44 / run `31869214093` on the authoritative PR #59 source;
+- successful unsuppressed Dependency Audit #46 / run `31872610791` on the authoritative PR #61 source;
 - continued existing-database/backup/platform validation in the release checklist.
 
 See:
@@ -264,14 +270,15 @@ This remediation does not change CareNest into a networked database product and 
 
 ## Release engineering
 
-The current automated 2026-08-15 source baseline is fully green under PR #59. In addition to the normal/default four-platform Release configuration, PR #59 verified the funding-disabled store-safe Release configuration on Android, Windows, iOS simulator, and Mac Catalyst.
+The current automated/source-inspection 2026-08-15 baseline is fully green under PR #61. In addition to the normal/default four-platform Release configuration, PR #61 verified the funding-disabled store-safe Release configuration on Android, Windows, iOS simulator, and Mac Catalyst and exercised corrected internal inspection-artifact generation for Android, Windows and Apple targets.
 
-Automated source verification is necessary rather than sufficient for public production promotion. Still required include installed package/device/accessibility checks, packaged existing-database and encrypted-data compatibility checks, submission-time store-policy review, production signing/package work, store metadata, and final Release Evidence for the exact promoted commit/tag.
+Automated source/internal-artifact verification is necessary rather than sufficient for public production promotion. Still required include signed and installed package/device/accessibility checks, packaged existing-database and encrypted-data compatibility checks, submission-time store-policy review, production signing/package work, store metadata, and final Release Evidence for the exact promoted commit/tag.
 
-Production tags matching `v*` are configured to run the exact tagged commit through CareNest CI, CodeQL, Dependency Audit, CareNest Store Package Configuration, Release Gate, and CareNest Release Evidence. A tag is not production approval until every applicable automated and manual gate has completed successfully.
+Production tags matching `v*` are configured to run the exact tagged commit through CareNest CI, CodeQL, Dependency Audit, CareNest Store Package Configuration, CareNest Store Inspection Artifacts, Release Gate, and CareNest Release Evidence. A tag is not production approval until every applicable automated and manual gate has completed successfully.
 
 See:
 
+- [`docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`](docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md)
 - [`docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`](docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md)
 - [`docs/releases/STORE_BUILD_POLICY.md`](docs/releases/STORE_BUILD_POLICY.md)
 - [`docs/releases/PACKAGED_RELEASE_VALIDATION.md`](docs/releases/PACKAGED_RELEASE_VALIDATION.md)
@@ -292,7 +299,7 @@ If you want to voluntarily support CareNest, that support helps continued open-s
 
 Project support does not unlock medical advice, premium health behavior, different reminder behavior, support priority, or access to user health data.
 
-The default/open-source source configuration may display this support surface. Under the current 2026-08-15 conservative store review, initial Apple App Store and Google Play candidates should use `CareNestShowFundingLink=false` unless the submission-time store policy clearly permits the external link. Store-safe compilation is automated, but actual packaged UI inspection remains required.
+The default/open-source source configuration may display this support surface. Under the current 2026-08-15 conservative store review, initial Apple App Store and Google Play candidates should use `CareNestShowFundingLink=false` unless the submission-time store policy clearly permits the external link. Store-safe compilation and unsigned/internal inspection artifacts are automated, but actual signed installed package UI inspection remains required.
 
 ## Branding
 
