@@ -20,6 +20,21 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
     }
 
     [Fact]
+    public void Workflow_SeparatesVerificationSourceFromPullRequestEventMergeIdentity()
+    {
+        var workflow = Workflow;
+
+        Assert.Contains("CARENEST_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}", workflow, StringComparison.Ordinal);
+        Assert.Contains("CARENEST_SOURCE_REF: ${{ github.head_ref || github.ref_name }}", workflow, StringComparison.Ordinal);
+        Assert.True(workflow.Split("ref: ${{ env.CARENEST_SOURCE_SHA }}", StringSplitOptions.None).Length - 1 >= 3);
+        Assert.True(workflow.Split("source_sha=$CARENEST_SOURCE_SHA", StringSplitOptions.None).Length - 1 >= 2);
+        Assert.Contains("source_sha=$env:CARENEST_SOURCE_SHA", workflow, StringComparison.Ordinal);
+        Assert.True(workflow.Split("event_sha=$GITHUB_SHA", StringSplitOptions.None).Length - 1 >= 2);
+        Assert.Contains("event_sha=$env:GITHUB_SHA", workflow, StringComparison.Ordinal);
+        Assert.True(workflow.Split("${{ env.CARENEST_SOURCE_SHA }}", StringSplitOptions.None).Length - 1 >= 6);
+    }
+
+    [Fact]
     public void AndroidArtifact_IsUnsignedAabWithChecksumAndProvenance()
     {
         var workflow = Workflow;
@@ -81,7 +96,5 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
         Assert.True(workflow.Split("store_submission_ready=false", StringSplitOptions.None).Length - 1 >= 3);
         Assert.True(workflow.Split("if-no-files-found: error", StringSplitOptions.None).Length - 1 >= 3);
         Assert.True(workflow.Split("actions/upload-artifact@v4", StringSplitOptions.None).Length - 1 >= 3);
-        Assert.Contains("source_sha=$GITHUB_SHA", workflow, StringComparison.Ordinal);
-        Assert.Contains("source_sha=$env:GITHUB_SHA", workflow, StringComparison.Ordinal);
     }
 }
