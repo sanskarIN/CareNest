@@ -46,14 +46,17 @@ jobs:
           set -euo pipefail
           output="artifacts/android-store-safe"
           mkdir -p "$output"
-          mapfile -t bundles < <(find src/CareNest.App/bin/Release/net10.0-android/publish -maxdepth 1 -type f -name '*.aab' | sort)
-          if [ "${#bundles[@]}" -lt 1 ]; then
-            echo "No Android AAB was produced." >&2
+          mapfile -t bundles < <(find src/CareNest.App/bin/Release/net10.0-android/publish -maxdepth 1 -type f -name '*.aab' ! -name '*-Signed.aab' | sort)
+          if [ "${#bundles[@]}" -ne 1 ]; then
+            echo "Expected exactly one unsigned Android AAB candidate; found ${#bundles[@]}." >&2
             exit 1
           fi
-          for bundle in "${bundles[@]}"; do
-            cp "$bundle" "$output/"
-          done
+          bundle="${bundles[0]}"
+          if unzip -l "$bundle" | grep -Eq 'META-INF/[^[:space:]]+\.(RSA|DSA|EC|SF)$'; then
+            echo "Android inspection AAB unexpectedly contains signing metadata." >&2
+            exit 1
+          fi
+          cp "$bundle" "$output/"
           (
             cd "$output"
             sha256sum ./*.aab > SHA256SUMS.txt
@@ -64,7 +67,8 @@ jobs:
           target=net10.0-android
           configuration=Release
           care_nest_show_funding_link=false
-          signing=disabled
+          signing=verified-unsigned
+          debug_signed_companion_staged=false
           artifact_purpose=internal-inspection-only
           store_submission_ready=false
           EOF
