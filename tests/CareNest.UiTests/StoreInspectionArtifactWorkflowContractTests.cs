@@ -26,12 +26,30 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
 
         Assert.Contains("CARENEST_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}", workflow, StringComparison.Ordinal);
         Assert.Contains("CARENEST_SOURCE_REF: ${{ github.head_ref || github.ref_name }}", workflow, StringComparison.Ordinal);
-        Assert.True(workflow.Split("ref: ${{ env.CARENEST_SOURCE_SHA }}", StringSplitOptions.None).Length - 1 >= 3);
+        Assert.True(workflow.Split("ref: ${{ env.CARENEST_SOURCE_SHA }}", StringSplitOptions.None).Length - 1 >= 4);
         Assert.True(workflow.Split("source_sha=$CARENEST_SOURCE_SHA", StringSplitOptions.None).Length - 1 >= 2);
         Assert.Contains("source_sha=$env:CARENEST_SOURCE_SHA", workflow, StringComparison.Ordinal);
         Assert.True(workflow.Split("event_sha=$GITHUB_SHA", StringSplitOptions.None).Length - 1 >= 2);
         Assert.Contains("event_sha=$env:GITHUB_SHA", workflow, StringComparison.Ordinal);
-        Assert.True(workflow.Split("${{ env.CARENEST_SOURCE_SHA }}", StringSplitOptions.None).Length - 1 >= 6);
+        Assert.True(workflow.Split("${{ env.CARENEST_SOURCE_SHA }}", StringSplitOptions.None).Length - 1 >= 7);
+    }
+
+    [Fact]
+    public void PayloadScannerSelfTest_ProvesCleanPassesAndForbiddenPayloadsFail()
+    {
+        var workflow = Workflow;
+
+        Assert.Contains("payload-scanner-self-test:", workflow, StringComparison.Ordinal);
+        Assert.Contains("Store-safe payload scanner self-test", workflow, StringComparison.Ordinal);
+        Assert.Contains("clean.bin", workflow, StringComparison.Ordinal);
+        Assert.Contains("utf8.bin", workflow, StringComparison.Ordinal);
+        Assert.Contains("utf16.bin", workflow, StringComparison.Ordinal);
+        Assert.Contains("nested.aab", workflow, StringComparison.Ordinal);
+        Assert.Contains("does-not-exist", workflow, StringComparison.Ordinal);
+        Assert.Contains("Scanner failed to reject a UTF-8 funding marker.", workflow, StringComparison.Ordinal);
+        Assert.Contains("Scanner failed to reject a UTF-16 funding marker.", workflow, StringComparison.Ordinal);
+        Assert.Contains("Scanner failed to reject a funding marker inside a ZIP/AAB entry.", workflow, StringComparison.Ordinal);
+        Assert.Contains("Scanner failed open for a missing payload path.", workflow, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -97,9 +115,8 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
     {
         var workflow = Workflow;
 
-        Assert.True(workflow.Split("verify-store-safe-payload.py", StringSplitOptions.None).Length - 1 >= 4);
+        Assert.True(workflow.Split("verify-store-safe-payload.py", StringSplitOptions.None).Length - 1 >= 9);
         Assert.True(workflow.Split("funding_url_payload_scan=passed", StringSplitOptions.None).Length - 1 >= 3);
-        Assert.DoesNotContain("buymeacoffee.com/sanskarIN", workflow, StringComparison.Ordinal);
     }
 
     [Fact]
