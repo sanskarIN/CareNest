@@ -156,6 +156,22 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -p:CareNestTargetFramework=<tfm>
 ```
 
+## `CareNestShowFundingLink`
+
+`CareNest.App` also defines a build property controlling the optional external project-support card.
+
+Default:
+
+`CareNestShowFundingLink=true`
+
+Store-safe source configuration:
+
+`CareNestShowFundingLink=false`
+
+The false configuration hides the complete in-app Buy Me a Coffee support card. It must not alter health-organizer behavior, medical-safety wording, reminders, data, documents, encryption, backups, reports, appointments, or permissions.
+
+The current 2026-08-15 conservative Apple/Google store decision uses the false configuration for initial store candidates unless submission-time policy clearly permits the external link.
+
 ## Android build
 
 ```bash
@@ -165,6 +181,16 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -f net10.0-android \
   -c Release \
   -p:CareNestTargetFramework=net10.0-android
+```
+
+Store-safe Android source build:
+
+```bash
+dotnet build src/CareNest.App/CareNest.App.csproj \
+  -f net10.0-android \
+  -c Release \
+  -p:CareNestTargetFramework=net10.0-android \
+  -p:CareNestShowFundingLink=false
 ```
 
 ## Windows build
@@ -195,6 +221,8 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
 ```
 
 Use a simulator RID compatible with the host/toolchain.
+
+The store-safe CI path uses the same simulator runtime and additionally sets `CareNestShowFundingLink=false`; it does not configure production signing.
 
 ## Mac Catalyst build
 
@@ -228,27 +256,30 @@ dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 
 ## Current authoritative automated baseline
 
-Marker-only PR #56 verifies the current release-engineering source:
+Marker-only PR #59 verifies the current executable/project/test/workflow/build-script source:
 
-- source/base SHA: `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
-- marker head: `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
-- CareNest CI #571 / `31770929379`: success;
+- source/base SHA: `8489d19734d6142054156d5b57f2713195c16b65`;
+- marker head: `ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`;
+- CareNest CI #622 / `31869214132`: success;
 - UnitTests: **122 passed**;
 - IntegrationTests: **39 passed**;
-- UiTests/source-policy: **124 passed**;
-- total core: **285 passed**;
-- Android Release: success;
-- Windows Release: success;
-- iOS simulator Release: success;
-- Mac Catalyst Release: success;
-- CodeQL #571 / `31770929382`: success;
-- unsuppressed Dependency Audit #41 / `31770929383`: success.
+- UiTests/source-policy: **149 passed**;
+- total core: **310 passed**;
+- default Android Release: success;
+- default Windows Release: success;
+- default iOS simulator Release: success;
+- default Mac Catalyst Release: success;
+- Store Package Configuration #11 / `31869214047`: success;
+- funding-disabled Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- Bash store-package preflight executable-mode guard: success;
+- CodeQL #622 / `31869214042`: success;
+- unsuppressed Dependency Audit #44 / `31869214093`: success.
 
-PR #56 was closed without merge; its marker is not part of `main`.
+PR #59 was closed without merge; its marker is not part of `main`.
 
-PR #54 remains the historical runtime bug-audit baseline; PR #55 is superseded intermediate evidence.
+PR #58 remains historical package/store-policy hardening evidence, PR #56 remains historical release-engineering evidence, and PR #54 remains the historical runtime bug-audit baseline.
 
-See `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` and `docs/testing/TESTING_GUIDE.md`.
+See `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`, `docs/releases/STORE_BUILD_POLICY.md`, and `docs/testing/TESTING_GUIDE.md`.
 
 ## Local quality gate
 
@@ -308,7 +339,38 @@ Preflight treats unsuppressed dependency audit as blocking.
 
 When `CARENEST_TARGET` is set, the selected MAUI target is audited before the optional target Release build.
 
+General release preflight accepts `CARENEST_SHOW_FUNDING_LINK=true|false` and fails closed for another value.
+
 See `docs/CONFIGURATION_REFERENCE.md` and `docs/releases/RELEASE_PROCESS.md`.
+
+## Fail-closed store-package preflight
+
+For store candidates where the external support surface must be hidden, prefer the dedicated wrappers.
+
+Bash:
+
+```bash
+CARENEST_TARGET=net10.0-android \
+./build/scripts/store-package-preflight.sh
+```
+
+PowerShell:
+
+```powershell
+$env:CARENEST_TARGET = 'net10.0-windows10.0.19041.0'
+./build/scripts/store-package-preflight.ps1
+```
+
+The wrappers:
+
+- require an explicit supported target;
+- allow Android, iOS, Mac Catalyst and Windows target framework values only;
+- force `CARENEST_SHOW_FUNDING_LINK=false` after reading caller environment;
+- delegate the standard release preflight rather than duplicating its checks.
+
+The Bash wrapper is tracked executable and the Store Package Configuration workflow runs `test -x build/scripts/store-package-preflight.sh`.
+
+These wrappers do not sign, publish or prove installed package behavior.
 
 ## Central package management
 
@@ -418,6 +480,8 @@ Primary current references:
 - `docs/CODEBASE_REFERENCE.md`;
 - `docs/CONFIGURATION_REFERENCE.md`;
 - `docs/MAINTENANCE_AND_OPERATIONS.md`;
+- `docs/releases/STORE_BUILD_POLICY.md`;
+- `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`;
 - `docs/README.md`.
 
 ## Do not commit
@@ -457,10 +521,12 @@ Runtime/test/project/workflow/package/platform/build-script changes that need a 
 
 Verification marker files must not be merged into `main`.
 
+Documentation-only evidence updates after a verified source boundary do not change the executable source that passed, but any later verification-relevant source change requires a fresh marker-only exact-head verification.
+
 ## Production release boundary
 
 A green automated matrix is necessary but not sufficient for public release.
 
-Real remaining release evidence includes device/platform tests, notification delivery/recovery, packaged SQLite/encrypted-data compatibility, accessibility, current store policy/disclosures, signing, signed artifact inspection, and exact production-tag Release Gate/Release Evidence.
+Real remaining release evidence includes device/platform tests, notification delivery/recovery, packaged SQLite/encrypted-data compatibility, accessibility, submission-time store policy/disclosures, actual store-safe package UI inspection, signing, signed artifact inspection, and exact production-tag CareNest CI/CodeQL/Dependency Audit/Store Package Configuration/Release Gate/Release Evidence.
 
 See `PROJECT_STATUS.md`, `docs/releases/RELEASE_CHECKLIST.md`, and `docs/releases/NEXT_STEPS.md`.
