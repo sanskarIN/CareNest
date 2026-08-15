@@ -60,6 +60,7 @@ jobs:
             echo "Android inspection AAB unexpectedly contains signing metadata." >&2
             exit 1
           fi
+          python3 build/scripts/verify-store-safe-payload.py "$bundle"
           cp "$bundle" "$output/"
           (
             cd "$output"
@@ -73,6 +74,7 @@ jobs:
           target=net10.0-android
           configuration=Release
           care_nest_show_funding_link=false
+          funding_url_payload_scan=passed
           signing=verified-unsigned
           debug_signed_companion_staged=false
           artifact_purpose=internal-inspection-only
@@ -117,6 +119,10 @@ jobs:
           if (-not (Test-Path -LiteralPath $publishDir)) {
             throw "Windows publish directory was not produced: $publishDir"
           }
+          python build/scripts/verify-store-safe-payload.py "$publishDir"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Store-safe payload funding scan failed for Windows."
+          }
           $output = 'artifacts/windows-store-safe'
           New-Item -ItemType Directory -Path $output -Force | Out-Null
           $archive = Join-Path $output 'CareNest-windows-win-x64-store-safe.zip'
@@ -132,6 +138,7 @@ jobs:
           runtime_identifier=win-x64
           configuration=Release
           care_nest_show_funding_link=false
+          funding_url_payload_scan=passed
           windows_package_type=None
           self_contained=true
           signing=not_applicable_unpacked_bundle
@@ -190,6 +197,7 @@ jobs:
             echo "No iOS simulator .app bundle was produced." >&2
             exit 1
           fi
+          python3 build/scripts/verify-store-safe-payload.py "$ios_app"
           tar -C "$(dirname "$ios_app")" -czf "$output/CareNest-iossimulator-arm64-store-safe.tar.gz" "$(basename "$ios_app")"
 
           mac_app="$(find src/CareNest.App/bin/Release/net10.0-maccatalyst -type d -name '*.app' -print -quit)"
@@ -197,6 +205,7 @@ jobs:
             echo "No Mac Catalyst .app bundle was produced." >&2
             exit 1
           fi
+          python3 build/scripts/verify-store-safe-payload.py "$mac_app"
           tar -C "$(dirname "$mac_app")" -czf "$output/CareNest-maccatalyst-arm64-store-safe.tar.gz" "$(basename "$mac_app")"
 
           (
@@ -214,6 +223,7 @@ jobs:
           maccatalyst_runtime_identifier=maccatalyst-arm64
           configuration=Release
           care_nest_show_funding_link=false
+          funding_url_payload_scan=passed
           code_signing=disabled_or_simulator_only
           artifact_purpose=internal-inspection-only
           store_submission_ready=false
