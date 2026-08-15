@@ -534,7 +534,7 @@ README now distinguishes historical PR #54 runtime evidence from current PR #56 
 
 Commit:
 
-`20649ff30bc1fb8b8c6321d725e492209e1a52eb`
+`20649ff30bc1fb8b8c6321d725e492209e1dae9`
 
 Message:
 
@@ -1170,3 +1170,196 @@ If continuing toward public `1.0.0`, use this order:
 14. publish only after every applicable gate is complete.
 
 Do not reintroduce the former SQLite audit suppression and do not weaken analyzer/audit/release gates to obtain a green result.
+
+---
+
+# 23. 2026-08-15 packaged-release and store-policy hardening continuation
+
+This continuation advances source-side release readiness without falsely completing work that requires actual store review, signing identities, packaged builds, real devices, assistive technology, or manual compatibility evidence.
+
+Because this continuation changes application project configuration, the About presentation/ViewModel, UI/source-policy tests and release-preflight scripts, PR #56 remains authoritative **historical** evidence for its frozen source boundary but is no longer exact-head verification for the current `main` source. The current head requires a new exact-head verification before production promotion after this continuation stabilizes.
+
+## Commit 1 — configurable voluntary project-support surface
+
+Commit:
+
+`35690d2f1fbe8bb56d91e718dab688fe4de6cc0d`
+
+Message:
+
+`feat: make voluntary funding link store-configurable`
+
+Changed:
+
+- `src/CareNest.App/CareNest.App.csproj`;
+- `src/CareNest.App/ViewModels/AboutViewModel.cs`;
+- `src/CareNest.App/Views/AboutPage.xaml`;
+- `tests/CareNest.UiTests/CriticalFlowContractTests.cs`.
+
+Behavior:
+
+- `CareNestShowFundingLink` defaults to `true`;
+- default open-source builds continue to expose the voluntary Buy Me a Coffee support card;
+- `-p:CareNestShowFundingLink=false` removes the `CARENEST_FUNDING_LINK` compile symbol;
+- `AboutViewModel.IsProjectSupportVisible` then evaluates false;
+- the entire About support card is hidden rather than leaving a dead external-link button;
+- no health, reminder, document, backup, encryption, profile, appointment, report, app-lock, or medical-safety behavior changes with this flag;
+- support remains voluntary and does not unlock medical advice, premium health functionality, reminder behavior, or access to health data.
+
+The new UI contract prevents the store-specific visibility escape hatch from silently disappearing.
+
+## Commit 2 — package metadata and privacy regression contracts
+
+Commit:
+
+`7ccea4ff5367b3c4e94b156f989799d91d6f52ff`
+
+Message:
+
+`test: enforce package metadata and privacy contracts`
+
+Added:
+
+- `tests/CareNest.UiTests/PackageMetadataContractTests.cs`.
+
+Updated:
+
+- `tests/CareNest.UiTests/RepositoryLocator.cs` with reusable repository-path resolution.
+
+Contracts now protect:
+
+- app title `CareNest`;
+- application identifier `com.sanskar.carenest`;
+- semantic release display-version shape and positive build number;
+- Android/iOS/Mac Catalyst/Windows target frameworks and minimum supported OS declarations;
+- Android reminder/camera permissions;
+- absence of Android `INTERNET` permission for the local-first v1 package boundary;
+- Android backup disabled and cleartext transport disabled;
+- Apple camera/photo purpose strings and absence of arbitrary transport-security opt-out;
+- Windows package identity/display name/minimum platform declarations;
+- required CareNest app icon, foreground icon, splash, mark and support assets.
+
+These contracts reduce accidental package/privacy drift. They do not replace store package inspection or current store-policy review.
+
+## Commit 3 — release-preflight propagation of the store funding policy
+
+Commit:
+
+`1fe68a73aaa41622391d8ff6e53171ca98dce055`
+
+Message:
+
+`build: pass store funding policy into release preflight`
+
+Updated:
+
+- `build/scripts/release-preflight.sh`;
+- `build/scripts/release-preflight.ps1`.
+
+New release-preflight behavior:
+
+- reads `CARENEST_SHOW_FUNDING_LINK`;
+- defaults to `true`;
+- accepts only exact logical values `true` or `false` after PowerShell normalization;
+- fails closed for invalid values;
+- prints the selected package policy;
+- propagates the value into optional MAUI restore and Release build through `CareNestShowFundingLink`.
+
+This makes a store-specific support-link package reproducible instead of relying on hand-edited source or a store-only fork.
+
+## Commit 4 — store-build policy documentation
+
+Commit:
+
+`0a9d994ea310f00d715684c993ee2d954dc0f081`
+
+Message:
+
+`docs: define store-specific funding-link build policy`
+
+Added:
+
+`docs/releases/STORE_BUILD_POLICY.md`
+
+The document defines:
+
+- the voluntary support product boundary;
+- direct build commands for enabled/disabled support surfaces;
+- release-preflight examples;
+- fail-closed property rules;
+- per-release Apple/Google policy-review requirements;
+- package checks for enabled and disabled variants;
+- evidence fields including source SHA, target, application identity/version, selected flag, policy-review conclusion, package checksum and signing provenance.
+
+The policy explicitly says that if a store disallows the external support link or the policy is uncertain, the affected package should use `CareNestShowFundingLink=false` while the project remains open source and repository funding may remain where separately permitted.
+
+## Commit 5 — packaged release validation runbook
+
+Commit:
+
+`fe17e1ad752250d81d502ef7615fc1e652842e47`
+
+Message:
+
+`docs: add packaged release validation runbook`
+
+Added:
+
+`docs/releases/PACKAGED_RELEASE_VALIDATION.md`
+
+The runbook gives a repeatable evidence process for:
+
+- freezing the exact candidate source;
+- release preflight;
+- package identity/version capture;
+- SHA-256 artifact checksums;
+- fresh-install smoke testing;
+- funding-link enabled/disabled package inspection;
+- packaged SQLite existing-data upgrade compatibility;
+- encrypted-document compatibility;
+- backup/restore/wrong-password/tamper/historical-fixture checks;
+- real reminder lifecycle/recovery;
+- accessibility;
+- current store-policy review;
+- signing provenance and secret handling;
+- final exact-tag release evidence.
+
+It supplements `docs/releases/MANUAL_TEST_MATRIX.md` and explicitly does not mark any manual row complete without actual target evidence.
+
+## Automated verification state while this section was prepared
+
+The push of current head `fe17e1ad752250d81d502ef7615fc1e652842e47` triggered:
+
+- CareNest CI run `31866933962`;
+- CodeQL run `31866933951`.
+
+At the time this section was first prepared, both runs were still in progress. CareNest CI had entered platform-neutral formatting/core testing and Android/Windows/Apple build jobs without a reported failure. This file must be updated with final results only after GitHub reports them; an in-progress run is not represented as passing evidence.
+
+## Production blockers intentionally still open
+
+This continuation does **not** mark complete:
+
+- Apple App Store current support-link policy review;
+- Google Play current support-link policy review;
+- packaged support-link variant inspection;
+- manual Android/Windows/iOS/Mac Catalyst matrices;
+- SQLite packaged existing-data compatibility;
+- canonical historical encrypted backup/document fixtures where available;
+- accessibility testing with real assistive technologies;
+- signing identities/credentials outside Git;
+- signed production packages;
+- store screenshots/listings/data-safety/privacy metadata;
+- exact approved production `v*` tag and tagged workflow evidence.
+
+## Next exact continuation order after these changes
+
+1. allow the current push CI and CodeQL runs to finish and fix any real defect without weakening tests/analyzers;
+2. synchronize `PROJECT_STATUS.md`, `NEXT_STEPS.md`, changelog and release documentation to this source boundary;
+3. complete a new exact-head marker verification because verification-relevant source changed after PR #56;
+4. use `STORE_BUILD_POLICY.md` to decide the BMC visibility independently for each target store after current policy review;
+5. use `PACKAGED_RELEASE_VALIDATION.md` plus `MANUAL_TEST_MATRIX.md` for actual packaged/device/accessibility evidence;
+6. configure signing outside Git;
+7. produce and inspect signed candidate packages;
+8. select the exact approved production commit;
+9. create a non-movable approved `v*` tag;
+10. require tagged CI, CodeQL, unsuppressed Dependency Audit, Release Gate and Release Evidence success before publication.
