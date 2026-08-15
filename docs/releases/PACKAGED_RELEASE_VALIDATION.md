@@ -101,6 +101,7 @@ If `CareNestShowFundingLink=true`:
 If `CareNestShowFundingLink=false`:
 
 - About hides the support image, button, URL, and support explanation;
+- the funding command is non-executable in the compiled store-safe configuration;
 - repository, creator, business/support email, privacy, terms, security, and notices remain available;
 - no organizer feature differs from the enabled build.
 
@@ -250,7 +251,38 @@ Before a production `v*` tag is approved, the release record must identify:
 - tagged CareNest CI result;
 - tagged CodeQL result;
 - tagged unsuppressed Dependency Audit result;
+- tagged Store Package Configuration result;
+- tagged Store Inspection Artifacts result;
 - tagged Release Gate result;
 - tagged Release Evidence result.
 
 Do not call CareNest bug-free. Production promotion means the defined automated and manual gates are satisfied for the approved source/package boundary.
+
+## 15. Automated internal store inspection artifacts
+
+CareNest provides `.github/workflows/store-inspection-artifacts.yml` to create reproducible **internal inspection** artifacts with `CareNestShowFundingLink=false`.
+
+The workflow intentionally separates this source-side evidence from production signing/distribution:
+
+- Android: exactly one verified-unsigned `.aab` is staged. A MAUI `*-Signed.aab` debug-signed companion is explicitly excluded, and the selected AAB is rejected if JAR-signature metadata is present.
+- Windows: a self-contained `win-x64` unpackaged bundle is archived as ZIP using `RuntimeIdentifierOverride=win-x64` and `WindowsPackageType=None`.
+- iOS: a simulator `.app` bundle is archived for inspection only.
+- Mac Catalyst: an unsigned `.app` bundle is archived with package creation/code signing disabled.
+- every artifact includes SHA-256 checksum material and `provenance.txt`;
+- pull-request provenance records the exact PR head/source SHA separately from GitHub's temporary PR merge/event SHA;
+- artifact names use the exact source SHA;
+- uploads fail if expected files are missing;
+- artifacts are explicitly marked `artifact_purpose=internal-inspection-only` and `store_submission_ready=false`.
+
+The latest exact runtime exercise is recorded in `STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md` (PR #61).
+
+These artifacts are useful for source/configuration inspection and reproducibility, but they **do not** satisfy:
+
+- production signing/provisioning;
+- real-device installation;
+- store-delivery testing;
+- packaged existing-data compatibility;
+- accessibility certification;
+- final store submission/approval.
+
+For an actual release, create and inspect the signed candidate separately, retain safe signing provenance/checksums, then complete the manual matrix and submission-time policy review before production promotion.
