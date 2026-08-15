@@ -36,7 +36,7 @@ public sealed class FundingLinkContractTests
         Assert.Contains("https://buymeacoffee.com/sanskarIN", readme, StringComparison.Ordinal);
         Assert.Contains("voluntarily support", readme, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Financial support is optional", support, StringComparison.Ordinal);
-        Assert.Contains("does not change", support, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("does not unlock medical advice", support, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string FindRepositoryRoot()
