@@ -25,6 +25,26 @@ public sealed class StoreFundingPayloadContractTests
     }
 
     [Fact]
+    public void Project_PropagatesStoreFundingPolicyIntoNestedBuildsAndFailsClosed()
+    {
+        var project = RepositoryLocator.Read("src", "CareNest.App", "CareNest.App.csproj");
+
+        Assert.Contains(
+            "<CareNestShowFundingLink Condition=\"'$(CareNestShowFundingLink)' == '' and '$(CARENEST_STORE_FUNDING_LINK)' != ''\">$(CARENEST_STORE_FUNDING_LINK)</CareNestShowFundingLink>",
+            project,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<CareNestShowFundingLink Condition=\"'$(CareNestShowFundingLink)' == ''\">true</CareNestShowFundingLink>",
+            project,
+            StringComparison.Ordinal);
+        Assert.Contains("ValidateCareNestFundingLinkConfiguration", project, StringComparison.Ordinal);
+        Assert.Contains("BeforeTargets=\"CoreCompile\"", project, StringComparison.Ordinal);
+        Assert.Contains("'$(CareNestShowFundingLink)' != 'true' and '$(CareNestShowFundingLink)' != 'false'", project, StringComparison.Ordinal);
+        Assert.Contains("CareNestShowFundingLink must be exactly 'true' or 'false'.", project, StringComparison.Ordinal);
+        Assert.Contains("<DefineConstants Condition=\"'$(CareNestShowFundingLink)' == 'true'\">$(DefineConstants);CARENEST_FUNDING_LINK</DefineConstants>", project, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void PayloadScanner_SearchesCommonManagedStringEncodingsAndZipEntries()
     {
         var scanner = RepositoryLocator.Read("build", "scripts", "verify-store-safe-payload.py");
