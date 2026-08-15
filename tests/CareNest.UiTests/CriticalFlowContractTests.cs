@@ -59,29 +59,22 @@ public sealed class CriticalFlowContractTests
     }
 
     [Fact]
-    public void About_VoluntaryFundingSurface_IsBuildConfigurable()
+    public void About_DoesNotExposeExternalFundingSurface()
     {
         var project = RepositoryLocator.Read("src", "CareNest.App", "CareNest.App.csproj");
         var source = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "AboutViewModel.cs");
-        var enabled = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "FundingLinkPolicy.Enabled.cs");
-        var disabled = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "FundingLinkPolicy.Disabled.cs");
-        var sharedConstants = RepositoryLocator.Read("src", "CareNest.Shared", "AppConstants.cs");
         var xaml = RepositoryLocator.Read("src", "CareNest.App", "Views", "AboutPage.xaml");
 
-        Assert.Contains("CareNestShowFundingLink", project, StringComparison.Ordinal);
-        Assert.Contains("FundingLinkPolicy.Enabled.cs", project, StringComparison.Ordinal);
-        Assert.Contains("FundingLinkPolicy.Disabled.cs", project, StringComparison.Ordinal);
-        Assert.DoesNotContain("CARENEST_FUNDING_LINK", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("CareNestShowFundingLink", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("FundingLinkPolicy", project, StringComparison.Ordinal);
         Assert.DoesNotContain("buymeacoffee.com", source, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("FundingLinkPolicy.CreateCommand(OpenAsync)", source, StringComparison.Ordinal);
-        Assert.Contains("FundingLinkPolicy.IsVisible", source, StringComparison.Ordinal);
-        Assert.Contains("https://buymeacoffee.com/sanskarIN", enabled, StringComparison.Ordinal);
-        Assert.DoesNotContain("buymeacoffee.com", disabled, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("AppConstants.FundingUrl", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("buymeacoffee.com", sharedConstants, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("IsVisible=\"{Binding IsProjectSupportVisible}\"", xaml, StringComparison.Ordinal);
-        Assert.Contains("Project support is voluntary", xaml, StringComparison.Ordinal);
-        Assert.Contains("does not unlock medical advice", xaml, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("SupportProjectCommand", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("IsProjectSupportVisible", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("buymeacoffee.com", xaml, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Buy Me a Coffee", xaml, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("SupportProjectCommand", xaml, StringComparison.Ordinal);
+        Assert.Contains("Open source and support", xaml, StringComparison.Ordinal);
+        Assert.Contains("SupportEmailCommand", xaml, StringComparison.Ordinal);
     }
 
     [Fact]
