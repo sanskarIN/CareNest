@@ -69,6 +69,8 @@ public sealed class CriticalFlowContractTests
         Assert.Contains("CARENEST_FUNDING_LINK", project, StringComparison.Ordinal);
         Assert.Contains("#if CARENEST_FUNDING_LINK", source, StringComparison.Ordinal);
         Assert.Contains("IsProjectSupportVisible", source, StringComparison.Ordinal);
+        Assert.Contains("SupportProjectCommand = new AsyncCommand(() => OpenAsync(AppConstants.FundingUrl));", source, StringComparison.Ordinal);
+        Assert.Contains("SupportProjectCommand = new AsyncCommand(() => Task.CompletedTask, static () => false);", source, StringComparison.Ordinal);
         Assert.Contains("IsVisible=\"{Binding IsProjectSupportVisible}\"", xaml, StringComparison.Ordinal);
         Assert.Contains("Project support is voluntary", xaml, StringComparison.Ordinal);
         Assert.Contains("does not unlock medical advice", xaml, StringComparison.OrdinalIgnoreCase);
