@@ -31,6 +31,21 @@ public sealed class PackageMetadataContractTests
     }
 
     [Fact]
+    public void WindowsPublish_MapsPortableRuntimeIdentifierOverride()
+    {
+        var project = XDocument.Load(RepositoryLocator.PathOf("src", "CareNest.App", "CareNest.App.csproj"));
+        var groups = project.Root!.Elements("PropertyGroup").ToArray();
+        var publishGroup = groups.Single(group =>
+        {
+            var condition = (string?)group.Attribute("Condition");
+            return condition?.Contains("RuntimeIdentifierOverride", StringComparison.Ordinal) == true &&
+                   condition.Contains("windows", StringComparison.OrdinalIgnoreCase);
+        });
+
+        Assert.Equal("$(RuntimeIdentifierOverride)", publishGroup.Element("RuntimeIdentifier")?.Value.Trim());
+    }
+
+    [Fact]
     public void AndroidManifest_PreservesLocalFirstAndReminderSafetyDeclarations()
     {
         var manifest = XDocument.Load(RepositoryLocator.PathOf(
