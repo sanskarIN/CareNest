@@ -15,13 +15,14 @@ public sealed class StorePackageWorkflowContractTests
     }
 
     [Fact]
-    public void StorePackageWorkflow_FailsClosedToFundingLinkDisabled()
+    public void StorePackageWorkflow_DoesNotDependOnObsoleteFundingToggle()
     {
         var workflow = ReadWorkflow();
 
-        Assert.Contains("CARENEST_STORE_FUNDING_LINK: \"false\"", workflow, StringComparison.Ordinal);
-        Assert.Contains("-p:CareNestShowFundingLink=${{ env.CARENEST_STORE_FUNDING_LINK }}", workflow, StringComparison.Ordinal);
-        Assert.DoesNotContain("CARENEST_STORE_FUNDING_LINK: \"true\"", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("CARENEST_STORE_FUNDING_LINK", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("CareNestShowFundingLink", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("external funding surface disabled", workflow, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("store candidate configuration", workflow, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
