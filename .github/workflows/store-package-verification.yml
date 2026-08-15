@@ -28,6 +28,8 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
+      - name: Verify Bash store preflight is executable
+        run: test -x build/scripts/store-package-preflight.sh
       - name: Install Android MAUI workload
         run: dotnet workload install maui-android
       - name: Build Android with external funding surface disabled
