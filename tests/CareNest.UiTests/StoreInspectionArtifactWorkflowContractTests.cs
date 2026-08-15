@@ -47,6 +47,7 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
         Assert.Contains("Expected exactly one unsigned Android AAB candidate", workflow, StringComparison.Ordinal);
         Assert.Contains("META-INF/[^[:space:]]+\\.(RSA|DSA|EC|SF)$", workflow, StringComparison.Ordinal);
         Assert.Contains("Android inspection AAB unexpectedly contains signing metadata.", workflow, StringComparison.Ordinal);
+        Assert.Contains("python3 build/scripts/verify-store-safe-payload.py \"$bundle\"", workflow, StringComparison.Ordinal);
         Assert.Contains("sha256sum ./*.aab > SHA256SUMS.txt", workflow, StringComparison.Ordinal);
         Assert.Contains("signing=verified-unsigned", workflow, StringComparison.Ordinal);
         Assert.Contains("debug_signed_companion_staged=false", workflow, StringComparison.Ordinal);
@@ -66,6 +67,8 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
         Assert.Contains("-p:RuntimeIdentifierOverride=win-x64", workflow, StringComparison.Ordinal);
         Assert.Contains("-p:WindowsPackageType=None", workflow, StringComparison.Ordinal);
         Assert.Contains("-p:WindowsAppSDKSelfContained=true", workflow, StringComparison.Ordinal);
+        Assert.Contains("python build/scripts/verify-store-safe-payload.py \"$publishDir\"", workflow, StringComparison.Ordinal);
+        Assert.Contains("Store-safe payload funding scan failed for Windows.", workflow, StringComparison.Ordinal);
         Assert.Contains("Get-FileHash -Algorithm SHA256", workflow, StringComparison.Ordinal);
         Assert.Contains("windows_package_type=None", workflow, StringComparison.Ordinal);
         Assert.Contains("store_submission_ready=false", workflow, StringComparison.Ordinal);
@@ -80,11 +83,23 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
         Assert.Contains("maccatalyst-arm64", workflow, StringComparison.Ordinal);
         Assert.Contains("-p:CreatePackage=false", workflow, StringComparison.Ordinal);
         Assert.Contains("-p:EnableCodeSigning=false", workflow, StringComparison.Ordinal);
+        Assert.Contains("python3 build/scripts/verify-store-safe-payload.py \"$ios_app\"", workflow, StringComparison.Ordinal);
+        Assert.Contains("python3 build/scripts/verify-store-safe-payload.py \"$mac_app\"", workflow, StringComparison.Ordinal);
         Assert.Contains("shasum -a 256 ./*.tar.gz > SHA256SUMS.txt", workflow, StringComparison.Ordinal);
         Assert.Contains("code_signing=disabled_or_simulator_only", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("CodesignKey", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("CodesignProvision", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("PackageSigningKey", workflow, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EveryInspectionArtifact_RequiresFundingUrlPayloadScanBeforeUpload()
+    {
+        var workflow = Workflow;
+
+        Assert.True(workflow.Split("verify-store-safe-payload.py", StringSplitOptions.None).Length - 1 >= 4);
+        Assert.True(workflow.Split("funding_url_payload_scan=passed", StringSplitOptions.None).Length - 1 >= 3);
+        Assert.DoesNotContain("buymeacoffee.com/sanskarIN", workflow, StringComparison.Ordinal);
     }
 
     [Fact]
