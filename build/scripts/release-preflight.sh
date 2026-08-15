@@ -9,8 +9,15 @@ fail() { printf '\nERROR: %s\n' "$1" >&2; exit 1; }
 
 command -v dotnet >/dev/null 2>&1 || fail "dotnet SDK is required."
 
+FUNDING_LINK="${CARENEST_SHOW_FUNDING_LINK:-true}"
+case "$FUNDING_LINK" in
+  true|false) ;;
+  *) fail "CARENEST_SHOW_FUNDING_LINK must be 'true' or 'false'." ;;
+esac
+
 say "CareNest release preflight"
 printf 'Repository: %s\n' "$ROOT_DIR"
+printf 'CareNestShowFundingLink: %s\n' "$FUNDING_LINK"
 dotnet --info
 
 say "Source hygiene"
@@ -49,6 +56,7 @@ if [[ -n "${CARENEST_TARGET:-}" ]]; then
   say "Audit optional MAUI target: ${CARENEST_TARGET}"
   dotnet restore src/CareNest.App/CareNest.App.csproj \
     -p:CareNestTargetFramework="$CARENEST_TARGET" \
+    -p:CareNestShowFundingLink="$FUNDING_LINK" \
     -p:NuGetAudit=true \
     -p:NuGetAuditMode=all \
     --nologo
@@ -58,6 +66,7 @@ if [[ -n "${CARENEST_TARGET:-}" ]]; then
     -f "$CARENEST_TARGET" \
     -c Release \
     -p:CareNestTargetFramework="$CARENEST_TARGET" \
+    -p:CareNestShowFundingLink="$FUNDING_LINK" \
     --nologo
 fi
 
