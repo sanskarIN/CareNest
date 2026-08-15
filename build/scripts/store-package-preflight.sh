@@ -20,10 +20,8 @@ case "$TARGET" in
     ;;
 esac
 
-export CARENEST_SHOW_FUNDING_LINK=false
-
 printf 'CareNest store-package preflight\n'
 printf 'Target: %s\n' "$TARGET"
-printf 'CareNestShowFundingLink: false (forced)\n'
+printf 'External funding surface: absent from app runtime by source policy\n'
 
 exec "$SCRIPT_DIR/release-preflight.sh"

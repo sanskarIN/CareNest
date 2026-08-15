@@ -17,11 +17,9 @@ if ($Target -notin $SupportedTargets) {
     throw "Unsupported CARENEST_TARGET: $Target"
 }
 
-$env:CARENEST_SHOW_FUNDING_LINK = 'false'
-
 Write-Host 'CareNest store-package preflight'
 Write-Host "Target: $Target"
-Write-Host 'CareNestShowFundingLink: false (forced)'
+Write-Host 'External funding surface: absent from app runtime by source policy'
 
 & (Join-Path $PSScriptRoot 'release-preflight.ps1')
 if ($LASTEXITCODE -ne 0) {

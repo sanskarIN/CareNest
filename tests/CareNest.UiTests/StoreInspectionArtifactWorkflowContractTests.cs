@@ -6,7 +6,7 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
         RepositoryLocator.Read(".github", "workflows", "store-inspection-artifacts.yml");
 
     [Fact]
-    public void Workflow_UsesConservativeStoreFundingPolicyAndReleaseTriggers()
+    public void Workflow_UsesFundingFreeSourcePolicyAndReleaseTriggers()
     {
         var workflow = Workflow;
 
@@ -15,8 +15,9 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
         Assert.Contains("branches: [main]", workflow, StringComparison.Ordinal);
         Assert.Contains("branches: [\"release/**\"]", workflow, StringComparison.Ordinal);
         Assert.Contains("tags: [\"v*\"]", workflow, StringComparison.Ordinal);
-        Assert.Contains("CARENEST_STORE_FUNDING_LINK: \"false\"", workflow, StringComparison.Ordinal);
-        Assert.Contains("CareNestShowFundingLink=${{ env.CARENEST_STORE_FUNDING_LINK }}", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("CARENEST_STORE_FUNDING_LINK", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("CareNestShowFundingLink", workflow, StringComparison.Ordinal);
+        Assert.True(workflow.Split("external_funding_surface=absent_by_source_policy", StringSplitOptions.None).Length - 1 >= 3);
     }
 
     [Fact]
@@ -117,6 +118,7 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
 
         Assert.True(workflow.Split("verify-store-safe-payload.py", StringSplitOptions.None).Length - 1 >= 9);
         Assert.True(workflow.Split("funding_url_payload_scan=passed", StringSplitOptions.None).Length - 1 >= 3);
+        Assert.True(workflow.Split("external_funding_surface=absent_by_source_policy", StringSplitOptions.None).Length - 1 >= 3);
     }
 
     [Fact]

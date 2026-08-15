@@ -37,7 +37,7 @@ public sealed class ViewModelContractTests
     }
 
     [Fact]
-    public void AboutViewModel_UsesCentralizedPublicDestinationsExceptConditionalFundingUrl()
+    public void AboutViewModel_UsesCentralizedProductAndSupportDestinationsWithoutFundingSurface()
     {
         var source = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "AboutViewModel.cs");
         var constants = RepositoryLocator.Read("src", "CareNest.Shared", "AppConstants.cs");
@@ -46,10 +46,11 @@ public sealed class ViewModelContractTests
         Assert.Contains("AppConstants.CreatorUrl", source, StringComparison.Ordinal);
         Assert.Contains("AppConstants.BusinessEmail", source, StringComparison.Ordinal);
         Assert.Contains("AppConstants.SupportEmail", source, StringComparison.Ordinal);
-        Assert.Contains("#if CARENEST_FUNDING_LINK", source, StringComparison.Ordinal);
-        Assert.Contains("private const string FundingUrl = \"https://buymeacoffee.com/sanskarIN\";", source, StringComparison.Ordinal);
-        Assert.Contains("OpenAsync(FundingUrl)", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("AppConstants.FundingUrl", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("buymeacoffee.com", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("SupportProjectCommand", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("IsProjectSupportVisible", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("FundingLinkPolicy", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("FundingUrl", constants, StringComparison.Ordinal);
         Assert.DoesNotContain("buymeacoffee.com", constants, StringComparison.OrdinalIgnoreCase);
     }
 

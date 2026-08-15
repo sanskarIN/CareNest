@@ -111,7 +111,7 @@ public sealed class PackageMetadataContractTests
     }
 
     [Fact]
-    public void MauiBrandAssets_ArePresent()
+    public void MauiBrandAssets_ArePresentWithoutFundingArtwork()
     {
         Assert.True(File.Exists(RepositoryLocator.PathOf(
             "src", "CareNest.App", "Resources", "AppIcon", "appicon.svg")));
@@ -121,8 +121,10 @@ public sealed class PackageMetadataContractTests
             "src", "CareNest.App", "Resources", "Splash", "splash.svg")));
         Assert.True(File.Exists(RepositoryLocator.PathOf(
             "src", "CareNest.App", "Resources", "Images", "carenest_mark.svg")));
-        Assert.True(File.Exists(RepositoryLocator.PathOf(
+        Assert.False(File.Exists(RepositoryLocator.PathOf(
             "src", "CareNest.App", "Resources", "Images", "carenest_support.svg")));
+        Assert.False(File.Exists(RepositoryLocator.PathOf(
+            "src", "CareNest.App", "Resources", "Images", "buy_me_a_coffee_carenest.svg")));
     }
 
     private static string Property(XDocument project, string name) =>

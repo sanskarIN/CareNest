@@ -3,6 +3,35 @@ namespace CareNest.UiTests;
 public sealed class StoreFundingPayloadContractTests
 {
     [Fact]
+    public void AppRuntime_DoesNotContainExternalFundingDestinationOrSurface()
+    {
+        var appRoot = RepositoryLocator.PathOf("src", "CareNest.App");
+        var textExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".cs", ".csproj", ".xaml", ".xml", ".plist", ".resx", ".svg", ".txt", ".json"
+        };
+
+        foreach (var path in Directory.EnumerateFiles(appRoot, "*", SearchOption.AllDirectories)
+                     .Where(path => textExtensions.Contains(Path.GetExtension(path))))
+        {
+            var source = File.ReadAllText(path);
+            Assert.DoesNotContain("buymeacoffee.com/sanskarIN", source, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("SupportProjectCommand", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("IsProjectSupportVisible", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("FundingLinkPolicy", source, StringComparison.Ordinal);
+        }
+
+        Assert.False(File.Exists(RepositoryLocator.PathOf(
+            "src", "CareNest.App", "ViewModels", "FundingLinkPolicy.Enabled.cs")));
+        Assert.False(File.Exists(RepositoryLocator.PathOf(
+            "src", "CareNest.App", "ViewModels", "FundingLinkPolicy.Disabled.cs")));
+        Assert.False(File.Exists(RepositoryLocator.PathOf(
+            "src", "CareNest.App", "Resources", "Images", "buy_me_a_coffee_carenest.svg")));
+        Assert.False(File.Exists(RepositoryLocator.PathOf(
+            "src", "CareNest.App", "Resources", "Images", "carenest_support.svg")));
+    }
+
+    [Fact]
     public void SharedAssembly_DoesNotCarryFundingUrlConstant()
     {
         var sharedConstants = RepositoryLocator.Read("src", "CareNest.Shared", "AppConstants.cs");
@@ -12,36 +41,16 @@ public sealed class StoreFundingPayloadContractTests
     }
 
     [Fact]
-    public void AboutViewModel_CompilesFundingUrlOnlyWhenFundingSurfaceIsEnabled()
-    {
-        var viewModel = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "AboutViewModel.cs");
-        const string conditionalFundingBlock =
-            "#if CARENEST_FUNDING_LINK\n    private const string FundingUrl = \"https://buymeacoffee.com/sanskarIN\";\n#endif";
-
-        Assert.Contains(conditionalFundingBlock, viewModel, StringComparison.Ordinal);
-        Assert.Contains("SupportProjectCommand = new AsyncCommand(() => OpenAsync(FundingUrl));", viewModel, StringComparison.Ordinal);
-        Assert.Contains("SupportProjectCommand = new AsyncCommand(() => Task.CompletedTask, static () => false);", viewModel, StringComparison.Ordinal);
-        Assert.DoesNotContain("AppConstants.FundingUrl", viewModel, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Project_PropagatesStoreFundingPolicyIntoNestedBuildsAndFailsClosed()
+    public void MauiProject_DoesNotContainObsoleteFundingBuildConfiguration()
     {
         var project = RepositoryLocator.Read("src", "CareNest.App", "CareNest.App.csproj");
 
-        Assert.Contains(
-            "<CareNestShowFundingLink Condition=\"'$(CareNestShowFundingLink)' == '' and '$(CARENEST_STORE_FUNDING_LINK)' != ''\">$(CARENEST_STORE_FUNDING_LINK)</CareNestShowFundingLink>",
-            project,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "<CareNestShowFundingLink Condition=\"'$(CareNestShowFundingLink)' == ''\">true</CareNestShowFundingLink>",
-            project,
-            StringComparison.Ordinal);
-        Assert.Contains("ValidateCareNestFundingLinkConfiguration", project, StringComparison.Ordinal);
-        Assert.Contains("BeforeTargets=\"CoreCompile\"", project, StringComparison.Ordinal);
-        Assert.Contains("'$(CareNestShowFundingLink)' != 'true' and '$(CareNestShowFundingLink)' != 'false'", project, StringComparison.Ordinal);
-        Assert.Contains("CareNestShowFundingLink must be exactly 'true' or 'false'.", project, StringComparison.Ordinal);
-        Assert.Contains("<DefineConstants Condition=\"'$(CareNestShowFundingLink)' == 'true'\">$(DefineConstants);CARENEST_FUNDING_LINK</DefineConstants>", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("CareNestShowFundingLink", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("CareNestEffectiveFundingLink", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("CARENEST_STORE_FUNDING_LINK", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("CARENEST_FUNDING_LINK", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("FundingLinkPolicy", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("DefineConstants", project, StringComparison.Ordinal);
     }
 
     [Fact]

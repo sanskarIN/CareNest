@@ -12,18 +12,8 @@ if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
     throw 'dotnet SDK is required.'
 }
 
-$FundingLink = if ($env:CARENEST_SHOW_FUNDING_LINK) {
-    $env:CARENEST_SHOW_FUNDING_LINK.ToLowerInvariant()
-} else {
-    'true'
-}
-if ($FundingLink -notin @('true', 'false')) {
-    throw "CARENEST_SHOW_FUNDING_LINK must be 'true' or 'false'."
-}
-
 Write-Step 'CareNest release preflight'
 Write-Host "Repository: $Root"
-Write-Host "CareNestShowFundingLink: $FundingLink"
 dotnet --info
 if ($LASTEXITCODE -ne 0) { throw 'dotnet --info failed.' }
 
@@ -72,7 +62,6 @@ if ($env:CARENEST_TARGET) {
     Write-Step "Audit optional MAUI target: $($env:CARENEST_TARGET)"
     dotnet restore src/CareNest.App/CareNest.App.csproj `
         -p:CareNestTargetFramework=$env:CARENEST_TARGET `
-        -p:CareNestShowFundingLink=$FundingLink `
         -p:NuGetAudit=true `
         -p:NuGetAuditMode=all `
         --nologo
@@ -83,7 +72,6 @@ if ($env:CARENEST_TARGET) {
         -f $env:CARENEST_TARGET `
         -c Release `
         -p:CareNestTargetFramework=$env:CARENEST_TARGET `
-        -p:CareNestShowFundingLink=$FundingLink `
         --nologo
     if ($LASTEXITCODE -ne 0) { throw "MAUI build failed: $($env:CARENEST_TARGET)" }
 }

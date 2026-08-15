@@ -5,12 +5,13 @@ public sealed class StorePackagePreflightContractTests
     [Theory]
     [InlineData("store-package-preflight.sh")]
     [InlineData("store-package-preflight.ps1")]
-    public void StorePackagePreflight_ForcesFundingLinkOffAndDelegatesToReleasePreflight(string scriptName)
+    public void StorePackagePreflight_UsesSourcePolicyAndDelegatesToReleasePreflight(string scriptName)
     {
         var script = RepositoryLocator.Read("build", "scripts", scriptName);
 
-        Assert.Contains("CARENEST_SHOW_FUNDING_LINK", script, StringComparison.Ordinal);
-        Assert.Contains("false", script, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("CARENEST_SHOW_FUNDING_LINK", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("CareNestShowFundingLink", script, StringComparison.Ordinal);
+        Assert.Contains("External funding surface: absent from app runtime by source policy", script, StringComparison.Ordinal);
         Assert.Contains("release-preflight", script, StringComparison.Ordinal);
     }
 
@@ -41,13 +42,14 @@ public sealed class StorePackagePreflightContractTests
     }
 
     [Fact]
-    public void StorePackagePreflight_DoesNotAcceptAUserOverrideThatReenablesFunding()
+    public void ReleasePreflight_DoesNotPassObsoleteFundingBuildProperty()
     {
-        var bash = RepositoryLocator.Read("build", "scripts", "store-package-preflight.sh");
-        var powershell = RepositoryLocator.Read("build", "scripts", "store-package-preflight.ps1");
+        var bash = RepositoryLocator.Read("build", "scripts", "release-preflight.sh");
+        var powershell = RepositoryLocator.Read("build", "scripts", "release-preflight.ps1");
 
-        Assert.Contains("export CARENEST_SHOW_FUNDING_LINK=false", bash, StringComparison.Ordinal);
-        Assert.Contains("$env:CARENEST_SHOW_FUNDING_LINK = 'false'", powershell, StringComparison.Ordinal);
-        Assert.DoesNotContain("CARENEST_SHOW_FUNDING_LINK:-true", bash, StringComparison.Ordinal);
+        Assert.DoesNotContain("CARENEST_SHOW_FUNDING_LINK", bash, StringComparison.Ordinal);
+        Assert.DoesNotContain("CareNestShowFundingLink", bash, StringComparison.Ordinal);
+        Assert.DoesNotContain("CARENEST_SHOW_FUNDING_LINK", powershell, StringComparison.Ordinal);
+        Assert.DoesNotContain("CareNestShowFundingLink", powershell, StringComparison.Ordinal);
     }
 }
