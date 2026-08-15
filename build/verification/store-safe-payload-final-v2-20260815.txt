@@ -1,0 +1,15 @@
+CareNest exact-head store-safe payload verification marker v2
+
+Frozen source/base SHA:
+4adbaaf6ca493ecec74237921f05b83806e3e973
+
+Verification purpose:
+- verify corrected funding URL source-policy contracts;
+- verify all core tests and default four-platform Release builds;
+- verify funding-disabled four-platform Release builds;
+- exercise the Store Inspection Artifacts payload scanner self-test;
+- generate Android/Windows/iOS simulator/Mac Catalyst internal inspection artifacts;
+- require the BMC funding marker to be absent from inspected funding-disabled payloads;
+- run CodeQL and unsuppressed Dependency Audit on the exact corrected source boundary.
+
+PR #64 exposed two stale contracts and is intentionally superseded. This marker is verification-only and must be closed without merge after evidence is recorded.
