@@ -8,6 +8,40 @@ The exact pre-documentation-completion changelog is preserved at:
 
 Historical evidence is retained rather than rewritten. This active changelog records the current authoritative state and the latest continuation.
 
+## [Unreleased] - 2026-08-15
+
+### Added — store/package release-readiness controls
+
+- Added `CareNestShowFundingLink`, defaulting to `true`, so the voluntary Buy Me a Coffee surface can be hidden for a specific store package without maintaining a source fork.
+- Added `AboutViewModel.IsProjectSupportVisible` and bound the complete About support card to it.
+- Added a UI/source-policy contract protecting the configurable support-link surface and its voluntary/no-health-entitlement wording.
+- Added `PackageMetadataContractTests` covering CareNest app identity/version shape, target frameworks/minimum OS declarations, Android local-first permission/backup/cleartext posture, Apple purpose strings/transport posture, Windows package metadata and required brand assets.
+- Added `RepositoryLocator.PathOf` for reusable repository-path assertions in source-policy tests.
+- Added `docs/releases/STORE_BUILD_POLICY.md` with enabled/disabled package commands, per-store policy-decision rules and release evidence fields.
+- Added `docs/releases/PACKAGED_RELEASE_VALIDATION.md` with source freeze, package identity/checksum, packaged SQLite/encrypted-data, reminder, accessibility, store-policy, signing and final-tag evidence procedures.
+
+### Changed — release preflight
+
+- Bash and PowerShell release-preflight scripts now read `CARENEST_SHOW_FUNDING_LINK` with default `true`.
+- Accepted values are fail-closed to `true`/`false`; invalid values stop preflight.
+- Optional MAUI restore/build receives `CareNestShowFundingLink`, making a store-specific funding-link package reproducible.
+
+### Changed — release evidence boundary
+
+- PR #56 remains valid authoritative evidence for its frozen 2026-08-14 source boundary, but it is no longer described as exact-head verification of the newer 2026-08-15 `main` source.
+- `PROJECT_STATUS.md` and `what_changed.md` now require a new exact-head verification after the store/package hardening stabilizes.
+- Current Apple/Google support-link policy review, actual packaged variant inspection, device/accessibility testing, signing and production-tag evidence remain open and are not inferred from source changes.
+
+### Continuation commits — 2026-08-15
+
+- `35690d2f1fbe8bb56d91e718dab688fe4de6cc0d` — `feat: make voluntary funding link store-configurable`;
+- `7ccea4ff5367b3c4e94b156f989799d91d6f52ff` — `test: enforce package metadata and privacy contracts`;
+- `1fe68a73aaa41622391d8ff6e53171ca98dce055` — `build: pass store funding policy into release preflight`;
+- `0a9d994ea310f00d715684c993ee2d954dc0f081` — `docs: define store-specific funding-link build policy`;
+- `fe17e1ad752250d81d502ef7615fc1e652842e47` — `docs: add packaged release validation runbook`;
+- `db8536d9de125ae73f895ca1d1d6cbdb4de0ded0` — `docs: record packaged release hardening handoff`;
+- `dadcc8f3a6c4098bf9277e647206f75f59e98261` — `docs: align project status with new source boundary`.
+
 ## [Unreleased] - 2026-08-14
 
 ### Added — complete project documentation
@@ -213,7 +247,7 @@ The documentation completion pass added or aligned the following logical commits
 
 - `06f6ae6968d01e272ab1c0b37190442df867c637` — `docs: add complete project documentation`;
 - `2796e2852c659f88e64666c7894c13cc08cda2e1` — `docs: promote PR56 in root README`;
-- `20649ff30bc1fb8b8c6321d725e492209e1a52eb` — `docs: add complete codebase reference`;
+- `20649ff30bc1fb8b8c6321d725e492209e1dae9` — `docs: add complete codebase reference`;
 - `37a179aaa2ad3d9a7ac944712cacb2e0d01a0183` — `docs: add configuration and automation reference`;
 - `d7ca9b8400caf20ac506a9bfb81c8c3d58bc5da7` — `docs: add maintenance and operations manual`;
 - `198c8355348aaee76c30781d51214ae355e1dae9` — `docs: record complete documentation audit`;
@@ -233,6 +267,7 @@ GitHub commit metadata for this continuation uses `Sanskar <sanskarin@outlook.in
 
 Documentation completeness and PR #56 automation do not complete:
 
+- new exact-head verification for the 2026-08-15 source/test/release-script boundary;
 - real Android/Windows/iOS/iPadOS/Mac Catalyst manual matrices;
 - actual notification permission/delivery/recovery behavior;
 - Android alarm/battery/reboot/time/time-zone checks;
@@ -241,6 +276,7 @@ Documentation completeness and PR #56 automation do not complete:
 - clean-install restore;
 - accessibility testing;
 - current Apple/Google store-policy review;
+- packaged verification of the selected funding-link visibility per store;
 - signing credentials/configuration outside Git;
 - signed artifact generation/inspection;
 - store listing/screenshots/privacy/data-safety metadata;
