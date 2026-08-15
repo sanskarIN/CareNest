@@ -28,8 +28,14 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
         Assert.Contains("dotnet publish src/CareNest.App/CareNest.App.csproj", workflow, StringComparison.Ordinal);
         Assert.Contains("-p:AndroidKeyStore=false", workflow, StringComparison.Ordinal);
         Assert.Contains("-p:AndroidPackageFormats=aab", workflow, StringComparison.Ordinal);
+        Assert.Contains("! -name '*-Signed.aab'", workflow, StringComparison.Ordinal);
+        Assert.Contains("Expected exactly one unsigned Android AAB candidate", workflow, StringComparison.Ordinal);
+        Assert.Contains("META-INF/[^[:space:]]+\\.(RSA|DSA|EC|SF)$", workflow, StringComparison.Ordinal);
+        Assert.Contains("Android inspection AAB unexpectedly contains signing metadata.", workflow, StringComparison.Ordinal);
         Assert.Contains("sha256sum ./*.aab > SHA256SUMS.txt", workflow, StringComparison.Ordinal);
-        Assert.Contains("signing=disabled", workflow, StringComparison.Ordinal);
+        Assert.Contains("signing=verified-unsigned", workflow, StringComparison.Ordinal);
+        Assert.Contains("debug_signed_companion_staged=false", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("signing=disabled\n", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("AndroidSigningKeyStore", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("AndroidSigningKeyAlias", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("AndroidSigningKeyPass", workflow, StringComparison.Ordinal);
