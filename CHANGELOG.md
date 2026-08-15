@@ -10,6 +10,93 @@ Historical evidence is retained rather than rewritten. This active changelog rec
 
 ## [Unreleased] - 2026-08-15
 
+### Added — corrected store inspection artifact automation
+
+- Added `.github/workflows/store-inspection-artifacts.yml` for reproducible non-production Android, Windows, iOS-simulator and Mac Catalyst inspection artifacts with `CareNestShowFundingLink=false`.
+- Added exact source-head checkout/artifact naming and separate PR merge/event SHA provenance so a temporary GitHub pull-request merge ref is not confused with the inspected source.
+- Added SHA-256/provenance files to every inspection artifact and explicit `artifact_purpose=internal-inspection-only` / `store_submission_ready=false` markers.
+- Added a verified-unsigned Android AAB path that stages exactly one non-`-Signed.aab` candidate and rejects JAR-signature metadata before upload.
+- Added a self-contained unpackaged Windows `win-x64` inspection publish using the Windows-only `RuntimeIdentifierOverride` mapping.
+- Added iOS simulator and unsigned Mac Catalyst inspection bundles without production provisioning/signing credentials.
+- Added `StoreInspectionArtifactWorkflowContractTests` covering triggers, funding-disabled configuration, unsigned/internal status, secret absence, checksums, exact source/event provenance and Android debug-signed-companion rejection.
+- Added release-workflow contract coverage requiring Store Inspection Artifacts on exact `v*` and manual release-verification paths.
+- Added `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md` with PR #60 failure evidence and authoritative PR #61 runs/artifact IDs/API digests/payload checksums/download inspection.
+
+### Changed — store-safe About command and Windows publish isolation
+
+- Store-safe builds now make the hidden funding command non-executable instead of merely hiding the support card.
+- `PackageMetadataContractTests` now protect the Windows-only `RuntimeIdentifierOverride` publish mapping while preserving minimum-OS package metadata assertions.
+- `CareNest.App.csproj` maps `RuntimeIdentifierOverride` to `RuntimeIdentifier` only for the Windows target when explicitly supplied.
+- Exact production tags matching `v*` now cover **seven** release workflows: CareNest CI, CodeQL, Dependency Audit, CareNest Store Package Configuration, CareNest Store Inspection Artifacts, Release Gate and CareNest Release Evidence.
+
+### Fixed — first inspection artifact workflow defects exposed by PR #60
+
+PR #60 was deliberately rejected as final evidence even though its Android and Windows artifact jobs completed.
+
+Downloaded Android artifact inspection exposed:
+
+- an unsigned AAB and a MAUI-generated debug-signed `-Signed.aab` companion staged together while provenance said signing was disabled;
+- the signed companion carried the standard Android Debug certificate identity (`CN=Android Debug, O=Android, C=US`);
+- PR artifact naming/provenance used GitHub's temporary PR merge/event SHA rather than the marker branch head.
+
+Corrective source now:
+
+- excludes `*-Signed.aab` from staging;
+- requires exactly one unsigned Android AAB candidate;
+- rejects AAB JAR-signature metadata;
+- records `signing=verified-unsigned` and `debug_signed_companion_staged=false`;
+- checks out and names artifacts from the exact PR/source head;
+- records GitHub event/merge SHA/ref separately for auditability.
+
+PR #60 was closed without merge and remains historical failure-driven evidence only.
+
+### Verification — PR #61 authoritative current automated/source-inspection baseline
+
+PR #61: `Verify corrected CareNest store inspection artifacts`.
+
+Frozen source/base:
+
+`4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2`
+
+Marker head:
+
+`19c82b813c375047cf1166487bc18a1bd2cd0e52`
+
+PR merge/event SHA:
+
+`c8ea9fef89d7b773f19bf13c64f349495be706ad`
+
+Evidence:
+
+- CareNest CI #650 / `31872610834`: **success**;
+- formatting: **success**;
+- UnitTests: **122 passed, 0 failed, 0 skipped**;
+- IntegrationTests: **39 passed, 0 failed, 0 skipped**;
+- UiTests/source-policy: **157 passed, 0 failed, 0 skipped**;
+- total core tests: **318 passed, 0 failed, 0 skipped**;
+- default Android Release: **success**;
+- default Windows Release: **success**;
+- default iOS simulator Release: **success**;
+- default Mac Catalyst Release: **success**;
+- CareNest Store Package Configuration #39 / `31872610789`: **success**;
+- store-safe Android/Windows/iOS simulator/Mac Catalyst Release builds with `CareNestShowFundingLink=false`: **success**;
+- Bash store-package preflight executable-mode guard: **success**;
+- CareNest Store Inspection Artifacts #2 / `31872610786`: **success**;
+- CodeQL #650 / `31872610815`: **success**;
+- unsuppressed Dependency Audit #46 / `31872610791`: **success**.
+
+Downloaded artifact evidence:
+
+- Android artifact ID `9243915053`, API digest `sha256:ac0039136e3608319df2927fbb38acf383445b022596ce4f86633b39f882c164`, AAB SHA-256 `fea87ddc9e790d4c88f4de382f70a121c57f308e9f476bc52b57f3bd091ce080`;
+- Windows artifact ID `9243904498`, API digest `sha256:c0c7dd46ad8ec38e2295da0e1e0c8c69ece690f024c248b82ee09a0721a999f6`, nested ZIP SHA-256 `08b4de53dcebc7d88031f4ae3f243e6579e8ad556bcf1e299c6294399b978ac0`;
+- Apple artifact ID `9244085155`, API digest `sha256:e82e6fe2022a7a5cf6ead34744876561c4c93e550e5d34fe192098455ea6ebd2`, iOS simulator tar SHA-256 `6ad6077fff0ac0f9b5bd5d8a03b73c0e2abf7fb6c825e7db2408204c58f02d65`, Mac Catalyst tar SHA-256 `fb98371db1c54cfac766d126f3eebace53269ee3c150b49c077f1637115d67d8`.
+
+Independent downloaded-artifact inspection confirmed the corrected Android artifact contains exactly one unsigned AAB with no staged debug-signed companion/signature metadata; Windows is unpackaged/internal-only; Apple has no embedded production provisioning and Mac Catalyst has no `_CodeSignature`; all provenance separates source head from PR event/merge SHA.
+
+PR #61 was closed without merge. Its marker is not part of `main`.
+
+Internal inspection artifacts remain non-production evidence. They do not complete actual production signing, installed-package inspection, packaged SQLite/encrypted-data compatibility, accessibility, device notification behavior, submission-time store-policy review or store approval.
+
 ### Added — store/package release-readiness controls
 
 - Added `CareNestShowFundingLink`, defaulting to `true`, so the voluntary Buy Me a Coffee surface can be hidden for a specific store package without maintaining a source fork.
@@ -26,7 +113,7 @@ Historical evidence is retained rather than rewritten. This active changelog rec
 - Added `StorePackagePreflightContractTests` covering forced-false behavior, explicit target allow-list, standard-preflight delegation and caller-override rejection.
 - Added exact `v*`/manual workflow contract coverage requiring the store-package workflow.
 - Added `docs/releases/PACKAGED_RELEASE_HARDENING_VERIFICATION_20260815.md` recording PR #58 evidence.
-- Added `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md` recording the authoritative PR #59 default-plus-store-safe exact-source evidence.
+- Added `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md` recording the historical PR #59 default-plus-store-safe exact-source evidence.
 
 ### Changed — release preflight and store-safe source compilation
 
@@ -48,10 +135,11 @@ Production tags matching `v*` are now expected to run the exact tagged commit th
 - CodeQL;
 - Dependency Audit;
 - CareNest Store Package Configuration;
+- CareNest Store Inspection Artifacts;
 - Release Gate;
 - CareNest Release Evidence.
 
-A successful Store Package Configuration run proves funding-disabled source compilation only. It does not prove signed artifact generation, installed package behavior, store approval, accessibility, device notification behavior, or packaged existing-data compatibility.
+A successful Store Package Configuration run proves funding-disabled source compilation only. A successful Store Inspection Artifacts run proves reproducible internal package-shape/checksum/provenance evidence only. Neither proves signed artifact generation, installed package behavior, store approval, accessibility, device notification behavior, or packaged existing-data compatibility.
 
 ### Verification — PR #58 packaged-release hardening baseline
 
@@ -80,7 +168,7 @@ Evidence:
 
 PR #58 was closed without merge and remains historical exact evidence for its frozen source boundary.
 
-### Verification — PR #59 authoritative current source baseline
+### Verification — PR #59 historical store-safe source baseline
 
 PR #59: `Verify store-safe CareNest package configuration`.
 
@@ -115,16 +203,17 @@ Evidence:
 
 PR #59 was closed without merge. Its marker is not part of `main`.
 
-PR #59 supersedes PR #58 only as the current exact automated source baseline. PR #58, PR #56, and PR #54 remain valid historical evidence for their own frozen source boundaries.
+PR #61 supersedes PR #59 only as the current exact automated/source-inspection baseline. PR #59, PR #58, PR #56, and PR #54 remain valid historical evidence for their own frozen source boundaries.
 
 ### Changed — active status/documentation alignment
 
-- Root `README.md` now promotes PR #59 and documents both default and store-safe source compilation.
-- `PROJECT_STATUS.md` now uses PR #59 as the authoritative current source boundary and preserves PR #58/#56/#54 as historical evidence.
-- `docs/README.md` now indexes PR #59 verification, the dated store-policy review, store-safe workflow/preflight documentation, and current blockers.
-- `docs/CONFIGURATION_REFERENCE.md` now documents `CareNestShowFundingLink`, store-package wrappers, executable-mode guard, Store Package Configuration workflow, exact `v*` coverage, and PR #59.
-- `docs/releases/NEXT_STEPS.md` now checks only source-side work actually completed and leaves package/device/accessibility/signing/submission work open.
-- `docs/releases/RELEASE_CHECKLIST.md` now distinguishes source compilation from installed/signed package evidence and requires tagged Store Package Configuration success for final production promotion.
+- Root `README.md` now promotes PR #61 and documents default/store-safe source compilation plus internal inspection artifacts.
+- `PROJECT_STATUS.md` now uses PR #61 as the authoritative current source boundary and preserves PR #60/#59/#58/#56/#54 as historical evidence.
+- `docs/README.md` now indexes PR #61 verification, the dated store-policy review, store-safe workflow/preflight documentation, internal artifact evidence, and current blockers.
+- `docs/CONFIGURATION_REFERENCE.md` now documents `CareNestShowFundingLink`, non-executable store-safe funding command, Windows inspection RID mapping, store-package wrappers, Store Package Configuration, Store Inspection Artifacts, exact `v*` coverage, and PR #61.
+- `docs/releases/NEXT_STEPS.md` now checks only source/internal-artifact work actually completed and leaves signed package/device/accessibility/data/store-submission work open.
+- `docs/releases/RELEASE_CHECKLIST.md` now distinguishes source compilation/internal artifact evidence from installed/signed package evidence and requires tagged Store Package Configuration plus Store Inspection Artifacts success for final production promotion.
+- `docs/security/SECURITY_MODEL.md`, `docs/security/THREAT_MODEL.md`, `docs/setup/DEVELOPMENT.md`, `docs/architecture/ARCHITECTURE.md`, and `docs/DOCUMENTATION_STANDARDS.md` now use PR #61/current artifact boundaries.
 
 ### Current store-policy decision
 
@@ -136,7 +225,7 @@ The dated 2026-08-15 review records:
 - actual submission-time policy must be re-reviewed;
 - actual signed/installed package visibility must still be verified.
 
-The current source provides the store-safe switch, wrappers, tests and four-platform compilation evidence. It does not claim Apple/Google approval.
+The current source provides the store-safe switch, non-executable hidden funding command, wrappers, tests, four-platform compilation, and internal inspection artifacts. It does not claim Apple/Google approval.
 
 ### Selected continuation commits — 2026-08-15
 
@@ -156,7 +245,7 @@ Earlier store/package hardening commits:
 - `0488c68899eb8c6b5ef0de1753d3d3552fd97871` — `docs: record 2026-08-15 store support policy review`;
 - `157c904114dca152b92a15ef9b77e1d8f440e6c4` — `docs: finalize PR58 evidence in handoff`.
 
-Store-safe workflow/preflight continuation commits include focused CI, test, build-mode and documentation commits culminating in frozen executable source `8489d19734d6142054156d5b57f2713195c16b65`.
+Store-safe workflow/preflight continuation commits include focused CI, test, build-mode and documentation commits culminating in historical frozen executable source `8489d19734d6142054156d5b57f2713195c16b65`.
 
 PR #59 evidence/status documentation commits include:
 
@@ -168,11 +257,13 @@ PR #59 evidence/status documentation commits include:
 - `1997c37da8d2b04e3f93c879afe6840d9ef1d37e` — `docs: advance next steps to PR59 baseline`;
 - `531bebd512151b6a3c68cc1004384ec10b082637` — `docs: promote PR59 in release checklist`.
 
+Current PR #61 source and evidence commits are recorded in `what_changed.md` and `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`.
+
 GitHub commit metadata for this continuation uses `Sanskar <sanskarin@outlook.in>`.
 
 ### Production work intentionally still open
 
-PR #59 automation and source-side store-safe compilation do not complete:
+PR #61 automation and internal artifact evidence do not complete:
 
 - actual signed Apple App Store candidate generation;
 - actual signed Google Play candidate generation;
@@ -188,7 +279,7 @@ PR #59 automation and source-side store-safe compilation do not complete:
 - signing credentials/configuration outside Git;
 - signed artifact generation/inspection/provenance;
 - store listing/screenshots/privacy/data-safety metadata;
-- exact final production tag CareNest CI/CodeQL/audit/Store Package Configuration/Release Gate/Release Evidence;
+- exact final production tag CareNest CI/CodeQL/audit/Store Package Configuration/Store Inspection Artifacts/Release Gate/Release Evidence;
 - final version/build/checksums/publication.
 
 These remain release-blocking until actual evidence exists.
@@ -235,7 +326,7 @@ These contracts increased the authoritative UI-contract/policy test count from 1
 
 ### Changed — exact production-tag verification
 
-At that 2026-08-14 boundary, production tags matching `v*` were configured to run the exact tagged commit through CareNest CI, CodeQL, Dependency Audit, Release Gate, and CareNest Release Evidence. The 2026-08-15 continuation later added CareNest Store Package Configuration to that matrix.
+At that 2026-08-14 boundary, production tags matching `v*` were configured to run the exact tagged commit through CareNest CI, CodeQL, Dependency Audit, Release Gate, and CareNest Release Evidence. The 2026-08-15 continuation later added CareNest Store Package Configuration and CareNest Store Inspection Artifacts to that matrix.
 
 A tag is not production approval until all required automated and manual/device/accessibility/store/signing/package compatibility gates have completed successfully.
 
