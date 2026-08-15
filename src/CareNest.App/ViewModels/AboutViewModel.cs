@@ -6,10 +6,6 @@ namespace CareNest.App.ViewModels;
 
 public sealed class AboutViewModel : ObservableViewModel
 {
-#if CARENEST_FUNDING_LINK
-    private const string FundingUrl = "https://buymeacoffee.com/sanskarIN";
-#endif
-
     private readonly CareNest.Application.Contracts.IAppFileGateway _files;
 
     public AboutViewModel(
@@ -19,11 +15,7 @@ public sealed class AboutViewModel : ObservableViewModel
         _files = files;
         OpenRepositoryCommand = new AsyncCommand(() => OpenAsync(AppConstants.RepositoryUrl));
         OpenCreatorCommand = new AsyncCommand(() => OpenAsync(AppConstants.CreatorUrl));
-#if CARENEST_FUNDING_LINK
-        SupportProjectCommand = new AsyncCommand(() => OpenAsync(FundingUrl));
-#else
-        SupportProjectCommand = new AsyncCommand(() => Task.CompletedTask, static () => false);
-#endif
+        SupportProjectCommand = FundingLinkPolicy.CreateCommand(OpenAsync);
         BusinessEmailCommand = new AsyncCommand(() => OpenAsync($"mailto:{AppConstants.BusinessEmail}"));
         SupportEmailCommand = new AsyncCommand(() => OpenAsync($"mailto:{AppConstants.SupportEmail}"));
         PrivacyCommand = new AsyncCommand(() => OpenAsync($"{AppConstants.RepositoryUrl}/blob/main/PRIVACY.md"));
@@ -35,12 +27,7 @@ public sealed class AboutViewModel : ObservableViewModel
     public string Version => AppInfo.Current.VersionString;
     public string Build => AppInfo.Current.BuildString;
     public string Platform => $"{DeviceInfo.Current.Platform} {DeviceInfo.Current.VersionString}";
-
-#if CARENEST_FUNDING_LINK
-    public bool IsProjectSupportVisible => true;
-#else
-    public bool IsProjectSupportVisible => false;
-#endif
+    public bool IsProjectSupportVisible => FundingLinkPolicy.IsVisible;
 
     public ICommand OpenRepositoryCommand { get; }
     public ICommand OpenCreatorCommand { get; }

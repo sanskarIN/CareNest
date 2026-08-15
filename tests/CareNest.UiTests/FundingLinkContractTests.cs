@@ -3,17 +3,22 @@ namespace CareNest.UiTests;
 public sealed class FundingLinkContractTests
 {
     [Fact]
-    public void Funding_link_is_consistent_across_enabled_runtime_support_surface_without_shared_payload_leak()
+    public void Funding_link_is_consistent_across_enabled_runtime_support_surface_without_store_safe_payload_leak()
     {
         var root = FindRepositoryRoot();
         var constants = File.ReadAllText(Path.Combine(root, "src", "CareNest.Shared", "AppConstants.cs"));
         var viewModel = File.ReadAllText(Path.Combine(root, "src", "CareNest.App", "ViewModels", "AboutViewModel.cs"));
+        var enabled = File.ReadAllText(Path.Combine(root, "src", "CareNest.App", "ViewModels", "FundingLinkPolicy.Enabled.cs"));
+        var disabled = File.ReadAllText(Path.Combine(root, "src", "CareNest.App", "ViewModels", "FundingLinkPolicy.Disabled.cs"));
         var aboutPage = File.ReadAllText(Path.Combine(root, "src", "CareNest.App", "Views", "AboutPage.xaml"));
 
         Assert.DoesNotContain("buymeacoffee.com", constants, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("#if CARENEST_FUNDING_LINK", viewModel, StringComparison.Ordinal);
-        Assert.Contains("https://buymeacoffee.com/sanskarIN", viewModel, StringComparison.Ordinal);
-        Assert.Contains("OpenAsync(FundingUrl)", viewModel, StringComparison.Ordinal);
+        Assert.DoesNotContain("buymeacoffee.com", viewModel, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("FundingLinkPolicy.CreateCommand(OpenAsync)", viewModel, StringComparison.Ordinal);
+        Assert.Contains("https://buymeacoffee.com/sanskarIN", enabled, StringComparison.Ordinal);
+        Assert.Contains("openAsync(FundingUrl)", enabled, StringComparison.Ordinal);
+        Assert.DoesNotContain("buymeacoffee.com", disabled, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Task.CompletedTask, static () => false", disabled, StringComparison.Ordinal);
         Assert.DoesNotContain("AppConstants.FundingUrl", viewModel, StringComparison.Ordinal);
         Assert.Contains("SupportProjectCommand", viewModel, StringComparison.Ordinal);
         Assert.Contains("Command=\"{Binding SupportProjectCommand}\"", aboutPage, StringComparison.Ordinal);

@@ -14,13 +14,19 @@
     <WindowsPackageType>None</WindowsPackageType>
     <CareNestShowFundingLink Condition="'$(CareNestShowFundingLink)' == '' and '$(CARENEST_STORE_FUNDING_LINK)' != ''">$(CARENEST_STORE_FUNDING_LINK)</CareNestShowFundingLink>
     <CareNestShowFundingLink Condition="'$(CareNestShowFundingLink)' == ''">true</CareNestShowFundingLink>
-    <DefineConstants Condition="'$(CareNestShowFundingLink)' == 'true'">$(DefineConstants);CARENEST_FUNDING_LINK</DefineConstants>
   </PropertyGroup>
 
   <Target Name="ValidateCareNestFundingLinkConfiguration" BeforeTargets="CoreCompile">
     <Error Condition="'$(CareNestShowFundingLink)' != 'true' and '$(CareNestShowFundingLink)' != 'false'"
            Text="CareNestShowFundingLink must be exactly 'true' or 'false'." />
   </Target>
+
+  <ItemGroup>
+    <Compile Remove="ViewModels\FundingLinkPolicy.Enabled.cs" />
+    <Compile Remove="ViewModels\FundingLinkPolicy.Disabled.cs" />
+    <Compile Include="ViewModels\FundingLinkPolicy.Enabled.cs" Condition="'$(CareNestShowFundingLink)' == 'true'" />
+    <Compile Include="ViewModels\FundingLinkPolicy.Disabled.cs" Condition="'$(CareNestShowFundingLink)' == 'false'" />
+  </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
