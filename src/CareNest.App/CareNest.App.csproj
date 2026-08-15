@@ -12,6 +12,8 @@
     <ApplicationDisplayVersion>1.0.0-rc.1</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <WindowsPackageType>None</WindowsPackageType>
+    <CareNestShowFundingLink Condition="'$(CareNestShowFundingLink)' == ''">true</CareNestShowFundingLink>
+    <DefineConstants Condition="'$(CareNestShowFundingLink)' == 'true'">$(DefineConstants);CARENEST_FUNDING_LINK</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">

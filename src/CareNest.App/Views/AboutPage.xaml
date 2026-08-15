@@ -34,7 +34,9 @@
         </VerticalStackLayout>
       </Border>
 
-      <Border Style="{StaticResource Card}" SemanticProperties.Description="Voluntary project support for CareNest">
+      <Border Style="{StaticResource Card}"
+              IsVisible="{Binding IsProjectSupportVisible}"
+              SemanticProperties.Description="Voluntary project support for CareNest">
         <VerticalStackLayout Spacing="12">
           <ImageButton Source="carenest_support.svg"
                        HeightRequest="108"

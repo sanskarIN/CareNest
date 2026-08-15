@@ -28,6 +28,12 @@ public sealed class AboutViewModel : ObservableViewModel
     public string Build => AppInfo.Current.BuildString;
     public string Platform => $"{DeviceInfo.Current.Platform} {DeviceInfo.Current.VersionString}";
 
+#if CARENEST_FUNDING_LINK
+    public bool IsProjectSupportVisible => true;
+#else
+    public bool IsProjectSupportVisible => false;
+#endif
+
     public ICommand OpenRepositoryCommand { get; }
     public ICommand OpenCreatorCommand { get; }
     public ICommand SupportProjectCommand { get; }

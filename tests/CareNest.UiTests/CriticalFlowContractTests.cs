@@ -59,6 +59,22 @@ public sealed class CriticalFlowContractTests
     }
 
     [Fact]
+    public void About_VoluntaryFundingSurface_IsBuildConfigurable()
+    {
+        var project = RepositoryLocator.Read("src", "CareNest.App", "CareNest.App.csproj");
+        var source = RepositoryLocator.Read("src", "CareNest.App", "ViewModels", "AboutViewModel.cs");
+        var xaml = RepositoryLocator.Read("src", "CareNest.App", "Views", "AboutPage.xaml");
+
+        Assert.Contains("CareNestShowFundingLink", project, StringComparison.Ordinal);
+        Assert.Contains("CARENEST_FUNDING_LINK", project, StringComparison.Ordinal);
+        Assert.Contains("#if CARENEST_FUNDING_LINK", source, StringComparison.Ordinal);
+        Assert.Contains("IsProjectSupportVisible", source, StringComparison.Ordinal);
+        Assert.Contains("IsVisible=\"{Binding IsProjectSupportVisible}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("Project support is voluntary", xaml, StringComparison.Ordinal);
+        Assert.Contains("does not unlock medical advice", xaml, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ResetData_UsesTwoConfirmations()
     {
         var source = RepositoryLocator.Read("src", "CareNest.App", "Views", "SettingsPage.xaml.cs");
