@@ -132,8 +132,12 @@ public sealed class PackageMetadataContractTests
     {
         var group = project.Root!
             .Elements("PropertyGroup")
-            .Single(element => ((string?)element.Attribute("Condition"))?.Contains(
-                $"== '{platform}'", StringComparison.Ordinal) == true);
+            .Single(element =>
+            {
+                var condition = (string?)element.Attribute("Condition");
+                return condition?.Contains($"== '{platform}'", StringComparison.Ordinal) == true &&
+                       element.Element(name) is not null;
+            });
 
         return group.Element(name)!.Value.Trim();
     }
