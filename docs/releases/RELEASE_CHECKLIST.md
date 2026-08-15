@@ -2,35 +2,42 @@
 
 ## Automated verification evidence
 
-Authoritative verification PR: `#56`  
-Frozen source/base SHA: `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`  
-Verification marker head: `e3bc621cea05364a69abee0dadbd71a67c17bddb`  
-CareNest CI run: `#571` / `31770929379`  
-CodeQL run: `#571` / `31770929382`  
-Dependency Audit run: `#41` / `31770929383`
+Authoritative verification PR: `#59`  
+Frozen source/base SHA: `8489d19734d6142054156d5b57f2713195c16b65`  
+Verification marker head: `ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`  
+CareNest CI run: `#622` / `31869214132`  
+Store Package Configuration run: `#11` / `31869214047`  
+CodeQL run: `#622` / `31869214042`  
+Dependency Audit run: `#44` / `31869214093`
 
 Completed evidence:
 
 - [x] Platform-neutral `dotnet format --verify-no-changes` gate.
 - [x] Unit tests — **122 passed, 0 failed, 0 skipped**.
 - [x] Integration tests — **39 passed, 0 failed, 0 skipped**.
-- [x] UI-contract/policy tests — **124 passed, 0 failed, 0 skipped**.
-- [x] Total automated test cases in the core job — **285 passed, 0 failed, 0 skipped**.
-- [x] Android Release build.
-- [x] Windows Release build.
-- [x] iOS simulator Release build.
-- [x] Mac Catalyst Release build.
+- [x] UI-contract/policy tests — **149 passed, 0 failed, 0 skipped**.
+- [x] Total automated test cases in the core job — **310 passed, 0 failed, 0 skipped**.
+- [x] Default Android Release build.
+- [x] Default Windows Release build.
+- [x] Default iOS simulator Release build.
+- [x] Default Mac Catalyst Release build.
+- [x] Store-safe Android Release build with `CareNestShowFundingLink=false`.
+- [x] Store-safe Windows Release build with `CareNestShowFundingLink=false`.
+- [x] Store-safe iOS simulator Release build with `CareNestShowFundingLink=false`.
+- [x] Store-safe Mac Catalyst Release build with `CareNestShowFundingLink=false`.
+- [x] Bash store-package preflight executable-mode guard.
 - [x] CodeQL analysis.
 - [x] Unsuppressed Dependency Audit, including the Android MAUI application graph.
 - [x] Exact-tag/manual release workflow entry-point contracts.
+- [x] Store-package workflow/preflight forced-false/target/non-publication contracts.
 - [x] Failure-preserving Release Evidence provenance/rerun-identity contracts.
 - [x] Blocking local preflight/quality dependency-audit contracts.
 - [x] Repository-local Git identity setup contracts.
 - [x] Fail-closed Release Gate contracts.
 
-PR #56 is a verification-only branch containing only `build/verification/release-engineering-final-v2-20260814.txt` beyond its frozen source boundary. It was closed without merge after the full matrix completed. The marker is not part of `main`.
+PR #59 is a verification-only branch containing only `build/verification/store-safe-package-final-20260815.txt` beyond its frozen source boundary. It was closed without merge after the full matrix completed. The marker is not part of `main`.
 
-`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` records the authoritative final automated evidence. PR #54 remains the historical authoritative runtime bug-audit baseline; PR #55 is superseded partial release-engineering evidence.
+`docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md` records the authoritative current automated evidence. PR #58 remains historical packaged-release/store-policy hardening evidence, PR #56 remains historical release-engineering evidence, and PR #54 remains the historical authoritative runtime bug-audit baseline.
 
 The verified source includes all previous repository/privacy/architecture/reminder/snapshot/app-lock/service/document/backup/AEAD-v2 hardening plus:
 
@@ -59,13 +66,20 @@ The verified source includes all previous repository/privacy/architecture/remind
 - SQLite native/provider package remediation;
 - removal of the tracked SQLite NuGet audit suppression;
 - dependency-security regression contract protecting the patched package floor;
-- exact `v*` tag execution for CareNest CI, CodeQL, Dependency Audit, Release Gate and Release Evidence;
+- exact `v*` tag execution for CareNest CI, CodeQL, Dependency Audit, CareNest Store Package Configuration, Release Gate and Release Evidence;
 - failure-preserving Release Evidence with tracked-source provenance/checksums and rerun-safe artifact identity;
 - blocking unsuppressed dependency audit in local quality/preflight scripts;
 - fail-closed repository-local Git identity setup;
-- hardened production Release Gate matching.
+- hardened production Release Gate matching;
+- build-configurable voluntary external funding surface;
+- package metadata/privacy regression contracts;
+- fail-closed store-package Bash/PowerShell wrappers that require an explicit supported target and force `CARENEST_SHOW_FUNDING_LINK=false`;
+- executable Git mode for the Bash store-package wrapper plus CI executable-mode verification;
+- dedicated four-platform store-safe Release compilation with `CareNestShowFundingLink=false`;
+- source-policy contracts preventing store-safe workflow/preflight drift;
+- dated 2026-08-15 Apple/Google external support-link policy review and conservative store package decision.
 
-Automated green status does not substitute for manual device, signing, accessibility, notification-delivery, current store-policy, encrypted-data compatibility, or packaged existing-database checks.
+Automated green status does not substitute for manual device, signing, accessibility, notification-delivery, submission-time store-policy re-review, encrypted-data compatibility, installed package inspection, or packaged existing-database checks.
 
 ## Verification hardening sequence
 
@@ -98,25 +112,35 @@ Historical sequence includes:
 - PR #53: duplicate final bug-audit verification; all required groups ultimately completed successfully.
 - PR #54 / CI #503: authoritative completed runtime bug-audit baseline; 261/261 core tests, all four Release builds, CodeQL, and unsuppressed Dependency Audit succeeded.
 - PR #55: first release-engineering checkpoint; 277/277 core tests, Android, Windows, CodeQL and unsuppressed Dependency Audit succeeded before further confirmed release-tooling/documentation fixes superseded it.
-- PR #56 / CI #571: **authoritative current automated baseline**; 285/285 core tests, all four Release builds, CodeQL, and unsuppressed Dependency Audit succeeded.
+- PR #56 / CI #571: historical release-engineering baseline; 285/285 core tests, all four default Release builds, CodeQL, and unsuppressed Dependency Audit succeeded.
+- PR #58 / CI #608: historical packaged-release/store-policy hardening baseline; 291/291 core tests, all four default Release builds, CodeQL, and unsuppressed Dependency Audit succeeded.
+- PR #59 / CI #622: **authoritative current automated baseline**; 310/310 core tests, all four default Release builds, all four funding-disabled store-safe Release builds, CodeQL, and unsuppressed Dependency Audit succeeded.
 
 No failed/superseded verification marker is final release evidence, and no verification marker file is intended to enter `main`.
 
 ## Release-preparation additions now present
 
 - custom scalable CareNest Buy Me a Coffee vector artwork and original compact support badge;
-- clickable support surfaces in README, SUPPORT, in-app About, `BUY_ME_A_COFFEE.md`, and `docs/SUPPORT_CARENEST.md`;
+- clickable support surfaces in README, SUPPORT, in-app About, `BUY_ME_A_COFFEE.md`, and `docs/SUPPORT_CARENEST.md` for builds where the external support surface is enabled;
+- build-configurable funding surface through `CareNestShowFundingLink`;
 - Bash and PowerShell release-preflight scripts;
 - Bash and PowerShell local quality-gate scripts;
+- Bash and PowerShell fail-closed store-package preflight scripts;
+- executable-mode guard for the Bash store-package preflight;
+- dedicated CareNest Store Package Configuration workflow;
 - repository-local Git identity setup scripts;
 - manual device test matrix;
+- packaged release validation runbook;
+- store build policy;
+- dated store support-link policy review;
+- store-safe configuration exact-source verification evidence;
 - store submission checklist;
 - SQLite dependency migration plan;
 - privacy-safe structured bug report form;
 - Dependency Audit workflow;
 - production Release Gate workflow;
 - Release Evidence workflow with source provenance/failure preservation/rerun identity;
-- exact `v*` tag execution for all required release workflows;
+- exact `v*` tag execution for all required release workflows, including Store Package Configuration;
 - logging privacy contract;
 - deterministic reminder scheduling contract;
 - complete testing guide and test plan;
@@ -124,7 +148,7 @@ No failed/superseded verification marker is final release evidence, and no verif
 - security release-review checklist;
 - release-notes template;
 - exact-head verification-branch protocol;
-- automated repository/architecture/ViewModel/data-model/branding/async/logging/app-lock/reminder/service/backup/crypto/dependency/release-policy coverage;
+- automated repository/architecture/ViewModel/data-model/branding/async/logging/app-lock/reminder/service/backup/crypto/dependency/release-policy/store-package coverage;
 - original light, dark, and monochrome CareNest mark variants.
 
 ## Release preparation and manual verification
@@ -132,17 +156,20 @@ No failed/superseded verification marker is final release evidence, and no verif
 ### Automated/preflight
 
 - [ ] Decide final `1.0.0` version/build metadata and release date.
-- [ ] Run `build/scripts/release-preflight.sh` or `build/scripts/release-preflight.ps1` on a fully provisioned development host.
-- [x] Platform-neutral `dotnet format --verify-no-changes` succeeds on the authoritative PR #56 source boundary.
+- [ ] Run `build/scripts/release-preflight.sh` or `build/scripts/release-preflight.ps1` on a fully provisioned development host for the intended normal configuration where applicable.
+- [ ] Run `build/scripts/store-package-preflight.sh` or `build/scripts/store-package-preflight.ps1` for each intended store-safe target on a fully provisioned development host where applicable.
+- [x] Platform-neutral `dotnet format --verify-no-changes` succeeds on the authoritative PR #59 source boundary.
 - [x] Required project restores used by completed automated tests/platform builds succeed on GitHub-hosted runners.
-- [x] Unsuppressed NuGet dependency vulnerability audit succeeds on PR #56.
+- [x] Unsuppressed NuGet dependency vulnerability audit succeeds on PR #59.
 - [x] Automated repository policy confirms no release-blocking implementation markers in committed runtime source.
-- [x] CareNest CI is fully green for the current release-engineering source boundary.
-- [x] CodeQL is green for the current release-engineering source boundary.
-- [x] Dependency Audit is green for the current release-engineering source boundary.
-- [x] Release workflow/script/Git setup/Release Gate contracts are green in the 124-test UI-contract suite.
+- [x] CareNest CI is fully green for the current exact source boundary.
+- [x] CareNest Store Package Configuration is fully green for the current exact source boundary.
+- [x] CodeQL is green for the current exact source boundary.
+- [x] Dependency Audit is green for the current exact source boundary.
+- [x] Release workflow/script/Git setup/store-package/Release Gate contracts are green in the 149-test UI-contract suite.
+- [x] PR #59 marker-only exact-head verification is completed and recorded in `STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`.
 - [ ] Re-run the complete automated matrix if runtime/test/workflow/package/project/platform/build-script source changes before production promotion.
-- [ ] Run the exact production `v*` tag and require CareNest CI, CodeQL, Dependency Audit, Release Gate and Release Evidence all green.
+- [ ] Run the exact production `v*` tag and require CareNest CI, CodeQL, Dependency Audit, CareNest Store Package Configuration, Release Gate and Release Evidence all green.
 - [ ] Record the final Release Evidence artifact/checksums for the exact production tag.
 
 ### Automated reminder, appointment, service, snapshot and app-lock coverage
@@ -215,8 +242,8 @@ No failed/superseded verification marker is final release evidence, and no verif
 - [x] Selected SQLitePCLRaw providers are pinned to `2.1.12`.
 - [x] The exact `GHSA-2m69-gcr7-jv3q` `NuGetAuditSuppress` entry is removed.
 - [x] `SqliteDependencySecurityContractTests` protects the package floor and suppression absence.
-- [x] Unsuppressed Dependency Audit #41 / `31770929383` succeeds on authoritative PR #56.
-- [x] All 285 automated tests and four platform Release builds succeed on the same verified source boundary.
+- [x] Unsuppressed Dependency Audit #44 / `31869214093` succeeds on authoritative PR #59.
+- [x] All 310 automated tests, four default platform Release builds, and four funding-disabled store-safe Release builds succeed on the same verified source boundary.
 - [ ] Representative packaged upgrade/install with fictional pre-remediation data is manually verified.
 - [ ] Existing structured records are manually verified after the package update.
 - [ ] Existing encrypted document and backup workflows are manually verified on packaged targets.
@@ -272,7 +299,7 @@ No failed/superseded verification marker is final release evidence, and no verif
 - [x] Strict backup topology is integration tested.
 - [x] Caller-owned key-buffer hygiene has integration coverage.
 - [x] SQLite dependency source remediation removes the tracked advisory audit suppression and guards the maintained native/provider floor.
-- [x] Release workflow/script security-policy contracts pass in PR #56.
+- [x] Release workflow/script/security-policy/store-package contracts pass in PR #59.
 - [ ] Confirm on target devices that no document content, backup passwords, plaintext PINs, sensitive notes or private file paths appear in device/platform logs.
 - [ ] Confirm export/share operations occur only after explicit user action.
 - [ ] Confirm no CareNest account/backend/network requirement appears in normal local-first flows.
@@ -290,16 +317,25 @@ Project-support URL:
 `https://buymeacoffee.com/sanskarIN`
 
 - [x] URL centralized in CareNest shared constants.
-- [x] About/support action exists.
-- [x] In-app support artwork is clickable.
+- [x] About/support action exists for configurations where the support surface is enabled.
+- [x] In-app support artwork is clickable when enabled.
 - [x] GitHub funding metadata exists.
 - [x] Custom vector project-support artwork exists.
 - [x] Original compact CareNest support badge exists.
 - [x] Clickable README/SUPPORT/root/documentation support pages exist.
 - [x] Support is documented as voluntary and not a CareNest feature entitlement or medical service.
-- [ ] Review current rules for external funding/tipping/donation links on every store/distribution channel used for the final package.
-- [ ] If a target store disallows the link for the submitted configuration, remove/disable the in-app external funding action for that target before packaging while retaining repository funding links where permitted.
-- [ ] Confirm on packaged builds that no CareNest health data is sent merely by displaying/opening the external funding link.
+- [x] `CareNestShowFundingLink=false` hides the complete in-app support card without changing organizer functionality.
+- [x] Current Apple App Store external gift/support guidance was reviewed on 2026-08-15.
+- [x] Current Google Play tip/contribution guidance was reviewed on 2026-08-15.
+- [x] The current dated review/conservative decision is recorded in `STORE_POLICY_REVIEW_20260815.md`.
+- [x] Initial Apple App Store/Google Play source configuration is conservatively selected as `CareNestShowFundingLink=false` unless submission-time policy clearly permits the link.
+- [x] PR #59 compiles Android, Windows, iOS simulator and Mac Catalyst Release source with `CareNestShowFundingLink=false`.
+- [ ] Re-review the current rules for external funding/tipping/donation links on every store/distribution channel at actual submission time.
+- [ ] Build the actual Apple App Store candidate with the selected store-safe setting.
+- [ ] Build the actual Google Play candidate with the selected store-safe setting.
+- [ ] Inspect installed packaged builds and confirm the BMC image/button/URL/card is absent where disabled.
+- [ ] Confirm repository/legal/support surfaces remain available in the store-safe package.
+- [ ] Confirm on packaged builds that no CareNest health data is sent merely by displaying/opening the external funding link in configurations where it is enabled.
 - [ ] Confirm custom badge is not represented as official Buy Me a Coffee brand artwork.
 
 ### Signing and distribution
@@ -307,13 +343,17 @@ Project-support URL:
 - [ ] Complete `docs/releases/STORE_SUBMISSION_CHECKLIST.md` for every intended store/channel.
 - [ ] Sign packages using secrets/certificates/profiles stored outside the repository.
 - [ ] Verify final package IDs/bundle IDs/publisher identities.
+- [ ] Verify selected `CareNestShowFundingLink` value on each actual packaged artifact.
 - [ ] Verify store privacy/data-safety disclosures match the shipping runtime behavior.
 - [ ] Verify support/privacy/terms/security URLs and contacts in final listings.
 - [ ] Record exact source commit SHA for each signed package.
+- [ ] Record package SHA-256/checksum where the artifact is directly handled.
+- [ ] Record signing/notarization/store provenance without committing secrets.
 - [ ] Create the exact approved production `v*` tag.
 - [ ] Require tagged CareNest CI to succeed.
 - [ ] Require tagged CodeQL to succeed.
 - [ ] Require tagged Dependency Audit to succeed.
+- [ ] Require tagged CareNest Store Package Configuration to succeed.
 - [ ] Require tagged Release Gate to succeed.
 - [ ] Require tagged Release Evidence to succeed and record its artifact/checksums.
 - [ ] Generate final release notes from `docs/releases/RELEASE_NOTES_TEMPLATE.md`.
@@ -321,6 +361,6 @@ Project-support URL:
 
 ## Release rule
 
-Do not tag/publish/promote a final `1.0.0` build while a required automated gate for the exact production commit/tag is failing or incomplete, while required manual checks are incomplete, while current store-policy review for the voluntary support link is unresolved, while signing/store identity is unfinished, while packaged SQLite existing-data compatibility has not been manually evidenced, or before exact-tag Release Gate/Release Evidence exists.
+Do not tag/publish/promote a final `1.0.0` build while a required automated gate for the exact production commit/tag is failing or incomplete, while required manual checks are incomplete, while submission-time store-policy re-review for the voluntary support link is unresolved, while signing/store identity is unfinished, while actual packaged funding-link visibility has not been inspected, while packaged SQLite existing-data compatibility has not been manually evidenced, or before exact-tag Release Gate/Release Evidence exists.
 
-The PR #56 automated RC1 release-engineering baseline is fully green. Automated green status is necessary but not sufficient for public release.
+The PR #59 automated RC1 source baseline is fully green for both normal/default and funding-disabled store-safe configurations. Automated green status is necessary but not sufficient for public release.
