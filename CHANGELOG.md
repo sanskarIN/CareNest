@@ -17,22 +17,130 @@ Historical evidence is retained rather than rewritten. This active changelog rec
 - Added a UI/source-policy contract protecting the configurable support-link surface and its voluntary/no-health-entitlement wording.
 - Added `PackageMetadataContractTests` covering CareNest app identity/version shape, target frameworks/minimum OS declarations, Android local-first permission/backup/cleartext posture, Apple purpose strings/transport posture, Windows package metadata and required brand assets.
 - Added `RepositoryLocator.PathOf` for reusable repository-path assertions in source-policy tests.
-- Added `docs/releases/STORE_BUILD_POLICY.md` with enabled/disabled package commands, per-store policy-decision rules and release evidence fields.
+- Added `docs/releases/STORE_BUILD_POLICY.md` with enabled/disabled package commands, per-store policy-decision rules, automated/local store-safe paths, and release evidence fields.
 - Added `docs/releases/PACKAGED_RELEASE_VALIDATION.md` with source freeze, package identity/checksum, packaged SQLite/encrypted-data, reminder, accessibility, store-policy, signing and final-tag evidence procedures.
+- Added `docs/releases/STORE_POLICY_REVIEW_20260815.md` recording the current Apple/Google external support-link review and conservative initial store-package decision.
+- Added `.github/workflows/store-package-verification.yml` to compile Android, Windows, iOS simulator and Mac Catalyst Release source with `CareNestShowFundingLink=false`.
+- Added `build/scripts/store-package-preflight.sh` and `build/scripts/store-package-preflight.ps1` as fail-closed store-package wrappers that require an explicit supported target and force the external support surface off before delegating the standard release preflight.
+- Added `StorePackageWorkflowContractTests` covering workflow entry points, funding-disabled propagation, supported targets, executable-mode verification, unsigned simulator behavior and non-publication boundaries.
+- Added `StorePackagePreflightContractTests` covering forced-false behavior, explicit target allow-list, standard-preflight delegation and caller-override rejection.
+- Added exact `v*`/manual workflow contract coverage requiring the store-package workflow.
+- Added `docs/releases/PACKAGED_RELEASE_HARDENING_VERIFICATION_20260815.md` recording PR #58 evidence.
+- Added `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md` recording the authoritative PR #59 default-plus-store-safe exact-source evidence.
 
-### Changed — release preflight
+### Changed — release preflight and store-safe source compilation
 
-- Bash and PowerShell release-preflight scripts now read `CARENEST_SHOW_FUNDING_LINK` with default `true`.
-- Accepted values are fail-closed to `true`/`false`; invalid values stop preflight.
-- Optional MAUI restore/build receives `CareNestShowFundingLink`, making a store-specific funding-link package reproducible.
+- Bash and PowerShell release-preflight scripts read `CARENEST_SHOW_FUNDING_LINK` with default `true`.
+- Accepted general preflight values are fail-closed to `true`/`false`; invalid values stop preflight.
+- Optional MAUI restore/build receives `CareNestShowFundingLink`, making a store-specific funding-link source configuration reproducible.
+- Dedicated store-package wrappers force `CARENEST_SHOW_FUNDING_LINK=false`; callers cannot override the wrapper back to `true`.
+- Store-package wrappers accept only the supported Android/iOS/Mac Catalyst/Windows target framework allow-list.
+- The Bash store-package wrapper is tracked with executable Git mode `100755`.
+- Store Package Configuration CI runs `test -x build/scripts/store-package-preflight.sh` so executable-bit loss fails automatically.
+- Store Package Configuration CI runs on pull requests to `main`, pushes to `main`/`release/**`, exact `v*` tags, and manual execution.
+- Store Package Configuration CI does not upload unsigned build outputs, does not run `dotnet publish`, and does not configure production signing credentials.
 
-### Changed — release evidence boundary
+### Changed — exact release workflow coverage
 
-- PR #56 remains valid authoritative evidence for its frozen 2026-08-14 source boundary, but it is no longer described as exact-head verification of the newer 2026-08-15 `main` source.
-- `PROJECT_STATUS.md` and `what_changed.md` now require a new exact-head verification after the store/package hardening stabilizes.
-- Current Apple/Google support-link policy review, actual packaged variant inspection, device/accessibility testing, signing and production-tag evidence remain open and are not inferred from source changes.
+Production tags matching `v*` are now expected to run the exact tagged commit through:
 
-### Continuation commits — 2026-08-15
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- CareNest Store Package Configuration;
+- Release Gate;
+- CareNest Release Evidence.
+
+A successful Store Package Configuration run proves funding-disabled source compilation only. It does not prove signed artifact generation, installed package behavior, store approval, accessibility, device notification behavior, or packaged existing-data compatibility.
+
+### Verification — PR #58 packaged-release hardening baseline
+
+PR #58 froze source/base:
+
+`826b79925dad4402f65fccfecd4a29b353b6e2f3`
+
+Marker head:
+
+`b92e3b79857db2f6cb8346fb881fe65b43f8453b`
+
+Evidence:
+
+- CareNest CI #608 / `31867245796`: success;
+- formatting: success;
+- UnitTests: 122 passed;
+- IntegrationTests: 39 passed;
+- UiTests/source-policy: 130 passed;
+- total: 291/291 passed;
+- default Android Release: success;
+- default Windows Release: success;
+- default iOS simulator Release: success;
+- default Mac Catalyst Release: success;
+- CodeQL #608 / `31867245799`: success;
+- unsuppressed Dependency Audit #43 / `31867245800`: success.
+
+PR #58 was closed without merge and remains historical exact evidence for its frozen source boundary.
+
+### Verification — PR #59 authoritative current source baseline
+
+PR #59: `Verify store-safe CareNest package configuration`.
+
+Frozen source/base:
+
+`8489d19734d6142054156d5b57f2713195c16b65`
+
+Marker head:
+
+`ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`
+
+Evidence:
+
+- CareNest CI #622 / `31869214132`: **success**;
+- formatting: **success**;
+- UnitTests: **122 passed, 0 failed, 0 skipped**;
+- IntegrationTests: **39 passed, 0 failed, 0 skipped**;
+- UiTests/source-policy: **149 passed, 0 failed, 0 skipped**;
+- total core tests: **310 passed, 0 failed, 0 skipped**;
+- default Android Release: **success**;
+- default Windows Release: **success**;
+- default iOS simulator Release: **success**;
+- default Mac Catalyst Release: **success**;
+- CareNest Store Package Configuration #11 / `31869214047`: **success**;
+- store-safe Android Release with `CareNestShowFundingLink=false`: **success**;
+- store-safe Windows Release with `CareNestShowFundingLink=false`: **success**;
+- store-safe iOS simulator Release with `CareNestShowFundingLink=false`: **success**;
+- store-safe Mac Catalyst Release with `CareNestShowFundingLink=false`: **success**;
+- Bash store-package preflight executable-mode guard: **success**;
+- CodeQL #622 / `31869214042`: **success**;
+- unsuppressed Dependency Audit #44 / `31869214093`: **success**.
+
+PR #59 was closed without merge. Its marker is not part of `main`.
+
+PR #59 supersedes PR #58 only as the current exact automated source baseline. PR #58, PR #56, and PR #54 remain valid historical evidence for their own frozen source boundaries.
+
+### Changed — active status/documentation alignment
+
+- Root `README.md` now promotes PR #59 and documents both default and store-safe source compilation.
+- `PROJECT_STATUS.md` now uses PR #59 as the authoritative current source boundary and preserves PR #58/#56/#54 as historical evidence.
+- `docs/README.md` now indexes PR #59 verification, the dated store-policy review, store-safe workflow/preflight documentation, and current blockers.
+- `docs/CONFIGURATION_REFERENCE.md` now documents `CareNestShowFundingLink`, store-package wrappers, executable-mode guard, Store Package Configuration workflow, exact `v*` coverage, and PR #59.
+- `docs/releases/NEXT_STEPS.md` now checks only source-side work actually completed and leaves package/device/accessibility/signing/submission work open.
+- `docs/releases/RELEASE_CHECKLIST.md` now distinguishes source compilation from installed/signed package evidence and requires tagged Store Package Configuration success for final production promotion.
+
+### Current store-policy decision
+
+The dated 2026-08-15 review records:
+
+- normal/open-source/direct builds may retain `CareNestShowFundingLink=true` where the distribution channel permits it;
+- initial Apple App Store candidate should use `CareNestShowFundingLink=false` unless submission-time policy clearly permits the external support link;
+- initial Google Play candidate should use `CareNestShowFundingLink=false` unless submission-time policy clearly permits the external support link;
+- actual submission-time policy must be re-reviewed;
+- actual signed/installed package visibility must still be verified.
+
+The current source provides the store-safe switch, wrappers, tests and four-platform compilation evidence. It does not claim Apple/Google approval.
+
+### Selected continuation commits — 2026-08-15
+
+Earlier store/package hardening commits:
 
 - `35690d2f1fbe8bb56d91e718dab688fe4de6cc0d` — `feat: make voluntary funding link store-configurable`;
 - `7ccea4ff5367b3c4e94b156f989799d91d6f52ff` — `test: enforce package metadata and privacy contracts`;
@@ -40,7 +148,50 @@ Historical evidence is retained rather than rewritten. This active changelog rec
 - `0a9d994ea310f00d715684c993ee2d954dc0f081` — `docs: define store-specific funding-link build policy`;
 - `fe17e1ad752250d81d502ef7615fc1e652842e47` — `docs: add packaged release validation runbook`;
 - `db8536d9de125ae73f895ca1d1d6cbdb4de0ded0` — `docs: record packaged release hardening handoff`;
-- `dadcc8f3a6c4098bf9277e647206f75f59e98261` — `docs: align project status with new source boundary`.
+- `dadcc8f3a6c4098bf9277e647206f75f59e98261` — `docs: align project status with new source boundary`;
+- `39c2cdce359ff18c44bc3d4743d7f8ca55ee1294` — `docs: record 2026-08-15 release readiness changes`;
+- `c78e080ede0d997082a2bd68b2baf521f8ac8534` — `docs: align documentation hub with current source`;
+- `826b79925dad4402f65fccfecd4a29b353b6e2f3` — `docs: advance release next steps after package hardening`;
+- `7ad45c82e6cf2877d693fd8481591f9969082eba` — `docs: record PR58 packaged release verification`;
+- `0488c68899eb8c6b5ef0de1753d3d3552fd97871` — `docs: record 2026-08-15 store support policy review`;
+- `157c904114dca152b92a15ef9b77e1d8f440e6c4` — `docs: finalize PR58 evidence in handoff`.
+
+Store-safe workflow/preflight continuation commits include focused CI, test, build-mode and documentation commits culminating in frozen executable source `8489d19734d6142054156d5b57f2713195c16b65`.
+
+PR #59 evidence/status documentation commits include:
+
+- `dd9c4cc69c7f5e4371566e7ea11787f1726f142b` — `docs: record PR59 store-safe configuration verification`;
+- `aec6fbf559af2dec6f5734992302d7e0e28d3461` — `docs: promote PR59 store-safe verification baseline`;
+- `b7a494004c8b35fa1c54eac82b4df33849c23ae1` — `docs: promote PR59 in project status`;
+- `91f9ee53dca0cd5ea1306b315b3beecaea524f42` — `docs: promote PR59 in documentation hub`;
+- `2df6b26a56fb877ae40f549c8c5d1bc5abfa5e40` — `docs: document PR59 store-safe automation baseline`;
+- `1997c37da8d2b04e3f93c879afe6840d9ef1d37e` — `docs: advance next steps to PR59 baseline`;
+- `531bebd512151b6a3c68cc1004384ec10b082637` — `docs: promote PR59 in release checklist`.
+
+GitHub commit metadata for this continuation uses `Sanskar <sanskarin@outlook.in>`.
+
+### Production work intentionally still open
+
+PR #59 automation and source-side store-safe compilation do not complete:
+
+- actual signed Apple App Store candidate generation;
+- actual signed Google Play candidate generation;
+- installed packaged About-page verification of funding-link visibility;
+- real Android/Windows/iOS/iPadOS/Mac Catalyst manual matrices;
+- actual notification permission/delivery/recovery behavior;
+- Android alarm/battery/reboot/time/time-zone checks;
+- packaged SQLite existing-data upgrade/integrity/readability;
+- encrypted document/backup historical compatibility;
+- clean-install restore;
+- accessibility testing;
+- submission-time Apple/Google store-policy re-review;
+- signing credentials/configuration outside Git;
+- signed artifact generation/inspection/provenance;
+- store listing/screenshots/privacy/data-safety metadata;
+- exact final production tag CareNest CI/CodeQL/audit/Store Package Configuration/Release Gate/Release Evidence;
+- final version/build/checksums/publication.
+
+These remain release-blocking until actual evidence exists.
 
 ## [Unreleased] - 2026-08-14
 
@@ -48,21 +199,21 @@ Historical evidence is retained rather than rewritten. This active changelog rec
 
 - `docs/COMPLETE_PROJECT_DOCUMENTATION.md` as the canonical end-to-end project reference covering product identity, scope, architecture, data, reminders, security/privacy, encryption, backup, setup, testing, release and documentation map.
 - `docs/CODEBASE_REFERENCE.md` with concrete Shared/Domain/Application/Infrastructure/MAUI/test project and file responsibilities.
-- `docs/CONFIGURATION_REFERENCE.md` documenting current central package versions, build/analyzer policy, NuGet audit behavior, target frameworks, MAUI target isolation, workflows, Git identity, secrets and provenance.
+- `docs/CONFIGURATION_REFERENCE.md` documenting central package versions, build/analyzer policy, NuGet audit behavior, target frameworks, MAUI target isolation, workflows, Git identity, secrets and provenance.
 - `docs/MAINTENANCE_AND_OPERATIONS.md` covering routine maintenance, triage, dependency/schema/crypto/reminder changes, documentation, exact-head verification, release, signing, hotfix and incident operations.
 - `docs/releases/DOCUMENTATION_AUDIT_20260814.md` recording the repository-wide documentation inventory and separating documentation completeness from production release completeness.
 - Exact historical snapshots under `docs/history/pre-complete-docs-20260814/` before replacing stale active security/threat/setup/architecture/notification/documentation-standard/changelog/handoff files.
 
 ### Changed — documentation hub and public project entry
 
-- Root `README.md` now promotes PR #56 as the authoritative automated release-engineering baseline while retaining PR #54 as historical runtime bug-audit evidence.
-- `docs/README.md` now indexes the whole-project, codebase, configuration, maintenance, architecture, privacy/security, testing, release and history documentation set.
-- `docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md` now covers source/API/configuration/automation/maintainer documentation and the PR #56 285-test baseline.
-- `docs/DOCUMENTATION_STANDARDS.md` now defines current evidence wording, historical preservation, PR #56 verification citation, SQLite remediation wording, reminder reconciliation language and production/manual evidence rules.
-- `docs/setup/DEVELOPMENT.md` now uses the current toolchain/package/release-script/PR #56 source truth and repository-local Git identity behavior.
-- `docs/architecture/ARCHITECTURE.md` now describes current reminder cross-surface compensation, SQLite/provider state, document/backup security, platform boundaries and exact-tag release architecture.
-- `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md` now documents effective snooze due time, cancellation-first actions, medicine/profile/appointment compensation and the real Android/Windows/Apple release matrix.
-- `docs/security/SECURITY_MODEL.md` and `docs/security/THREAT_MODEL.md` now use PR #56 as the active automated baseline and no longer say a final post-PR #55 verification is pending.
+- Root `README.md` promoted PR #56 as the then-current automated release-engineering baseline while retaining PR #54 as historical runtime bug-audit evidence.
+- `docs/README.md` indexed the whole-project, codebase, configuration, maintenance, architecture, privacy/security, testing, release and history documentation set.
+- `docs/releases/DOCUMENTATION_COMPLETENESS_CHECKLIST.md` covered source/API/configuration/automation/maintainer documentation and the PR #56 285-test baseline.
+- `docs/DOCUMENTATION_STANDARDS.md` defined evidence wording, historical preservation, PR #56 verification citation, SQLite remediation wording, reminder reconciliation language and production/manual evidence rules.
+- `docs/setup/DEVELOPMENT.md` used the then-current toolchain/package/release-script/PR #56 source truth and repository-local Git identity behavior.
+- `docs/architecture/ARCHITECTURE.md` described reminder cross-surface compensation, SQLite/provider state, document/backup security, platform boundaries and exact-tag release architecture.
+- `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md` documented effective snooze due time, cancellation-first actions, medicine/profile/appointment compensation and the real Android/Windows/Apple release matrix.
+- `docs/security/SECURITY_MODEL.md` and `docs/security/THREAT_MODEL.md` used PR #56 as the then-active automated baseline.
 
 ### Added — release workflow policy contracts
 
@@ -84,19 +235,13 @@ These contracts increased the authoritative UI-contract/policy test count from 1
 
 ### Changed — exact production-tag verification
 
-Production tags matching `v*` are configured to run the exact tagged commit through:
-
-- CareNest CI;
-- CodeQL;
-- Dependency Audit;
-- Release Gate;
-- CareNest Release Evidence.
+At that 2026-08-14 boundary, production tags matching `v*` were configured to run the exact tagged commit through CareNest CI, CodeQL, Dependency Audit, Release Gate, and CareNest Release Evidence. The 2026-08-15 continuation later added CareNest Store Package Configuration to that matrix.
 
 A tag is not production approval until all required automated and manual/device/accessibility/store/signing/package compatibility gates have completed successfully.
 
 ### Changed — Release Evidence
 
-CareNest Release Evidence now records and/or retains:
+CareNest Release Evidence records and/or retains:
 
 - exact source commit/ref;
 - GitHub Actions run ID;
@@ -125,7 +270,7 @@ Artifact identity contains source/run/attempt information so reruns do not becom
 
 ### Changed — production Release Gate
 
-Release Gate now fails closed for:
+Release Gate fails closed for:
 
 - unresolved/open dependency risk state;
 - nested unchecked applicable release checklist rows;
@@ -148,7 +293,7 @@ Matching is hardened against ordinary indentation/case variations that previousl
 
 ### Fixed — reminder action ordering/recovery
 
-Handled Taken/Skipped/Delayed/Missed/Snoozed/Cancelled actions now use cancellation-first ordering:
+Handled Taken/Skipped/Delayed/Missed/Snoozed/Cancelled actions use cancellation-first ordering:
 
 1. cancel old platform request;
 2. persist handled state only after cancellation succeeds;
@@ -210,7 +355,7 @@ Source remediation is complete; representative packaged existing-database/encryp
 - Logging privacy contracts continue to prevent routine health content/secrets/raw sensitive exception data from leaking into normal application logs.
 - Voluntary project support remains an explicit external browser action and is separate from health behavior/access.
 
-## Verification — PR #56 authoritative release-engineering baseline
+## Verification — PR #56 historical release-engineering baseline
 
 PR #56: `Verify complete CareNest release-engineering source`.
 
@@ -262,28 +407,6 @@ The documentation completion pass added or aligned the following logical commits
 - `fb07250ab61d9ddcdb1760c862dd231d49100107` — `docs: finalize documentation standards`.
 
 GitHub commit metadata for this continuation uses `Sanskar <sanskarin@outlook.in>`.
-
-## Production work intentionally still open
-
-Documentation completeness and PR #56 automation do not complete:
-
-- new exact-head verification for the 2026-08-15 source/test/release-script boundary;
-- real Android/Windows/iOS/iPadOS/Mac Catalyst manual matrices;
-- actual notification permission/delivery/recovery behavior;
-- Android alarm/battery/reboot/time/time-zone checks;
-- packaged SQLite existing-data upgrade/integrity/readability;
-- encrypted document/backup historical compatibility;
-- clean-install restore;
-- accessibility testing;
-- current Apple/Google store-policy review;
-- packaged verification of the selected funding-link visibility per store;
-- signing credentials/configuration outside Git;
-- signed artifact generation/inspection;
-- store listing/screenshots/privacy/data-safety metadata;
-- exact final production tag Release Gate/Release Evidence;
-- final version/build/checksums/publication.
-
-These remain release-blocking until actual evidence exists.
 
 ## [1.0.0-rc.1] - 2026-08-09
 
