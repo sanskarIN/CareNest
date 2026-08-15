@@ -1,0 +1,8 @@
+CareNest exact-head verification marker
+
+Purpose: verify corrected unsigned store inspection artifacts, exact PR-head provenance, and the complete automated source/security/build matrix.
+
+Frozen source/base SHA:
+4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2
+
+Supersedes PR #60 verification marker only. This marker must not be merged into main.
