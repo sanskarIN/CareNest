@@ -6,6 +6,10 @@ namespace CareNest.App.ViewModels;
 
 public sealed class AboutViewModel : ObservableViewModel
 {
+#if CARENEST_FUNDING_LINK
+    private const string FundingUrl = "https://buymeacoffee.com/sanskarIN";
+#endif
+
     private readonly CareNest.Application.Contracts.IAppFileGateway _files;
 
     public AboutViewModel(
@@ -16,7 +20,7 @@ public sealed class AboutViewModel : ObservableViewModel
         OpenRepositoryCommand = new AsyncCommand(() => OpenAsync(AppConstants.RepositoryUrl));
         OpenCreatorCommand = new AsyncCommand(() => OpenAsync(AppConstants.CreatorUrl));
 #if CARENEST_FUNDING_LINK
-        SupportProjectCommand = new AsyncCommand(() => OpenAsync(AppConstants.FundingUrl));
+        SupportProjectCommand = new AsyncCommand(() => OpenAsync(FundingUrl));
 #else
         SupportProjectCommand = new AsyncCommand(() => Task.CompletedTask, static () => false);
 #endif
