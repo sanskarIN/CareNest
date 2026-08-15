@@ -105,7 +105,15 @@ If `CareNestShowFundingLink=false`:
 - repository, creator, business/support email, privacy, terms, security, and notices remain available;
 - no organizer feature differs from the enabled build.
 
-Record the chosen property value next to the package checksum.
+For the exact unsigned/internal candidate source, require the Store Inspection Artifacts workflow to run `build/scripts/verify-store-safe-payload.py` against the Android AAB, Windows publish tree, iOS simulator bundle, and Mac Catalyst bundle before upload. Successful provenance must include:
+
+`funding_url_payload_scan=passed`
+
+The scanner checks the canonical BMC marker in UTF-8 and UTF-16 encodings and inside ZIP/AAB entries. Its workflow self-test must also remain green for clean, UTF-8, UTF-16, nested ZIP/AAB, and missing-path cases.
+
+Automated payload absence is stronger than source-property inspection, but it remains internal unsigned evidence. For the final signed candidate, repeat equivalent package inspection and manually verify the About UI. A signed package, store wrapping, or post-build transformation must not be assumed identical to the earlier internal artifact without evidence.
+
+Record the chosen property value, payload scan result, and package checksum together.
 
 ## 7. Existing-data upgrade and SQLite compatibility
 
@@ -245,6 +253,7 @@ Before a production `v*` tag is approved, the release record must identify:
 - signing provenance;
 - current store-policy review;
 - `CareNestShowFundingLink` value per store package;
+- funding-disabled payload scan result for exact candidate source and final signed package inspection result;
 - packaged SQLite/encrypted-data compatibility results;
 - accessibility results;
 - exact production tag;
@@ -257,32 +266,3 @@ Before a production `v*` tag is approved, the release record must identify:
 - tagged Release Evidence result.
 
 Do not call CareNest bug-free. Production promotion means the defined automated and manual gates are satisfied for the approved source/package boundary.
-
-## 15. Automated internal store inspection artifacts
-
-CareNest provides `.github/workflows/store-inspection-artifacts.yml` to create reproducible **internal inspection** artifacts with `CareNestShowFundingLink=false`.
-
-The workflow intentionally separates this source-side evidence from production signing/distribution:
-
-- Android: exactly one verified-unsigned `.aab` is staged. A MAUI `*-Signed.aab` debug-signed companion is explicitly excluded, and the selected AAB is rejected if JAR-signature metadata is present.
-- Windows: a self-contained `win-x64` unpackaged bundle is archived as ZIP using `RuntimeIdentifierOverride=win-x64` and `WindowsPackageType=None`.
-- iOS: a simulator `.app` bundle is archived for inspection only.
-- Mac Catalyst: an unsigned `.app` bundle is archived with package creation/code signing disabled.
-- every artifact includes SHA-256 checksum material and `provenance.txt`;
-- pull-request provenance records the exact PR head/source SHA separately from GitHub's temporary PR merge/event SHA;
-- artifact names use the exact source SHA;
-- uploads fail if expected files are missing;
-- artifacts are explicitly marked `artifact_purpose=internal-inspection-only` and `store_submission_ready=false`.
-
-The latest exact runtime exercise is recorded in `STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md` (PR #61).
-
-These artifacts are useful for source/configuration inspection and reproducibility, but they **do not** satisfy:
-
-- production signing/provisioning;
-- real-device installation;
-- store-delivery testing;
-- packaged existing-data compatibility;
-- accessibility certification;
-- final store submission/approval.
-
-For an actual release, create and inspect the signed candidate separately, retain safe signing provenance/checksums, then complete the manual matrix and submission-time policy review before production promotion.
