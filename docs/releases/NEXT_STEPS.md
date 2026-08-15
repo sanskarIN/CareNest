@@ -2,9 +2,11 @@
 
 This document tracks work after the source-complete `1.0.0-rc.1` milestone. It intentionally separates release blockers from completed hardening and optional future versions so unfinished future ideas are not confused with missing RC1 implementation.
 
-## Current automated hardening baseline
+## Current source and last completed exact automated baseline
 
-The authoritative current automated baseline is marker-only PR #56:
+The current `main` source is newer than the last completed marker-only exact-head verification because the 2026-08-15 continuation changed application project configuration, About presentation source, UI/source-policy tests and release-preflight scripts for store/package release readiness.
+
+PR #56 remains the last completed exact automated baseline for its frozen source boundary:
 
 `Verify complete CareNest release-engineering source`
 
@@ -29,9 +31,9 @@ Final evidence:
 
 PR #56 is closed without merge. Its verification marker `build/verification/release-engineering-final-v2-20260814.txt` is not part of `main`.
 
-`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` records the authoritative final release-engineering evidence. PR #54 remains the historical authoritative runtime bug-audit baseline for the earlier runtime/test/dependency graph.
+`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` records that frozen-source evidence. PR #54 remains the historical authoritative runtime bug-audit baseline for the earlier runtime/test/dependency graph.
 
-The verified source includes the final reminder/document/backup/SQLite hardening plus later release-engineering controls for:
+The PR #56 source includes final reminder/document/backup/SQLite hardening plus release-engineering controls for:
 
 - exact `v*` tag execution of CareNest CI, CodeQL, Dependency Audit, Release Gate and Release Evidence;
 - manual workflow entry points where configured;
@@ -43,9 +45,22 @@ The verified source includes the final reminder/document/backup/SQLite hardening
 - executable workflow/script/release-policy contracts;
 - active architecture/security/setup/release docs aligned with the remediated SQLite graph and cancellation-first reminder model.
 
-Verification history remains intentionally failure-driven. PR #43 was not green; PRs #44, #46 and #49 exposed additional integration/UI/analyzer defects; PRs #47/#48/#50 exercised the SQLite remediation while source was moving; PRs #51/#52 were superseded; PR #54 completed the runtime bug-audit baseline; PR #55 verified the first release-engineering snapshot but was superseded when the complete-file audit found further legitimate fixes; PR #56 is the final green replacement.
+The newer 2026-08-15 source additionally completes these source-side release-readiness items:
 
-This automated source work does not complete the production-release blockers below.
+- [x] Add `CareNestShowFundingLink`, default `true`, so the external voluntary support surface can be disabled for a specific store build without a source fork.
+- [x] Hide the complete About support card when `CareNestShowFundingLink=false` while leaving the organizer/legal/support surfaces unchanged.
+- [x] Add source-policy regression coverage for the funding-link build switch and voluntary/no-health-entitlement wording.
+- [x] Add package metadata/privacy contracts for application identity/version, target/minimum OS declarations, Android permissions/backup/cleartext/local-first network posture, Apple purpose strings/transport posture, Windows package metadata and branding assets.
+- [x] Wire `CARENEST_SHOW_FUNDING_LINK=true|false` through Bash and PowerShell release-preflight scripts with fail-closed validation.
+- [x] Add `docs/releases/STORE_BUILD_POLICY.md`.
+- [x] Add `docs/releases/PACKAGED_RELEASE_VALIDATION.md`.
+- [x] Synchronize `what_changed.md`, `PROJECT_STATUS.md`, `CHANGELOG.md`, the documentation hub and this next-steps file to the newer source boundary.
+
+Because verification-relevant source changed after PR #56, a new exact-head marker verification is now required after this continuation stabilizes. PR #56 is not relabeled as proof of the newer head.
+
+Verification history remains intentionally failure-driven. PR #43 was not green; PRs #44, #46 and #49 exposed additional integration/UI/analyzer defects; PRs #47/#48/#50 exercised the SQLite remediation while source was moving; PRs #51/#52 were superseded; PR #54 completed the runtime bug-audit baseline; PR #55 verified the first release-engineering snapshot but was superseded when the complete-file audit found further legitimate fixes; PR #56 completed the last frozen-source release-engineering baseline.
+
+This automated/source work does not complete the production-release blockers below.
 
 ## Priority 0 — production-release blockers
 
@@ -65,12 +80,13 @@ Completed source work:
 - [x] Remove the narrow `NuGetAuditSuppress` entry for `GHSA-2m69-gcr7-jv3q`.
 - [x] Add `SqliteDependencySecurityContractTests` so the old vulnerable pin floor/suppression cannot silently return.
 - [x] Re-run unsuppressed Dependency Audit successfully during multiple remediation checkpoints.
-- [x] Complete unsuppressed Dependency Audit #41 / run `31770929383` on authoritative PR #56.
-- [x] Complete all 285 automated tests and all four platform Release builds on the same verified source boundary.
+- [x] Complete unsuppressed Dependency Audit #41 / run `31770929383` on PR #56's frozen source.
+- [x] Complete all 285 automated tests and all four platform Release builds on that same verified source boundary.
 - [x] Update `docs/security/DEPENDENCY_RISK_REGISTER.md` with the resolved-in-source graph and evidence.
 - [x] Update `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` with the selected migration path.
+- [x] Add `docs/releases/PACKAGED_RELEASE_VALIDATION.md` to define the packaged compatibility evidence process without pretending it has been executed.
 
-Current source commits:
+Current source commits for dependency remediation:
 
 - `66cd701f84afd5021a28e7e3327b7da4fad249aa` — dependency pins;
 - `e939d5bd912d09ffa150c804519c15e2506b7bd7` — audit-suppression removal;
@@ -85,7 +101,9 @@ Still required before public promotion because dependency security and user-data
 - [ ] Verify reminder rebuild/reconciliation after upgrade.
 - [ ] Record manual compatibility evidence in the release matrix/evidence documents.
 
-**Current state:** dependency remediation and unsuppressed automated verification are complete. Do not re-open the old exception merely because manual compatibility evidence is still outstanding; track those checks as release-validation work.
+Use `docs/releases/PACKAGED_RELEASE_VALIDATION.md` together with `docs/releases/MANUAL_TEST_MATRIX.md`.
+
+**Current state:** dependency remediation and unsuppressed automated verification are complete for the frozen PR #56 source; the maintained dependency source remains in current `main`. Do not re-open the old exception merely because manual compatibility evidence is still outstanding; track those checks as release-validation work.
 
 ### 2. Run manual device, encrypted-data, and accessibility smoke testing
 
@@ -100,7 +118,7 @@ Automated CI proves compilation/contracts, but it does not replace real-device b
 - [ ] Verify large-interface mode, reduced motion, screen-reader labels, focus order, contrast, and text scaling on representative devices.
 - [ ] Verify all medical-safety disclaimers remain visible and no workflow implies diagnosis, dosage calculation, treatment recommendations, or guaranteed reminder delivery.
 
-Use `docs/releases/MANUAL_TEST_MATRIX.md` as the evidence record.
+Use `docs/releases/MANUAL_TEST_MATRIX.md` as the evidence record and `docs/releases/PACKAGED_RELEASE_VALIDATION.md` as the execution runbook.
 
 ### 3. Verify encrypted-data backward compatibility with canonical fixtures
 
@@ -118,23 +136,41 @@ Automated tests already prove a handcrafted legacy-v1 stream remains decryptable
 
 ### 4. Verify current app-store policy for the voluntary support link
 
-CareNest exposes `https://buymeacoffee.com/sanskarIN` as optional project support and also publishes it through GitHub funding metadata.
+CareNest's default open-source build can expose `https://buymeacoffee.com/sanskarIN` as optional project support and GitHub funding metadata also references it.
 
-Store rules can change. Before submitting a store build:
+Source-side mitigation is complete:
+
+- [x] Add a store-specific build switch instead of requiring a source fork.
+- [x] Default `CareNestShowFundingLink` to `true` for normal/open-source builds.
+- [x] Make `CareNestShowFundingLink=false` hide the complete About support card.
+- [x] Add regression coverage for that behavior.
+- [x] Pass `CARENEST_SHOW_FUNDING_LINK` through both release-preflight scripts.
+- [x] Document exact enabled/disabled build commands and evidence requirements in `docs/releases/STORE_BUILD_POLICY.md`.
+
+Store rules can change. Before submitting each store build:
 
 - [ ] Verify current Apple App Store rules for external project-support/donation links.
 - [ ] Verify current Google Play rules for external project-support/donation links.
-- [ ] Confirm the link is presented only as voluntary project support.
+- [ ] Record policy source/date/reviewer/conclusion.
+- [ ] Confirm the link is presented only as voluntary project support when enabled.
 - [ ] Confirm no medical feature, health functionality, reminder behavior, support priority, or premium entitlement is unlocked by contributing.
-- [ ] If a store disallows the in-app external support link, conditionally hide/remove that button for the affected store build while retaining repository funding links where permitted.
+- [ ] Select `CareNestShowFundingLink=true` only where the current store policy permits it.
+- [ ] Use `CareNestShowFundingLink=false` when the store disallows the link or the conclusion remains uncertain.
+- [ ] Inspect the actual packaged About page and record the selected property next to the package checksum.
+
+Use `docs/releases/STORE_BUILD_POLICY.md` as the source-controlled policy/runbook.
 
 ### 5. Prepare production signing and package identity
 
+Source-side package metadata regression coverage is now present, but actual production identities/signing remain external work.
+
+- [x] Add automated source contracts for application title/identifier/display-version/build-number shape and target/minimum OS declarations.
+- [x] Add source contracts for Android privacy/permission posture, Apple purpose strings/transport posture, Windows package identity, and required app/splash/support assets.
 - [ ] Create Android signing key/keystore outside the repository and store secrets securely.
 - [ ] Configure Android release signing in CI/release tooling without committing credentials.
 - [ ] Configure Apple signing certificates, provisioning profiles, App Store Connect bundle identity, and entitlements outside the repository.
 - [ ] Configure Windows signing/package identity if publishing through Microsoft Store or signed sideloading.
-- [ ] Verify application identifiers, version numbers, display names, icons, splash assets, capabilities, and package metadata per platform.
+- [ ] Verify application identifiers, version numbers, display names, icons, splash assets, capabilities, and package metadata on the **actual packaged artifact**, not source alone.
 - [ ] Document certificate/key backup and rotation procedures.
 
 ### 6. Finish store listing and privacy disclosures
@@ -145,20 +181,27 @@ Store rules can change. Before submitting a store build:
 - [ ] Complete privacy/data-safety questionnaires from implemented local-first behavior rather than marketing assumptions.
 - [ ] Publish links to `PRIVACY.md`, `TERMS.md`, `SECURITY.md`, and support information.
 - [ ] Re-check health-category policy wording for each target store.
+- [ ] Ensure screenshots/listings match the actual support-link visibility selected for each store package.
 
 ## Priority 1 — release promotion
 
-### 7. Final production commit/tag verification and evidence
+### 7. Final exact-head verification, production commit/tag verification and evidence
 
-PR #56 is the completed automated RC1 release-engineering baseline, but public production approval still requires exact-tag evidence after the Priority 0 manual/security/distribution blockers and any resulting source/configuration changes are complete.
+PR #56 is the last completed exact automated RC1 release-engineering baseline for its frozen source, but the 2026-08-15 project/test/release-script changes require a new exact-head marker verification before production tagging.
 
 - [x] Exact-head marker-only verification protocol is documented in `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
-- [x] PR #56 completed the full current RC1 formatting/test/platform/CodeQL/unsuppressed-audit matrix.
+- [x] PR #56 completed the full formatting/test/platform/CodeQL/unsuppressed-audit matrix for its frozen source.
 - [x] PR #56 was closed without merging its marker after evidence capture.
 - [x] Exact `v*` tags are configured to trigger CareNest CI, CodeQL, Dependency Audit, Release Gate and Release Evidence.
 - [x] Release Evidence preserves available failed-run evidence and uses source/run/attempt provenance.
+- [x] Record that verification-relevant source changed after PR #56 instead of misrepresenting PR #56 as exact-current-head evidence.
+- [ ] Let the 2026-08-15 continuation stabilize with no further verification-relevant changes.
+- [ ] Create a new marker-only exact-head verification from the final continuation head.
+- [ ] Require formatting, all core test suites, Android/Windows/iOS simulator/Mac Catalyst Release builds, CodeQL and unsuppressed Dependency Audit on that exact source boundary.
+- [ ] Record the new frozen source SHA, marker SHA, workflow run IDs and exact test totals in a new dated verification evidence document.
+- [ ] Close the marker PR without merging after successful evidence capture.
 - [ ] Complete Priority 0 blockers and resolve any source/configuration changes they require.
-- [ ] If source/test/workflow/package/project/platform/build-script files change, create a new exact-head marker verification before tagging.
+- [ ] If Priority 0 work changes source/test/workflow/package/project/platform/build-script files after the new verification, repeat exact-head verification.
 - [ ] Select the exact intended production-release commit.
 - [ ] Create the approved `v*` tag pointing to that exact commit.
 - [ ] Require tagged CareNest CI success.
@@ -183,6 +226,7 @@ PR #56 is the completed automated RC1 release-engineering baseline, but public p
 - [ ] Mac Catalyst: create intended signed/notarized package or store-ready archive.
 - [ ] Windows: create intended signed MSIX/package.
 - [ ] Generate SHA-256 checksums for directly distributed artifacts.
+- [ ] Record `CareNestShowFundingLink` beside each store package checksum.
 - [ ] Keep release artifacts/provenance separate from source-control secrets.
 - [ ] Confirm signed package provenance points to the exact approved/tagged commit.
 
@@ -236,7 +280,13 @@ Completed hardening now includes:
 - [x] blocking release-preflight dependency-audit contracts;
 - [x] deterministic/fail-closed local quality-gate contracts;
 - [x] repository-local Git identity setup contracts;
-- [x] fail-closed production Release Gate contracts.
+- [x] fail-closed production Release Gate contracts;
+- [x] build-configurable voluntary project-support surface contract;
+- [x] package identity/version/minimum-target regression contracts;
+- [x] Android local-first permission/backup/cleartext package contracts;
+- [x] Apple purpose-string/transport posture package contracts;
+- [x] Windows package identity/minimum-platform contracts;
+- [x] required CareNest branding asset contracts.
 
 Still useful later when stable target infrastructure exists:
 
@@ -263,10 +313,14 @@ Completed:
 - [x] Repository-local Git setup scripts fail closed and verify `Sanskar` / `sanskarin@outlook.in`.
 - [x] Narrow SQLite audit exception removed after a compatible dependency graph was established.
 - [x] Dependency regression contract prevents silent restoration of the old SQLite pin/suppression baseline.
-- [x] Final release-engineering source completed the entire formatting/test/platform/CodeQL/unsuppressed-audit matrix under PR #56.
+- [x] PR #56 completed the entire formatting/test/platform/CodeQL/unsuppressed-audit matrix for its frozen source.
+- [x] Store-sensitive voluntary funding-link visibility can be selected through a reproducible build property.
+- [x] Release-preflight scripts propagate and validate that store policy.
+- [x] Packaged release validation and store-build policy are documented as explicit release procedures.
 
 Remaining optional/production improvements:
 
+- [ ] Complete the new exact-head marker verification after the 2026-08-15 source stabilizes.
 - [ ] Cache supported workloads/packages where this does not make verification stale or unsafe.
 - [ ] Produce signed artifacts only from a protected release workflow after signing is configured.
 - [ ] Add GitHub Dependency Review action if/when repository Dependency Graph is enabled; current NuGet Dependency Audit is the available gate.
@@ -350,13 +404,15 @@ Current voluntary support URL:
 
 Funding remains separate from health behavior. Contributions must not change CareNest's medical-safety boundary, silently enable data sharing, imply medical advice, change reminder priority, or provide access to local user data.
 
+The default open-source build may show the support surface. Store builds must follow `docs/releases/STORE_BUILD_POLICY.md` and can set `CareNestShowFundingLink=false` without changing health-organizer behavior.
+
 ## Definition of done for public `1.0.0`
 
 CareNest should be promoted from release candidate only when all applicable items are true:
 
 - [x] no known production-blocking SQLite advisory is being hidden by the former `GHSA-2m69-gcr7-jv3q` exception; the verified source graph removes that suppression and guards the maintained native/provider floor;
-- [x] complete automated formatting/test/build/CodeQL/Dependency Audit matrix is green for the current RC1 release-engineering source boundary under PR #56;
-- [ ] complete automated matrix is green again if verification-relevant source changes after PR #56 and before production tagging;
+- [x] complete automated formatting/test/build/CodeQL/Dependency Audit matrix is green for the PR #56 frozen release-engineering source boundary;
+- [ ] new exact-head automated matrix is green for the final 2026-08-15-or-later source boundary after all verification-relevant changes stabilize;
 - [ ] manual supported-platform smoke tests are complete;
 - [ ] existing-database/SQLite compatibility checks are complete on packaged representative builds;
 - [ ] notification/appointment limitations and cancellation-first reminder actions are manually verified/documented;
@@ -364,7 +420,8 @@ CareNest should be promoted from release candidate only when all applicable item
 - [ ] retained v1 encrypted-data compatibility is verified with canonical historical fixtures when available;
 - [ ] backup/restore is tested on clean installations;
 - [ ] accessibility checks are complete;
-- [ ] store policy review is complete, including external voluntary-support link;
+- [ ] current Apple/Google store policy review is complete;
+- [ ] actual packaged support-link visibility matches current store policy and is recorded with package evidence;
 - [ ] signing keys/certificates are secured outside Git;
 - [ ] privacy/data-safety disclosures match actual behavior;
 - [ ] release notes/changelog/status/handoff documents are updated;
@@ -372,4 +429,4 @@ CareNest should be promoted from release candidate only when all applicable item
 - [ ] exact approved production `v*` tag completes CareNest CI, CodeQL, Dependency Audit, Release Gate and Release Evidence successfully;
 - [ ] final Release Evidence artifact/checksums and production package provenance are recorded.
 
-Current automated RC1 source/release-engineering hardening is complete and green. The remaining manual/device/accessibility/store/signing/distribution and packaged-data compatibility conditions intentionally keep final `1.0.0` publication blocked until actual evidence exists.
+Current RC1 implementation and source-side release hardening are complete for the documented feature set. The remaining exact-head verification, manual/device/accessibility/store/signing/distribution and packaged-data compatibility conditions intentionally keep final `1.0.0` publication blocked until actual evidence exists.
