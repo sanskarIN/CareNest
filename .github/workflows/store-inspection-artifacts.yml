@@ -1,0 +1,208 @@
+name: CareNest Store Inspection Artifacts
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ["release/**"]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: store-inspection-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARENEST_STORE_FUNDING_LINK: "false"
+
+jobs:
+  android-inspection:
+    name: Android unsigned AAB inspection artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Android MAUI workload
+        run: dotnet workload install maui-android
+      - name: Publish unsigned store-safe Android bundle
+        run: >-
+          dotnet publish src/CareNest.App/CareNest.App.csproj
+          -f net10.0-android
+          -c Release
+          -p:CareNestTargetFramework=net10.0-android
+          -p:CareNestShowFundingLink=${{ env.CARENEST_STORE_FUNDING_LINK }}
+          -p:AndroidKeyStore=false
+          -p:AndroidPackageFormats=aab
+          --nologo
+      - name: Stage Android inspection artifact and provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="artifacts/android-store-safe"
+          mkdir -p "$output"
+          mapfile -t bundles < <(find src/CareNest.App/bin/Release/net10.0-android/publish -maxdepth 1 -type f -name '*.aab' | sort)
+          if [ "${#bundles[@]}" -lt 1 ]; then
+            echo "No Android AAB was produced." >&2
+            exit 1
+          fi
+          for bundle in "${bundles[@]}"; do
+            cp "$bundle" "$output/"
+          done
+          (
+            cd "$output"
+            sha256sum ./*.aab > SHA256SUMS.txt
+          )
+          cat > "$output/provenance.txt" <<EOF
+          source_sha=$GITHUB_SHA
+          source_ref=$GITHUB_REF
+          target=net10.0-android
+          configuration=Release
+          care_nest_show_funding_link=false
+          signing=disabled
+          artifact_purpose=internal-inspection-only
+          store_submission_ready=false
+          EOF
+      - uses: actions/upload-artifact@v4
+        with:
+          name: carenest-android-store-safe-inspection-${{ github.sha }}
+          path: artifacts/android-store-safe
+          if-no-files-found: error
+          retention-days: 14
+
+  windows-inspection:
+    name: Windows self-contained inspection artifact
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Windows MAUI workload
+        run: dotnet workload install maui
+      - name: Publish store-safe Windows inspection bundle
+        run: >-
+          dotnet publish src/CareNest.App/CareNest.App.csproj
+          -f net10.0-windows10.0.19041.0
+          -c Release
+          -p:CareNestTargetFramework=net10.0-windows10.0.19041.0
+          -p:CareNestShowFundingLink=${{ env.CARENEST_STORE_FUNDING_LINK }}
+          -p:RuntimeIdentifierOverride=win-x64
+          -p:WindowsPackageType=None
+          -p:WindowsAppSDKSelfContained=true
+          --nologo
+      - name: Stage Windows inspection artifact and provenance
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $publishDir = 'src/CareNest.App/bin/Release/net10.0-windows10.0.19041.0/win-x64/publish'
+          if (-not (Test-Path -LiteralPath $publishDir)) {
+            throw "Windows publish directory was not produced: $publishDir"
+          }
+          $output = 'artifacts/windows-store-safe'
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          $archive = Join-Path $output 'CareNest-windows-win-x64-store-safe.zip'
+          Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath $archive -CompressionLevel Optimal
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash.ToLowerInvariant()
+          "$hash  $(Split-Path -Leaf $archive)" | Set-Content -LiteralPath (Join-Path $output 'SHA256SUMS.txt') -Encoding utf8
+          @"
+          source_sha=$env:GITHUB_SHA
+          source_ref=$env:GITHUB_REF
+          target=net10.0-windows10.0.19041.0
+          runtime_identifier=win-x64
+          configuration=Release
+          care_nest_show_funding_link=false
+          windows_package_type=None
+          self_contained=true
+          signing=not_applicable_unpacked_bundle
+          artifact_purpose=internal-inspection-only
+          store_submission_ready=false
+          "@ | Set-Content -LiteralPath (Join-Path $output 'provenance.txt') -Encoding utf8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: carenest-windows-store-safe-inspection-${{ github.sha }}
+          path: artifacts/windows-store-safe
+          if-no-files-found: error
+          retention-days: 14
+
+  apple-inspection:
+    name: Apple unsigned inspection artifacts
+    runs-on: macos-26
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Apple MAUI workloads
+        run: dotnet workload install maui-ios maui-maccatalyst
+      - name: Build store-safe iOS simulator app
+        run: >-
+          dotnet build src/CareNest.App/CareNest.App.csproj
+          -f net10.0-ios
+          -c Release
+          -p:CareNestTargetFramework=net10.0-ios
+          -p:CareNestShowFundingLink=${{ env.CARENEST_STORE_FUNDING_LINK }}
+          -p:RuntimeIdentifier=iossimulator-arm64
+          --nologo
+      - name: Publish unsigned store-safe Mac Catalyst app
+        run: >-
+          dotnet publish src/CareNest.App/CareNest.App.csproj
+          -f net10.0-maccatalyst
+          -c Release
+          -p:CareNestTargetFramework=net10.0-maccatalyst
+          -p:CareNestShowFundingLink=${{ env.CARENEST_STORE_FUNDING_LINK }}
+          -p:RuntimeIdentifier=maccatalyst-arm64
+          -p:CreatePackage=false
+          -p:EnableCodeSigning=false
+          --nologo
+      - name: Stage Apple inspection artifacts and provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="artifacts/apple-store-safe"
+          mkdir -p "$output"
+
+          ios_app="$(find src/CareNest.App/bin/Release/net10.0-ios -type d -name '*.app' -print -quit)"
+          if [ -z "$ios_app" ]; then
+            echo "No iOS simulator .app bundle was produced." >&2
+            exit 1
+          fi
+          tar -C "$(dirname "$ios_app")" -czf "$output/CareNest-iossimulator-arm64-store-safe.tar.gz" "$(basename "$ios_app")"
+
+          mac_app="$(find src/CareNest.App/bin/Release/net10.0-maccatalyst -type d -name '*.app' -print -quit)"
+          if [ -z "$mac_app" ]; then
+            echo "No Mac Catalyst .app bundle was produced." >&2
+            exit 1
+          fi
+          tar -C "$(dirname "$mac_app")" -czf "$output/CareNest-maccatalyst-arm64-store-safe.tar.gz" "$(basename "$mac_app")"
+
+          (
+            cd "$output"
+            shasum -a 256 ./*.tar.gz > SHA256SUMS.txt
+          )
+          cat > "$output/provenance.txt" <<EOF
+          source_sha=$GITHUB_SHA
+          source_ref=$GITHUB_REF
+          ios_target=net10.0-ios
+          ios_runtime_identifier=iossimulator-arm64
+          maccatalyst_target=net10.0-maccatalyst
+          maccatalyst_runtime_identifier=maccatalyst-arm64
+          configuration=Release
+          care_nest_show_funding_link=false
+          code_signing=disabled_or_simulator_only
+          artifact_purpose=internal-inspection-only
+          store_submission_ready=false
+          EOF
+      - uses: actions/upload-artifact@v4
+        with:
+          name: carenest-apple-store-safe-inspection-${{ github.sha }}
+          path: artifacts/apple-store-safe
+          if-no-files-found: error
+          retention-days: 14
