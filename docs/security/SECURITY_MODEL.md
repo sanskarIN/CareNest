@@ -6,27 +6,29 @@ CareNest is a local-first organizational health app. It does not claim protectio
 
 ## Current authoritative automated security baseline
 
-Marker-only PR #59 is the current exact automated source baseline.
+Marker-only PR #61 is the current exact automated/source-inspection baseline.
 
-- frozen source/base: `8489d19734d6142054156d5b57f2713195c16b65`;
-- marker head: `ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`;
-- CareNest CI #622 / `31869214132`: success;
-- 122 unit + 39 integration + 149 UI-contract/policy = **310/310** core tests;
-- default Android Release: success;
-- default Windows Release: success;
-- default iOS simulator Release: success;
-- default Mac Catalyst Release: success;
-- CareNest Store Package Configuration #11 / `31869214047`: success;
+- frozen source/base: `4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2`;
+- marker head: `19c82b813c375047cf1166487bc18a1bd2cd0e52`;
+- PR merge/event SHA during verification: `c8ea9fef89d7b773f19bf13c64f349495be706ad`;
+- CareNest CI #650 / `31872610834`: success;
+- 122 unit + 39 integration + 157 UI-contract/policy = **318/318** core tests;
+- default Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- CareNest Store Package Configuration #39 / `31872610789`: success;
 - funding-disabled Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
 - Bash store-package preflight executable-mode guard: success;
-- CodeQL #622 / `31869214042`: success;
-- unsuppressed Dependency Audit #44 / `31869214093`: success.
+- CareNest Store Inspection Artifacts #2 / `31872610786`: success;
+- verified-unsigned Android AAB internal artifact with downloaded checksum/provenance inspection: success;
+- self-contained unpackaged Windows internal artifact with downloaded checksum/provenance inspection: success;
+- iOS simulator and unsigned Mac Catalyst internal artifacts with downloaded checksum/provenance inspection: success;
+- CodeQL #650 / `31872610815`: success;
+- unsuppressed Dependency Audit #46 / `31872610791`: success.
 
-PR #59 was closed without merge; its verification marker is not part of `main`.
+PR #61 was closed without merge; its verification marker is not part of `main`.
 
-PR #58 remains historical exact package/store-policy hardening evidence, PR #56 remains historical exact release-engineering evidence, and PR #54 remains the historical authoritative runtime bug-audit checkpoint.
+PR #60 remains a superseded failure-driven artifact checkpoint. PR #59 remains historical exact store-safe compilation evidence, PR #58 remains historical exact package/store-policy hardening evidence, PR #56 remains historical exact release-engineering evidence, and PR #54 remains the historical authoritative runtime bug-audit checkpoint.
 
-See `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`.
+See `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`.
 
 ## Security objectives
 
@@ -377,9 +379,28 @@ It is opened only after explicit user interaction in configurations where the in
 
 Funding is not a health entitlement and does not change medical functionality, reminder priority, emergency assistance, support priority or access to local user records.
 
-`CareNestShowFundingLink=false` hides the complete About-page external support card without changing health-organizer behavior.
+`CareNestShowFundingLink=false` hides the complete About-page external support card and makes the funding command non-executable without changing health-organizer behavior.
 
 The current 2026-08-15 Apple/Google policy review selects the funding-disabled configuration for initial store candidates unless submission-time policy clearly permits the external support link. Store policy must be reviewed again at actual submission time.
+
+## Internal store-inspection artifact boundary
+
+`CareNest Store Inspection Artifacts` creates reproducible internal artifacts with the external funding surface disabled. This is a source/configuration/provenance control, not production signing evidence.
+
+Security properties protected by workflow and source-policy contracts include:
+
+- artifact generation checks out and names output from the exact source head;
+- pull-request event/merge SHA is retained separately from the inspected source SHA;
+- Android staging requires exactly one non-`-Signed.aab` candidate;
+- the Android AAB is rejected if JAR-signature metadata is present;
+- Android provenance records `signing=verified-unsigned` and that the debug-signed companion was not staged;
+- Windows output is an unpackaged self-contained inspection bundle, not a signed package;
+- iOS output is a simulator bundle;
+- Mac Catalyst output is published with code signing/package creation disabled;
+- every artifact records SHA-256/provenance and `store_submission_ready=false`;
+- production signing credentials are not injected by the inspection workflow.
+
+PR #60 demonstrated why downloaded-artifact inspection is necessary: the initial workflow uploaded MAUI's debug-signed Android companion while the job itself was green. The corrected workflow was then verified under PR #61.
 
 ## Secret management
 
@@ -416,7 +437,8 @@ Repository automation includes:
 - AEAD v2 truncation/trailing-data/v1-read compatibility tests;
 - release workflow/preflight/quality-gate/Git/release-gate contracts;
 - store-package workflow/preflight contracts;
-- package metadata/privacy contracts;
+- store-inspection artifact/signing/provenance contracts;
+- package metadata/privacy and Windows publish-RID contracts;
 - CI warnings-as-errors for applicable analyzer findings.
 
 ## Exact production-tag security behavior
@@ -427,6 +449,7 @@ Tags matching `v*` are configured to run the exact tagged commit through:
 - CodeQL;
 - Dependency Audit;
 - CareNest Store Package Configuration;
+- CareNest Store Inspection Artifacts;
 - Release Gate;
 - CareNest Release Evidence.
 
@@ -434,7 +457,7 @@ Release Evidence records source/ref/run/attempt provenance, tracked-source manif
 
 Available evidence is uploaded before aggregate failure evaluation. Therefore a failed Release Evidence run can have an artifact; artifact existence alone is not approval.
 
-Store Package Configuration adds funding-disabled source compilation across Android, Windows, iOS simulator and Mac Catalyst. It does not sign, publish, or prove installed store-artifact behavior.
+Store Package Configuration adds funding-disabled source compilation across Android, Windows, iOS simulator and Mac Catalyst. Store Inspection Artifacts adds reproducible internal package-shape/checksum/provenance evidence. Neither signs, submits, approves, or proves installed production-store behavior.
 
 ## Release Gate security behavior
 
@@ -444,9 +467,9 @@ Matching is hardened against normal Markdown nesting/indentation/case drift so a
 
 ## Verification-relevant source
 
-Changes to runtime, tests, project files, package files, workflows, platform configuration or build/release scripts require a new exact-head verification before the newer source becomes the production baseline.
+Changes to runtime, tests, project files, package files, workflows, platform configuration, artifact generation, or build/release scripts require a new exact-head verification before the newer source becomes the production baseline.
 
-Documentation-only changes can remain layered after a verified source boundary if a comparison proves they do not alter verification-relevant source, though documentation policy tests may justify a final marker verification.
+Documentation-only changes can remain layered after a verified source boundary if a comparison proves they do not alter verification-relevant source, though documentation policy tests may justify a final policy check.
 
 ## Security release review
 
@@ -455,6 +478,7 @@ Before public production promotion:
 - complete exact-source automated verification;
 - run CodeQL and unsuppressed Dependency Audit for exact source;
 - run funding-disabled store-safe compilation when current store packaging requires it;
+- run and inspect internal store artifacts for exact source when the release workflow requires them;
 - review security/threat/logging/dependency state;
 - complete packaged SQLite existing-data compatibility;
 - complete encrypted document/backup compatibility;
@@ -462,13 +486,13 @@ Before public production promotion:
 - re-review current store policy/privacy disclosures at submission time;
 - configure signing outside Git;
 - inspect signed artifacts/provenance and actual funding-link visibility;
-- run exact production-tag CI, CodeQL, Dependency Audit, Store Package Configuration, Release Gate and Release Evidence.
+- run exact production-tag CI, CodeQL, Dependency Audit, Store Package Configuration, Store Inspection Artifacts, Release Gate and Release Evidence.
 
 See `docs/releases/SECURITY_RELEASE_REVIEW.md`.
 
 ## Remaining production security evidence
 
-PR #59 completes the current automated source baseline, but public `1.0.0` still requires real evidence for:
+PR #61 completes the current automated/source-inspection baseline, but public `1.0.0` still requires real evidence for:
 
 - packaged existing-database/encrypted-data compatibility;
 - real platform notification behavior/recovery;
@@ -476,7 +500,7 @@ PR #59 completes the current automated source baseline, but public `1.0.0` still
 - submission-time store policy/disclosures;
 - signed and installed store-safe package inspection;
 - signing/signed artifact provenance;
-- exact production-tag automated evidence.
+- exact production-tag automated evidence, including tagged Store Inspection Artifacts.
 
 No documentation-only change marks these complete.
 
@@ -492,7 +516,9 @@ No documentation-only change marks these complete.
 - `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`
 - `docs/testing/TESTING_GUIDE.md`
 - `docs/releases/SECURITY_RELEASE_REVIEW.md`
+- `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`
 - `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`
 - `docs/releases/STORE_POLICY_REVIEW_20260815.md`
 - `docs/releases/STORE_BUILD_POLICY.md`
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md`
 - `docs/COMPLETE_PROJECT_DOCUMENTATION.md`
