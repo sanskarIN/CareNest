@@ -16,7 +16,8 @@ CareNest documentation must be:
 - precise about dependency security versus packaged data compatibility;
 - precise about platform notification limitations;
 - explicit about the exact source SHA behind verification claims;
-- precise about normal/default versus store-safe source configuration evidence.
+- precise about normal/default versus store-safe source configuration evidence;
+- precise about internal inspection artifacts versus signed/store-ready artifacts.
 
 ## 2. Canonical documentation entry points
 
@@ -33,26 +34,29 @@ Root public entry point: `README.md`.
 
 ## 3. Current authoritative automated baseline
 
-When current automated evidence is needed, use PR #59:
+When current automated/source-inspection evidence is needed, use PR #61:
 
-- source/base: `8489d19734d6142054156d5b57f2713195c16b65`;
-- marker head: `ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`;
-- CareNest CI #622 / `31869214132`: success;
-- 122 unit + 39 integration + 149 UI-contract/policy = 310 total;
+- source/base: `4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2`;
+- marker head: `19c82b813c375047cf1166487bc18a1bd2cd0e52`;
+- PR merge/event SHA: `c8ea9fef89d7b773f19bf13c64f349495be706ad`;
+- CareNest CI #650 / `31872610834`: success;
+- 122 unit + 39 integration + 157 UI-contract/policy = 318 total;
 - default Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
-- CareNest Store Package Configuration #11 / `31869214047`: success;
+- CareNest Store Package Configuration #39 / `31872610789`: success;
 - funding-disabled Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
 - Bash store-package preflight executable-mode guard: success;
-- CodeQL #622 / `31869214042`: success;
-- unsuppressed Dependency Audit #44 / `31869214093`: success.
+- CareNest Store Inspection Artifacts #2 / `31872610786`: success;
+- Android verified-unsigned AAB, Windows unpackaged bundle, iOS simulator bundle and unsigned Mac Catalyst bundle: downloaded checksum/provenance inspection success;
+- CodeQL #650 / `31872610815`: success;
+- unsuppressed Dependency Audit #46 / `31872610791`: success.
 
-PR #59 was closed without merge and its marker is not part of `main`.
+PR #61 was closed without merge and its marker is not part of `main`.
 
-PR #58 is historical exact package/store-policy hardening evidence, PR #56 is historical exact release-engineering evidence, and PR #54 is historical authoritative runtime bug-audit evidence. Do not incorrectly attribute an older PR to later source.
+PR #60 is historical superseded artifact evidence because downloaded Android artifact inspection exposed the debug-signed companion and ambiguous PR merge/source provenance. PR #59 is historical exact store-safe compilation evidence, PR #58 is historical exact package/store-policy hardening evidence, PR #56 is historical exact release-engineering evidence, and PR #54 is historical authoritative runtime bug-audit evidence. Do not incorrectly attribute an older PR to later source.
 
 PR #43 is historical failed-core evidence and must not be described as fully green.
 
-The current exact evidence record is `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`.
+The current exact evidence record is `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`.
 
 ## 4. Documentation layers
 
@@ -116,9 +120,10 @@ Examples:
 - Release Evidence/verification protocol;
 - store-build policy;
 - packaged release validation;
-- exact store-safe configuration verification evidence.
+- exact store-safe configuration verification evidence;
+- exact store-inspection artifact verification evidence.
 
-These documents must distinguish automated source verification from manual/device/store/signing/package evidence.
+These documents must distinguish automated source/internal-artifact verification from manual/device/store/signing/package evidence.
 
 ## 5. Medical-safety wording
 
@@ -221,6 +226,7 @@ When citing an exact-head verification, include as applicable:
 
 - source/base SHA;
 - marker/head SHA;
+- PR event/merge SHA when artifact provenance distinguishes it from the source head;
 - PR number;
 - CI run number/ID;
 - unit/integration/UI-contract test counts;
@@ -229,15 +235,32 @@ When citing an exact-head verification, include as applicable:
 - CodeQL run;
 - Dependency Audit run;
 - store-package configuration run ID when applicable;
+- Store Inspection Artifacts run ID and artifact IDs/digests/checksums when applicable;
 - marker-only and closed-without-merge status.
 
-Do not reuse verification evidence after runtime/test/project/workflow/package/platform/build-script source changes.
+Do not reuse verification evidence after runtime/test/project/workflow/package/platform/build-script/artifact-generation source changes.
 
-Workflow, test, build-script, package and platform configuration changes are verification-relevant even when app runtime behavior is not intentionally changed.
+Workflow, test, build-script, package, platform configuration and artifact-generation changes are verification-relevant even when app runtime behavior is not intentionally changed.
 
-Do not represent funding-disabled source compilation as signed/installed package inspection or store approval.
+Do not represent funding-disabled source compilation as signed/installed package inspection or store approval. Do not represent an internal unsigned/simulator/unpackaged artifact as production signing evidence.
 
-## 11. Documentation-only commits after verified source
+## 11. Internal artifact wording
+
+When referring to `CareNest Store Inspection Artifacts`:
+
+- call them internal inspection artifacts;
+- identify the exact source SHA separately from a PR merge/event SHA;
+- state that Android output is verified unsigned;
+- state that Windows output is unpackaged;
+- state that iOS output is simulator-only;
+- state that Mac Catalyst output is unsigned;
+- include payload checksum/provenance evidence when making an exact artifact claim;
+- retain `internal-inspection-only` / `store_submission_ready=false` language;
+- never describe them as signed production packages, store submissions or store approvals.
+
+PR #60 must remain visible as the evidence that green workflow status alone was insufficient: downloaded artifact inspection exposed MAUI's debug-signed Android companion. PR #61 is the corrected exact baseline.
+
+## 12. Documentation-only commits after verified source
 
 If commits after a verified source are truly documentation-only:
 
@@ -245,11 +268,11 @@ If commits after a verified source are truly documentation-only:
 - do not claim the later doc commit itself was platform compiled unless it was;
 - use commit comparison when making a release decision;
 - keep the verified source SHA distinct from the documentation head;
-- consider a final documentation-policy marker verification when repository policy tests consume docs.
+- consider a final documentation-policy check when repository policy tests consume docs.
 
-This exception does not apply to tests, workflows, package/project files, platform configuration or build/release scripts.
+This exception does not apply to tests, workflows, artifact-generation logic, package/project files, platform configuration or build/release scripts.
 
-## 12. Historical evidence
+## 13. Historical evidence
 
 Do not erase failure history to make the project look cleaner.
 
@@ -259,7 +282,7 @@ When replacing a stale active document, preserve the old exact version under `do
 
 Current active docs must clearly identify the latest authoritative state.
 
-## 13. Manual evidence wording
+## 14. Manual evidence wording
 
 Do not mark device/accessibility/store/signing/packaged-data work complete unless it actually occurred.
 
@@ -270,10 +293,11 @@ Examples:
 - green Android build ≠ real Android notification delivery;
 - green NuGet audit ≠ packaged existing SQLite database upgrade proof;
 - green funding-disabled source build ≠ installed store artifact has the support card hidden;
+- green internal inspection artifact workflow ≠ signed production package;
 - source-level semantic accessibility checks ≠ screen-reader certification;
 - Release Evidence artifact existence ≠ successful Release Evidence gate if the workflow failed.
 
-## 14. Store-policy wording
+## 15. Store-policy wording
 
 Store policies change.
 
@@ -290,7 +314,7 @@ This applies particularly to:
 
 The dated 2026-08-15 Apple/Google support-link review is current evidence for its review date, not a permanent approval. It selects `CareNestShowFundingLink=false` for initial store candidates unless submission-time policy clearly permits the external link.
 
-## 15. Funding wording
+## 16. Funding wording
 
 Canonical voluntary project-support URL:
 
@@ -305,9 +329,9 @@ Funding must not be represented as:
 - paid health advice;
 - a clinical/support entitlement.
 
-Document `CareNestShowFundingLink` as a visibility/build-policy switch only, not as a feature entitlement switch.
+Document `CareNestShowFundingLink` as a visibility/build-policy switch only, not as a feature entitlement switch. In store-safe builds the hidden funding command is non-executable.
 
-## 16. Security/privacy examples and test data
+## 17. Security/privacy examples and test data
 
 Use synthetic/fictional data in:
 
@@ -320,7 +344,7 @@ Use synthetic/fictional data in:
 
 Never put real health documents/backups/PINs/passwords/keys/signing credentials in documentation or Git.
 
-## 17. Command accuracy
+## 18. Command accuracy
 
 Commands in documentation should:
 
@@ -328,6 +352,7 @@ Commands in documentation should:
 - use current target frameworks;
 - use `CareNestTargetFramework` for target-specific MAUI build isolation;
 - use fail-closed store-package wrappers where store-safe funding-disabled preflight is intended;
+- use `RuntimeIdentifierOverride=win-x64` only for the documented Windows internal inspection publish path;
 - not assume every platform workload exists on every host;
 - reflect current CI/workload patterns where practical;
 - treat unsuppressed dependency audit as blocking;
@@ -335,7 +360,7 @@ Commands in documentation should:
 
 The Bash store-package wrapper is intended to be directly executable and its Git executable mode is CI-checked.
 
-## 18. Git identity wording
+## 19. Git identity wording
 
 Requested local maintainer identity:
 
@@ -346,7 +371,7 @@ Document this as repository-local Git configuration with `git config --local`.
 
 Do not claim GitHub web/API/connector commits used that email unless actual commit metadata supports it.
 
-## 19. Release workflow wording
+## 20. Release workflow wording
 
 Production tags matching `v*` run the exact tagged commit through:
 
@@ -354,10 +379,13 @@ Production tags matching `v*` run the exact tagged commit through:
 - CodeQL;
 - Dependency Audit;
 - CareNest Store Package Configuration;
+- CareNest Store Inspection Artifacts;
 - Release Gate;
 - CareNest Release Evidence.
 
 CareNest Store Package Configuration should be documented as source compilation with `CareNestShowFundingLink=false` across the supported targets, not as signing or publication.
+
+CareNest Store Inspection Artifacts should be documented as reproducible non-production package-shape/checksum/provenance evidence, not as signing or submission.
 
 Release Evidence should be documented as containing:
 
@@ -373,7 +401,7 @@ Release Evidence should be documented as containing:
 
 A failed Release Evidence run may have an artifact; that artifact is diagnostic evidence, not release approval.
 
-## 20. Release Gate wording
+## 21. Release Gate wording
 
 Release Gate is fail-closed for:
 
@@ -384,7 +412,7 @@ Release Gate is fail-closed for:
 
 Do not describe formatting changes to Markdown checklist rows as a way to bypass the gate. Source contracts protect nested/case/indentation behavior.
 
-## 21. Links
+## 22. Links
 
 Prefer relative links for repository-local documentation.
 
@@ -396,7 +424,7 @@ Canonical external identity values:
 - support: `supportramsandesh@gmail.com`;
 - voluntary support: `https://buymeacoffee.com/sanskarIN`.
 
-## 22. New feature documentation checklist
+## 23. New feature documentation checklist
 
 For a new feature, document where applicable:
 
@@ -417,7 +445,7 @@ For a new feature, document where applicable:
 15. limitations;
 16. release workflow/evidence impact.
 
-## 23. Schema-change documentation
+## 24. Schema-change documentation
 
 A schema change should update:
 
@@ -429,7 +457,7 @@ A schema change should update:
 - release compatibility/checklist/status;
 - `CHANGELOG.md` and handoff.
 
-## 24. Security-sensitive change documentation
+## 25. Security-sensitive change documentation
 
 Review/update as applicable:
 
@@ -441,37 +469,40 @@ Review/update as applicable:
 - tests/contracts;
 - release workflow/evidence docs.
 
-## 25. Configuration/package change documentation
+## 26. Configuration/package/artifact change documentation
 
-When build/package/workflow/platform configuration changes:
+When build/package/workflow/platform/artifact-generation configuration changes:
 
 - update `CONFIGURATION_REFERENCE.md`;
 - update setup/troubleshooting if commands/toolchain changed;
 - update store-build/package validation docs when funding/store-safe configuration changed;
 - update dependency risk/migration docs if package graph changed;
 - update tests/contracts;
+- inspect generated artifacts when artifact-generation logic changed;
 - create new exact-head verification before using the newer source as a release baseline.
 
-## 26. Documentation review checklist
+## 27. Documentation review checklist
 
 Before committing documentation:
 
 - implementation claims match source/evidence;
 - current PR/test/run numbers are correct;
 - default versus store-safe build evidence is distinguished;
+- internal artifact evidence is distinguished from production signing/store submission;
+- source SHA versus PR merge/event SHA is clear for artifact evidence;
 - no manual task is falsely checked;
 - medical-safety wording remains intact;
 - privacy/encryption wording is precise;
 - dependency security and packaged compatibility are separated;
 - reminder persisted/OS reconciliation wording is current;
-- exact-tag/Store Package Configuration/Release Evidence wording matches workflows;
+- exact-tag/Store Package Configuration/Store Inspection Artifacts/Release Evidence wording matches workflows;
 - links/paths exist conceptually;
 - new major docs are indexed from `docs/README.md`;
 - root README points to the documentation hub/complete reference;
 - changelog/status/handoff are updated when appropriate;
 - historical evidence is retained.
 
-## 27. Handoff record
+## 28. Handoff record
 
 `what_changed.md` is the detailed active continuation record.
 
@@ -481,13 +512,14 @@ It should contain:
 - source fixes;
 - verification failures/successes;
 - exact run evidence;
+- artifact IDs/digests/payload checksums and inspection findings when relevant;
 - documentation/release changes;
 - remaining blockers;
 - environment/tool limitations.
 
 When old content is replaced for clarity, preserve the prior exact content under `docs/history/`.
 
-## 28. Documentation completeness audit
+## 29. Documentation completeness audit
 
 The repository-wide documentation inventory is recorded in:
 
@@ -499,9 +531,9 @@ The operational checklist is:
 
 These documents establish documentation completeness, not production release completion.
 
-## 29. Current production blockers
+## 30. Current production blockers
 
-Even with complete documentation and green PR #59 source, production `1.0.0` remains blocked on actual evidence for:
+Even with complete documentation, green PR #61 source, and verified internal inspection artifacts, production `1.0.0` remains blocked on actual evidence for:
 
 - supported-platform manual testing;
 - real notification delivery/recovery;
@@ -510,7 +542,7 @@ Even with complete documentation and green PR #59 source, production `1.0.0` rem
 - submission-time store policy/disclosures;
 - actual signed/installed store-safe package inspection;
 - signing/signed artifact provenance;
-- exact production-tag CareNest CI/CodeQL/Dependency Audit/Store Package Configuration/Release Gate/Release Evidence;
+- exact production-tag CareNest CI/CodeQL/Dependency Audit/Store Package Configuration/Store Inspection Artifacts/Release Gate/Release Evidence;
 - final version/build/checksum/publication work.
 
 No documentation checkbox can substitute for those operations.
