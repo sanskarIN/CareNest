@@ -4,7 +4,7 @@
 
 CareNest is open source and may display an optional Buy Me a Coffee link for voluntary project support. Store policies can change, so release engineering must be able to hide that external support surface for a specific packaged build without forking the application or changing any health-organizer functionality.
 
-This document defines the source-controlled build switch, automated store-safe compilation path, local fail-closed preflight wrappers, and the evidence required before a store submission.
+This document defines the source-controlled build switch, compiled-payload funding boundary, automated store-safe compilation/inspection paths, local fail-closed preflight wrappers, and the evidence required before a store submission.
 
 ## Product rule
 
@@ -26,7 +26,7 @@ The canonical support URL remains:
 
 Repository funding metadata may continue to reference the same URL where GitHub permits it.
 
-## Build switch
+## Build switch and compiled URL boundary
 
 `src/CareNest.App/CareNest.App.csproj` defines:
 
@@ -38,9 +38,11 @@ Default:
 
 When the value is `true`, the project defines `CARENEST_FUNDING_LINK` and the About page exposes the voluntary support card.
 
-When the value is `false`, that compile symbol is absent and `AboutViewModel.IsProjectSupportVisible` returns `false`, hiding the complete support card.
+When the value is `false`, that compile symbol is absent and `AboutViewModel.IsProjectSupportVisible` returns `false`, hiding the complete support card. The disabled command also has a false `CanExecute` predicate.
 
-This changes only visibility of the voluntary external support surface. It must not change data, reminders, permissions, reports, encryption, backups, app lock, appointments, profiles, documents, or medical-safety wording.
+The canonical BMC URL is intentionally **not** stored in `CareNest.Shared.AppConstants`. It exists only inside the `CARENEST_FUNDING_LINK` compile branch in `AboutViewModel`, so a funding-disabled app build does not inherit the URL merely because a shared assembly always contains it.
+
+This changes only the voluntary external support surface. It must not change data, reminders, permissions, reports, encryption, backups, app lock, appointments, profiles, documents, or medical-safety wording.
 
 ## Direct build examples
 
@@ -147,6 +149,39 @@ The iOS job intentionally uses the simulator runtime for unsigned source compila
 
 The standard CareNest CI continues to compile the normal/default configuration. Together, the two workflows provide automated compilation coverage for both the normal source configuration and the store-safe funding-disabled configuration.
 
+## Automated store-safe payload inspection
+
+`.github/workflows/store-inspection-artifacts.yml` creates internal, non-production inspection artifacts and runs:
+
+`build/scripts/verify-store-safe-payload.py`
+
+against the built payload before upload.
+
+The scanner fails if the canonical BMC marker is found as UTF-8, UTF-16 little-endian, or UTF-16 big-endian text. It scans ordinary files/directories and ZIP/AAB entries. Missing/unreadable payloads fail closed rather than being treated as a clean result.
+
+The workflow applies this scan to:
+
+- the unsigned Android AAB candidate before staging;
+- the Windows self-contained publish directory before ZIP creation;
+- the iOS simulator `.app` bundle before tar creation;
+- the unsigned Mac Catalyst `.app` bundle before tar creation.
+
+Every successful inspection artifact records:
+
+`funding_url_payload_scan=passed`
+
+in its provenance file.
+
+The same workflow contains a small scanner self-test proving that:
+
+- a clean payload passes;
+- a UTF-8 marker fails;
+- a UTF-16 marker fails;
+- a marker inside a ZIP/AAB entry fails;
+- a missing payload path fails closed.
+
+This is stronger than merely checking `CareNestShowFundingLink=false`, but it is still automated package-shape evidence—not store approval and not a substitute for installed UI inspection on the signed candidate.
+
 ## Store-review decision
 
 Before each Apple App Store or Google Play production submission:
@@ -176,8 +211,9 @@ For a build with the link disabled:
 - About does not show the support image, button, URL, or explanatory support card.
 - GitHub repository, creator, business email, support email, privacy, terms, security, and third-party-notice surfaces remain available.
 - No health-organizer feature changes.
+- Automated internal inspection should report `funding_url_payload_scan=passed` for the exact source candidate.
 
-A successful store-safe CI build does not prove these runtime UI observations. They must be checked on the actual candidate package.
+A successful automated payload scan proves that the forbidden marker was not found in the inspected unsigned/internal payload. It does not prove the final signed package is identical or that the installed UI/store submission is approved. Re-run or equivalent-inspect the final signed candidate and perform the manual About-page check.
 
 ## Automated contracts
 
@@ -189,9 +225,13 @@ A successful store-safe CI build does not prove these runtime UI observations. T
 
 `tests/CareNest.UiTests/StorePackagePreflightContractTests.cs` protects the fail-closed local wrappers, supported target allow-list, and forced funding-disabled setting.
 
-`tests/CareNest.UiTests/ReleaseWorkflowContractTests.cs` requires the store-package workflow to remain part of exact `v*` release-tag/manual workflow coverage.
+`tests/CareNest.UiTests/StoreInspectionArtifactWorkflowContractTests.cs` protects exact-source artifact generation, unsigned/non-production boundaries, payload scanner execution/provenance, and scanner self-test coverage.
 
-These tests reduce accidental source regressions but do not replace manual store-policy review, signing, package inspection, accessibility testing, or real-device behavior testing.
+`tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs` protects the compile-time URL boundary plus scanner encodings/ZIP behavior/fail-closed source contract.
+
+`tests/CareNest.UiTests/ReleaseWorkflowContractTests.cs` requires the store-package and store-inspection workflows to remain part of exact `v*` release-tag/manual workflow coverage.
+
+These tests reduce accidental source regressions but do not replace manual store-policy review, signing, final signed-package inspection, accessibility testing, or real-device behavior testing.
 
 ## Release evidence fields
 
@@ -204,6 +244,8 @@ Record at minimum:
 - application display version/build number;
 - `CareNestShowFundingLink` value;
 - store-package configuration workflow run ID/conclusion where applicable;
+- store-inspection workflow run ID/conclusion where applicable;
+- `funding_url_payload_scan` result for funding-disabled candidates;
 - store-policy review date and conclusion;
 - package filename and SHA-256 checksum;
 - signing/notarization provenance where applicable;
