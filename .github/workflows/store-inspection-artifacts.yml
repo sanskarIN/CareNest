@@ -17,6 +17,8 @@ concurrency:
 
 env:
   CARENEST_STORE_FUNDING_LINK: "false"
+  CARENEST_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  CARENEST_SOURCE_REF: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   android-inspection:
@@ -25,6 +27,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.CARENEST_SOURCE_SHA }}
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
@@ -62,8 +66,10 @@ jobs:
             sha256sum ./*.aab > SHA256SUMS.txt
           )
           cat > "$output/provenance.txt" <<EOF
-          source_sha=$GITHUB_SHA
-          source_ref=$GITHUB_REF
+          source_sha=$CARENEST_SOURCE_SHA
+          source_ref=$CARENEST_SOURCE_REF
+          event_sha=$GITHUB_SHA
+          event_ref=$GITHUB_REF
           target=net10.0-android
           configuration=Release
           care_nest_show_funding_link=false
@@ -74,7 +80,7 @@ jobs:
           EOF
       - uses: actions/upload-artifact@v4
         with:
-          name: carenest-android-store-safe-inspection-${{ github.sha }}
+          name: carenest-android-store-safe-inspection-${{ env.CARENEST_SOURCE_SHA }}
           path: artifacts/android-store-safe
           if-no-files-found: error
           retention-days: 14
@@ -85,6 +91,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.CARENEST_SOURCE_SHA }}
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
@@ -116,8 +124,10 @@ jobs:
           $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash.ToLowerInvariant()
           "$hash  $(Split-Path -Leaf $archive)" | Set-Content -LiteralPath (Join-Path $output 'SHA256SUMS.txt') -Encoding utf8
           @"
-          source_sha=$env:GITHUB_SHA
-          source_ref=$env:GITHUB_REF
+          source_sha=$env:CARENEST_SOURCE_SHA
+          source_ref=$env:CARENEST_SOURCE_REF
+          event_sha=$env:GITHUB_SHA
+          event_ref=$env:GITHUB_REF
           target=net10.0-windows10.0.19041.0
           runtime_identifier=win-x64
           configuration=Release
@@ -130,7 +140,7 @@ jobs:
           "@ | Set-Content -LiteralPath (Join-Path $output 'provenance.txt') -Encoding utf8
       - uses: actions/upload-artifact@v4
         with:
-          name: carenest-windows-store-safe-inspection-${{ github.sha }}
+          name: carenest-windows-store-safe-inspection-${{ env.CARENEST_SOURCE_SHA }}
           path: artifacts/windows-store-safe
           if-no-files-found: error
           retention-days: 14
@@ -141,6 +151,8 @@ jobs:
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.CARENEST_SOURCE_SHA }}
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
@@ -192,8 +204,10 @@ jobs:
             shasum -a 256 ./*.tar.gz > SHA256SUMS.txt
           )
           cat > "$output/provenance.txt" <<EOF
-          source_sha=$GITHUB_SHA
-          source_ref=$GITHUB_REF
+          source_sha=$CARENEST_SOURCE_SHA
+          source_ref=$CARENEST_SOURCE_REF
+          event_sha=$GITHUB_SHA
+          event_ref=$GITHUB_REF
           ios_target=net10.0-ios
           ios_runtime_identifier=iossimulator-arm64
           maccatalyst_target=net10.0-maccatalyst
@@ -206,7 +220,7 @@ jobs:
           EOF
       - uses: actions/upload-artifact@v4
         with:
-          name: carenest-apple-store-safe-inspection-${{ github.sha }}
+          name: carenest-apple-store-safe-inspection-${{ env.CARENEST_SOURCE_SHA }}
           path: artifacts/apple-store-safe
           if-no-files-found: error
           retention-days: 14
