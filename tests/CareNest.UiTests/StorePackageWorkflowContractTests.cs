@@ -24,6 +24,15 @@ public sealed class StorePackageWorkflowContractTests
         Assert.DoesNotContain("CARENEST_STORE_FUNDING_LINK: \"true\"", workflow, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void StorePackageWorkflow_VerifiesBashStorePreflightExecutableMode()
+    {
+        var workflow = ReadWorkflow();
+
+        Assert.Contains("Verify Bash store preflight is executable", workflow, StringComparison.Ordinal);
+        Assert.Contains("test -x build/scripts/store-package-preflight.sh", workflow, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("net10.0-android")]
     [InlineData("net10.0-windows10.0.19041.0")]
