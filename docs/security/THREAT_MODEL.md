@@ -1,24 +1,29 @@
 # CareNest Threat Model
 
-This is the current threat model for CareNest `1.0.0-rc.1`. It covers local structured records, encrypted documents, manual backups, optional app lock, reminders/appointments, exports, dependency/security automation, and production release provenance.
+This is the current threat model for CareNest `1.0.0-rc.1`. It covers local structured records, encrypted documents, manual backups, optional app lock, reminders/appointments, exports, dependency/security automation, store-safe source configuration, and production release provenance.
 
 CareNest is organizational software. This threat model does not claim clinical correctness, emergency-service behavior, guaranteed reminders, or protection against a fully compromised device/OS.
 
 ## Current automated evidence
 
-Authoritative release-engineering source: marker-only PR #56.
+Authoritative exact automated source: marker-only PR #59.
 
-- source/base: `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
-- marker head: `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
-- CareNest CI #571 / `31770929379`: success;
-- 122 unit + 39 integration + 124 UI-contract/policy = **285/285** tests;
-- Android, Windows, iOS simulator and Mac Catalyst Release builds: success;
-- CodeQL #571 / `31770929382`: success;
-- unsuppressed Dependency Audit #41 / `31770929383`: success.
+- source/base: `8489d19734d6142054156d5b57f2713195c16b65`;
+- marker head: `ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`;
+- CareNest CI #622 / `31869214132`: success;
+- 122 unit + 39 integration + 149 UI-contract/policy = **310/310** tests;
+- default Android, Windows, iOS simulator and Mac Catalyst Release builds: success;
+- CareNest Store Package Configuration #11 / `31869214047`: success;
+- funding-disabled Android, Windows, iOS simulator and Mac Catalyst Release builds: success;
+- Bash store-package preflight executable-mode guard: success;
+- CodeQL #622 / `31869214042`: success;
+- unsuppressed Dependency Audit #44 / `31869214093`: success.
 
-PR #56 was closed without merge. Its marker is not production source.
+PR #59 was closed without merge. Its marker is not production source.
 
-PR #54 remains historical runtime bug-audit evidence; PR #55 is a superseded intermediate checkpoint.
+PR #58 remains historical package/store-policy hardening evidence, PR #56 remains historical release-engineering evidence, and PR #54 remains historical runtime bug-audit evidence.
+
+See `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`.
 
 ## Assets
 
@@ -91,7 +96,9 @@ PR #54 remains historical runtime bug-audit evidence; PR #55 is a superseded int
 | Reintroduced vulnerable SQLite native path | Central maintained native/provider pins, suppression absence contract, unsuppressed audit | New future advisories/packages can introduce new risk |
 | SQLite native/provider update corrupts existing data | automated persistence/backup tests + mandatory packaged existing-data compatibility | Hosted CI cannot represent every installed database/device/provider combination |
 | Dependency audit bypass/suppression | blocking local/CI audit, release policy, source contracts | Maintainer could intentionally change policy; review and exact-source verification required |
-| Release tag bypasses candidate gates | exact `v*` tag triggers CI, CodeQL, Dependency Audit, Release Gate, Release Evidence | Manual/store/signing gates can still be ignored by a human if release policy is not followed |
+| Release tag bypasses candidate gates | exact `v*` tag triggers CI, CodeQL, Dependency Audit, Store Package Configuration, Release Gate, Release Evidence | Manual/store/signing gates can still be ignored by a human if release policy is not followed |
+| Store-safe source accidentally reenables external funding surface | `CareNestShowFundingLink=false`, fail-closed store-package wrappers, dedicated false-configuration CI, source-policy contracts | Signed/package tooling outside the verified source path can still be misconfigured; actual artifact inspection remains required |
+| Store-safe wrapper loses executable mode | Git mode `100755` plus `test -x` in Store Package Configuration | Non-Git transfer/archive tooling can still alter permissions outside repository evidence |
 | Release checklist formatting bypass | fail-closed nested unchecked-row and open-risk detection | Any future parser change must remain covered by source contracts |
 | Failed release evidence disappears | evidence components attempted independently; upload runs before aggregate failure | GitHub artifact retention is finite and external archive discipline remains needed |
 | Release evidence rerun ambiguity | artifact identity includes commit SHA, run ID and run attempt | Human can still cite the wrong attempt without review |
@@ -231,6 +238,10 @@ CareNest does not claim control over data after external handoff.
 
 The voluntary support URL must remain separate from health functionality and must not contain CareNest health identifiers.
 
+`CareNestShowFundingLink=false` hides the complete in-app support card. The current 2026-08-15 policy review selects that store-safe configuration for initial Apple App Store and Google Play candidates unless submission-time current policy clearly permits the external link.
+
+The source build decision does not itself prove that the final signed/installed package has the expected UI. Actual package inspection remains required.
+
 ## Release automation boundary
 
 Marker-only PR verification validates candidate source through formatting, tests, platform builds, CodeQL and Dependency Audit.
@@ -240,8 +251,11 @@ Exact production tags matching `v*` run the exact tagged commit through:
 - CareNest CI;
 - CodeQL;
 - Dependency Audit;
+- CareNest Store Package Configuration;
 - Release Gate;
 - CareNest Release Evidence.
+
+CareNest Store Package Configuration compiles Android, Windows, iOS simulator and Mac Catalyst with the external funding surface disabled. It intentionally does not configure production signing or publish unsigned artifacts.
 
 Release Evidence records exact source/run identity and retains available evidence even when a component fails.
 
@@ -270,7 +284,8 @@ A new security/privacy architecture review is mandatory before adding or materia
 - remote PIN/key recovery;
 - automatic encrypted-data migration that drops historical compatibility;
 - raw SQL/import execution paths;
-- release tag/audit/evidence weakening.
+- release tag/audit/evidence weakening;
+- store-package configuration paths that could silently alter the selected external-funding visibility.
 
 ## Current remaining production security evidence
 
@@ -281,10 +296,11 @@ Before final public `1.0.0`:
 - complete packaged SQLite existing-data compatibility;
 - complete encrypted document/backup compatibility;
 - complete accessibility/privacy presentation checks;
-- review current Apple/Google store policy/disclosures;
+- re-review current Apple/Google store policy/disclosures at submission time;
+- build and inspect actual signed/installed store-safe artifacts;
 - secure signing credentials outside Git;
-- inspect signed artifact provenance;
-- pass exact production-tag CI, CodeQL, audit, Release Gate and Release Evidence.
+- inspect signed artifact provenance and checksums;
+- pass exact production-tag CI, CodeQL, audit, Store Package Configuration, Release Gate and Release Evidence.
 
 ## Related documents
 
@@ -297,4 +313,6 @@ Before final public `1.0.0`:
 - `docs/architecture/BACKUP_AND_RESTORE.md`
 - `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`
 - `docs/releases/SECURITY_RELEASE_REVIEW.md`
-- `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`
+- `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`
+- `docs/releases/STORE_POLICY_REVIEW_20260815.md`
+- `docs/releases/STORE_BUILD_POLICY.md`
