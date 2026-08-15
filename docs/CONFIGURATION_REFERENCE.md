@@ -1,6 +1,6 @@
 # CareNest Configuration, Build, and Automation Reference
 
-This document is the canonical reference for repository configuration that affects restore, compilation, testing, dependency security, local preflight, CI, release evidence, store-safe source compilation, and platform builds.
+This document is the canonical reference for repository configuration that affects restore, compilation, testing, dependency security, local preflight, CI, release evidence, store-safe source compilation, internal inspection artifacts, and platform builds.
 
 ## 1. Central package management
 
@@ -64,7 +64,7 @@ Current release rules:
 - wildcard/severity-wide audit suppression is not acceptable as a shortcut;
 - a new exact temporary exception, if ever unavoidable, requires explicit risk-register/release review and must not be described as remediation.
 
-PR #59 Dependency Audit #44 / run `31869214093` passed both the platform-neutral graph and Android MAUI application graph for the current frozen source.
+PR #61 Dependency Audit #46 / run `31872610791` passed both the platform-neutral and MAUI application graphs for the current frozen source.
 
 ## 4. `NuGet.config`
 
@@ -110,7 +110,7 @@ Default:
 
 `true`
 
-When `true`, `CARENEST_FUNDING_LINK` is defined and the voluntary About-page support card is visible. When `false`, that compile symbol is absent and the About support card is hidden through `AboutViewModel.IsProjectSupportVisible`.
+When `true`, `CARENEST_FUNDING_LINK` is defined and the voluntary About-page support card is visible. When `false`, that compile symbol is absent, the About support card is hidden through `AboutViewModel.IsProjectSupportVisible`, and the support command is created with a false `CanExecute` predicate instead of opening the funding URL.
 
 This property changes the voluntary external support surface only. It must not alter health-organizer data, reminders, permissions, documents, reports, backups, encryption, app lock, appointments, or medical-safety behavior.
 
@@ -313,6 +313,21 @@ dotnet build src/CareNest.App/CareNest.App.csproj `
   -p:CareNestTargetFramework=net10.0-windows10.0.19041.0
 ```
 
+For an internal self-contained unpackaged `win-x64` inspection publish, the project maps `RuntimeIdentifierOverride` into `RuntimeIdentifier` only for Windows:
+
+```powershell
+dotnet publish src/CareNest.App/CareNest.App.csproj `
+  -f net10.0-windows10.0.19041.0 `
+  -c Release `
+  -p:CareNestTargetFramework=net10.0-windows10.0.19041.0 `
+  -p:CareNestShowFundingLink=false `
+  -p:RuntimeIdentifierOverride=win-x64 `
+  -p:WindowsPackageType=None `
+  -p:WindowsAppSDKSelfContained=true
+```
+
+This produces an unpackaged inspection bundle, not a signed Microsoft Store package.
+
 The Windows reminder fallback has documented in-process limitations; a compile is not proof of closed-app notification delivery.
 
 ## 16. iOS configuration
@@ -334,7 +349,7 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -p:RuntimeIdentifier=iossimulator-arm64
 ```
 
-The store-safe CI path uses the same simulator runtime while also setting `CareNestShowFundingLink=false`.
+The store-safe CI and internal inspection paths use the simulator runtime while also setting `CareNestShowFundingLink=false`.
 
 Production signing/provisioning belongs outside Git.
 
@@ -355,6 +370,8 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -f net10.0-maccatalyst -c Release \
   -p:CareNestTargetFramework=net10.0-maccatalyst
 ```
+
+The internal inspection workflow publishes an unsigned `maccatalyst-arm64` `.app` bundle with `CreatePackage=false` and `EnableCodeSigning=false`. That artifact is not a signed/notarized/store-ready Mac package.
 
 Production signing/notarization remains external release work.
 
@@ -398,7 +415,26 @@ Responsibilities:
 - does not run `dotnet publish`;
 - does not configure signing credentials.
 
-PR #59 Store Package Configuration #11 / run `31869214047` passed all four funding-disabled target builds.
+PR #61 Store Package Configuration #39 / run `31872610789` passed all four funding-disabled target builds.
+
+### `store-inspection-artifacts.yml`
+
+Responsibilities:
+
+- runs on pull requests to `main`, pushes to `release/**`, exact `v*` tags, and manual `workflow_dispatch`;
+- forces `CareNestShowFundingLink=false`;
+- records exact source head/ref separately from GitHub event/PR merge SHA/ref;
+- checks out the exact source head and uses it in artifact names;
+- publishes one verified-unsigned Android AAB for internal inspection while rejecting/staging no debug-signed companion;
+- publishes a self-contained unpackaged Windows `win-x64` inspection bundle;
+- builds an iOS simulator `.app` inspection bundle;
+- publishes an unsigned Mac Catalyst `.app` inspection bundle;
+- creates per-payload SHA-256 checksums and safe provenance;
+- marks every artifact `internal-inspection-only` and `store_submission_ready=false`;
+- uploads with `if-no-files-found: error` and 14-day retention;
+- does not inject production signing secrets.
+
+PR #61 Store Inspection Artifacts #2 / run `31872610786` completed successfully. Exact artifact IDs, API digests and independently verified payload checksums are recorded in `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`.
 
 ### `codeql.yml`
 
@@ -435,12 +471,13 @@ Tags matching `v*` are intended to run the exact tagged commit through:
 - CodeQL;
 - Dependency Audit;
 - CareNest Store Package Configuration;
+- CareNest Store Inspection Artifacts;
 - Release Gate;
 - CareNest Release Evidence.
 
 A created tag is not by itself production approval.
 
-The store-package workflow adds funding-disabled source compilation evidence to the tagged automated matrix. It does not replace signed artifact generation, installed package inspection, accessibility, device behavior, or store approval.
+The store-package workflow adds funding-disabled source compilation evidence, while the inspection-artifact workflow adds reproducible unsigned/internal package-shape evidence. Neither replaces production signing, installed package inspection, accessibility, device behavior, packaged-data compatibility, or store approval.
 
 ## 21. GitHub repository support files
 
@@ -475,6 +512,8 @@ Repository builds are deterministic where supported by the .NET build configurat
 
 Production evidence must record the exact source commit/tag. Signed package provenance should resolve to that exact approved source.
 
+Internal inspection artifact provenance records both the exact source SHA/ref and the workflow event SHA/ref so a pull-request merge ref is not mistaken for the inspected branch head.
+
 For store candidates, evidence must also record the selected `CareNestShowFundingLink` value, actual package checksum where directly handled, signing/notarization provenance, and installed About-page inspection result.
 
 ## 24. Configuration change checklist
@@ -487,29 +526,35 @@ When changing project/workflow/package/build configuration:
 4. run unsuppressed dependency audit when package/restore graph can change;
 5. run all affected normal MAUI Release builds;
 6. when store-policy configuration can be affected, run all affected funding-disabled store-safe Release builds;
-7. run CodeQL when source/workflow changes affect the verified baseline;
-8. perform required packaged compatibility checks for persistence/crypto changes;
-9. create fresh exact-head verification before using the new source as a release baseline.
+7. when artifact generation changes, exercise the inspection workflow and independently inspect/checksum the produced artifacts;
+8. run CodeQL when source/workflow changes affect the verified baseline;
+9. perform required packaged compatibility checks for persistence/crypto changes;
+10. create fresh exact-head verification before using the new source as a release baseline.
 
 Do not weaken a workflow or contract merely to obtain a green result.
 
 ## 25. Current verification baseline
 
-Authoritative exact automated verification: PR #59.
+Authoritative exact automated verification: PR #61.
 
-- frozen source/base: `8489d19734d6142054156d5b57f2713195c16b65`
-- marker head: `ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`
-- CareNest CI #622 / `31869214132`: success
-- 122 unit + 39 integration + 149 UI-contract/policy = 310/310
+- frozen source/base: `4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2`
+- marker head: `19c82b813c375047cf1166487bc18a1bd2cd0e52`
+- PR merge/event SHA during verification: `c8ea9fef89d7b773f19bf13c64f349495be706ad`
+- CareNest CI #650 / `31872610834`: success
+- 122 unit + 39 integration + 157 UI-contract/policy = **318/318**
 - default Android/Windows/iOS simulator/Mac Catalyst Release builds: success
-- Store Package Configuration #11 / `31869214047`: success
+- Store Package Configuration #39 / `31872610789`: success
 - funding-disabled Android/Windows/iOS simulator/Mac Catalyst Release builds: success
 - Bash store-package preflight executable-mode guard: success
-- CodeQL #622 / `31869214042`: success
-- unsuppressed Dependency Audit #44 / `31869214093`: success
+- Store Inspection Artifacts #2 / `31872610786`: success
+- Android verified-unsigned AAB inspection artifact: success
+- Windows self-contained unpackaged inspection artifact: success
+- iOS simulator + unsigned Mac Catalyst inspection artifacts: success
+- CodeQL #650 / `31872610815`: success
+- unsuppressed Dependency Audit #46 / `31872610791`: success
 
-PR #59 was marker-only and closed without merge.
+PR #61 was marker-only and closed without merge. Its marker is not part of `main`.
 
-See `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md` for the exact evidence record.
+See `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md` for exact run/artifact/checksum/provenance evidence.
 
-Historical exact-source evidence remains available in the PR #58, PR #56, and PR #54 dated verification documents and must not be rewritten as though those older boundaries were the current one.
+PR #59 remains historical exact store-safe compilation evidence. PR #58, PR #56 and PR #54 remain historical exact-source evidence for their respective frozen boundaries and must not be rewritten as though those older boundaries were the current one.
