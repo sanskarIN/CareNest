@@ -1,0 +1,89 @@
+name: CareNest Store Package Configuration
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, "release/**"]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: store-package-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARENEST_STORE_FUNDING_LINK: "false"
+
+jobs:
+  android-store-safe:
+    name: Android store-safe build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Android MAUI workload
+        run: dotnet workload install maui-android
+      - name: Build Android with external funding surface disabled
+        run: >-
+          dotnet build src/CareNest.App/CareNest.App.csproj
+          -f net10.0-android
+          -c Release
+          -p:CareNestTargetFramework=net10.0-android
+          -p:CareNestShowFundingLink=${{ env.CARENEST_STORE_FUNDING_LINK }}
+          --nologo
+
+  windows-store-safe:
+    name: Windows store-safe build
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Windows MAUI workload
+        run: dotnet workload install maui
+      - name: Build Windows with external funding surface disabled
+        run: >-
+          dotnet build src/CareNest.App/CareNest.App.csproj
+          -f net10.0-windows10.0.19041.0
+          -c Release
+          -p:CareNestTargetFramework=net10.0-windows10.0.19041.0
+          -p:CareNestShowFundingLink=${{ env.CARENEST_STORE_FUNDING_LINK }}
+          --nologo
+
+  apple-store-safe:
+    name: Apple store-safe builds
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Install Apple MAUI workloads
+        run: dotnet workload install maui-ios maui-maccatalyst
+      - name: Build iOS simulator with external funding surface disabled
+        run: >-
+          dotnet build src/CareNest.App/CareNest.App.csproj
+          -f net10.0-ios
+          -c Release
+          -p:CareNestTargetFramework=net10.0-ios
+          -p:CareNestShowFundingLink=${{ env.CARENEST_STORE_FUNDING_LINK }}
+          -p:RuntimeIdentifier=iossimulator-arm64
+          --nologo
+      - name: Build Mac Catalyst with external funding surface disabled
+        run: >-
+          dotnet build src/CareNest.App/CareNest.App.csproj
+          -f net10.0-maccatalyst
+          -c Release
+          -p:CareNestTargetFramework=net10.0-maccatalyst
+          -p:CareNestShowFundingLink=${{ env.CARENEST_STORE_FUNDING_LINK }}
+          --nologo
