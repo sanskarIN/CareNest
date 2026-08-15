@@ -6,24 +6,27 @@ CareNest is a local-first organizational health app. It does not claim protectio
 
 ## Current authoritative automated security baseline
 
-Marker-only PR #56 is the current release-engineering source baseline.
+Marker-only PR #59 is the current exact automated source baseline.
 
-- frozen source/base: `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`;
-- marker head: `e3bc621cea05364a69abee0dadbd71a67c17bddb`;
-- CareNest CI #571 / `31770929379`: success;
-- 122 unit + 39 integration + 124 UI-contract/policy = **285/285** core tests;
-- Android Release: success;
-- Windows Release: success;
-- iOS simulator Release: success;
-- Mac Catalyst Release: success;
-- CodeQL #571 / `31770929382`: success;
-- unsuppressed Dependency Audit #41 / `31770929383`: success.
+- frozen source/base: `8489d19734d6142054156d5b57f2713195c16b65`;
+- marker head: `ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`;
+- CareNest CI #622 / `31869214132`: success;
+- 122 unit + 39 integration + 149 UI-contract/policy = **310/310** core tests;
+- default Android Release: success;
+- default Windows Release: success;
+- default iOS simulator Release: success;
+- default Mac Catalyst Release: success;
+- CareNest Store Package Configuration #11 / `31869214047`: success;
+- funding-disabled Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- Bash store-package preflight executable-mode guard: success;
+- CodeQL #622 / `31869214042`: success;
+- unsuppressed Dependency Audit #44 / `31869214093`: success.
 
-PR #56 was closed without merge; its verification marker is not part of `main`.
+PR #59 was closed without merge; its verification marker is not part of `main`.
 
-PR #54 remains the historical authoritative runtime bug-audit checkpoint for the earlier 261-test source boundary. PR #55 is a superseded intermediate release-engineering checkpoint and is not the current baseline.
+PR #58 remains historical exact package/store-policy hardening evidence, PR #56 remains historical exact release-engineering evidence, and PR #54 remains the historical authoritative runtime bug-audit checkpoint.
 
-See `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`.
+See `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`.
 
 ## Security objectives
 
@@ -370,11 +373,13 @@ Canonical voluntary support URL:
 
 `https://buymeacoffee.com/sanskarIN`
 
-It is opened only after explicit user interaction and should not receive CareNest health/profile/document/reminder identifiers in query parameters.
+It is opened only after explicit user interaction in configurations where the in-app support surface is enabled and should not receive CareNest health/profile/document/reminder identifiers in query parameters.
 
 Funding is not a health entitlement and does not change medical functionality, reminder priority, emergency assistance, support priority or access to local user records.
 
-Current store policy must be reviewed at submission time.
+`CareNestShowFundingLink=false` hides the complete About-page external support card without changing health-organizer behavior.
+
+The current 2026-08-15 Apple/Google policy review selects the funding-disabled configuration for initial store candidates unless submission-time policy clearly permits the external support link. Store policy must be reviewed again at actual submission time.
 
 ## Secret management
 
@@ -410,6 +415,8 @@ Repository automation includes:
 - strict backup-topology tests;
 - AEAD v2 truncation/trailing-data/v1-read compatibility tests;
 - release workflow/preflight/quality-gate/Git/release-gate contracts;
+- store-package workflow/preflight contracts;
+- package metadata/privacy contracts;
 - CI warnings-as-errors for applicable analyzer findings.
 
 ## Exact production-tag security behavior
@@ -419,12 +426,15 @@ Tags matching `v*` are configured to run the exact tagged commit through:
 - CareNest CI;
 - CodeQL;
 - Dependency Audit;
+- CareNest Store Package Configuration;
 - Release Gate;
 - CareNest Release Evidence.
 
 Release Evidence records source/ref/run/attempt provenance, tracked-source manifests/checksums, core TRX results, dependency inventories, workspace integrity and evidence checksums.
 
 Available evidence is uploaded before aggregate failure evaluation. Therefore a failed Release Evidence run can have an artifact; artifact existence alone is not approval.
+
+Store Package Configuration adds funding-disabled source compilation across Android, Windows, iOS simulator and Mac Catalyst. It does not sign, publish, or prove installed store-artifact behavior.
 
 ## Release Gate security behavior
 
@@ -444,25 +454,27 @@ Before public production promotion:
 
 - complete exact-source automated verification;
 - run CodeQL and unsuppressed Dependency Audit for exact source;
+- run funding-disabled store-safe compilation when current store packaging requires it;
 - review security/threat/logging/dependency state;
 - complete packaged SQLite existing-data compatibility;
 - complete encrypted document/backup compatibility;
 - complete real notification/device/accessibility checks;
-- review current store policy/privacy disclosures;
+- re-review current store policy/privacy disclosures at submission time;
 - configure signing outside Git;
-- inspect signed artifacts/provenance;
-- run exact production-tag Release Gate and Release Evidence.
+- inspect signed artifacts/provenance and actual funding-link visibility;
+- run exact production-tag CI, CodeQL, Dependency Audit, Store Package Configuration, Release Gate and Release Evidence.
 
 See `docs/releases/SECURITY_RELEASE_REVIEW.md`.
 
 ## Remaining production security evidence
 
-PR #56 completes the current automated source baseline, but public `1.0.0` still requires real evidence for:
+PR #59 completes the current automated source baseline, but public `1.0.0` still requires real evidence for:
 
 - packaged existing-database/encrypted-data compatibility;
 - real platform notification behavior/recovery;
 - accessibility/privacy presentation;
-- store policy/disclosures;
+- submission-time store policy/disclosures;
+- signed and installed store-safe package inspection;
 - signing/signed artifact provenance;
 - exact production-tag automated evidence.
 
@@ -480,5 +492,7 @@ No documentation-only change marks these complete.
 - `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`
 - `docs/testing/TESTING_GUIDE.md`
 - `docs/releases/SECURITY_RELEASE_REVIEW.md`
-- `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md`
+- `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`
+- `docs/releases/STORE_POLICY_REVIEW_20260815.md`
+- `docs/releases/STORE_BUILD_POLICY.md`
 - `docs/COMPLETE_PROJECT_DOCUMENTATION.md`
