@@ -12,9 +12,15 @@
     <ApplicationDisplayVersion>1.0.0-rc.1</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <WindowsPackageType>None</WindowsPackageType>
+    <CareNestShowFundingLink Condition="'$(CareNestShowFundingLink)' == '' and '$(CARENEST_STORE_FUNDING_LINK)' != ''">$(CARENEST_STORE_FUNDING_LINK)</CareNestShowFundingLink>
     <CareNestShowFundingLink Condition="'$(CareNestShowFundingLink)' == ''">true</CareNestShowFundingLink>
     <DefineConstants Condition="'$(CareNestShowFundingLink)' == 'true'">$(DefineConstants);CARENEST_FUNDING_LINK</DefineConstants>
   </PropertyGroup>
+
+  <Target Name="ValidateCareNestFundingLinkConfiguration" BeforeTargets="CoreCompile">
+    <Error Condition="'$(CareNestShowFundingLink)' != 'true' and '$(CareNestShowFundingLink)' != 'false'"
+           Text="CareNestShowFundingLink must be exactly 'true' or 'false'." />
+  </Target>
 
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
