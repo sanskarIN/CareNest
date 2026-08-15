@@ -12,20 +12,27 @@
     <ApplicationDisplayVersion>1.0.0-rc.1</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <WindowsPackageType>None</WindowsPackageType>
-    <CareNestShowFundingLink Condition="'$(CareNestShowFundingLink)' == '' and '$(CARENEST_STORE_FUNDING_LINK)' != ''">$(CARENEST_STORE_FUNDING_LINK)</CareNestShowFundingLink>
     <CareNestShowFundingLink Condition="'$(CareNestShowFundingLink)' == ''">true</CareNestShowFundingLink>
+    <CareNestEffectiveFundingLink Condition="'$(CARENEST_STORE_FUNDING_LINK)' != ''">$(CARENEST_STORE_FUNDING_LINK)</CareNestEffectiveFundingLink>
+    <CareNestEffectiveFundingLink Condition="'$(CareNestEffectiveFundingLink)' == ''">$(CareNestShowFundingLink)</CareNestEffectiveFundingLink>
   </PropertyGroup>
 
   <Target Name="ValidateCareNestFundingLinkConfiguration" BeforeTargets="CoreCompile">
     <Error Condition="'$(CareNestShowFundingLink)' != 'true' and '$(CareNestShowFundingLink)' != 'false'"
            Text="CareNestShowFundingLink must be exactly 'true' or 'false'." />
+    <Error Condition="'$(CARENEST_STORE_FUNDING_LINK)' != '' and '$(CARENEST_STORE_FUNDING_LINK)' != 'true' and '$(CARENEST_STORE_FUNDING_LINK)' != 'false'"
+           Text="CARENEST_STORE_FUNDING_LINK must be exactly 'true' or 'false' when set." />
+    <Error Condition="'$(CareNestEffectiveFundingLink)' != 'true' and '$(CareNestEffectiveFundingLink)' != 'false'"
+           Text="CareNestEffectiveFundingLink must resolve to exactly 'true' or 'false'." />
+    <Message Importance="High"
+             Text="CareNest funding surface: requested=$(CareNestShowFundingLink); store=$(CARENEST_STORE_FUNDING_LINK); effective=$(CareNestEffectiveFundingLink)" />
   </Target>
 
   <ItemGroup>
     <Compile Remove="ViewModels\FundingLinkPolicy.Enabled.cs" />
     <Compile Remove="ViewModels\FundingLinkPolicy.Disabled.cs" />
-    <Compile Include="ViewModels\FundingLinkPolicy.Enabled.cs" Condition="'$(CareNestShowFundingLink)' == 'true'" />
-    <Compile Include="ViewModels\FundingLinkPolicy.Disabled.cs" Condition="'$(CareNestShowFundingLink)' == 'false'" />
+    <Compile Include="ViewModels\FundingLinkPolicy.Enabled.cs" Condition="'$(CareNestEffectiveFundingLink)' == 'true'" />
+    <Compile Include="ViewModels\FundingLinkPolicy.Disabled.cs" Condition="'$(CareNestEffectiveFundingLink)' == 'false'" />
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
