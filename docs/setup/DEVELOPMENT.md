@@ -168,7 +168,7 @@ Store-safe source configuration:
 
 `CareNestShowFundingLink=false`
 
-The false configuration hides the complete in-app Buy Me a Coffee support card. It must not alter health-organizer behavior, medical-safety wording, reminders, data, documents, encryption, backups, reports, appointments, or permissions.
+The false configuration hides the complete in-app Buy Me a Coffee support card and creates the funding command with a false `CanExecute` predicate. It must not alter health-organizer behavior, medical-safety wording, reminders, data, documents, encryption, backups, reports, appointments, or permissions.
 
 The current 2026-08-15 conservative Apple/Google store decision uses the false configuration for initial store candidates unless submission-time policy clearly permits the external link.
 
@@ -193,7 +193,7 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -p:CareNestShowFundingLink=false
 ```
 
-## Windows build
+## Windows build and portable inspection publish
 
 Current target framework:
 
@@ -207,6 +207,21 @@ dotnet build src/CareNest.App/CareNest.App.csproj `
   -c Release `
   -p:CareNestTargetFramework=net10.0-windows10.0.19041.0
 ```
+
+For the repository's internal self-contained unpackaged `win-x64` inspection publish, `CareNest.App.csproj` maps `RuntimeIdentifierOverride` into `RuntimeIdentifier` only for Windows:
+
+```powershell
+dotnet publish src/CareNest.App/CareNest.App.csproj `
+  -f net10.0-windows10.0.19041.0 `
+  -c Release `
+  -p:CareNestTargetFramework=net10.0-windows10.0.19041.0 `
+  -p:CareNestShowFundingLink=false `
+  -p:RuntimeIdentifierOverride=win-x64 `
+  -p:WindowsPackageType=None `
+  -p:WindowsAppSDKSelfContained=true
+```
+
+That output is an unpackaged internal inspection bundle, not a signed Microsoft Store package.
 
 ## iOS simulator build
 
@@ -222,7 +237,7 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
 
 Use a simulator RID compatible with the host/toolchain.
 
-The store-safe CI path uses the same simulator runtime and additionally sets `CareNestShowFundingLink=false`; it does not configure production signing.
+The store-safe CI and inspection paths use the same simulator runtime and additionally set `CareNestShowFundingLink=false`; they do not provide production iOS signing/provisioning evidence.
 
 ## Mac Catalyst build
 
@@ -234,6 +249,8 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -c Release \
   -p:CareNestTargetFramework=net10.0-maccatalyst
 ```
+
+The internal inspection workflow publishes a `maccatalyst-arm64` `.app` with package creation/code signing disabled. That is not a signed/notarized production package.
 
 ## Apple Xcode compatibility
 
@@ -254,32 +271,53 @@ dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c 
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
-## Current authoritative automated baseline
+## Current authoritative automated/source-inspection baseline
 
-Marker-only PR #59 verifies the current executable/project/test/workflow/build-script source:
+Marker-only PR #61 verifies the current executable/project/test/workflow/build-script/artifact-generation source:
 
-- source/base SHA: `8489d19734d6142054156d5b57f2713195c16b65`;
-- marker head: `ca58294fb7f7a56ee87da16d938f0f691c3a3c7e`;
-- CareNest CI #622 / `31869214132`: success;
+- source/base SHA: `4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2`;
+- marker head: `19c82b813c375047cf1166487bc18a1bd2cd0e52`;
+- PR merge/event SHA: `c8ea9fef89d7b773f19bf13c64f349495be706ad`;
+- CareNest CI #650 / `31872610834`: success;
 - UnitTests: **122 passed**;
 - IntegrationTests: **39 passed**;
-- UiTests/source-policy: **149 passed**;
-- total core: **310 passed**;
-- default Android Release: success;
-- default Windows Release: success;
-- default iOS simulator Release: success;
-- default Mac Catalyst Release: success;
-- Store Package Configuration #11 / `31869214047`: success;
+- UiTests/source-policy: **157 passed**;
+- total core: **318 passed**;
+- default Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- Store Package Configuration #39 / `31872610789`: success;
 - funding-disabled Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
 - Bash store-package preflight executable-mode guard: success;
-- CodeQL #622 / `31869214042`: success;
-- unsuppressed Dependency Audit #44 / `31869214093`: success.
+- Store Inspection Artifacts #2 / `31872610786`: success;
+- Android verified-unsigned AAB, Windows unpackaged bundle, iOS simulator bundle and unsigned Mac Catalyst bundle: checksum/provenance inspection success;
+- CodeQL #650 / `31872610815`: success;
+- unsuppressed Dependency Audit #46 / `31872610791`: success.
 
-PR #59 was closed without merge; its marker is not part of `main`.
+PR #61 was closed without merge; its marker is not part of `main`.
 
-PR #58 remains historical package/store-policy hardening evidence, PR #56 remains historical release-engineering evidence, and PR #54 remains the historical runtime bug-audit baseline.
+PR #60 remains a superseded failure-driven artifact checkpoint. PR #59 remains historical store-safe compilation evidence, PR #58 remains historical package/store-policy hardening evidence, PR #56 remains historical release-engineering evidence, and PR #54 remains the historical runtime bug-audit baseline.
 
-See `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`, `docs/releases/STORE_BUILD_POLICY.md`, and `docs/testing/TESTING_GUIDE.md`.
+See `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`, `docs/releases/STORE_BUILD_POLICY.md`, `docs/releases/PACKAGED_RELEASE_VALIDATION.md`, and `docs/testing/TESTING_GUIDE.md`.
+
+## Internal store inspection artifacts
+
+The workflow `.github/workflows/store-inspection-artifacts.yml` exists to create reproducible non-production artifacts with `CareNestShowFundingLink=false`.
+
+It intentionally:
+
+- checks out the exact source head rather than silently treating a PR merge ref as the source;
+- records source SHA/ref separately from GitHub event SHA/ref;
+- stages exactly one verified-unsigned Android AAB and excludes MAUI's `*-Signed.aab` debug companion;
+- rejects Android AAB JAR-signature metadata before upload;
+- creates a self-contained unpackaged Windows bundle;
+- creates an iOS simulator bundle;
+- creates an unsigned Mac Catalyst bundle;
+- records SHA-256/provenance;
+- labels every artifact `internal-inspection-only` and `store_submission_ready=false`;
+- does not inject production signing credentials.
+
+PR #60 proved why downloaded-artifact inspection is required: the first workflow version uploaded a debug-signed Android companion even though the job was green. PR #61 verifies the corrected workflow.
+
+Do not distribute an internal inspection artifact as though it were a production/store-ready package.
 
 ## Local quality gate
 
@@ -472,7 +510,7 @@ Architecture and repository policy tests enforce many of these rules.
 
 ## Documentation rule
 
-When implementation, package, workflow, platform, security or release behavior changes, update the relevant documentation in the same work.
+When implementation, package, workflow, artifact generation, platform, security or release behavior changes, update the relevant documentation in the same work.
 
 Primary current references:
 
@@ -481,7 +519,8 @@ Primary current references:
 - `docs/CONFIGURATION_REFERENCE.md`;
 - `docs/MAINTENANCE_AND_OPERATIONS.md`;
 - `docs/releases/STORE_BUILD_POLICY.md`;
-- `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`;
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md`;
+- `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`;
 - `docs/README.md`.
 
 ## Do not commit
@@ -517,7 +556,7 @@ If platform-neutral tests pass while one platform build fails, investigate that 
 
 ## Exact-head verification
 
-Runtime/test/project/workflow/package/platform/build-script changes that need a new release baseline follow `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
+Runtime/test/project/workflow/package/platform/build-script/artifact-generation changes that need a new release baseline follow `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
 
 Verification marker files must not be merged into `main`.
 
@@ -525,8 +564,8 @@ Documentation-only evidence updates after a verified source boundary do not chan
 
 ## Production release boundary
 
-A green automated matrix is necessary but not sufficient for public release.
+A green automated matrix and internal artifact workflow are necessary but not sufficient for public release.
 
-Real remaining release evidence includes device/platform tests, notification delivery/recovery, packaged SQLite/encrypted-data compatibility, accessibility, submission-time store policy/disclosures, actual store-safe package UI inspection, signing, signed artifact inspection, and exact production-tag CareNest CI/CodeQL/Dependency Audit/Store Package Configuration/Release Gate/Release Evidence.
+Real remaining release evidence includes device/platform tests, notification delivery/recovery, packaged SQLite/encrypted-data compatibility, accessibility, submission-time store policy/disclosures, actual signed store-safe package UI inspection, signing, signed artifact inspection, and exact production-tag CareNest CI/CodeQL/Dependency Audit/Store Package Configuration/Store Inspection Artifacts/Release Gate/Release Evidence.
 
 See `PROJECT_STATUS.md`, `docs/releases/RELEASE_CHECKLIST.md`, and `docs/releases/NEXT_STEPS.md`.
