@@ -1,328 +1,346 @@
 # CareNest User Guide
 
-CareNest is a local-first family health organizer for Android, iOS, Mac Catalyst, and Windows. It is designed to help users organize user-entered medicine reminders, appointments, documents, stock/refill notes, and local family profiles without requiring a CareNest account or backend service.
+**Release line:** `1.0.0-rc.1`
+
+CareNest is a local-first family health organizer for Android, iOS/iPadOS, Mac Catalyst and Windows. It helps organize user-entered medicine reminders, appointments, documents, stock/refill notes, reports/backups and multiple local profiles without requiring a CareNest account or CareNest-owned backend.
 
 > **Medical limitation**
 >
-> CareNest is an organizational tool. It does not diagnose conditions, calculate or infer a medicine dose, recommend treatment, check medication interactions, create clinical risk scores, verify adherence, replace a clinician or pharmacist, or provide emergency services. Follow instructions from qualified professionals. In an emergency, contact local emergency services instead of relying on CareNest.
+> CareNest is an organizational tool. It does not diagnose conditions, calculate or infer medicine dosage, recommend treatment, perform clinical medication-interaction checking, calculate clinical risk, verify adherence, replace a clinician/pharmacist, provide emergency services, or guarantee notification delivery.
 
 ## 1. Local-first model
 
-CareNest v1 works without a required account or CareNest server.
+Current v1 works without a required CareNest account/server.
 
-- Health records are stored locally in the application's device sandbox.
-- Imported documents are stored through the encrypted document-vault path.
-- CareNest does not automatically upload records to a CareNest cloud service.
-- Exporting or sharing data requires explicit user action.
-- Optional external project-support links are independent third-party destinations and do not receive health records from CareNest merely because the link is displayed.
+- Structured records are stored locally in application-owned SQLite storage.
+- Imported document payloads use the encrypted document-vault path.
+- Manual backups are password-encrypted.
+- CareNest does not automatically upload health records to a CareNest cloud service.
+- Export/share/calendar/browser actions require explicit user action.
+- External copies are governed by their receiving destination after handoff.
 
-Deleting the app, clearing application data, losing the device, or losing an encrypted backup password can make local information unavailable. Create manual encrypted backups when appropriate.
+Deleting app data, losing the device or losing a backup password can make local information unavailable. Maintain encrypted backups appropriate to your needs.
 
 ## 2. First launch and onboarding
 
-On first launch, CareNest presents the local-first and medical-safety boundaries before normal use.
+Typical flow:
 
-Typical setup flow:
+1. Read privacy and medical/reminder limitations.
+2. Create an initial local profile.
+3. Optionally configure app lock.
+4. Enter only information you want stored locally.
+5. Configure reminders through explicit reminder-capable workflows.
 
-1. Read the privacy and medical limitation information.
-2. Create the first local person/profile.
-3. Optionally configure the local app lock.
-4. Enter only the information you want stored on the device.
-5. Configure reminders later from explicit reminder-capable workflows.
+Notification permission is tied to reminder-capable actions rather than being treated as a medical requirement.
 
-CareNest does not request notification permission merely because onboarding started. Notification permission is requested when the user explicitly saves or enables a reminder-capable feature that needs it.
+## 3. Profiles
 
-## 3. Family profiles
+CareNest supports multiple local profiles for organizing information for different people.
 
-CareNest can store multiple local profiles for organizing information for different people.
-
-A profile can be used to group:
+A profile can group:
 
 - medicines;
-- reminder schedules;
+- schedules/reminder occurrences;
 - medication-log entries;
 - appointments;
-- health documents;
+- documents;
 - emergency contacts;
-- profile notes;
-- reports and exports.
+- stock/refill records;
+- reports/exports.
 
-Profiles are local organizational containers. A profile does not create a remote account or remote caregiver relationship.
+A profile is a local organizational container, not a remote account/caregiver relationship.
 
-### Archive/delete behavior
+### Archive/delete
 
-Archived profiles are excluded from automatic reminder materialization. Destructive deletion/reset operations require explicit user action and should be followed by verification that the intended records were removed.
+Archived profiles do not materialize automatic reminders.
 
-Before deleting important local data, create an encrypted backup or user-controlled export if you need a copy.
+Destructive deletion/reset requires explicit user action. If information must be retained, create a suitable encrypted backup/export before deletion.
 
 ## 4. Medicines
 
-Medicine records hold user-entered organizational information.
+Medicine records store user-entered organizational information.
 
-Important rule: medicine `Strength` and `Instructions` are opaque text. CareNest stores and displays that text but does not interpret it to calculate dosage or treatment.
+`Strength` and `Instructions` are opaque text. CareNest stores/displays them but does not derive dosage, frequency or treatment from them.
 
-Medicine lifecycle states include active, paused, completed, and archived behavior. Automatic reminder materialization is suppressed for paused, completed, or archived medicines.
+Medicine lifecycle can include active, paused, completed and archived states. Automatic reminder materialization is suppressed when applicable for paused/completed/archived medicines.
 
-### Stock/refill notes
+## 5. Stock/refill tracking
 
-CareNest can track a local stock estimate from explicit user-entered values.
+CareNest can maintain an organizational stock estimate from explicit user-entered values.
 
-- The initial stock count is user-entered.
-- Any quantity change associated with a Taken event is user-configured.
-- CareNest does not infer tablet quantity from medicine strength or instruction text.
-- Low-stock thresholds are organizational reminders only.
-- Always check the actual physical supply.
+- initial stock is user-entered;
+- quantity adjustments are explicit/user-configured;
+- low-stock threshold is organizational only;
+- CareNest does not infer quantity from medicine strength/instructions;
+- always check the actual physical supply.
 
-## 5. Reminder schedules
+## 6. Reminder schedules
 
-All reminder schedule rules originate from user input.
+Schedules originate from explicit user input.
 
-Supported schedule concepts include:
+Supported concepts include:
 
 - daily;
 - selected weekdays;
-- explicit specific times;
-- every N hours from an explicit starting time;
+- specific times;
+- every N hours from an explicit start;
 - cycles with explicit on/off day counts;
 - custom date ranges;
-- as-needed records with no automatic reminder occurrences.
+- as-needed records with no automatic occurrences.
 
-### Explicit time handling
+CareNest never converts medicine text into a guessed schedule.
 
-CareNest never converts medicine text into a guessed frequency.
+## 7. Time zones and daylight saving
 
-For a reminder-capable schedule:
+Schedule-local intent retains an explicit time-zone identifier.
 
-- start/end dates are user-entered;
-- time-zone identity is stored with the schedule;
-- specific times are user-entered;
-- every-N-hours intervals are user-entered;
-- cycle lengths are user-entered;
-- selected weekdays are user-entered;
-- follow-up delay is user-entered.
+- invalid spring-forward local time is not silently moved to a guessed alternate time;
+- ambiguous fall-back local time is handled deterministically;
+- stored schedule intent is not silently rewritten merely because device time zone changes.
 
-### Daylight-saving behavior
+See `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`.
 
-CareNest preserves local schedule intent instead of inventing medical meaning.
+## 8. Notification permission and delivery limits
 
-If a local time does not exist because the clock moves forward, the planner does not silently move that reminder to a guessed replacement time.
+A saved schedule can exist even when operating-system notification permission is denied.
 
-If a local time occurs twice because the clock moves backward, CareNest uses deterministic handling so rebuilding the same schedule produces a stable occurrence.
+Delivery can be affected by:
 
-See `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` for the complete deterministic planner contract.
-
-## 6. Notification permission and delivery limitations
-
-A saved schedule can exist even if operating-system notification permission is denied.
-
-Actual notification delivery can be affected by:
-
-- permission settings;
-- operating-system scheduling policy;
-- Android exact-alarm capability;
-- battery optimization;
-- force-stop state;
-- device shutdown/reboot;
-- time/time-zone changes;
-- background restrictions;
-- platform updates;
+- notification permission;
+- Android exact/inexact alarm capability;
+- battery optimization/vendor restrictions;
+- force-stop/process lifecycle;
+- device reboot/shutdown;
+- clock/time-zone/DST changes;
+- platform updates/policy;
 - notification settings changed outside CareNest.
 
-CareNest surfaces these limitations and does not claim guaranteed reminder delivery.
+CareNest cannot guarantee delivery under all OS/device conditions.
 
-### Platform notes
+## 9. Platform notes
 
-**Android**
+### Android
 
-CareNest uses Android notification/alarm integration and can rebuild after supported boot/time/time-zone events. Exact/inexact behavior depends on platform capability and policy.
+Uses Android notification/alarm integration and supported rebuild triggers. Exact/inexact/battery/background behavior remains OS/vendor controlled.
 
-**iOS / Mac Catalyst**
+### iOS/iPadOS
 
-CareNest uses operating-system local notification scheduling. Delivery remains controlled by the OS.
+Uses operating-system local notification scheduling. Real-device behavior is controlled by Apple platform policy/permissions.
 
-**Windows**
+### Mac Catalyst
 
-The current fallback has explicit limitations and does not claim reliable delivery while CareNest is not running.
+Uses platform notification behavior subject to macOS/Catalyst lifecycle/permission restrictions.
 
-## 7. Reminder states and medication log
+### Windows
 
-Reminder occurrences can move through organizational states such as:
+Current reminder fallback has explicit in-process limitations and does not claim reliable closed-app delivery.
+
+See `docs/PLATFORM_BEHAVIOR_MATRIX.md`.
+
+## 10. Reminder states
+
+Organizational states include:
 
 - Scheduled;
 - Snoozed;
 - Taken;
 - Skipped;
 - Delayed;
-- Missed.
+- Missed;
+- Cancelled where applicable.
 
-Snooze requires an explicit future UTC destination internally; the UI workflow must represent a future user-selected time.
+These states are local workflow/history records, not proof of medication ingestion or clinical adherence.
 
-Taken/skipped/delayed/missed actions can create medication-log entries for later review. These entries represent user-recorded events, not proof of adherence.
+## 11. Snooze
 
-## 8. Quiet hours and follow-ups
+A valid snooze uses an explicit future UTC time internally.
 
-Quiet hours and follow-up reminders are user-controlled organizational settings.
+For a snoozed occurrence, `SnoozedUntilUtc` becomes its effective due time. The original `ScheduledUtc` remains historical schedule identity and should not incorrectly make a future snooze overdue.
 
-- Quiet hours suppress supported notification scheduling during the configured period.
-- Follow-up minutes are explicit user-entered schedule values.
-- A follow-up occurrence remains separate from the original occurrence.
+## 12. Reminder action/recovery behavior
 
-Changing these settings does not create treatment recommendations.
+CareNest coordinates persisted reminder state and OS requests as separate surfaces.
 
-## 9. Appointments
+For handled transitions, current source uses cancellation-first behavior where required. If later persistence/platform work fails, recovery/rebuild can be attempted rather than silently claiming a consistent result.
 
-Appointments are local organizational records. They can contain user-entered details, notes, attachments, and reminder/export information.
+Users normally do not manage this directly; it exists to reduce stale OS requests after edits/actions/restarts.
 
-Calendar export requires explicit user action. Once information is exported to another calendar application or service, that copy is governed by the receiving application/service rather than CareNest.
+## 13. Quiet hours
 
-## 10. Health document vault
+Quiet hours are user-controlled notification policy.
 
-Imported health documents are stored through CareNest's encrypted document path.
+They can suppress supported platform scheduling during configured periods but do not change medical meaning, dosage or the user's underlying schedule intent.
 
-Supported organization concepts include:
+## 14. Follow-up reminders
 
-- document records;
-- local folders;
-- tags;
+Follow-up delays are explicit user-entered values. A follow-up is a separate organizational occurrence and does not represent a treatment recommendation.
+
+## 15. Medication log
+
+Taken/Skipped/Delayed/Missed actions can create local medication-log entries.
+
+A log entry records user/app interaction state. It is not independently verified clinical adherence.
+
+## 16. Appointments
+
+Appointments are local organizational records with explicit date/time/details and optional reminder behavior.
+
+Appointment reminder times originate from the stored appointment instant and explicit lead time.
+
+Calendar export is explicit user action. A calendar copy is outside CareNest control after handoff.
+
+## 17. Document vault
+
+Imported documents are stored through CareNest's encrypted application-owned document path.
+
+Organization can include:
+
+- document metadata;
+- local folder/tags;
 - import;
-- selected export/share;
-- deletion.
+- open/export/share;
+- delete.
 
 CareNest does not automatically upload document contents to a CareNest service.
 
-### Export boundary
+### Export/open boundary
 
-When the user explicitly exports/decrypts/shares a document, the exported copy leaves CareNest's encrypted document-vault protection. Treat the destination as a separate privacy boundary.
+An explicitly decrypted/exported copy leaves CareNest vault protection. The destination may retain it independently.
 
-## 11. Reports and structured exports
+## 18. Reports and structured exports
 
-CareNest provides user-controlled exports such as:
+CareNest provides user-controlled informational exports such as supported PDF, CSV and JSON output.
 
-- per-profile structured JSON;
-- PDF profile summaries;
-- CSV reports for supported organizational data sets.
+Reports are based on local/user-entered records and do not produce diagnosis, treatment conclusions, clinical scores or verified adherence.
 
-Reports are informational and based on user-entered/local records. They do not provide diagnosis, treatment conclusions, clinical scores, or verified medical interpretation.
+Review personal information before sharing.
 
-Before sharing a report, review it for personal information.
+## 19. Manual encrypted backup
 
-## 12. Encrypted backup and restore
-
-CareNest supports manual password-encrypted backups.
-
-The backup path uses authenticated encryption and a password-derived key. Backups are schema-versioned and validated during restore.
+Backups are user-initiated and password-protected.
 
 Important points:
 
-- Keep the backup password safe; CareNest does not provide a remote password-recovery service.
-- Store backup files somewhere appropriate for your threat model.
-- Test restore on a clean installation before relying on a backup for a public production release.
-- A backup can contain sensitive local information even though it is encrypted.
-- Do not send backups through public issue trackers or support conversations.
+- keep the password safe;
+- CareNest has no server-side recovery service for a forgotten local backup password;
+- store backup files according to your threat model;
+- backup content is sensitive even when encrypted;
+- do not attach real backups/passwords to public issues/support conversations;
+- production qualification should include clean-install restore testing.
 
-See `docs/architecture/BACKUP_AND_RESTORE.md` for the format and recovery model.
+See `docs/architecture/BACKUP_AND_RESTORE.md`.
 
-## 13. Optional app lock
+## 20. Restore validation
 
-CareNest offers an optional local app lock.
+Restore validates format/authentication/topology before replacing current local state as designed.
 
-Current security properties include:
+Wrong-password, tampered, truncated or malformed backup content should fail closed rather than silently restore corrupted data.
+
+## 21. App lock
+
+CareNest has an optional local app lock.
+
+Current security model includes:
 
 - no plaintext PIN persistence;
 - random salt;
 - PBKDF2-HMAC-SHA256 verifier derivation;
-- fixed-time verifier comparison;
-- secure-platform secret-store persistence for lock material;
-- clearing derived/retrieved verifier buffers where managed-memory control permits.
+- fixed-time comparison;
+- secure platform storage for lock material;
+- fail-closed invalid/corrupt material handling.
 
-The app lock is a local privacy barrier. It is not whole-database encryption, device encryption, or a substitute for device-level authentication/security.
+The app lock is a local privacy barrier. It is **not** whole-database encryption/device encryption.
 
-## 14. Settings and diagnostics
+## 22. Settings and diagnostics
 
-Settings include product preferences and developer/diagnostic information relevant to reminder reliability and local storage.
+Settings contain product preferences and reminder/storage diagnostics.
 
-Diagnostic output is intentionally privacy-minimized. CareNest's logging policy excludes health-document contents, sensitive notes, backup passwords, plaintext PINs, encryption keys, and raw exception details from normal structured diagnostic logging.
+Diagnostic/logging policy is privacy-minimized and should exclude raw health text, document contents, backup passwords, PINs, crypto keys and unnecessary sensitive exception details.
 
 See `docs/security/LOGGING_PRIVACY.md`.
 
-## 15. Theme and accessibility
+## 23. Theme/accessibility
 
-CareNest supports system/light/dark presentation and accessibility-oriented UI behavior.
+CareNest supports system/light/dark presentation and accessibility-oriented source/design behavior.
 
-Release testing covers or requires manual verification for:
+Production validation still requires actual checks for:
 
-- large text/text scaling;
 - screen readers;
-- semantic labels;
-- keyboard navigation on desktop targets;
-- reduced motion;
+- large text/text scaling;
+- keyboard/focus on desktop;
 - contrast;
-- focus order;
-- ensuring color is not the only status signal.
+- reduced motion;
+- color-independent meaning.
 
 See `docs/design/ACCESSIBILITY.md`.
 
-## 16. Privacy and deletion
+## 24. Privacy and deletion
 
-CareNest's local-first model reduces required remote data sharing but does not eliminate device-level privacy risks.
-
-Users should consider:
+Consider:
 
 - device lock/security;
-- OS backups;
-- exported files;
-- screenshots;
+- OS/device backups;
 - notification previews;
+- screenshots;
 - shared-device access;
-- external calendar/share destinations;
+- exported files;
+- calendar/share destinations;
 - where encrypted backup files are stored.
 
-Read `PRIVACY.md`, `docs/privacy/DATA_LIFECYCLE.md`, and `docs/privacy/PRIVACY_MODEL.md`.
+Clearing CareNest-owned local data cannot reliably delete copies already handed to another application/service/device backup.
 
-## 17. External project support
+Read `PRIVACY.md` and `docs/privacy/`.
 
-CareNest may show the voluntary support destination:
+## 25. Project support / Buy Me a Coffee
+
+The **distributed CareNest application package does not include or expose the external Buy Me a Coffee project-funding destination**.
+
+Voluntary project support exists in repository documentation/metadata only:
 
 `https://buymeacoffee.com/sanskarIN`
 
-Opening it is explicit user action and launches an external service.
+Project funding:
 
-Project support:
-
-- does not unlock medical features;
-- does not change reminder priority;
-- does not provide emergency assistance;
-- does not grant access to local health data;
+- does not unlock health features;
+- does not change reminder reliability/priority;
+- does not provide medical advice;
+- does not grant access to local records;
 - does not create a CareNest account;
-- does not imply medical advice.
+- does not provide emergency/clinical service.
 
-Store rules for external funding links can change; final store builds require channel-specific policy review.
+See `BUY_ME_A_COFFEE.md` and `docs/SUPPORT_CARENEST.md`.
 
-## 18. Getting help
+## 26. Getting help
 
 Repository: `https://github.com/sanskarIN/CareNest`
 
-Business contact: `sanskarin@outlook.in`
+Business: `sanskarin@outlook.in`
 
-Support contact: `supportramsandesh@gmail.com`
+Support: `supportramsandesh@gmail.com`
 
-Creator profile: `https://www.github.com/sanskarIN`
+Creator: `https://www.github.com/sanskarIN`
 
-For bugs, provide only the minimum technical information needed to reproduce the issue. Do not attach health documents, encrypted backups, credentials, PINs, signing keys, or private health information to public issues.
+For public bug reports, provide only the minimum synthetic/non-sensitive information needed to reproduce the issue. Never attach real health documents, backups, PINs, passwords, keys or private health information.
 
-## 19. Known release-candidate limitations
+## 27. Current release-candidate status
 
-CareNest `1.0.0-rc.1` remains a release candidate rather than a final public production release.
+CareNest remains `1.0.0-rc.1`.
 
-The repository still tracks real release gates including:
+Current PR #74 automated evidence is green at 331/331 core tests plus all configured normal platform, store-candidate, inspection-artifact, CodeQL and unsuppressed Dependency Audit gates.
 
-- manual supported-device testing;
-- accessibility checks;
-- real notification-permission/delivery checks;
-- current Apple/Google external-support-link policy review;
-- production signing/package identity;
-- store listing/privacy/data-safety work;
-- final release evidence for the exact promoted commit;
-- the open SQLitePCLRaw dependency-risk decision/resolution documented in `docs/security/DEPENDENCY_RISK_REGISTER.md`.
+Production release still requires actual evidence for:
 
-Do not interpret a green automated CI matrix as a guarantee of real-device notification delivery or medical correctness.
+- supported real-device/manual matrices;
+- notification permission/delivery/lifecycle;
+- packaged SQLite existing-data compatibility;
+- encrypted document/backup compatibility;
+- accessibility;
+- production signing;
+- final signed-package inspection/provenance;
+- current store policy/metadata;
+- exact production tag and tagged gates;
+- publication.
+
+The formerly tracked SQLite dependency exception is remediated in the current source graph; packaged data compatibility remains a separate manual gate.
+
+Use `PROJECT_STATUS.md` and `docs/releases/NEXT_STEPS.md` for current release status.
