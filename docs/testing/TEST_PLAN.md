@@ -1,150 +1,396 @@
-# Test Plan
+# CareNest Test Plan
 
-## Latest exact automated baseline
+**Release line:** `1.0.0-rc.1`  
+**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
+**Verified PR #74 head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
 
-Exact runtime/test source verified through marker-only PR #33:
+This plan defines the automated and manual evidence required for CareNest. The app is an organizational health tool; testing must preserve its non-clinical, local-first and privacy boundaries.
 
-`4f5f9abe9d702fa33d6aba3f15c113febfebf95e`
+## 1. Current automated baseline
 
-Automated evidence:
+PR #74 evidence:
 
-- CareNest CI #332 / `31691592300`: success;
-- platform-neutral formatting: success;
-- unit tests: **106 passed, 0 failed, 0 skipped**;
-- integration tests: **30 passed, 0 failed, 0 skipped**;
-- UI-contract/policy tests: **54 passed, 0 failed, 0 skipped**;
-- total core automated tests: **190 passed**;
-- Android Release build: success;
-- Windows Release build: success;
-- iOS simulator Release build: success;
-- Mac Catalyst Release build: success;
-- CodeQL #332 / `31691592435`: success;
-- Dependency Audit #13 / `31691592302`: success.
+- CareNest CI #735 / `31938301209`: success;
+- formatting: success;
+- unit: 122/122;
+- integration: 39/39;
+- UI/source-policy: 170/170;
+- total: **331/331**;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- Store Package Configuration #124 / `31938301146`: success;
+- Store Inspection Artifacts #47 / `31938301275`: success;
+- CodeQL #735 / `31938301252`: success;
+- Dependency Audit #91 / `31938301172`: success.
 
-PR #33 added only `build/verification/rc1-aead-v2-hardening-20260813.txt` beyond that source head and was closed without merge after all gates passed.
+Permanent evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
 
-The Dependency Audit result does not mean the tracked SQLitePCLRaw advisory is fixed. `docs/security/DEPENDENCY_RISK_REGISTER.md` remains authoritative.
+## 2. Test objectives
 
-## Domain and scheduling automation
+The test system should prove, as far as automation can, that:
 
-- Domain validation and schedule planner edge cases.
-- Explicit validation for selected weekdays, cycle on/off values, end-date ordering, clock-time ranges, every-N-hours starting-time count, unknown schedule enum values, unsupported weekday-mask bits, blank/unknown time-zone identifiers, and every-N-hours interval limits.
-- Reminder planner ownership checks for profile → medicine → schedule → persisted schedule-time relationships.
-- Explicit UTC-kind enforcement for reminder planning windows and coordinator rebuild overrides.
-- DST/time-zone planner behavior using explicit time-zone identifiers where available.
-- Representative North America, Europe, Australia, and New Zealand DST gap/overlap coverage when the test host exposes those zone identifiers.
-- Stable reminder occurrence keys/idempotency.
-- Half-open reminder planning windows (`fromUtc` inclusive, `toUtc` exclusive).
-- Duplicate explicit reminder-time deduplication and chronological output ordering.
-- Deterministic randomized/property-style recurrence coverage using a fixed seed.
-- Daily, selected-weekday, cycle, custom date-range, every-N-hours, follow-up, disabled, archived-profile, paused, completed, archived-medicine, and as-needed scheduling behavior.
-- Invalid spring-forward local times do not cause CareNest to invent an alternate reminder time.
-- Ambiguous fall-back local times create one deterministic occurrence for the same schedule/window.
-- Snooze actions require an explicit future UTC timestamp before persistence/platform scheduling.
-- Stock arithmetic uses only user-entered adjustments.
+- deterministic domain/application rules remain correct;
+- reminder planning never infers medical intent;
+- persisted/OS reminder state is reconciled safely;
+- database operations preserve consistency;
+- encrypted documents/backups authenticate and fail closed;
+- source architecture/privacy/async rules do not regress;
+- strict XAML binding policy remains enforced;
+- package/dependency/release workflows remain fail closed;
+- documentation/status never substitutes for manual production evidence.
 
-See [`REMINDER_SCHEDULING_CONTRACT.md`](REMINDER_SCHEDULING_CONTRACT.md) for the exact non-clinical reminder-planning invariants protected by the unit suite.
+## 3. Unit test scope
 
-## Application-service automation
+Unit tests cover platform-neutral deterministic behavior, including:
 
-Direct platform-neutral service tests now cover behavior independently from MAUI and SQLite integration:
+- profile/medicine/schedule/appointment validation;
+- schedule recurrence;
+- UTC/time-zone/DST boundaries;
+- stable occurrence identities;
+- duplicate prevention;
+- archive/pause/completion suppression;
+- as-needed behavior;
+- explicit future snooze rules;
+- appointment UTC/permission logic;
+- profile/medicine/appointment/document service orchestration;
+- backup reminder coordination;
+- compensation/recovery using deterministic test doubles.
 
-- `ProfileService`: create/update audit action, UTC touch time, cascading profile cleanup coordination, encrypted document/profile-photo cleanup.
-- `MedicineService`: create/update audit action, reminder rebuild after medicine changes, schedule persistence/rebuild, future occurrence invalidation, explicit stock adjustments, prevention of negative estimated stock, cascade deletion.
-- `AppointmentService`: explicit UTC start requirement, scheduling from the stored UTC instant, create audit behavior, platform reminder cancellation/deletion, denied-notification-permission behavior, rebuild behavior without permission prompts, stored non-UTC data fails closed.
-- `DocumentService`: encrypted import metadata, audit creation, rollback when database save fails, rollback of both database record and encrypted payload when audit persistence fails, explicit export audit, safe exported filename handling, idempotent missing-record deletion.
-- `BackupReminderCoordinator`: disabled-state cancellation, denied permission behavior, no background permission prompt during rebuild/sync, reminder scheduling from last backup/current time, overdue backup reminder recovery, sound/vibration preference handling.
+## 4. Reminder planner cases
 
-Reusable test doubles under `tests/CareNest.UnitTests/TestDoubles/` provide deterministic repository, clock, reminder, notification, and encrypted-document-store behavior.
+Required planner cases include:
 
-## Appointment time and permission assertions
+- daily;
+- multiple explicit times;
+- selected weekdays;
+- cycle on/off schedules;
+- custom date ranges;
+- every-N-hours;
+- follow-up schedules;
+- disabled schedules;
+- archived profiles;
+- paused/completed/archived medicines;
+- as-needed schedules producing no automatic reminder;
+- invalid/unknown enum values;
+- ownership mismatch;
+- unsupported weekday masks;
+- blank/invalid time-zone IDs;
+- half-open UTC windows;
+- duplicate-time deduplication;
+- chronological deterministic output;
+- spring-forward invalid local times;
+- fall-back ambiguous local times;
+- fixed-seed randomized/property invariants.
 
-- `Appointment.StartsUtc` must have `DateTimeKind.Utc`.
-- Local/unspecified appointment clock values are rejected instead of being relabeled as UTC.
-- Time-zone identifiers are trimmed and validated.
-- Appointment reminder scheduling does not continue when permission remains denied.
-- Rebuild does not trigger a new permission prompt and does not attempt platform scheduling while permission is denied.
+## 5. Reminder coordinator/reconciliation cases
 
-## Encrypted document-vault automation
+Required cases include:
 
-- Document encryption round-trip.
-- Ciphertext tamper rejection.
-- New encrypted documents record encryption stream format version **2**.
-- Caller-owned copies of the 32-byte document master key are zeroed after import/export where managed-memory control permits.
-- Generated document-key buffers are zeroed if secure-store persistence fails.
-- Document-service import failure cleanup prevents a database record from remaining after its encrypted payload has been rolled back.
-- Explicit export uses a safe leaf filename and creates an audit event.
+- new platform request scheduling;
+- same occurrence idempotency;
+- stale request cancellation;
+- cancellation before replacement;
+- cancellation before suppression/invalidation;
+- cancellation-first Taken/Skipped/Delayed/Missed handling;
+- snooze old-request cancellation + replacement;
+- valid future snooze crossing original due time;
+- overdue snooze based on snooze due time;
+- platform cancellation failure remaining retryable;
+- persistence failure after cancellation triggering restoration/rebuild attempts;
+- schedule edits/deletes;
+- medicine/profile lifecycle cleanup;
+- appointment reminder compensation;
+- startup/rebuild recovery.
 
-## Chunked authenticated-encryption automation
+## 6. Appointment tests
 
-The shared `ChunkedAead` framing is covered directly:
+Required assertions:
 
-- version 2 multi-chunk round-trip;
-- authenticated terminal record validation;
-- chunk-boundary prefix truncation rejection;
-- trailing-data rejection after the terminal record;
-- legacy version 1 stream read compatibility;
-- 32-byte AES-256 key requirement;
-- nonce/AAD/tag/plaintext/ciphertext buffer clearing where managed-memory control permits.
+- `StartsUtc` must be true UTC;
+- local/unspecified values rejected;
+- time-zone identifier validation;
+- reminder lead time derived only from explicit appointment configuration;
+- notification permission denied is not successful scheduling;
+- background rebuild does not prompt repeatedly;
+- database/platform state compensation.
 
-The v2 framing upgrade applies to newly encrypted document and backup payload streams. Existing v1 streams remain readable; v1 ciphertext is not retroactively rewritten merely by upgrading the application.
+## 7. Integration test scope
 
-## Encrypted backup automation
+Integration tests use real repository/infrastructure boundaries where practical and cover:
 
-- Backup encryption round-trip, wrong-password rejection and tamper rejection.
-- SQLite WAL snapshot creation, committed-data preservation, integrity checking, and pre-cancelled snapshot rejection without an output file.
-- Portable recovery of the document master key when encrypted documents are present.
-- Caller-owned document-master-key copies used during backup creation/restore are zeroed after use where managed-memory control permits.
-- Password-derived AES key and salt buffers are zeroed after backup encryption/decryption paths.
-- Strict archive topology validator rejects duplicate entries.
-- Strict archive topology validator rejects unexpected files.
-- Nested document entries are rejected.
-- Non-`.cndoc` document entries are rejected.
-- Manifest document-count mismatch is rejected.
-- A document-bearing backup without a valid 32-byte document master key is rejected.
-- Invalid backup schema/document-count metadata is rejected.
-- The existing backup container/package version remains distinct from the internal chunked AEAD framing version.
+- SQLite migrations;
+- relationship cleanup;
+- transactions;
+- WAL/busy-timeout behavior;
+- snapshots/integrity;
+- reminder persisted state;
+- document encryption/import/export/delete;
+- backup create/inspect/restore;
+- report/export output;
+- failure cleanup/rollback.
 
-## Persistence and app-lock automation
+## 8. SQLite migration/integrity cases
 
-- SQLite migration idempotency and relationship cleanup.
-- WAL journal mode/busy-timeout/checkpoint behavior.
-- App-lock source contracts for salted PBKDF2-HMAC-SHA256 verification, fixed-time comparison, verifier-buffer clearing, no plaintext-PIN persistence, and removal of stored lock material when disabled.
+- fresh database creation;
+- ordered migration application;
+- migration idempotency;
+- schema version correctness;
+- relationship/cascade cleanup;
+- transactional multi-step operations;
+- snapshot includes committed data;
+- integrity validation;
+- cancellation leaves no unintended final output.
 
-## Reports/UI/repository-policy automation
+Packaged existing-user data remains a separate manual release test.
 
-- Report disclaimer presence.
-- XAML semantic/accessibility contract checks.
-- Shell route uniqueness and expected navigation targets.
-- Architecture dependency rules.
-- ViewModel persistence/network boundaries.
-- No runtime TODO/FIXME/`NotImplementedException` placeholders.
-- No named diagnosis/dosage/treatment/interaction/risk-scoring implementation regression.
-- No common signing/private-key artifacts committed.
-- Privacy-redacted exception logging contracts.
-- Runtime async-safety contracts.
-- Branding/localization/funding surface contracts.
+## 9. Encrypted document cases
 
-## Manual device matrix
+- current format round trip;
+- tamper rejection;
+- truncation/trailing-data rejection through shared framing where applicable;
+- missing/corrupt key fail closed;
+- no unrelated replacement key for existing ciphertext;
+- import rollback if metadata/audit save fails;
+- explicit export creates expected plaintext copy;
+- failed export/import cleans app-owned partial output best effort;
+- delete removes metadata/payload consistently;
+- retained legacy v1 read compatibility where documented.
 
-Automated tests do not replace these release gates:
+## 10. Backup/restore cases
 
-- Android phone/tablet: notification permission, exact/inexact alarm behavior, battery optimization, reboot/time/time-zone changes, force-stop limitation, reminder delivery.
-- iPhone/iPad: notification permission, scheduled delivery, app lock, document import/export, backup/restore.
-- Mac Catalyst: resizing, keyboard navigation, notification scheduling, app lock, document flows, backup/restore.
-- Windows: resizing, keyboard navigation, in-app reminder fallback/diagnostics, document flows, backup/restore.
-- All targets: screen reader, large text, theme/contrast, reduced motion, destructive-action confirmation, clean-install restore.
+- current backup round trip;
+- wrong password rejected;
+- tamper rejected;
+- truncation rejected;
+- trailing data rejected;
+- strict archive topology;
+- duplicate/unexpected/nested invalid entries rejected;
+- document-key recovery material validated;
+- database snapshot/integrity validated;
+- clean-install restore;
+- rollback restores previous key state where documented;
+- genuine legacy fixtures when real prior bytes exist.
 
-## Safety assertions
+Never manufacture a test artifact and call it historical evidence.
 
-- No screen asks CareNest to choose a dose.
-- No clinical score or diagnosis appears.
-- Stock text explains estimate limitations.
-- Reports call data user-entered/unverified.
-- Medical disclaimer appears onboarding and About.
-- Invalid local times are not silently converted into clinically inferred alternatives.
-- Planner ownership mismatches fail rather than silently moving reminder data across local profile/medicine boundaries.
-- Local/unspecified `DateTime` values are not silently reinterpreted as UTC planning, snooze, or appointment times.
-- Notification permission denial does not become an attempted platform schedule from CareNest application services.
-- App lock is presented as a local privacy barrier rather than database/device encryption.
-- Backup/document cryptography remains an organizational privacy/security control and is not presented as a clinical guarantee.
+## 11. App-lock cases
+
+- PIN validation policy;
+- random salt;
+- PBKDF2-HMAC-SHA256 verifier;
+- fixed-time comparison;
+- secure-store material ownership;
+- strict salt/verifier length validation;
+- no plaintext PIN persistence;
+- update/disable rollback;
+- fail-closed corrupt/missing material;
+- sensitive-buffer clearing where practical.
+
+## 12. Reports/exports cases
+
+- correct output structure;
+- required disclaimer/limitations;
+- CSV formula-like content neutralization;
+- staged/partial-file behavior;
+- atomic final move where documented;
+- cleanup after failure/cancellation;
+- share cache cleanup while CareNest owns the file;
+- external-copy boundary documented.
+
+## 13. UI/XAML/source-policy scope
+
+`CareNest.UiTests` should continue to cover:
+
+- required views/routes/navigation;
+- semantic/accessibility source expectations;
+- architecture project references;
+- no direct SQL in ViewModels;
+- no casual runtime HTTP/telemetry creation;
+- async/cancellation policy;
+- logging privacy;
+- security/secret/signing-file hygiene;
+- package identity/platform metadata;
+- reminder contracts;
+- release scripts/workflows;
+- funding-free app runtime/package source boundary;
+- documentation/repository policy where applicable.
+
+## 14. Strict compiled XAML cases
+
+Every binding-bearing page/template is subject to:
+
+- correct root `x:DataType`;
+- item-specific DataTemplate `x:DataType`;
+- typed picker `ItemDisplayBinding`;
+- typed explicit Source/ancestor bindings;
+- Source binding compilation enabled;
+- strict XAML compilation enabled;
+- `XC0022`–`XC0025` as errors;
+- no matching `NoWarn`, `x:Object`, `x:Null` bypass.
+
+## 15. Dependency audit cases
+
+Automated policy should detect:
+
+- restoration of the old exact SQLite advisory suppression;
+- regression below maintained SQLite native/provider floors;
+- dependency audit failure on platform-neutral or MAUI graph;
+- invalid event-specific dependency-review assumptions.
+
+## 16. Package payload scanner cases
+
+The scanner self-test must cover:
+
+- clean payload pass;
+- UTF-8 forbidden marker rejection;
+- UTF-16 marker rejection;
+- nested archive marker rejection;
+- missing/unreadable path fail closed.
+
+Actual Android/Windows/Apple inspection output is scanned before artifact staging/upload as configured.
+
+## 17. CI matrix
+
+Pull-request/release-relevant automation includes:
+
+- formatting;
+- all three core test projects;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release;
+- CodeQL;
+- Dependency Audit;
+- Store Package Configuration;
+- Store Inspection Artifacts.
+
+Production-style tags also use Release Gate and Release Evidence.
+
+## 18. Android manual matrix
+
+Validate on representative targets:
+
+- fresh install/onboarding;
+- notification permission denied/granted;
+- medicine/appointment reminder create/edit/delete;
+- actual delivery;
+- Taken/Skipped/Delayed/Missed action ordering;
+- snooze cancellation/replacement;
+- schedule/medicine/profile delete stale cleanup;
+- restart/reopen/reboot recovery;
+- exact/inexact alarm diagnostics;
+- battery optimization;
+- clock/time-zone/DST changes;
+- force-stop/vendor limitations;
+- document picker/share;
+- backup/restore;
+- app lock;
+- accessibility.
+
+## 19. Windows manual matrix
+
+Validate:
+
+- install/execution;
+- core CRUD/navigation;
+- running-app notifications;
+- closed-app limitation behavior;
+- same-ID timer replacement/cancellation;
+- reminder actions/snooze;
+- restart/recovery;
+- file/share;
+- backup/restore;
+- app lock;
+- keyboard/focus;
+- light/dark/system theme.
+
+## 20. iPhone/iPad manual matrix
+
+Real-device evidence must include:
+
+- install;
+- notification permission denied/granted;
+- real reminders/actions/snooze;
+- lifecycle/restart/time-zone behavior;
+- backup/restore;
+- file/share;
+- app lock;
+- Dynamic Type;
+- VoiceOver;
+- notification preview privacy.
+
+Simulator compile is not a substitute.
+
+## 21. Mac Catalyst manual matrix
+
+Validate:
+
+- install/execution;
+- notification permission/delivery;
+- reminder actions/reconciliation;
+- restart;
+- file/share;
+- backup/restore;
+- app lock;
+- keyboard/focus;
+- theme/contrast;
+- signed/notarized candidate behavior when available.
+
+## 22. Accessibility matrix
+
+Use representative assistive technology for:
+
+- screen-reader names/order;
+- large text/scaling;
+- destructive confirmation readability;
+- desktop keyboard navigation/focus;
+- light/dark/system contrast;
+- color-independent meaning;
+- reduced motion;
+- privacy-safe actionable errors.
+
+## 23. Packaged existing-data validation
+
+With fictional representative data:
+
+- install/upgrade using realistic package path;
+- database opens;
+- integrity passes;
+- representative records readable/editable;
+- schema version correct;
+- reminders reconcile;
+- no duplicate/stale OS requests;
+- documents/backups remain usable.
+
+## 24. Production signing/package validation
+
+Outside Git:
+
+- configure Android/Apple/Windows signing as applicable;
+- record source SHA/version/package identity;
+- record SHA-256 and signing/notarization/store provenance;
+- scan final signed package for forbidden marker;
+- install/smoke-test final candidate;
+- verify support/legal/About surfaces.
+
+## 25. Store validation
+
+At actual submission time review current Apple/Google/Microsoft requirements, health-organizer wording, privacy/data-safety, permissions, screenshots, support/privacy/terms/security links and package identity.
+
+## 26. Test-data policy
+
+Use fictional/synthetic data in automation, screenshots, docs, store assets and migration fixtures.
+
+Never commit real health data, production backups, PINs/passwords, crypto keys, tokens or signing material.
+
+## 27. Failure handling
+
+A red analyzer/test/build/security/package scan is evidence to investigate, not a reason to weaken the gate.
+
+Fix the smallest correct source/test/workflow boundary, add regression coverage, and repeat exact-source verification when verification-relevant source changes.
+
+## 28. Current release interpretation
+
+The PR #74 automated matrix is green, but production completeness requires the remaining manual/package/accessibility/signing/store/tag/publication evidence in `docs/releases/NEXT_STEPS.md`.
