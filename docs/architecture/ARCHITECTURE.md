@@ -1,616 +1,299 @@
 # CareNest Architecture
 
-CareNest `1.0.0-rc.1` is a local-first .NET MAUI application for organizing multiple local profiles, user-entered medicine schedules/reminders, appointments, encrypted health documents, stock/refill notes, reports/exports, and password-encrypted manual backups.
+**Release line:** `1.0.0-rc.1`  
+**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-> **Safety boundary:** CareNest is organizational software. It does not diagnose, calculate/infer dosage, recommend treatment, perform clinical interaction checking, create clinical risk scores, replace qualified professionals, provide emergency services, or guarantee notification delivery.
+CareNest is a local-first .NET MAUI organizational health application. Its architecture separates domain rules, application orchestration, persistence/encryption, UI and platform integrations so reminder/data/privacy behavior can be tested without turning the product into clinical decision support.
 
-## Current authoritative automated architecture baseline
+## 1. Architectural goals
 
-Marker-only PR #61 verifies the current executable/project/test/workflow/build-script/artifact-generation source:
-
-- source/base: `4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2`;
-- marker head: `19c82b813c375047cf1166487bc18a1bd2cd0e52`;
-- PR merge/event SHA: `c8ea9fef89d7b773f19bf13c64f349495be706ad`;
-- CareNest CI #650 / `31872610834`: success;
-- 122 unit + 39 integration + 157 UI-contract/policy = **318/318** tests;
-- default Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
-- CareNest Store Package Configuration #39 / `31872610789`: success;
-- funding-disabled Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
-- Bash store-package preflight executable-mode guard: success;
-- CareNest Store Inspection Artifacts #2 / `31872610786`: success;
-- Android verified-unsigned AAB, Windows unpackaged bundle, iOS simulator bundle and unsigned Mac Catalyst bundle: downloaded checksum/provenance inspection success;
-- CodeQL #650 / `31872610815`: success;
-- unsuppressed Dependency Audit #46 / `31872610791`: success.
-
-PR #61 was closed without merge and its marker is not part of `main`.
-
-PR #60 remains a superseded failure-driven artifact checkpoint. PR #59 remains historical store-safe compilation evidence, PR #58 remains historical package/store-policy hardening evidence, PR #56 remains historical release-engineering evidence, and PR #54 remains the historical runtime bug-audit baseline.
-
-See `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`.
-
-## Architecture goals
-
-CareNest v1 architecture prioritizes:
-
-- no required CareNest account/backend;
-- no automatic CareNest cloud synchronization;
-- local structured persistence;
-- encrypted imported document payloads;
+- local-first operation without required CareNest backend/account;
+- deterministic organizational reminder planning from explicit user input;
+- clear persisted-state versus OS-scheduler boundaries;
+- SQLite repository isolation from UI/ViewModels;
+- separately encrypted document payloads;
 - password-encrypted manual backups;
-- deterministic reminder materialization from explicit user values;
-- explicit reconciliation between persisted reminder state and OS scheduled requests;
-- platform notification abstraction/limitations;
-- MVVM-style presentation separation;
-- platform-neutral/testable domain/application/infrastructure projects;
-- privacy-minimized logging;
-- explicit export/share/browser/calendar boundaries;
-- versioned persistence and encrypted-data compatibility;
-- exact-source CI/security/release evidence;
-- reproducible store-safe source configuration without source forks;
-- reproducible non-production store-inspection artifacts with exact source/checksum provenance.
+- optional app-lock privacy barrier;
+- explicit export/share/calendar/browser handoff boundaries;
+- privacy-minimized diagnostics;
+- multi-target MAUI UI/platform adapters;
+- fail-closed dependency/security/release automation;
+- no dosage/treatment/clinical interaction/risk inference.
 
-## System context
+## 2. Solution layers
 
 ```text
-+---------------------------- User Device ----------------------------+
-|                                                                     |
-| CareNest MAUI UI / ViewModels                                       |
-|              |                                                      |
-|              v                                                      |
-| Application services / reminder planner & coordinator               |
-|              |                            |                          |
-|              v                            v                          |
-| Repository/infrastructure          Platform abstractions             |
-|     |       |       |              notifications/files/share/etc.    |
-|     v       v       v                                                |
-|   SQLite  encrypted reports/backup                                   |
-|           documents                                                  |
-|                                                                     |
-| Platform secure storage: app-lock and document-key material          |
-+---------------------------------------------------------------------+
-                 |
-                 | explicit user action
-                 v
-        External file/calendar/browser/share destination
+CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure <- CareNest.App
 ```
 
-No normal current-v1 flow requires a CareNest-owned server.
+### Shared
 
-## Project structure
+Cross-cutting constants/primitives/helpers without MAUI/persistence implementation coupling.
 
-### `CareNest.Shared`
+### Domain
 
-Small dependency-light reusable primitives and canonical constants.
+Framework-independent entities/enums/structural rules. Domain validation checks shape/ownership/state but must not become medical advice.
 
-Responsibilities include:
+### Application
 
-- product/repository/contact/support constants;
-- settings/secret key identifiers;
-- guards/results/time-provider helpers.
+Use-case contracts/services, reminder planning/coordinating, ownership/time validation and compensation/recovery logic. Designed to remain testable without MAUI host/SQLite implementation.
 
-It must remain free of MAUI and persistence implementation details.
+### Infrastructure
 
-### `CareNest.Domain`
+SQLite database/migrations/repositories, encrypted document storage, backup/restore, reports/exports and platform-neutral cryptographic/persistence implementation.
 
-Framework-independent entities, enums and validation rules.
+### App
 
-Responsibilities include:
+MAUI composition, XAML/ViewModels/navigation, platform services, notifications, secure storage/preferences, file/share/calendar/browser integrations and Android/iOS/Mac Catalyst/Windows adapters.
 
-- profiles;
-- medicines;
-- schedules/times;
-- reminder occurrences;
-- medication logs;
-- appointments;
-- documents/tags;
-- stock/refill adjustments;
-- settings/audit/supporting local records;
-- structural validation.
+## 3. Application targets
 
-Medicine strength/instruction values remain opaque. Domain rules do not convert health text into medical decisions.
+- Android `net10.0-android`, minimum API 24;
+- iOS `net10.0-ios`, minimum iOS 15;
+- Mac Catalyst `net10.0-maccatalyst`, minimum 15;
+- Windows `net10.0-windows10.0.19041.0`, minimum 10.0.19041.0.
 
-### `CareNest.Application`
+`CareNestTargetFramework` isolates one app TFM on target-specific hosts/jobs.
 
-Platform-neutral use-case contracts/orchestration.
+## 4. UI/presentation boundary
 
-Responsibilities include:
+XAML/ViewModels own presentation state/navigation/commands and delegate business/persistence/platform work through services.
 
-- repository/service contracts;
-- deterministic reminder planning;
-- reminder reconciliation/action handling;
-- profile/medicine/appointment/document orchestration;
-- backup reminder coordination;
-- compensation/recovery across independent state surfaces;
-- time-provider aware workflows.
+Current policy prevents ViewModels from issuing direct SQL or casually creating runtime network clients.
 
-### `CareNest.Infrastructure`
+Strict compiled XAML binding policy requires:
 
-Local implementation concerns.
+- root page `x:DataType`;
+- item-specific DataTemplate `x:DataType`;
+- typed picker display bindings;
+- typed explicit Source/ancestor bindings;
+- Source binding compilation;
+- strict XAML compilation;
+- `XC0022`–`XC0025` as errors.
 
-Responsibilities include:
+## 5. Domain/data model
 
-- SQLite connection/configuration/migrations;
-- repositories;
-- transaction helpers;
-- WAL checkpoint/snapshot/integrity operations;
-- encrypted document storage;
-- backup archive/encryption/restore;
-- reports and portable output;
-- shared chunked AEAD framing.
+Core concepts include:
 
-### `CareNest.App`
+- PersonProfile;
+- EmergencyContact;
+- Medicine;
+- MedicineSchedule;
+- ScheduleTime;
+- ReminderOccurrence;
+- MedicationLogEntry;
+- Appointment;
+- CareDocument;
+- Tag/DocumentTag;
+- StockAdjustment;
+- AppSetting/AuditEntry/BackupMetadata.
 
-MAUI UI/composition/platform project.
+Exact schema/relationships/migrations are documented in `DATABASE_SCHEMA.md`.
 
-Responsibilities include:
+## 6. Reminder architecture
 
-- XAML views;
-- ViewModels;
-- navigation;
-- dependency injection;
-- theme/accessibility presentation;
-- secure-storage adapter;
-- file/media picker;
-- browser/share/calendar integration;
-- platform notification implementations;
-- notification permission/capability diagnostics;
-- startup recovery;
-- Android/iOS/Mac Catalyst/Windows source/resources;
-- build-configurable optional external project-support visibility;
-- Windows-only portable inspection publish RID mapping.
-
-### Test projects
-
-- `CareNest.UnitTests` — deterministic domain/application/direct service tests.
-- `CareNest.IntegrationTests` — SQLite/crypto/backup/document/report/reminder integration.
-- `CareNest.UiTests` — XAML/source/repository/architecture/privacy/security/release/store-package/store-inspection policy contracts; not a claim of full real-device UI automation.
-
-Concrete files are mapped in `docs/CODEBASE_REFERENCE.md`.
-
-## Dependency direction
-
-Intended direction:
-
-```text
-Shared <- Domain <- Application <- Infrastructure <- App
-```
-
-Architecture contracts enforce that lower/platform-neutral layers do not depend upward on MAUI composition.
-
-## MVVM/presentation boundary
-
-Views bind to ViewModels.
-
-ViewModels:
-
-- do not issue SQL directly;
-- do not create network clients for local-first v1;
-- avoid synchronous task-blocking patterns;
-- do not own platform notification internals;
-- use application/navigation/platform abstractions;
-- route unexpected errors through privacy-aware UI error handling.
-
-The About ViewModel's optional funding command is non-executable when `CARENEST_FUNDING_LINK` is not compiled into the store-safe build.
-
-## Core data flow
-
-```text
-View
-  -> ViewModel
-    -> Application service/coordinator
-      -> repository/service abstraction
-        -> infrastructure/platform implementation
-          -> SQLite/files/secure store/OS service
-```
-
-A capability belongs in the lowest architectural layer that can own it without violating dependency direction.
-
-## Domain/data model
-
-Core local structured concepts include:
-
-- `PersonProfile`;
-- `Medicine`;
-- `MedicineSchedule`;
-- `ScheduleTime`;
-- `ReminderOccurrence`;
-- `MedicationLogEntry`;
-- `Appointment`;
-- `CareDocument`;
-- `Tag` / `DocumentTag`;
-- `StockAdjustment`;
-- `EmergencyContact`;
-- `AppSetting`;
-- `AuditEntry`;
-- `BackupMetadata`.
-
-See `DATABASE_SCHEMA.md` for schema/relationship details.
-
-## Reminder architecture
-
-Reminder scheduling separates:
+Reminder scheduling crosses three independent state surfaces:
 
 1. explicit user schedule intent;
 2. persisted CareNest occurrence state;
 3. operating-system scheduled request state.
 
-These are not one atomic state surface.
+Because DB and OS scheduler cannot share one transaction, CareNest uses deterministic planning, persisted occurrence identity, reconciliation, cancellation-first ordering and compensation/rebuild rather than a single `scheduled=true` flag.
 
-### Planner
+## 7. Reminder planner
 
-`ReminderPlanner` materializes deterministic future occurrence intent from explicit values.
+Platform-neutral planner inputs include explicit schedule/profile/medicine state, UTC planning window and stored time-zone context.
 
-Planner validation includes:
+Planner invariants include:
 
-- profile → medicine ownership;
-- medicine → schedule ownership;
-- schedule → persisted schedule-time ownership;
-- recognized schedule kind;
-- explicit valid time zone;
-- UTC planning bounds;
-- half-open planning window `[fromUtc, toUtc)`;
-- schedule/state/date boundaries;
-- stable occurrence identity;
-- duplicate-time deduplication;
-- deterministic DST handling;
-- no automatic as-needed occurrences;
-- suppression for archived/paused/completed/disabled state.
+- true UTC boundaries;
+- half-open windows;
+- ownership validation;
+- known schedule/weekday values;
+- active/archive suppression;
+- deterministic DST gap/overlap rules;
+- stable occurrence identity/deduplication;
+- AsNeeded creates no automatic occurrence;
+- no medical schedule inference.
 
-Invalid DST-gap local clock values do not cause CareNest to invent a replacement reminder time.
+## 8. Reminder coordinator/reconciliation
 
-### Coordinator
+Coordinator bridges persistence and platform scheduler.
 
-`ReminderCoordinator` coordinates persisted occurrences and platform requests.
+Current invariants include:
 
-Responsibilities include:
+- persisted ↔ platform request reconciliation;
+- stale request cancellation;
+- cancellation before replacement/suppression/invalidation;
+- cancellation-first Taken/Skipped/Delayed/Missed transitions;
+- valid snooze uses explicit future UTC;
+- `SnoozedUntilUtc` is effective due time;
+- cancellation failures remain retryable;
+- previous-state restoration/rebuild attempts after later failure;
+- profile/medicine/schedule/appointment lifecycle cleanup.
 
-- load eligible profiles/medicines/schedules/times;
-- materialize/upsert occurrences;
-- compute effective due time;
-- reconcile existing OS requests;
-- apply quiet-hours/platform eligibility;
-- schedule/cancel platform requests;
-- process handled actions;
-- record medication-log state where applicable;
-- apply explicit user-configured stock bookkeeping;
-- reconcile overdue state;
-- keep failed cancellation/recovery retryable/visible.
+## 9. Date/time architecture
 
-### Effective due time
+- application planner/appointment/snooze UTC boundaries require real UTC values;
+- schedules retain explicit local-time/time-zone intent;
+- invalid DST-gap local time is not silently invented/replaced;
+- ambiguous fall-back handling is deterministic;
+- device time-zone changes do not silently rewrite stored schedule intent.
 
-- normal Scheduled occurrence → `ScheduledUtc`;
-- valid Snoozed occurrence → `SnoozedUntilUtc`.
+## 10. Persistence architecture
 
-The original scheduled instant remains historical schedule identity after snooze.
+SQLite implementation is isolated in Infrastructure behind repository/application contracts.
 
-### Reconciliation ordering
+Design includes:
 
-CareNest explicitly coordinates SQLite and platform request state:
+- ordered schema migrations;
+- version/integrity handling;
+- parameterized repository operations;
+- transactions for consistency-sensitive multi-step writes;
+- WAL/busy-timeout/snapshot behavior;
+- cleanup/compensation where DB state interacts with filesystem/platform state.
 
-- cancel old OS request before replacement/suppression/invalidation;
-- retain stale occurrence identity long enough to cancel obsolete requests after schedule edits;
-- leave failed cancellation retryable;
-- cancel future requests before medicine/profile cascade deletion;
-- if database deletion fails after cancellation, attempt non-cancelled rebuild compensation;
-- reconcile medicine/profile saves before non-critical audit bookkeeping;
-- reconcile/compensate appointment persistence/platform scheduling.
+CareNest does not claim transparent whole-database encryption.
 
-### Handled action ordering
+## 11. SQLite dependency architecture
 
-Taken, Skipped, Delayed, Missed, Snoozed and Cancelled use cancellation-first behavior:
+Current maintained package path is centrally pinned/audited with no former exact advisory suppression.
 
-1. validate action/snooze input;
-2. cancel old platform request;
-3. persist handled state only after cancellation succeeds;
-4. schedule snooze replacement after state persistence;
-5. if a later essential step fails, attempt non-cancelled previous-state restoration and rebuild;
-6. surface aggregate recovery failure instead of claiming contradictory state is consistent.
+Dependency security and packaged existing-data compatibility are separate release gates.
 
-These are data-consistency rules, not medical decisions.
+See `docs/security/DEPENDENCY_RISK_REGISTER.md`.
 
-## Appointment architecture
+## 12. Document-vault architecture
 
-Appointments store an explicit UTC instant.
+Document metadata is structured local data; imported payload bytes use separate application-owned encrypted storage.
 
-`Appointment.StartsUtc` must be actual `DateTimeKind.Utc`; local/unspecified ticks are rejected rather than relabeled.
+Current protections include:
 
-Appointment reminder due time derives from:
-
-- explicit stored UTC start;
-- user-entered `ReminderMinutesBefore`.
-
-Notification permission denial is not considered successful scheduling. Background rebuild does not repeatedly prompt for permission.
-
-Appointment database state and platform notification state use compensation/reconciliation because they are separate surfaces.
-
-## Time-zone architecture
-
-Schedules store explicit time-zone identity.
-
-For a user-entered local clock time:
-
-- normal local time converts deterministically to UTC;
-- DST-gap invalid time is not silently shifted;
-- DST-overlap ambiguous time resolves deterministically;
-- resulting UTC occurrence is filtered against half-open planning windows.
-
-A device time-zone change does not silently rewrite stored user schedule intent.
-
-## SQLite persistence architecture
-
-Structured records are stored in local SQLite.
-
-Current schema version is documented in `DATABASE_SCHEMA.md` and source migration definitions.
-
-Persistence includes:
-
-- ordered/versioned migrations;
-- schema version tracking;
-- indexes/relationships/cascades;
-- transactional migration DDL + version writes;
-- transactional repository operations where consistency requires it;
-- WAL mode;
-- busy timeout;
-- parameterized operations;
-- snapshot/integrity tests.
-
-CareNest does not claim whole-database encryption.
-
-## SQLite WAL/snapshot architecture
-
-SQLite result-producing PRAGMAs are treated as query/scalar result operations rather than non-query commands.
-
-Snapshot/backup preparation coordinates WAL state and validates copied database integrity/content.
-
-## SQLite dependency/provider architecture
-
-CareNest retains the established `sqlite-net-pcl` application API while central package pinning selects maintained SQLite native/provider leaves.
-
-Current verified intent:
-
-- `sqlite-net-pcl` `1.9.172`;
-- `SQLitePCLRaw.bundle_green` `2.1.11`;
-- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
-- `SQLitePCLRaw.lib.e_sqlite3.android` `2.1.12`;
-- selected providers `2.1.12`;
-- central transitive pinning enabled;
-- no former exact `GHSA-2m69-gcr7-jv3q` audit suppression.
-
-`SqliteDependencySecurityContractTests` protects this source policy.
-
-Package security and packaged existing-data compatibility are separate release properties.
-
-## Encrypted document architecture
-
-Imported sensitive document bytes are stored separately from structured metadata using authenticated encryption.
-
-High-level flow:
-
-```text
-User-selected file
-  -> DocumentService
-  -> EncryptedDocumentStore
-  -> authenticated encrypted local payload
-  -> SQLite metadata
-  -> document master key in platform secure storage
-```
-
-New streams use chunked AEAD framing v2. Legacy v1 read support remains for compatibility.
-
-Missing/corrupt key plus existing ciphertext fails closed; read/export does not silently create a replacement key.
-
-Explicit decrypted export creates a copy outside the encrypted vault boundary.
-
-## Document import compensation
-
-Encrypted payload and SQLite metadata are separate surfaces.
-
-Import uses compensating rollback around payload creation, metadata persistence and audit persistence. Cleanup attempts can deliberately ignore caller cancellation when cancelling cleanup would knowingly strand newly created artifacts.
-
-This is compensation, not a cross-filesystem/SQLite global transaction.
-
-## Backup architecture
-
-Manual backups package the local state into a password-protected versioned container.
-
-Security/compatibility properties include:
-
-- PBKDF2-HMAC-SHA256 password derivation;
-- AES-256-GCM authenticated encryption;
+- secure-stored master key where applicable;
+- AES-256-GCM;
 - chunked framing v2 for new writes;
-- legacy v1 read compatibility;
-- strict decrypted archive topology validation;
-- snapshot/integrity behavior;
-- protected inclusion of document recovery key material;
-- wrong-password/tamper/truncation/trailing-data rejection;
-- rollback/key restoration on failed restore.
+- authenticated terminal/truncation/trailing-data checks;
+- retained documented v1 read compatibility;
+- fail-closed missing/corrupt required key;
+- import/export/delete compensation/cleanup.
 
-See `BACKUP_AND_RESTORE.md`.
+Explicit export creates a copy outside the encrypted vault boundary.
 
-## App-lock architecture
+## 13. Backup/restore architecture
 
-Optional app lock uses:
+Manual backup packages local data/document recovery state into a password-encrypted authenticated format.
 
-- numeric PIN policy;
-- random salt;
-- PBKDF2-HMAC-SHA256 verifier;
-- fixed-time comparison;
-- platform secure storage;
-- exact verifier/salt shape validation;
-- buffer clearing where practical;
-- rollback around multi-key transitions;
-- fail-closed corrupt/missing material.
+Restore validates authentication/version/topology/database integrity/key state before accepting data and rebuilds derived platform state as required.
 
-It is a local privacy barrier, not whole-database/device encryption.
+Wrong-password/tamper/truncation/trailing-data/malformed topology fails closed.
 
-## Reports/export architecture
+## 14. App-lock architecture
 
-Portable output is explicit user-controlled data movement.
+Optional local app lock stores derived verifier/salt in secure storage where applicable, uses PBKDF2-HMAC-SHA256/fixed-time comparison and fail-closed state validation/rollback.
 
-Current controls include:
+It is a UI privacy barrier, not database/device encryption.
 
-- staged partial files + atomic final move for report writers;
-- CSV formula-like user text neutralization;
-- failure/cancellation staging cleanup best effort;
-- managed decrypted document/report cache ownership;
-- report-cache cleanup after external share handoff where CareNest still owns the temporary copy.
+## 15. Reports/export architecture
 
-CareNest cannot delete external copies after handoff.
+Reports/exports are explicit user actions.
 
-## Privacy architecture
+Infrastructure generates portable output with safe staging/cleanup/formula-like CSV neutralization as documented. Once a destination receives a copy, it leaves CareNest-controlled storage/security.
 
-Current v1 privacy properties:
+## 16. Platform-services boundary
 
-- no required account/server;
-- no automatic CareNest cloud upload;
-- no hidden runtime telemetry client;
-- local SQLite records;
-- encrypted imported documents;
-- encrypted manual backups;
-- explicit external actions;
-- generic notifications by default;
-- privacy-minimized logs.
+Application contracts abstract services such as:
 
-## Logging/error architecture
+- notification scheduling/cancellation/permission/diagnostics;
+- secure storage/preferences;
+- file picker/share;
+- calendar export;
+- browser/external navigation;
+- platform app-data paths/time/restart capabilities as implemented.
 
-Runtime diagnostic paths avoid normal logging of health content, raw document/backup content, secrets, PINs/passwords/keys, and sensitive full exception messages/stack traces.
+Platform adapters own target-specific APIs; application/domain remain platform-neutral.
 
-Global exception observation is privacy-aware and does not introduce remote telemetry.
+## 17. Android boundary
+
+Android adapter handles manifest/application/activity/notification/alarm/broadcast integration.
+
+Delivery remains subject to permission, alarm capability, battery/vendor policy, force-stop, reboot and clock/time-zone behavior.
+
+## 18. Windows boundary
+
+Windows adapter provides desktop integration and current in-process reminder fallback. Source tests protect timer replacement/cancellation ownership, but reliable closed-app delivery is not claimed.
+
+## 19. Apple boundary
+
+iOS/Mac Catalyst adapters use platform notification/file/share behavior. Simulator/unsigned compilation is automated evidence; real-device/signed/notarized behavior remains manual/external release evidence.
+
+## 20. Local-first network boundary
+
+Normal v1 runtime has no required CareNest account/backend/automatic sync/hidden analytics client.
+
+Future networked features require explicit authentication/authorization/consent/privacy/key-management/deletion/export/offline/conflict/threat-model/store design.
+
+## 21. External link boundary
+
+Application can explicitly open normal repository/creator/legal/support destinations as implemented.
+
+The distributed app does **not** include/expose the external Buy Me a Coffee funding destination. Repository-only project support is outside current app runtime and does not receive local health data automatically.
+
+## 22. Logging boundary
+
+Diagnostics must minimize health/document/credential/crypto content. Sensitive paths avoid raw exception messages/stack traces/paths when unnecessary.
 
 See `docs/security/LOGGING_PRIVACY.md`.
 
-## Navigation architecture
+## 23. Security/release architecture
 
-ViewModels use app-navigation abstractions/routes rather than directly coupling domain/application logic to Shell/platform navigation internals.
+Automated controls include:
 
-## Theme/accessibility architecture
-
-CareNest supports system/light/dark presentation and accessibility-oriented semantics/preferences.
-
-Source/XAML contracts cannot certify real assistive-technology behavior. Manual screen-reader, text-scaling, keyboard/focus, contrast and reduced-motion tests remain release gates.
-
-## Platform architecture
-
-### Android
-
-Android notification scheduling/recovery must account for permission, alarm capability, battery restrictions, reboot/time/time-zone changes, force-stop/vendor behavior and async receiver lifetime.
-
-### Windows
-
-Current notification fallback includes in-process limitations and timer ownership/race protections. Closed-app delivery is not guaranteed.
-
-### iOS/Mac Catalyst
-
-Apple notification permission/OS behavior and production signing/provisioning are platform-controlled. Real-device/manual release checks remain required.
-
-## Build architecture
-
-`CareNest.App` is multi-targeted.
-
-`CareNestTargetFramework` narrows the active app target before restore/build so platform-specific runners do not require unrelated workloads and app target values do not leak into platform-neutral referenced projects.
-
-`CareNestShowFundingLink` controls the optional in-app external project-support surface. It defaults to `true`; `false` removes the funding compile symbol, hides the complete support card, and makes the funding command non-executable without changing organizer behavior.
-
-For Windows internal inspection publishing, `RuntimeIdentifierOverride` maps to `RuntimeIdentifier` only on the Windows target. This supports a portable self-contained `win-x64` inspection bundle without redefining other target RIDs.
-
-Fail-closed store-package wrappers require an explicit supported target, force `CARENEST_SHOW_FUNDING_LINK=false`, and delegate the standard release preflight.
-
-## CI/security/release architecture
-
-Repository automation includes:
-
-- formatting;
-- 3 core test projects;
-- default Android Release;
-- default Windows Release;
-- default iOS simulator Release;
-- default Mac Catalyst Release;
-- funding-disabled Android Release;
-- funding-disabled Windows Release;
-- funding-disabled iOS simulator Release;
-- funding-disabled Mac Catalyst Release;
-- Bash store-package wrapper executable-mode verification;
+- unit/integration/UI-source-policy tests;
+- strict XAML build policy;
 - CodeQL;
 - unsuppressed Dependency Audit;
-- Store Inspection Artifacts;
+- Store Package Configuration;
+- Store Inspection Artifacts with fail-closed marker scan/provenance;
 - Release Gate;
-- CareNest Release Evidence.
+- Release Evidence.
 
-Default builds are exercised by `ci.yml`.
+Production signing secrets remain outside Git.
 
-Funding-disabled builds are exercised separately by `store-package-verification.yml`; this prevents a normal/default build from being mistaken for evidence that the store-safe configuration compiles.
+## 24. Application funding/package invariant
 
-Internal package-shape evidence is exercised by `store-inspection-artifacts.yml`. It checks out the exact source head, separately records PR merge/event identity, creates SHA-256/provenance-bearing non-production artifacts, and does not inject production signing credentials.
+Current distributed application invariant:
 
-Android inspection staging excludes MAUI's `*-Signed.aab`, requires exactly one unsigned AAB candidate and rejects JAR-signature metadata. Windows output is unpackaged/self-contained; iOS output is simulator-only; Mac Catalyst output is unsigned.
+- no BMC destination/card/command/artwork in app source/package;
+- no `CareNestShowFundingLink` build property;
+- repository-only optional support;
+- funding never changes health/reminder/medical behavior;
+- package scanner remains defense-in-depth.
 
-Major verification-relevant source changes use marker-only exact-head PR verification. Marker files are closed without merge and do not enter production source.
+## 25. Testing architecture
 
-## Exact production-tag architecture
+- Unit: deterministic domain/application/service behavior.
+- Integration: SQLite/encryption/filesystem/backup/report behavior.
+- UI/source-policy: XAML/architecture/privacy/async/release/package source contracts.
+- Manual: real OS/device/accessibility/package/signing/store behavior.
 
-Production tags matching `v*` run the exact tagged commit through:
+Current PR #74 automated count: 331/331.
 
-- CareNest CI;
-- CodeQL;
-- Dependency Audit;
-- CareNest Store Package Configuration;
-- CareNest Store Inspection Artifacts;
-- Release Gate;
-- CareNest Release Evidence.
+## 26. Current release evidence
 
-Release Evidence records source/ref/run/attempt identity, tracked source manifests/checksums, TRX results, dependency inventories, workspace integrity and evidence checksums.
+Current verified source:
 
-Available evidence is retained before aggregate failure evaluation.
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
 
-Store Package Configuration proves funding-disabled source compilation only. Store Inspection Artifacts proves reproducible internal package shapes/checksums/provenance. Neither signs or submits production packages and neither replaces installed-package inspection.
+Merged executable source:
 
-## External project-support boundary
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-Canonical voluntary project-support URL:
+PR #74 passed all configured normal platform, store-candidate, inspection, CodeQL and Dependency Audit gates.
 
-`https://buymeacoffee.com/sanskarIN`
-
-It is explicit user action and must not receive health-record identifiers through URL parameters.
-
-Project support does not change health behavior, reminder priority, emergency support or access to local records.
-
-The current 2026-08-15 Apple/Google policy review selects `CareNestShowFundingLink=false` for initial store candidates unless submission-time policy clearly permits the external link. The actual signed/installed package must still be inspected.
-
-## Failure strategy
-
-Architecture principles:
-
-- validate before destructive writes;
-- preserve async/cancellation behavior;
-- deliberately use non-cancelled compensation when cancellation would knowingly strand inconsistent state;
-- avoid synchronous task blocking;
-- keep reminder planner/rebuild deterministic/idempotent;
-- reconcile persisted state and external OS requests explicitly;
-- keep logs privacy-minimized;
-- fix analyzer/audit/workflow failures rather than broadly suppressing them;
-- preserve historical persistence/encryption compatibility;
-- inspect generated artifacts rather than trusting workflow success alone;
-- keep manual/store/signing/data-compatibility limitations explicit.
-
-## Future architecture
-
-The following are outside the current local-first v1 design unless a future architecture decision explicitly introduces them:
-
-- CareNest cloud synchronization;
-- required accounts;
-- server-side health storage;
-- remote caregiver collaboration;
-- silent background sharing;
-- analytics/telemetry;
-- clinical interpretation/decision systems.
-
-Any such feature requires new authentication, consent/revocation, deletion/export, key management, privacy/store disclosure, abuse/threat and security testing design.
+Production release still requires real-device/package/accessibility/signing/store/tag evidence.
 
 ## Related documents
 
-- `docs/COMPLETE_PROJECT_DOCUMENTATION.md`
-- `docs/CODEBASE_REFERENCE.md`
-- `docs/CONFIGURATION_REFERENCE.md`
 - `docs/architecture/APPLICATION_FLOWS.md`
 - `docs/architecture/SERVICE_BOUNDARIES.md`
 - `docs/architecture/DATABASE_SCHEMA.md`
@@ -619,10 +302,4 @@ Any such feature requires new authentication, consent/revocation, deletion/expor
 - `docs/architecture/BACKUP_AND_RESTORE.md`
 - `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md`
 - `docs/security/SECURITY_MODEL.md`
-- `docs/testing/TESTING_GUIDE.md`
-- `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`
-- `docs/releases/STORE_SAFE_CONFIGURATION_VERIFICATION_20260815.md`
-- `docs/releases/STORE_BUILD_POLICY.md`
-- `docs/releases/STORE_POLICY_REVIEW_20260815.md`
-- `docs/releases/PACKAGED_RELEASE_VALIDATION.md`
-- `DECISIONS.md`
+- `docs/privacy/PRIVACY_MODEL.md`
