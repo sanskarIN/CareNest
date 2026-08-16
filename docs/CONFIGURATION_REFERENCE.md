@@ -1,10 +1,14 @@
 # CareNest Configuration, Build, and Automation Reference
 
-This document is the canonical reference for repository configuration that affects restore, compilation, testing, dependency security, local preflight, CI, release evidence, store-safe source compilation, internal inspection artifacts, and platform builds.
+**Release line:** `1.0.0-rc.1`  
+**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
+**Verified PR #74 head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+
+This document is the current canonical reference for repository configuration affecting restore, build, testing, dependency security, MAUI targets, XAML compilation, local preflight, CI, store-candidate verification, inspection artifacts and release evidence.
 
 ## 1. Central package management
 
-CareNest uses `Directory.Packages.props` with:
+`Directory.Packages.props` enables:
 
 ```xml
 <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
@@ -13,68 +17,65 @@ CareNest uses `Directory.Packages.props` with:
 
 Current centrally managed versions:
 
-| Package | Version | Purpose / note |
+| Package | Version | Purpose |
 |---|---:|---|
-| `Microsoft.Maui.Controls` | `10.0.20` | Current verified MAUI UI/runtime package baseline. A newer version must be treated as verification-relevant. |
-| `sqlite-net-pcl` | `1.9.172` | Application SQLite API path. |
-| `SQLitePCLRaw.bundle_green` | `2.1.11` | Compatible bundle API path retained by the app. |
-| `SQLitePCLRaw.lib.e_sqlite3` | `3.53.3` | Maintained native SQLite leaf selected by central transitive pinning. |
-| `SQLitePCLRaw.lib.e_sqlite3.android` | `2.1.12` | Android native SQLite leaf. |
-| `SQLitePCLRaw.provider.e_sqlite3` | `2.1.12` | SQLite provider leaf. |
-| `SQLitePCLRaw.provider.sqlite3` | `2.1.12` | SQLite provider leaf. |
-| `SQLitePCLRaw.provider.dynamic_cdecl` | `2.1.12` | SQLite provider leaf. |
-| `Microsoft.Extensions.Logging.Debug` | `10.0.0` | Debug logging provider. |
-| `Microsoft.Extensions.Logging.Abstractions` | `10.0.0` | Platform-neutral logging contracts. |
-| `Microsoft.Extensions.DependencyInjection.Abstractions` | `10.0.0` | DI abstractions. |
-| `Microsoft.NET.Test.Sdk` | `17.14.1` | .NET test host/SDK. |
-| `xunit` | `2.9.3` | Test framework. |
-| `xunit.runner.visualstudio` | `3.1.4` | Test runner adapter. |
-| `coverlet.collector` | `6.0.4` | Coverage collector. |
+| `Microsoft.Maui.Controls` | `10.0.20` | MAUI application/UI runtime |
+| `sqlite-net-pcl` | `1.9.172` | SQLite application API |
+| `SQLitePCLRaw.bundle_green` | `2.1.11` | SQLite bundle path |
+| `SQLitePCLRaw.lib.e_sqlite3` | `3.53.3` | maintained native SQLite leaf |
+| `SQLitePCLRaw.lib.e_sqlite3.android` | `2.1.12` | Android SQLite native leaf |
+| `SQLitePCLRaw.provider.e_sqlite3` | `2.1.12` | SQLite provider |
+| `SQLitePCLRaw.provider.sqlite3` | `2.1.12` | SQLite provider |
+| `SQLitePCLRaw.provider.dynamic_cdecl` | `2.1.12` | SQLite provider |
+| `Microsoft.Extensions.Logging.Debug` | `10.0.0` | debug logging provider |
+| `Microsoft.Extensions.Logging.Abstractions` | `10.0.0` | logging abstractions |
+| `Microsoft.Extensions.DependencyInjection.Abstractions` | `10.0.0` | DI abstractions |
+| `Microsoft.NET.Test.Sdk` | `17.14.1` | test host |
+| `xunit` | `2.9.3` | test framework |
+| `xunit.runner.visualstudio` | `3.1.4` | runner adapter |
+| `coverlet.collector` | `6.0.4` | coverage collector |
 
-Package updates must be deliberate. Do not merge a package bump only because Dependabot opened it; restore/build/test, platform builds, CodeQL/dependency audit, relevant compatibility checks, and exact-head verification must be considered first.
+Package updates are verification-relevant. Review release/security implications, run restore/build/test, unsuppressed audit, affected platform builds and compatibility validation when persistence/crypto/platform behavior can change.
 
 ## 2. Shared build properties
 
-`Directory.Build.props` defines repository-wide build behavior:
+`Directory.Build.props` centralizes repository-wide compiler/analyzer/build behavior.
 
-- `LangVersion=latest`;
-- nullable reference types enabled;
-- implicit usings enabled;
-- local warnings are not globally promoted to errors;
-- when `CI=true`, warnings are promoted to errors;
-- `AnalysisLevel=latest-recommended`;
-- .NET analyzers enabled;
-- deterministic builds enabled;
-- `ContinuousIntegrationBuild=true` in CI;
-- repository metadata points to `https://github.com/sanskarIN/CareNest`;
-- author/company/copyright metadata is centralized.
+The intended model includes:
 
-Analyzer failures exposed by verification are fixed in source when legitimate rather than hidden with blanket suppressions.
+- current C# language version configured centrally;
+- nullable reference types;
+- implicit usings;
+- .NET analyzers;
+- deterministic build behavior;
+- stricter CI warning handling;
+- repository/author metadata.
+
+Legitimate analyzer findings should be fixed rather than hidden with broad suppressions.
 
 ## 3. NuGet audit policy
 
-The old exact `GHSA-2m69-gcr7-jv3q` `NuGetAuditSuppress` entry was removed after establishing the maintained SQLite native/provider path.
+The former exact `GHSA-2m69-gcr7-jv3q` suppression remains removed.
 
-Current release rules:
+Current rules:
 
-- NuGet audit is unsuppressed for that former advisory;
-- release-preflight and quality-gate scripts treat audit failures as blocking;
-- Dependency Audit runs in GitHub Actions;
-- `SqliteDependencySecurityContractTests` prevents restoration of the old package floor/suppression;
-- wildcard/severity-wide audit suppression is not acceptable as a shortcut;
-- a new exact temporary exception, if ever unavoidable, requires explicit risk-register/release review and must not be described as remediation.
+- dependency audit is blocking in configured quality/release paths;
+- platform-neutral and MAUI graphs are audited in GitHub Actions;
+- `SqliteDependencySecurityContractTests` protects maintained package floors and suppression absence;
+- wildcard/severity-wide audit suppression is not an acceptable shortcut;
+- packaged existing-database compatibility is a separate release gate from dependency-graph security.
 
-PR #61 Dependency Audit #46 / run `31872610791` passed both the platform-neutral and MAUI application graphs for the current frozen source.
+PR #74 Dependency Audit #91 / run `31938301172` passed both configured graphs.
 
 ## 4. `NuGet.config`
 
-`NuGet.config` is the repository package-source configuration. Changes to sources, package signature behavior, credentials, or restore policy are security-sensitive and verification-relevant.
+`NuGet.config` controls repository package sources/restore behavior. Package-source, credential or signature-policy changes are security-sensitive.
 
-Never commit package-feed credentials to the repository.
+Never commit package-feed credentials.
 
-## 5. Solution
+## 5. Solution graph
 
-`CareNest.sln` includes the five source projects and three test projects:
+`CareNest.sln` contains:
 
 ```text
 src/CareNest.Shared/CareNest.Shared.csproj
@@ -88,11 +89,15 @@ tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj
 tests/CareNest.UiTests/CareNest.UiTests.csproj
 ```
 
+Intended dependency direction:
+
+```text
+CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure <- CareNest.App
+```
+
 ## 6. MAUI target selection
 
-`CareNest.App` is multi-targeted. The repository uses the custom `CareNestTargetFramework` property when a host needs to narrow the app to one target before restore/build.
-
-Pattern:
+The application is multi-targeted. `CareNestTargetFramework` narrows evaluation to one target on a host/CI job:
 
 ```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
@@ -100,58 +105,81 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -p:CareNestTargetFramework=<tfm>
 ```
 
-This avoids forcing unrelated platform workloads on a target-specific runner and prevents an app TFM from leaking into referenced platform-neutral `net10.0` projects.
+This avoids requiring unrelated workloads on a target-specific runner and prevents app TFMs from leaking into platform-neutral references.
 
-The project also defines:
+## 7. Current application project metadata
 
-`CareNestShowFundingLink`
+`src/CareNest.App/CareNest.App.csproj` declares:
 
-Default:
+- `UseMaui=true`;
+- `SingleProject=true`;
+- application title `CareNest`;
+- application ID `com.sanskar.carenest`;
+- display version `1.0.0-rc.1`;
+- application version `1`;
+- Windows package type `None` in the project baseline.
 
-`true`
+## 8. Target frameworks and minimum platforms
 
-When `true`, `CARENEST_FUNDING_LINK` is defined and the voluntary About-page support card is visible. When `false`, that compile symbol is absent, the About support card is hidden through `AboutViewModel.IsProjectSupportVisible`, and the support command is created with a false `CanExecute` predicate instead of opening the funding URL.
+- Android: `net10.0-android`; minimum Android API 24.
+- iOS: `net10.0-ios`; minimum iOS 15.
+- Mac Catalyst: `net10.0-maccatalyst`; minimum 15.
+- Windows: `net10.0-windows10.0.19041.0`; minimum/target platform 10.0.19041.0.
 
-This property changes the voluntary external support surface only. It must not alter health-organizer data, reminders, permissions, documents, reports, backups, encryption, app lock, appointments, or medical-safety behavior.
+The project file is the source of truth if these values change.
 
-## 7. Platform target frameworks
+## 9. Strict XAML compiled-binding policy
 
-Current target families:
+The application project enables:
 
-- Android: `net10.0-android`
-- Windows: `net10.0-windows10.0.19041.0`
-- iOS: `net10.0-ios`
-- Mac Catalyst: `net10.0-maccatalyst`
+```xml
+<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+<MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
+<WarningsAsErrors>$(WarningsAsErrors);XC0022;XC0023;XC0024;XC0025</WarningsAsErrors>
+```
 
-Use the exact project file as the source of truth if target framework versions change later.
+Required conventions:
 
-## 8. Core development commands
+- binding-bearing pages have accurate root `x:DataType`;
+- binding-bearing DataTemplates have item-specific `x:DataType`;
+- picker display bindings are typed when context changes to an item;
+- explicit Source/RelativeSource bindings include source type information;
+- template-to-parent commands use typed ancestor binding contexts;
+- no matching `NoWarn`, `x:Object` or `x:Null` bypass is part of the intended policy.
 
-Restore/build platform-neutral source:
+`CompiledBindingContractTests` protects this dynamically.
+
+## 10. Application resources
+
+The MAUI project includes:
+
+- app icon resources under `Resources/AppIcon/`;
+- splash resources under `Resources/Splash/`;
+- images under `Resources/Images/`;
+- raw assets under `Resources/Raw/`.
+
+The distributed application source/package intentionally contains no external Buy Me a Coffee destination/card/command/artwork.
+
+Repository funding documentation/metadata remains separate.
+
+## 11. Core development commands
 
 ```bash
-dotnet restore src/CareNest.Shared/CareNest.Shared.csproj
-dotnet restore src/CareNest.Domain/CareNest.Domain.csproj
-dotnet restore src/CareNest.Application/CareNest.Application.csproj
-dotnet restore src/CareNest.Infrastructure/CareNest.Infrastructure.csproj
+dotnet restore CareNest.sln
 
 dotnet build src/CareNest.Shared/CareNest.Shared.csproj -c Release
 dotnet build src/CareNest.Domain/CareNest.Domain.csproj -c Release
 dotnet build src/CareNest.Application/CareNest.Application.csproj -c Release
 dotnet build src/CareNest.Infrastructure/CareNest.Infrastructure.csproj -c Release
-```
 
-Run tests:
-
-```bash
 dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj -c Release
 dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c Release
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
-## 9. Formatting
+## 12. Formatting
 
-CI verifies formatting project by project. Representative commands:
+Representative verification commands:
 
 ```bash
 dotnet format src/CareNest.Shared/CareNest.Shared.csproj --verify-no-changes
@@ -163,9 +191,9 @@ dotnet format tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -
 dotnet format tests/CareNest.UiTests/CareNest.UiTests.csproj --verify-no-changes
 ```
 
-Do not work around a deterministic formatter/analyzer failure by weakening the quality gate.
+Do not weaken formatter/analyzer policy to bypass a deterministic failure.
 
-## 10. Local quality gate
+## 13. Local quality gate
 
 Bash:
 
@@ -179,9 +207,9 @@ PowerShell:
 ./build/scripts/quality-gate.ps1
 ```
 
-The local quality gate is intended to operate from a clean checkout and performs the repository-defined platform-neutral formatting/build/test/audit sequence. PowerShell checks native command exit codes explicitly.
+The quality gate is intended to validate formatting, platform-neutral builds/tests and blocking dependency audit from a clean checkout.
 
-## 11. Release preflight
+## 14. Release preflight
 
 Bash:
 
@@ -195,55 +223,35 @@ PowerShell:
 ./build/scripts/release-preflight.ps1
 ```
 
-Preflight treats unsuppressed dependency audit as blocking. When a supported `CARENEST_TARGET` is supplied, the selected MAUI app target is audited before its Release build.
+When `CARENEST_TARGET` is supplied, it selects an explicit supported MAUI target for audit/build work.
 
-`CARENEST_TARGET` is a build/preflight selector, not a user preference. Use a TFM supported by the app and current host workload.
+The current release preflight no longer carries an application funding-link build toggle. The external funding destination is absent from application runtime/package source by product policy.
 
-General release preflight accepts:
+## 15. Store-package preflight
 
-`CARENEST_SHOW_FUNDING_LINK=true|false`
+Store-package wrappers require an explicit supported target and delegate to the normal release preflight.
 
-and propagates it into `CareNestShowFundingLink`. Any other value fails closed.
-
-## 12. Fail-closed store-package preflight
-
-For store candidates that must hide the external support surface, use the dedicated wrappers instead of relying on a caller-provided funding-link value.
-
-Supported target allow-list:
-
-- `net10.0-android`;
-- `net10.0-ios`;
-- `net10.0-maccatalyst`;
-- `net10.0-windows10.0.19041.0`.
-
-Bash:
+Bash example:
 
 ```bash
 CARENEST_TARGET=net10.0-android \
 ./build/scripts/store-package-preflight.sh
 ```
 
-PowerShell:
+PowerShell example:
 
 ```powershell
 $env:CARENEST_TARGET = 'net10.0-windows10.0.19041.0'
 ./build/scripts/store-package-preflight.ps1
 ```
 
-Both wrappers:
+Supported target families are Android, iOS, Mac Catalyst and Windows as declared by the app project.
 
-- require `CARENEST_TARGET`;
-- reject unsupported target values;
-- force `CARENEST_SHOW_FUNDING_LINK=false` after reading the caller environment;
-- delegate the standard release preflight so formatting, core builds, tests, unsuppressed audit, target restore and target Release build use one underlying implementation.
+The wrapper does not sign/publish a production store package.
 
-The Bash wrapper is tracked with executable Git mode `100755`. `.github/workflows/store-package-verification.yml` runs `test -x build/scripts/store-package-preflight.sh` so executable-bit loss becomes a CI failure.
+## 16. Repository-local Git identity
 
-These wrappers do not configure signing, publish packages, or prove installed-artifact behavior.
-
-## 13. Repository-local Git identity
-
-Requested local maintainer identity:
+Maintainer convention:
 
 ```bash
 git config --local user.name "Sanskar"
@@ -260,50 +268,29 @@ build/scripts/setup-git.sh
 ./build/scripts/setup-git.ps1
 ```
 
-Both scripts locate the repository root, require a Git work tree, use `--local`, verify the configured values, and fail on native Git errors.
+GitHub API/connector commits can use authenticated account/connector identity; always rely on actual commit metadata.
 
-GitHub web/API/connector commits can use authenticated GitHub account metadata; do not falsely claim a connector commit used an arbitrary local email unless actual commit metadata proves it.
+## 17. Android configuration
 
-## 14. Android configuration
+Primary platform files live under `src/CareNest.App/Platforms/Android/`, including manifest/application/activity/notification integration.
 
-Important Android configuration lives under:
-
-- `src/CareNest.App/Platforms/Android/AndroidManifest.xml`
-- `MainActivity.cs`
-- `MainApplication.cs`
-- `PlatformNotificationService.Android.cs`
-- Android resources under the platform directory.
-
-Build example:
+Build:
 
 ```bash
 dotnet workload install maui-android
+
 dotnet build src/CareNest.App/CareNest.App.csproj \
   -f net10.0-android -c Release \
   -p:CareNestTargetFramework=net10.0-android
 ```
 
-Store-safe source compile example:
+Manual release evidence must cover notification permission, alarm/battery/background behavior, reboot/time-zone recovery, installed identity, reminder actions, files/backups/app lock and accessibility.
 
-```bash
-dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f net10.0-android -c Release \
-  -p:CareNestTargetFramework=net10.0-android \
-  -p:CareNestShowFundingLink=false
-```
+## 18. Windows configuration
 
-Android manual release validation additionally covers notification permission, alarm capability, battery optimization, reboot, time/time-zone changes, vendor/background behavior, installed package identity, and actual About-page store-policy behavior.
+Primary files live under `src/CareNest.App/Platforms/Windows/`.
 
-## 15. Windows configuration
-
-Important Windows configuration lives under:
-
-- `src/CareNest.App/Platforms/Windows/App.xaml`
-- `App.xaml.cs`
-- `Package.appxmanifest`
-- `PlatformNotificationService.Windows.cs`
-
-Build example:
+Build:
 
 ```powershell
 dotnet workload install maui
@@ -313,248 +300,180 @@ dotnet build src/CareNest.App/CareNest.App.csproj `
   -p:CareNestTargetFramework=net10.0-windows10.0.19041.0
 ```
 
-For an internal self-contained unpackaged `win-x64` inspection publish, the project maps `RuntimeIdentifierOverride` into `RuntimeIdentifier` only for Windows:
+Internal self-contained inspection publishing can additionally use `RuntimeIdentifierOverride=win-x64`, `WindowsPackageType=None` and `WindowsAppSDKSelfContained=true` as configured by repository workflows.
 
-```powershell
-dotnet publish src/CareNest.App/CareNest.App.csproj `
-  -f net10.0-windows10.0.19041.0 `
-  -c Release `
-  -p:CareNestTargetFramework=net10.0-windows10.0.19041.0 `
-  -p:CareNestShowFundingLink=false `
-  -p:RuntimeIdentifierOverride=win-x64 `
-  -p:WindowsPackageType=None `
-  -p:WindowsAppSDKSelfContained=true
-```
+The resulting internal inspection output is not automatically a signed Microsoft Store package.
 
-This produces an unpackaged inspection bundle, not a signed Microsoft Store package.
+## 19. iOS configuration
 
-The Windows reminder fallback has documented in-process limitations; a compile is not proof of closed-app notification delivery.
-
-## 16. iOS configuration
-
-Important iOS configuration lives under:
-
-- `src/CareNest.App/Platforms/iOS/AppDelegate.cs`
-- `Info.plist`
-- `PlatformNotificationService.iOS.cs`
-- `Program.cs`
+iOS code lives under `src/CareNest.App/Platforms/iOS/`.
 
 Simulator example:
 
 ```bash
 dotnet workload install maui-ios
+
 dotnet build src/CareNest.App/CareNest.App.csproj \
   -f net10.0-ios -c Release \
   -p:CareNestTargetFramework=net10.0-ios \
   -p:RuntimeIdentifier=iossimulator-arm64
 ```
 
-The store-safe CI and internal inspection paths use the simulator runtime while also setting `CareNestShowFundingLink=false`.
+Production device signing/provisioning belongs outside Git.
 
-Production signing/provisioning belongs outside Git.
+## 20. Mac Catalyst configuration
 
-## 17. Mac Catalyst configuration
-
-Important configuration lives under:
-
-- `src/CareNest.App/Platforms/MacCatalyst/AppDelegate.cs`
-- `Info.plist`
-- `PlatformNotificationService.MacCatalyst.cs`
-- `Program.cs`
-
-Build example:
+Mac Catalyst code lives under `src/CareNest.App/Platforms/MacCatalyst/`.
 
 ```bash
 dotnet workload install maui-maccatalyst
+
 dotnet build src/CareNest.App/CareNest.App.csproj \
   -f net10.0-maccatalyst -c Release \
   -p:CareNestTargetFramework=net10.0-maccatalyst
 ```
 
-The internal inspection workflow publishes an unsigned `maccatalyst-arm64` `.app` bundle with `CreatePackage=false` and `EnableCodeSigning=false`. That artifact is not a signed/notarized/store-ready Mac package.
+Internal unsigned inspection output is not signed/notarized production evidence.
 
-Production signing/notarization remains external release work.
+## 21. GitHub workflow roles
 
-## 18. App resources and branding
+### CareNest CI
 
-Branding/application resources are under `src/CareNest.App/Resources/`.
-
-Important assets include app icon foreground/background SVGs, CareNest marks, and voluntary-support artwork. Resource filenames, build actions, dark/light usage, accessibility contrast, and store export requirements are documented in `docs/design/STORE_ASSETS.md` and `docs/design/DESIGN_SYSTEM.md`.
-
-## 19. GitHub workflows
-
-### `ci.yml`
-
-Responsibilities:
+`.github/workflows/ci.yml` verifies:
 
 - platform-neutral formatting;
-- unit/integration/UI-contract tests;
-- Android Release build;
-- Windows Release build;
-- iOS simulator Release build;
-- Mac Catalyst Release build.
+- all three core test projects;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release.
 
-This workflow exercises the normal/default application configuration unless a project default changes.
+### CodeQL
 
-### `store-package-verification.yml`
+`.github/workflows/codeql.yml` performs C# security analysis for configured events.
 
-Responsibilities:
+### Dependency Audit
 
-- runs on pull requests to `main`;
-- runs on pushes to `main` and `release/**`;
-- runs on exact `v*` tags;
-- supports manual `workflow_dispatch`;
-- sets `CARENEST_STORE_FUNDING_LINK=false`;
-- passes that value to `CareNestShowFundingLink`;
-- verifies the Bash store-package wrapper remains executable;
-- compiles Android Release with the external funding surface disabled;
-- compiles Windows Release with the external funding surface disabled;
-- compiles iOS simulator Release with the external funding surface disabled;
-- compiles Mac Catalyst Release with the external funding surface disabled;
-- does not upload unsigned binaries;
-- does not run `dotnet publish`;
-- does not configure signing credentials.
+`.github/workflows/dependency-review.yml` audits platform-neutral and MAUI dependency graphs with event-safe behavior.
 
-PR #61 Store Package Configuration #39 / run `31872610789` passed all four funding-disabled target builds.
+### Store Package Configuration
 
-### `store-inspection-artifacts.yml`
+`.github/workflows/store-package-verification.yml` builds store-candidate configurations for all four targets.
 
-Responsibilities:
+The current workflow does not use a funding-link build-property fork because the application package is funding-surface-free by source policy.
 
-- runs on pull requests to `main`, pushes to `release/**`, exact `v*` tags, and manual `workflow_dispatch`;
-- forces `CareNestShowFundingLink=false`;
-- records exact source head/ref separately from GitHub event/PR merge SHA/ref;
-- checks out the exact source head and uses it in artifact names;
-- publishes one verified-unsigned Android AAB for internal inspection while rejecting/staging no debug-signed companion;
-- publishes a self-contained unpackaged Windows `win-x64` inspection bundle;
-- builds an iOS simulator `.app` inspection bundle;
-- publishes an unsigned Mac Catalyst `.app` inspection bundle;
-- creates per-payload SHA-256 checksums and safe provenance;
-- marks every artifact `internal-inspection-only` and `store_submission_ready=false`;
-- uploads with `if-no-files-found: error` and 14-day retention;
+### Store Inspection Artifacts
+
+`.github/workflows/store-inspection-artifacts.yml`:
+
+- records exact source SHA/ref;
+- runs a fail-closed forbidden-marker scanner self-test;
+- creates an unsigned/internal Android AAB inspection artifact;
+- creates a self-contained Windows inspection artifact;
+- creates iOS simulator and unsigned Mac Catalyst inspection output;
+- scans/stages payloads;
+- records checksums/provenance;
+- uploads internal evidence artifacts;
 - does not inject production signing secrets.
 
-PR #61 Store Inspection Artifacts #2 / run `31872610786` completed successfully. Exact artifact IDs, API digests and independently verified payload checksums are recorded in `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md`.
+Inspection artifacts are not store-ready production packages.
 
-### `codeql.yml`
+### Release Gate
 
-Runs CodeQL security analysis for supported repository events, including the production tag path defined by the workflow.
+`.github/workflows/release-gate.yml` is a fail-closed production release gate.
 
-### `dependency-review.yml`
+### Release Evidence
 
-Runs NuGet dependency audits. Pull-request-only dependency comparison logic is guarded so tag/manual runs do not dereference PR-only metadata.
+`.github/workflows/release-evidence.yml` records exact candidate provenance, test/evidence manifests, dependency information and checksums.
 
-### `release-gate.yml`
+## 22. Production tag behavior
 
-Fail-closed production gate that checks required status/security/evidence files, dependency risk state, unchecked release checklist rows, and core tests.
-
-### `release-evidence.yml`
-
-Captures exact release-candidate provenance and evidence, including:
-
-- commit/ref/run identity;
-- run attempt;
-- toolchain data;
-- tracked-file manifest/checksums;
-- unit/integration/UI TRX;
-- dependency inventories;
-- workspace integrity;
-- evidence checksums.
-
-Available evidence is uploaded before the aggregate failure step so failed runs remain diagnosable.
-
-## 20. Production tag behavior
-
-Tags matching `v*` are intended to run the exact tagged commit through:
+Production-style tags matching `v*` are configured to participate in:
 
 - CareNest CI;
 - CodeQL;
 - Dependency Audit;
-- CareNest Store Package Configuration;
-- CareNest Store Inspection Artifacts;
+- Store Package Configuration;
+- Store Inspection Artifacts;
 - Release Gate;
-- CareNest Release Evidence.
+- Release Evidence.
 
-A created tag is not by itself production approval.
+A tag is not automatically production approval. Manual/package/accessibility/signing/store evidence must also be complete.
 
-The store-package workflow adds funding-disabled source compilation evidence, while the inspection-artifact workflow adds reproducible unsigned/internal package-shape evidence. Neither replaces production signing, installed package inspection, accessibility, device behavior, packaged-data compatibility, or store approval.
+## 23. Repository support files
 
-## 21. GitHub repository support files
+`.github/` includes:
 
-`.github/` also includes:
-
-- `FUNDING.yml` — voluntary project-support metadata;
-- `dependabot.yml` — dependency update automation configuration;
+- funding metadata for voluntary repository support;
+- Dependabot configuration;
 - issue templates;
-- pull request template.
+- pull request templates;
+- Actions workflows.
 
-Dependabot proposals are inputs for review, not automatic proof that a dependency update is compatible with CareNest persistence/crypto/platform behavior.
+Funding metadata is repository-level and must not be interpreted as an in-app health entitlement.
 
-## 22. Environment/secrets policy
+## 24. Environment/secrets policy
 
 Never commit:
 
-- Android keystores/private signing keys;
-- Apple signing certificates/private keys/provisioning secrets;
+- Android production keystores/private keys;
+- Apple signing private keys/certificates/provisioning secrets;
 - Windows signing private keys;
-- API/service credentials;
+- CI/service credentials;
 - production `.env` secrets;
 - app-lock PINs;
 - backup passwords;
-- document encryption keys;
-- real CareNest user databases/backups/documents.
+- encryption keys;
+- real CareNest databases/backups/documents.
 
-Use platform/store secret management and protected CI variables when release signing is configured.
+Use synthetic/fictional data in public artifacts and documentation examples.
 
-## 23. Build reproducibility/provenance
+## 25. Build reproducibility/provenance
 
-Repository builds are deterministic where supported by the .NET build configuration. CI sets `ContinuousIntegrationBuild` through `Directory.Build.props`.
+Production evidence should resolve every signed artifact to the exact approved source SHA/tag and record package checksum/signing provenance.
 
-Production evidence must record the exact source commit/tag. Signed package provenance should resolve to that exact approved source.
+Internal inspection artifacts record exact source identity separately from event/PR merge identity where relevant.
 
-Internal inspection artifact provenance records both the exact source SHA/ref and the workflow event SHA/ref so a pull-request merge ref is not mistaken for the inspected branch head.
-
-For store candidates, evidence must also record the selected `CareNestShowFundingLink` value, actual package checksum where directly handled, signing/notarization provenance, and installed About-page inspection result.
-
-## 24. Configuration change checklist
+## 26. Configuration change checklist
 
 When changing project/workflow/package/build configuration:
 
 1. identify affected source/platform/test/release surfaces;
-2. update the relevant documentation in the same work;
-3. run formatting and all three core test projects;
-4. run unsuppressed dependency audit when package/restore graph can change;
-5. run all affected normal MAUI Release builds;
-6. when store-policy configuration can be affected, run all affected funding-disabled store-safe Release builds;
-7. when artifact generation changes, exercise the inspection workflow and independently inspect/checksum the produced artifacts;
-8. run CodeQL when source/workflow changes affect the verified baseline;
-9. perform required packaged compatibility checks for persistence/crypto changes;
-10. create fresh exact-head verification before using the new source as a release baseline.
+2. update documentation in the same change;
+3. run formatting and all core tests;
+4. run unsuppressed dependency audit when restore/dependencies can change;
+5. run all affected normal platform builds;
+6. run store-candidate and inspection workflows when packaging policy can change;
+7. run CodeQL when relevant;
+8. perform packaged compatibility checks for persistence/crypto changes;
+9. create fresh exact-source verification before calling a changed executable source authoritative.
 
-Do not weaken a workflow or contract merely to obtain a green result.
+Do not weaken a workflow/contract simply to obtain green status.
 
-## 25. Current verification baseline
+## 27. Current verified baseline
 
-Authoritative exact automated verification: PR #61.
+PR #74 frozen source head:
 
-- frozen source/base: `4c60f90ac33a321d12a6f9b3a8c097e4e4a4e5f2`
-- marker head: `19c82b813c375047cf1166487bc18a1bd2cd0e52`
-- PR merge/event SHA during verification: `c8ea9fef89d7b773f19bf13c64f349495be706ad`
-- CareNest CI #650 / `31872610834`: success
-- 122 unit + 39 integration + 157 UI-contract/policy = **318/318**
-- default Android/Windows/iOS simulator/Mac Catalyst Release builds: success
-- Store Package Configuration #39 / `31872610789`: success
-- funding-disabled Android/Windows/iOS simulator/Mac Catalyst Release builds: success
-- Bash store-package preflight executable-mode guard: success
-- Store Inspection Artifacts #2 / `31872610786`: success
-- Android verified-unsigned AAB inspection artifact: success
-- Windows self-contained unpackaged inspection artifact: success
-- iOS simulator + unsigned Mac Catalyst inspection artifacts: success
-- CodeQL #650 / `31872610815`: success
-- unsuppressed Dependency Audit #46 / `31872610791`: success
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
 
-PR #61 was marker-only and closed without merge. Its marker is not part of `main`.
+Merged executable source:
 
-See `docs/releases/STORE_INSPECTION_ARTIFACTS_VERIFICATION_20260815.md` for exact run/artifact/checksum/provenance evidence.
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-PR #59 remains historical exact store-safe compilation evidence. PR #58, PR #56 and PR #54 remain historical exact-source evidence for their respective frozen boundaries and must not be rewritten as though those older boundaries were the current one.
+Evidence:
+
+- CareNest CI #735 / run `31938301209`: success;
+- formatting: success;
+- unit: 122/122;
+- integration: 39/39;
+- UI/source-policy: 170/170;
+- total: 331/331;
+- Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- Store Package Configuration #124 / `31938301146`: success;
+- Store Inspection Artifacts #47 / `31938301275`: success;
+- CodeQL #735 / `31938301252`: success;
+- Dependency Audit #91 / `31938301172`: success.
+
+Permanent evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+
+Older PR #61/#59/#58/#56/#54 records remain historical evidence for their own frozen source boundaries.
