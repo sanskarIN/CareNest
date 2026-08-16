@@ -4,6 +4,8 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:strings="clr-namespace:CareNest.App.Resources.Strings"
+    xmlns:vm="clr-namespace:CareNest.App.ViewModels"
+    x:DataType="vm:AboutViewModel"
     Title="About">
   <ScrollView>
     <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="780">

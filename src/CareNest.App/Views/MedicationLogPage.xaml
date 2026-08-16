@@ -3,6 +3,10 @@
     x:Class="CareNest.App.Views.MedicationLogPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:contracts="clr-namespace:CareNest.Application.Contracts;assembly=CareNest.Application"
+    xmlns:domain="clr-namespace:CareNest.Domain.Entities;assembly=CareNest.Domain"
+    xmlns:vm="clr-namespace:CareNest.App.ViewModels"
+    x:DataType="vm:MedicationLogViewModel"
     Title="Medication log">
   <ScrollView>
     <VerticalStackLayout Padding="20" Spacing="18" MaximumWidthRequest="980">
@@ -22,7 +26,7 @@
       <CollectionView ItemsSource="{Binding Upcoming}"
                       EmptyView="No upcoming reminder occurrences.">
         <CollectionView.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate x:DataType="contracts:ReminderPreview">
             <Border Style="{StaticResource Card}" Margin="0,0,0,10">
               <VerticalStackLayout Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">
@@ -39,22 +43,22 @@
                             JustifyContent="Start">
                   <Button Text="Taken"
                           Margin="0,0,8,8"
-                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.TakenCommand}"
+                          Command="{Binding x:DataType=vm:MedicationLogViewModel, Source={RelativeSource AncestorType={x:Type vm:MedicationLogViewModel}}, Path=TakenCommand}"
                           CommandParameter="{Binding .}" />
                   <Button Text="Skipped"
                           Margin="0,0,8,8"
                           Style="{StaticResource SecondaryButton}"
-                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SkippedCommand}"
+                          Command="{Binding x:DataType=vm:MedicationLogViewModel, Source={RelativeSource AncestorType={x:Type vm:MedicationLogViewModel}}, Path=SkippedCommand}"
                           CommandParameter="{Binding .}" />
                   <Button Text="Delayed"
                           Margin="0,0,8,8"
                           Style="{StaticResource SecondaryButton}"
-                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DelayedCommand}"
+                          Command="{Binding x:DataType=vm:MedicationLogViewModel, Source={RelativeSource AncestorType={x:Type vm:MedicationLogViewModel}}, Path=DelayedCommand}"
                           CommandParameter="{Binding .}" />
                   <Button Text="Snooze 10 min"
                           Margin="0,0,8,8"
                           Style="{StaticResource SecondaryButton}"
-                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SnoozeCommand}"
+                          Command="{Binding x:DataType=vm:MedicationLogViewModel, Source={RelativeSource AncestorType={x:Type vm:MedicationLogViewModel}}, Path=SnoozeCommand}"
                           CommandParameter="{Binding .}" />
                 </FlexLayout>
               </VerticalStackLayout>
@@ -70,14 +74,14 @@
             <VerticalStackLayout>
               <Label Text="Profile" />
               <Picker ItemsSource="{Binding Profiles}"
-                      ItemDisplayBinding="{Binding Name}"
+                      ItemDisplayBinding="{Binding Name, x:DataType=domain:PersonProfile}"
                       SelectedItem="{Binding SelectedProfile}"
                       Title="All profiles" />
             </VerticalStackLayout>
             <VerticalStackLayout Grid.Column="1">
               <Label Text="Medicine" />
               <Picker ItemsSource="{Binding Medicines}"
-                      ItemDisplayBinding="{Binding Name}"
+                      ItemDisplayBinding="{Binding Name, x:DataType=domain:Medicine}"
                       SelectedItem="{Binding SelectedMedicine}"
                       Title="All medicines" />
             </VerticalStackLayout>
@@ -98,7 +102,7 @@
       <CollectionView ItemsSource="{Binding Entries}"
                       EmptyView="No medication log entries yet.">
         <CollectionView.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate x:DataType="vm:MedicationLogRow">
             <Border Style="{StaticResource Card}" Margin="0,0,0,10">
               <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
                 <Label Text="{Binding MedicineName}"

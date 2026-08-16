@@ -3,6 +3,8 @@
     x:Class="CareNest.App.Views.MedicinesPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:CareNest.App.ViewModels"
+    x:DataType="vm:MedicinesViewModel"
     Title="Medicines">
   <Grid Padding="20" RowDefinitions="Auto,Auto,*" MaximumWidthRequest="920">
     <Grid ColumnDefinitions="*,Auto">
@@ -26,7 +28,7 @@
                     ItemsSource="{Binding Items}"
                     EmptyView="No medicine records yet.">
       <CollectionView.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate x:DataType="vm:MedicineRow">
           <Border Style="{StaticResource Card}" Margin="0,0,0,10">
             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
               <Label Text="{Binding Name}"
@@ -51,7 +53,7 @@
               <Button Grid.Row="2"
                       Grid.Column="1"
                       Text="Edit"
-                      Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditCommand}"
+                      Command="{Binding x:DataType=vm:MedicinesViewModel, Source={RelativeSource AncestorType={x:Type vm:MedicinesViewModel}}, Path=EditCommand}"
                       CommandParameter="{Binding .}"
                       Style="{StaticResource SecondaryButton}" />
             </Grid>

@@ -7,6 +7,9 @@
     <AssemblyName>CareNest.App</AssemblyName>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+    <MauiStrictXamlCompilation>true</MauiStrictXamlCompilation>
+    <WarningsAsErrors>$(WarningsAsErrors);XC0022;XC0023;XC0024;XC0025</WarningsAsErrors>
     <ApplicationTitle>CareNest</ApplicationTitle>
     <ApplicationId>com.sanskar.carenest</ApplicationId>
     <ApplicationDisplayVersion>1.0.0-rc.1</ApplicationDisplayVersion>

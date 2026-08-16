@@ -3,6 +3,9 @@
     x:Class="CareNest.App.Views.ProfilesPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:domain="clr-namespace:CareNest.Domain.Entities;assembly=CareNest.Domain"
+    xmlns:vm="clr-namespace:CareNest.App.ViewModels"
+    x:DataType="vm:ProfilesViewModel"
     Title="Profiles">
   <Grid Padding="20" RowDefinitions="Auto,*" MaximumWidthRequest="900">
     <Grid ColumnDefinitions="*,Auto">
@@ -22,7 +25,7 @@
                     ItemsSource="{Binding Profiles}"
                     EmptyView="No profiles are available.">
       <CollectionView.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate x:DataType="domain:PersonProfile">
           <Border Style="{StaticResource Card}" Margin="0,0,0,10">
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
               <Border WidthRequest="44"
@@ -47,7 +50,7 @@
               </VerticalStackLayout>
               <Button Grid.Column="2"
                       Text="Edit"
-                      Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditCommand}"
+                      Command="{Binding x:DataType=vm:ProfilesViewModel, Source={RelativeSource AncestorType={x:Type vm:ProfilesViewModel}}, Path=EditCommand}"
                       CommandParameter="{Binding .}"
                       Style="{StaticResource SecondaryButton}" />
             </Grid>

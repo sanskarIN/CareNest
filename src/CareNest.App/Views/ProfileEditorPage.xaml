@@ -3,6 +3,9 @@
     x:Class="CareNest.App.Views.ProfileEditorPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:domain="clr-namespace:CareNest.Domain.Entities;assembly=CareNest.Domain"
+    xmlns:vm="clr-namespace:CareNest.App.ViewModels"
+    x:DataType="vm:ProfileEditorViewModel"
     Title="Profile">
   <ScrollView>
     <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="720">
@@ -74,7 +77,7 @@
                  Style="{StaticResource MutedText}" />
           <CollectionView ItemsSource="{Binding EmergencyContacts}" EmptyView="No emergency contacts saved.">
             <CollectionView.ItemTemplate>
-              <DataTemplate>
+              <DataTemplate x:DataType="domain:EmergencyContact">
                 <Grid ColumnDefinitions="*,Auto" Padding="0,6">
                   <VerticalStackLayout>
                     <Label Text="{Binding Name}" FontAttributes="Bold" />
@@ -83,7 +86,7 @@
                   </VerticalStackLayout>
                   <Button Grid.Column="1"
                           Text="Delete"
-                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteContactCommand}"
+                          Command="{Binding x:DataType=vm:ProfileEditorViewModel, Source={RelativeSource AncestorType={x:Type vm:ProfileEditorViewModel}}, Path=DeleteContactCommand}"
                           CommandParameter="{Binding .}"
                           Style="{StaticResource SecondaryButton}" />
                 </Grid>

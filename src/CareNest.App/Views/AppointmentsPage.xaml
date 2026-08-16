@@ -3,6 +3,8 @@
     x:Class="CareNest.App.Views.AppointmentsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:CareNest.App.ViewModels"
+    x:DataType="vm:AppointmentsViewModel"
     Title="Appointments">
   <ScrollView>
     <VerticalStackLayout Padding="20" Spacing="18" MaximumWidthRequest="920">
@@ -21,7 +23,7 @@
       <CollectionView ItemsSource="{Binding Upcoming}"
                       EmptyView="No upcoming appointments are recorded.">
         <CollectionView.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate x:DataType="vm:AppointmentRow">
             <Border Style="{StaticResource Card}" Margin="0,0,0,10">
               <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
                 <Label Text="{Binding Title}" FontAttributes="Bold" />
@@ -38,7 +40,7 @@
                        Style="{StaticResource MutedText}" />
                 <Button Grid.Row="2" Grid.Column="1"
                         Text="Edit"
-                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditCommand}"
+                        Command="{Binding x:DataType=vm:AppointmentsViewModel, Source={RelativeSource AncestorType={x:Type vm:AppointmentsViewModel}}, Path=EditCommand}"
                         CommandParameter="{Binding .}"
                         Style="{StaticResource SecondaryButton}" />
               </Grid>
@@ -51,7 +53,7 @@
       <CollectionView ItemsSource="{Binding History}"
                       EmptyView="No past appointments are recorded.">
         <CollectionView.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate x:DataType="vm:AppointmentRow">
             <Border Style="{StaticResource Card}" Margin="0,0,0,10">
               <Grid ColumnDefinitions="*,Auto">
                 <VerticalStackLayout>
@@ -63,7 +65,7 @@
                 </VerticalStackLayout>
                 <Button Grid.Column="1"
                         Text="View"
-                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditCommand}"
+                        Command="{Binding x:DataType=vm:AppointmentsViewModel, Source={RelativeSource AncestorType={x:Type vm:AppointmentsViewModel}}, Path=EditCommand}"
                         CommandParameter="{Binding .}"
                         Style="{StaticResource SecondaryButton}" />
               </Grid>
