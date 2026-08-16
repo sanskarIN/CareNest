@@ -3,6 +3,9 @@
     x:Class="CareNest.App.Views.DashboardPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:contracts="clr-namespace:CareNest.Application.Contracts;assembly=CareNest.Application"
+    xmlns:vm="clr-namespace:CareNest.App.ViewModels"
+    x:DataType="vm:DashboardViewModel"
     Title="Home">
   <ScrollView>
     <VerticalStackLayout Padding="20" Spacing="18" MaximumWidthRequest="980">
@@ -58,7 +61,7 @@
              Style="{StaticResource MutedText}" />
       <CollectionView ItemsSource="{Binding CaregiverProfiles}" EmptyView="No local profiles yet.">
         <CollectionView.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate x:DataType="vm:ProfileCareSummary">
             <Border Style="{StaticResource Card}" Margin="0,0,0,8">
               <VerticalStackLayout Spacing="6">
                 <Label Text="{Binding ProfileName}" FontAttributes="Bold" />
@@ -82,7 +85,7 @@
       <CollectionView ItemsSource="{Binding UpcomingReminders}"
                       EmptyView="No scheduled reminders in the current horizon.">
         <CollectionView.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate x:DataType="contracts:ReminderPreview">
             <Border Style="{StaticResource Card}" Margin="0,0,0,8">
               <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
                 <Label Text="{Binding MedicineName}"
