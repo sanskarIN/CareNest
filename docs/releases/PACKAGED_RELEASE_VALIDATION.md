@@ -1,270 +1,296 @@
-# Packaged Release Validation Runbook
+# CareNest Packaged Release Validation
 
-## Purpose
+**Release line:** `1.0.0-rc.1`
 
-This runbook converts CareNest's remaining manual production blockers into a repeatable evidence process. It supplements `MANUAL_TEST_MATRIX.md`; it does not mark any device, store-policy, signing, accessibility, encrypted-data, or package-distribution check complete by itself.
+This runbook covers release-candidate behavior that hosted source tests cannot fully prove: real package/install paths, existing SQLite data, encrypted documents/backups, real notification delivery, accessibility, signing and final package provenance.
 
-Use fictional test data only.
+Use fictional/synthetic data only.
 
-## 1. Freeze the candidate source
+## 1. Current source baseline
 
-Record before building:
+Verified executable source:
 
-- exact `main` commit SHA;
-- intended release version;
-- intended target framework;
-- operating system and toolchain used to build;
-- whether the package is debug, release, signed test, TestFlight/internal, or production candidate.
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-CareNest application packages are funding-surface-free by source policy; there is no per-package funding visibility toggle.
+PR #74 head:
 
-Do not reuse a failed production tag. Do not move an approved production tag to a different commit.
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
 
-## 2. Run source preflight
+Current source evidence:
 
-Bash example:
+- 331/331 core tests;
+- Android/Windows/iOS simulator/Mac Catalyst Release builds green;
+- all four store-candidate configurations green;
+- Store Inspection Artifacts green;
+- CodeQL green;
+- unsuppressed Dependency Audit green.
 
-```bash
-CARENEST_TARGET=net10.0-android ./build/scripts/release-preflight.sh
-```
+This is not packaged production evidence.
 
-PowerShell example:
+## 2. Validation principles
 
-```powershell
-$env:CARENEST_TARGET = 'net10.0-windows10.0.19041.0'
-./build/scripts/release-preflight.ps1
-```
+- never use real health records in public/shared validation evidence;
+- record exact source SHA/tag and package checksum;
+- distinguish source/build success from installed-package behavior;
+- distinguish dependency security from data compatibility;
+- distinguish simulator builds from real-device notification behavior;
+- keep production signing secrets outside Git;
+- do not mark a row complete without actual evidence.
 
-The preflight must remain green before creating the candidate package. A green preflight does not replace the manual matrix.
+## 3. Representative prior data set
 
-## 3. Confirm package identity
+Create a synthetic earlier-RC data set containing, as applicable:
 
-For every candidate, capture:
-
-- application title: `CareNest`;
-- application identifier: `com.sanskar.carenest` unless an explicitly reviewed store identity requires a documented change;
-- display version;
-- build/version code;
-- target OS/minimum OS;
-- package filename;
-- exact source commit;
-- signing identity fingerprint or store-managed signing provenance without committing secrets.
-
-If any identity differs from the source-controlled release plan, stop and explain the difference before distribution.
-
-## 4. Compute artifact checksum
-
-For directly handled artifacts, record SHA-256.
-
-Bash:
-
-```bash
-sha256sum path/to/artifact
-```
-
-PowerShell:
-
-```powershell
-Get-FileHash path/to/artifact -Algorithm SHA256
-```
-
-Store the checksum in release evidence. Never place private signing keys, keystores, certificate private keys, backup passwords, or app-lock PINs in the repository.
-
-## 5. Fresh-install smoke test
-
-On every intended target:
-
-1. Install the exact candidate package.
-2. Launch CareNest without a CareNest account or backend.
-3. Complete onboarding with synthetic profile data.
-4. Confirm the medical limitations and backup responsibility remain visible.
-5. Confirm notification permission is not requested merely by onboarding.
-6. Create an explicit reminder-capable feature and verify the permission surface appears at the intended time.
-7. Verify core navigation: Home, Profiles, Medicines, Medication log, Appointments, Documents, Reports, Settings, About.
-8. Verify no workflow implies diagnosis, dosage calculation, treatment recommendation, emergency-service replacement, or guaranteed notification delivery.
-
-Record results in `MANUAL_TEST_MATRIX.md`.
-
-## 6. External-funding package boundary
-
-Follow `STORE_BUILD_POLICY.md`.
-
-For every app package:
-
-- About must not expose a Buy Me a Coffee card, button, destination, or packaged funding artwork;
-- repository, creator, business/support email, privacy, terms, security, and notices remain available;
-- no organizer feature differs based on repository funding;
-- no file under the application runtime source tree should contain the canonical funding destination.
-
-For the exact unsigned/internal candidate source, require the Store Inspection Artifacts workflow to run `build/scripts/verify-store-safe-payload.py` against the Android AAB, Windows publish tree, iOS simulator bundle, and Mac Catalyst bundle before upload. Successful provenance must include:
-
-`external_funding_surface=absent_by_source_policy`
-
-and:
-
-`funding_url_payload_scan=passed`
-
-The scanner checks the canonical BMC marker in UTF-8 and UTF-16 encodings and inside ZIP/AAB entries. Its workflow self-test must remain green for clean, UTF-8, UTF-16, nested ZIP/AAB, and missing-path cases.
-
-Automated payload absence is stronger than source inspection alone, but it remains internal unsigned evidence. For the final signed candidate, repeat equivalent package inspection and manually verify the About UI. A signed package, store wrapping, or post-build transformation must not be assumed identical to the earlier internal artifact without evidence.
-
-Record the payload scan result and package checksum together.
-
-## 7. Existing-data upgrade and SQLite compatibility
-
-For the first production candidate after the SQLite native/provider remediation, use synthetic existing data that exercises:
-
-- profiles;
-- medicines;
-- schedules and schedule times;
-- reminder occurrences;
-- medication logs;
+- multiple profiles;
+- emergency contacts;
+- medicines in different lifecycle states;
+- schedule kinds/times/time zones;
+- reminder occurrences including handled/snoozed state;
+- medication-log entries;
 - appointments;
 - stock adjustments;
-- documents and tags;
-- app settings;
-- backup metadata where applicable.
+- encrypted documents/tags;
+- settings/app-lock state where safe to simulate;
+- encrypted backup files produced by genuine prior builds where available.
 
-Upgrade/install the candidate using the platform's intended real distribution path where possible.
+Do not manufacture new data and call it historical evidence.
+
+## 4. Packaged SQLite upgrade validation
+
+For each intended production target/package path:
+
+1. install representative earlier RC package/data;
+2. confirm baseline data is readable before upgrade;
+3. install/upgrade intended candidate through realistic platform path;
+4. launch candidate;
+5. confirm database opens;
+6. run/record integrity validation;
+7. confirm schema version/migrations;
+8. verify representative records remain readable;
+9. verify editable records remain editable;
+10. verify relationship cleanup/cascades still behave;
+11. rebuild/reconcile reminders;
+12. confirm no duplicate/stale OS requests;
+13. record source/package/device/OS/checksum/result evidence.
+
+A clean NuGet audit cannot substitute for these steps.
+
+## 5. Current encrypted document lifecycle
+
+With synthetic documents verify:
+
+- import creates encrypted application-owned payload;
+- metadata/tag/folder behavior works;
+- open works with correct key state;
+- explicit export creates expected plaintext/portable copy;
+- failed export does not leave unintended CareNest-owned partial plaintext output;
+- delete removes intended metadata/encrypted payload;
+- missing/corrupt required key fails closed;
+- application does not silently generate unrelated replacement key for existing ciphertext.
+
+## 6. Current backup lifecycle
 
 Verify:
 
-- database opens successfully;
-- records remain readable and editable;
-- SQLite integrity validation passes;
-- reminder rebuild/reconciliation succeeds;
-- no duplicate or stale platform reminder is silently stranded;
-- no schema version is silently rewritten outside intended migration behavior.
+- create password-encrypted backup;
+- inspect/recognize current version;
+- restore into existing install where intended;
+- restore into clean install;
+- wrong password rejected;
+- tampered backup rejected;
+- truncated backup rejected;
+- trailing data rejected;
+- invalid/duplicate/unexpected archive topology rejected;
+- restored encrypted documents remain usable;
+- reminder/platform derived state rebuilds correctly.
 
-A clean NuGet audit does not substitute for this package compatibility evidence.
+## 7. Historical encrypted compatibility
 
-## 8. Encrypted-document compatibility
+Where genuine previous CareNest encrypted document/backup fixtures exist:
 
-Using synthetic files only:
+- record exact producing version/source if known;
+- keep canonical bytes unchanged;
+- verify current candidate reads/restores according to documented compatibility;
+- record result/checksum.
 
-1. Open/export an existing encrypted `.cndoc` payload from a pre-remediation/earlier compatible build when a canonical fixture exists.
-2. Import a new document with the candidate package.
-3. Export it and compare the plaintext only in the temporary controlled test location.
-4. Delete the document and verify CareNest-owned encrypted storage cleanup.
-5. Verify missing/corrupt key behavior fails closed rather than silently replacing the key.
-6. Verify failed export does not leave an unintended partial plaintext file under CareNest ownership.
+Do not generate a current fixture and label it as historical.
 
-Do not upload decrypted fixtures to GitHub release evidence.
+## 8. Android package/device validation
 
-## 9. Backup compatibility and tamper checks
+Validate representative supported Android targets for:
 
-With synthetic data:
+- fresh install/onboarding;
+- upgrade path;
+- notification permission denied/granted;
+- actual medicine/appointment notification delivery;
+- exact/inexact alarm diagnostics;
+- battery optimization/vendor restrictions;
+- force-stop limitation/recovery;
+- reboot/restart/time-zone/DST recovery;
+- create/edit/delete reminder lifecycle;
+- Taken/Skipped/Delayed/Missed cancellation-first behavior;
+- snooze cancellation/replacement/effective due time;
+- stale request cleanup;
+- document picker/share;
+- backup/restore;
+- app lock;
+- theme/accessibility.
 
-- create a current encrypted backup;
-- inspect metadata through supported app behavior;
-- restore on a clean installation;
-- verify wrong password is rejected;
-- verify tampered backup is rejected;
-- verify restored encrypted documents remain usable;
-- verify no destructive partial restore is reported as success;
-- verify a canonical historical compatible backup when real historical fixture bytes are available.
+## 9. Windows package validation
 
-Record only non-sensitive evidence and checksums of synthetic fixtures where appropriate.
+Validate:
 
-## 10. Reminder lifecycle on real platform scheduling
+- install/launch/update/uninstall;
+- core CRUD/navigation;
+- running-app reminder behavior;
+- closed-app limitation behavior/messaging;
+- same-ID timer replacement/cancellation;
+- handled actions/snooze/reconciliation;
+- restart/recovery;
+- documents/share;
+- backup/restore;
+- app lock;
+- keyboard/focus;
+- themes/accessibility;
+- existing-data upgrade.
 
-At minimum verify:
+## 10. iPhone/iPad validation
 
-- permission denied and granted states;
-- schedule creation;
-- schedule change with stale-request cleanup;
-- Taken/Skipped/Delayed/Missed cancellation-first ordering from observed platform behavior;
-- Snooze cancellation and replacement;
-- future snooze crossing the original due time;
-- overdue snooze evaluated from its snooze due time;
-- medicine/profile delete cleanup;
-- appointment reminder create/edit/delete reconciliation;
-- restart/reopen recovery;
-- time-zone change recovery;
-- Android reboot/exact-alarm/battery-optimization behavior where applicable;
-- Windows limitation messaging when guaranteed background delivery is unavailable.
+Use a signed/provisioned real-device candidate for:
 
-A platform failure that leaves persisted state and OS-request state contradictory blocks production promotion.
+- install/upgrade;
+- permission denied/granted;
+- real notification delivery;
+- reminder actions/snooze/reconciliation;
+- lifecycle/restart/time-zone behavior;
+- documents/share;
+- backup/restore;
+- app lock;
+- Dynamic Type;
+- VoiceOver;
+- notification-preview privacy;
+- existing-data upgrade where applicable.
 
-## 11. Accessibility pass
+Simulator compilation is not a substitute.
 
-On representative targets verify:
+## 11. Mac Catalyst validation
 
-- screen-reader names and reading order;
-- 200% or representative large text scaling;
+Validate:
+
+- install/launch/update;
+- notification permission/delivery;
+- reminder actions/reconciliation;
+- restart/lifecycle;
+- files/share;
+- backup/restore;
+- app lock;
+- keyboard/focus;
+- theme/contrast/accessibility;
+- existing-data upgrade;
+- signed/notarized behavior when available.
+
+## 12. Accessibility package validation
+
+On representative final candidate packages verify:
+
+- screen-reader names/order;
+- large text/scaling;
+- keyboard/focus where applicable;
+- system/light/dark contrast;
+- color-independent status/error meaning;
+- reduced motion;
 - destructive confirmation readability;
-- keyboard navigation/focus on desktop-capable targets;
-- light/dark contrast;
-- color-independent status meaning;
-- reduced-motion behavior;
-- actionable, privacy-safe errors.
+- medical/privacy/reminder limitation accessibility.
 
-Automated XAML contracts do not replace assistive-technology testing.
+## 13. Application funding/package validation
 
-## 12. Store-policy review
+Current invariant: no external Buy Me a Coffee destination/card/command/artwork in distributed application source/package.
 
-Before submission, review current rules for:
+For internal/final candidates:
 
-- health/medical claims and disclaimers;
-- local health-data disclosure requirements;
-- notification/reminder claims;
+- run/equivalently apply the forbidden-marker payload scan;
+- inspect About UI for absence of BMC funding card/action;
+- verify repository/creator/business/support/privacy/terms/security links remain available;
+- verify no health feature changes based on repository funding;
+- verify store screenshots/listing do not imply removed in-app funding behavior.
+
+There is no current per-package funding-link build toggle.
+
+## 14. Final production signing
+
+Outside Git configure actual production signing for intended channels.
+
+Record only safe public provenance/fingerprints/identifiers in repository evidence; never commit private keys, keystores, certificate passwords or provisioning secrets.
+
+## 15. Final signed-package inspection
+
+For every signed/notarized/store candidate record:
+
+- exact source SHA/tag;
+- version/build;
+- application/package identity;
+- filename;
+- SHA-256;
+- signing/notarization/store provenance;
+- forbidden-marker scan result;
+- install/launch smoke result;
+- About/legal/support-contact check;
+- relevant platform manual matrix result.
+
+## 16. Store-policy/metadata validation
+
+At submission time review current store rules for the exact candidate.
+
+Validate:
+
+- organizer/non-clinical wording;
+- notification limitation wording;
 - privacy/data-safety declarations;
-- external links that remain in the application/store listing;
-- screenshots and metadata accuracy.
+- permission/capability descriptions;
+- screenshots with fictional data;
+- support/privacy/terms/security URLs;
+- application ID/version/build;
+- no removed in-app funding surface in screenshots/listing.
 
-The CareNest application package itself has no external project-funding destination. Repository funding metadata is separate from the distributed app binary.
+## 17. Exact production tag
 
-Record review date and the store policy source.
+Only after applicable package/manual/accessibility/signing/store preparation is complete, create the approved immutable production `v*` tag and require:
 
-## 13. Signing and secret handling
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Store Package Configuration;
+- Store Inspection Artifacts;
+- Release Gate;
+- Release Evidence.
 
-Production signing material must remain outside Git.
+Do not move a failed/rejected production tag to different source.
 
-Record only safe provenance such as:
+## 18. Evidence template
 
-- certificate/public fingerprint;
-- signing service identity;
-- keystore alias without secret material when appropriate;
-- notarization/store submission identifier;
-- signing timestamp;
-- source commit and package checksum.
+For each manual/package run capture:
 
-Never commit:
+```text
+Date/time:
+Tester:
+Source SHA/tag:
+Version/build:
+Package filename:
+Package SHA-256:
+Signing/notarization provenance:
+Platform/device/OS:
+Install/upgrade path:
+Test scenario:
+Expected:
+Actual:
+Result: PASS / FAIL / N/A
+Notes/issue:
+```
 
-- private keys;
-- signing passwords;
-- keystore passwords;
-- provisioning secrets;
-- API tokens;
-- backup passwords;
-- app-lock PINs.
+Use `N/A` only with a defensible reason.
 
-## 14. Final release evidence gate
+## 19. Current remaining status
 
-Before a production `v*` tag is approved, the release record must identify:
+The source-controlled RC1 scope is heavily automated-verified, but the packaged/manual rows above remain open until actual evidence exists.
 
-- exact source commit;
-- completed applicable manual matrix rows;
-- package identity/version;
-- package checksums;
-- signing provenance;
-- current store-policy review;
-- funding-surface payload scan result for the exact candidate source and final signed package inspection result;
-- packaged SQLite/encrypted-data compatibility results;
-- accessibility results;
-- exact production tag;
-- tagged CareNest CI result;
-- tagged CodeQL result;
-- tagged unsuppressed Dependency Audit result;
-- tagged Store Package Configuration result;
-- tagged Store Inspection Artifacts result;
-- tagged Release Gate result;
-- tagged Release Evidence result.
-
-Do not call CareNest bug-free. Production promotion means the defined automated and manual gates are satisfied for the approved source/package boundary.
-
-## Current automated baseline
-
-See `FINAL_STORE_PAYLOAD_AND_BUG_AUDIT_VERIFICATION_20260815.md`.
-
-Executable source SHA `9ec7b4e7d2150d9cc50be19f30464080318b16e8` passed exact marker PR #68 with 325/325 tests, all normal/store-candidate platform builds, Android/Windows/Apple payload scans, CodeQL, and unsuppressed Dependency Audit.
+Use `docs/releases/NEXT_STEPS.md` as the authoritative remaining-work checklist.
