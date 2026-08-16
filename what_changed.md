@@ -544,3 +544,70 @@ If verification-relevant runtime/test/project/package/workflow/build/platform so
 If only documentation changes, prove the branch is documentation/history-only and do not falsely claim a new executable verification boundary.
 
 Historical source-specific verification files remain historical and should not be rewritten merely because a newer source exists.
+
+---
+
+# 23. Executable-build documentation continuation
+
+The repository now has a dedicated, end-to-end executable and package creation layer for the current CareNest MAUI project.
+
+Added:
+
+- `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` — canonical executable/package creation documentation;
+- `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md` — concise release-operator companion checklist.
+
+Indexed/updated:
+
+- `docs/README.md` — primary documentation, setup/platform and release sections now point to the executable guide/checklist;
+- `docs/DOCUMENTATION_CATALOG.md` — developer, maintainer and QA navigation now explicitly assigns executable/package documentation ownership.
+
+The executable guide covers the repository without silently skipping areas. It classifies and documents:
+
+- root solution/configuration/governance files;
+- `.github/` workflows/templates/dependency automation;
+- every current `build/scripts/` release/quality/store helper;
+- all five production source projects;
+- all three test projects;
+- shared app XAML/C# input categories;
+- Android platform files;
+- iOS platform files;
+- Mac Catalyst platform files;
+- Windows platform files;
+- app icon/splash/image/raw-resource inputs;
+- documentation-only files;
+- generated `bin`/`obj`/publish outputs;
+- signing credentials and other files that must stay outside source control.
+
+It provides complete documented creation paths for:
+
+- Windows unpackaged `.exe` output, including self-contained x64 publishing and complete publish-folder distribution;
+- Android APK;
+- Android AAB;
+- signed Android release boundaries;
+- signed iOS `.ipa` production-candidate creation on macOS;
+- Mac Catalyst `.app`;
+- Mac Catalyst `.pkg`;
+- Visual Studio publishing as an alternative to the canonical CLI examples.
+
+It also documents:
+
+- `.NET 10`/MAUI prerequisites and `global.json` behavior;
+- `CareNestTargetFramework` target isolation;
+- restore commands per target;
+- quality gate and release-preflight use;
+- core Release builds;
+- all automated test projects;
+- blocking NuGet audit;
+- store-package and payload preflight;
+- output paths;
+- versioning;
+- release-secret handling;
+- clean rebuild procedure;
+- common publish/signing/XAML/native-provider failures;
+- SHA-256 artifact evidence;
+- real-device, upgrade, notification, accessibility, signing and store-validation boundaries;
+- final production executable-build checklist.
+
+This continuation is documentation-only. It does not change application runtime source, project target frameworks, package versions, signing identities, workflows, tests, encryption formats, database schema, reminder behavior or verified PR #74 executable source truth.
+
+The new documentation therefore explains how to create the executable/package artifacts from the current source while preserving the existing distinction between **a successful build artifact** and **a fully production-signed, real-device-validated, store-approved release**.
