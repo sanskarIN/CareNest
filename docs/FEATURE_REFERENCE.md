@@ -1,8 +1,10 @@
 # CareNest Feature Reference
 
-This reference maps the implemented `1.0.0-rc.1` product surface to its intended behavior and safety/privacy boundary.
+**Release line:** `1.0.0-rc.1`
 
-CareNest is a local-first organizational application. It does not diagnose, recommend treatment, calculate/infer dosage, check medication interactions, create clinical risk scores, verify adherence, or provide emergency services.
+This reference maps the implemented product surface to intended behavior and safety/privacy boundaries.
+
+CareNest is a local-first organizational application. It does not diagnose, recommend treatment, calculate/infer dosage, perform clinical medication-interaction checking, calculate clinical risk, verify adherence or provide emergency services.
 
 ## Onboarding
 
@@ -11,53 +13,37 @@ Purpose:
 - explain local-first storage;
 - establish medical/reminder limitations;
 - create an initial local profile;
-- optionally configure the local app lock.
+- optionally configure local app lock.
 
 Rules:
 
-- no required CareNest account;
-- no required CareNest backend;
-- no automatic notification-permission request merely from onboarding;
-- reminder permission is requested at explicit reminder-capable actions.
+- no required CareNest account/backend;
+- no automatic cloud synchronization;
+- reminder permission requested only from applicable user workflows;
+- no medical/clinical inference.
 
 ## Dashboard
 
 Purpose:
 
-- provide a local overview of family/profile organizational information;
-- surface upcoming reminder information and relevant local records.
+- summarize local family/profile organizational information;
+- surface upcoming reminders/appointments and local care records.
 
 Boundary:
 
-- dashboard content is based on local records;
-- no remote caregiver sharing occurs automatically;
-- no clinical scoring or prioritization is performed.
+- uses local records;
+- no automatic remote caregiver sharing;
+- no clinical prioritization/risk score.
 
 ## Profiles
 
 Purpose:
 
-- organize records for multiple people on one local installation.
+- organize multiple people on one local installation.
 
-Related data:
+Related data can include medicines, schedules, logs, appointments, documents, contacts, stock/refill records and reports.
 
-- medicines;
-- appointments;
-- documents;
-- emergency contacts;
-- medication logs;
-- stock adjustments;
-- reports/exports.
-
-Lifecycle:
-
-- active local profile;
-- archived profile behavior;
-- explicit destructive deletion/reset flows.
-
-Reminder rule:
-
-- archived profiles do not materialize automatic reminder occurrences.
+Archived profiles do not materialize automatic reminders.
 
 ## Medicine records
 
@@ -65,391 +51,296 @@ Purpose:
 
 - store user-entered organizational medicine information.
 
-Important fields:
-
-- name;
-- strength text;
-- instruction text;
-- start/end date;
-- lifecycle state;
-- optional stock/refill values.
-
 Safety contract:
 
 - `Strength` and `Instructions` remain opaque strings;
-- no dose/frequency is parsed from those strings;
-- stock changes are based only on explicit user-entered quantities/configuration.
+- no dose/frequency/treatment is parsed from them;
+- stock changes use explicit user-entered values/configuration.
 
-States:
-
-- active;
-- paused;
-- completed;
-- archived.
-
-Automatic reminder materialization is suppressed for paused, completed, or archived medicines.
+Lifecycle states can include active, paused, completed and archived. Automatic reminder materialization is suppressed when applicable for paused/completed/archived medicine states.
 
 ## Medicine schedules
 
-Supported schedule concepts:
+Supported concepts include:
 
 - Daily;
 - SelectedWeekdays;
-- SpecificTimes/user-entered explicit times;
+- SpecificTimes;
 - EveryNHours;
 - Cycle;
 - CustomDateRange;
 - AsNeeded.
 
-Validation includes:
+Validation covers known schedule kind, date ordering, time-zone identity, clock-time ranges, required weekday selections, every-N-hours interval/start, cycle counts and ownership relationships.
 
-- known schedule kind;
-- start/end ordering;
-- valid explicit time-zone identifier;
-- hour 0–23;
-- minute 0–59;
-- selected-weekday schedule must have at least one selected weekday;
-- every-N-hours requires an explicit interval from 1 to 168 hours and one explicit starting time;
-- cycle requires positive on/off day values;
-- as-needed creates no automatic occurrence.
-
-Ownership integrity:
-
-- schedule must belong to the medicine supplied to the planner;
-- medicine must belong to the profile supplied to the planner;
-- each schedule-time record must belong to the schedule being materialized.
+`AsNeeded` creates no automatic occurrences.
 
 ## Reminder planner
 
 Purpose:
 
-- convert explicit user schedule intent into deterministic future organizational occurrences.
+- deterministically convert explicit schedule intent into future organizational occurrences.
 
 Core invariants:
 
-- `fromUtc` and `toUtc` are UTC;
-- planning window is half-open: `fromUtc` inclusive, `toUtc` exclusive;
-- `toUtc` must be later than `fromUtc`;
+- planning boundaries are true UTC;
+- half-open planning window (`fromUtc` inclusive / `toUtc` exclusive);
 - stable occurrence identity;
-- duplicate explicit times deduplicate by stable key;
-- returned occurrences are chronological;
-- schedule/medicine/profile lifecycle boundaries are respected;
-- schedule time zone is explicit and validated.
+- deterministic ordering/deduplication;
+- explicit time-zone validation;
+- profile/medicine/schedule state boundaries;
+- no clinical inference.
 
-No clinical inference is performed.
+## Daylight-saving/time-zone behavior
 
-## Daylight-saving and time zones
+Schedule-local intent retains an explicit time-zone identifier.
 
-CareNest stores schedule-local intent with an explicit time-zone identifier.
-
-Spring-forward gap:
-
-- an invalid local time is not silently shifted to an invented replacement time.
-
-Fall-back overlap:
-
-- ambiguous local time resolves deterministically so rebuilds remain stable.
-
-Automated coverage includes representative DST-observing zones across United States, United Kingdom, Australia, and New Zealand transitions when available on the runner.
+- invalid spring-forward local time is not silently shifted to a guessed time;
+- ambiguous fall-back local time resolves deterministically;
+- rebuilding the same schedule remains stable.
 
 ## Reminder coordinator
 
 Purpose:
 
 - rebuild future occurrences;
-- register supported future notifications;
-- process state changes;
-- reconcile overdue reminders;
-- apply user-configured stock adjustments after Taken events.
+- register/cancel platform requests;
+- process user reminder states;
+- reconcile stale/overdue occurrences;
+- coordinate user-configured stock effects for Taken actions where configured.
 
-Rebuild contract:
+The coordinator treats persisted CareNest state and OS scheduled-request state as separate surfaces and uses reconciliation/compensation rather than pretending they are one transaction.
 
-- explicit rebuild time must be UTC;
-- default rebuild time comes from `TimeProvider.GetUtcNow()`;
-- active medicine and non-archived profile checks occur before planner materialization.
+## Reminder reconciliation
 
-Notification scheduling failures are privacy-redacted and do not log health-record identifiers.
+Current source protects:
+
+- stale request cancellation;
+- cancellation before replacement/suppression/invalidation;
+- cancellation-first handled actions;
+- retryable platform cancellation failure;
+- restoration/rebuild attempts after later persistence failure;
+- lifecycle cleanup after schedule/medicine/profile changes.
 
 ## Reminder states
 
-Supported organizational states include:
+Organizational states include Scheduled, Snoozed, Taken, Skipped, Delayed, Missed and Cancelled where applicable.
 
-- Scheduled;
-- Snoozed;
-- Taken;
-- Skipped;
-- Delayed;
-- Missed.
+These states do not independently prove ingestion/adherence.
 
-Snooze contract:
+## Snooze
 
-- Snoozed requires a value;
-- value must be UTC;
-- value must be later than the current UTC time.
+Rules:
 
-Taken/skipped/delayed/missed events can create medication-log entries.
+- snooze requires a value;
+- value is true UTC at the coordinator boundary;
+- value must be later than current UTC when created;
+- valid `SnoozedUntilUtc` becomes effective due time.
+
+The original `ScheduledUtc` remains schedule identity/history.
 
 ## Quiet hours
 
 Purpose:
 
-- user-controlled period where supported notification scheduling is suppressed.
+- user-controlled notification suppression period.
 
-Rules:
-
-- quiet-hours enablement and start/end values are settings;
-- behavior is organizational notification policy only;
-- quiet hours do not modify medical schedule intent or dosage.
+Quiet hours alter supported notification scheduling, not dosage or underlying medical meaning.
 
 ## Follow-up reminders
 
 Purpose:
 
-- create an additional occurrence at an explicit user-entered offset.
+- create a separate occurrence at an explicit user-entered delay.
 
-Rules:
-
-- follow-up minutes are explicit;
-- follow-up is separate from the original occurrence;
-- follow-up identity is deterministic;
-- as-needed records do not create automatic follow-up occurrences.
+No medical follow-up timing is inferred.
 
 ## Medication log
 
 Purpose:
 
-- record user-marked events such as Taken, Skipped, Delayed, or Missed.
+- record local user-marked reminder/medicine events.
 
 Boundary:
 
-- a log entry records user interaction/local state;
-- it is not proof of adherence;
-- it is not a clinical assessment.
+- records user/app interaction state;
+- not proof of adherence;
+- not a clinical assessment.
 
 ## Stock/refill tracking
 
 Purpose:
 
-- provide an organizational stock estimate.
+- maintain an organizational stock estimate.
 
 Rules:
 
-- initial stock is user-entered;
-- per-Taken quantity change is user-entered;
-- negative resulting estimates are guarded;
-- low-stock threshold is user-configured;
-- user must check actual supply.
-
-CareNest never derives quantity from strength/instruction text.
+- initial stock and adjustments are explicit;
+- negative estimates are guarded;
+- threshold is user-configured;
+- actual physical supply must be checked;
+- no quantity is derived from medicine strength/instructions.
 
 ## Appointments
 
 Purpose:
 
-- organize appointment details, notes, reminder information, attachments, and history.
+- organize appointment date/time/details/notes/attachments/reminder information.
 
-Calendar export:
+Appointment source rules include true UTC storage at the application boundary and explicit reminder lead-time behavior.
 
-- explicit user action;
-- exported data leaves the CareNest privacy boundary and is governed by the destination application/service.
+Calendar export is explicit; destination copies leave CareNest privacy control.
 
 ## Document vault
 
 Purpose:
 
-- organize locally imported sensitive documents.
+- organize imported local sensitive documents.
 
-Features:
+Features include encrypted application-owned payload storage, metadata, folders/tags, import/open/export/share/delete.
 
-- encrypted document storage;
-- folders;
-- tags;
-- import;
-- explicit export/share;
-- deletion;
-- optional profile-photo path through encrypted storage where applicable.
+CareNest does not automatically upload document contents.
 
-Boundary:
+Explicit plaintext export/open creates a copy outside the encrypted vault boundary.
 
-- CareNest does not automatically upload document contents;
-- explicitly exported/decrypted copies are outside CareNest vault protection.
+## Tags/folders
 
-## Tags and folders
-
-Purpose:
-
-- local document organization.
-
-Implementation model:
-
-- document/tag many-to-many relationship through `DocumentTag`;
-- optional local folder metadata is available in schema version 5.
+Provide local document organization. Current schema supports the documented tag relationship/folder metadata model.
 
 ## Emergency contacts
 
-Purpose:
+Store local user-entered contact information associated with a profile.
 
-- store local contact information associated with a profile.
-
-Boundary:
-
-- CareNest does not become an emergency service;
-- users must contact local emergency services directly in emergencies.
+CareNest does not become an emergency service; emergencies require local emergency services.
 
 ## Reports
 
-Supported outputs include user-controlled informational exports such as:
+User-controlled outputs include supported PDF, CSV and structured exports.
 
-- PDF profile summary;
-- CSV upcoming schedule data;
-- CSV medication log;
-- CSV missed reminder report;
-- CSV stock/refill report;
-- CSV appointment history;
-- CSV document list.
-
-Report boundary:
-
-- values are based on local/user-entered records;
-- reports contain privacy/non-clinical limitations;
-- no diagnosis, treatment recommendation, adherence verification, or clinical score is produced.
+Reports use local/user-entered records and do not produce diagnosis, treatment recommendations, verified adherence or clinical scores.
 
 ## Structured profile export
 
-CareNest supports per-profile structured JSON export.
+Provides user-controlled portable structured data for a profile.
 
-Purpose:
-
-- user-controlled portability/review of local records.
-
-Boundary:
-
-- exported files are outside CareNest's protected application sandbox once saved/shared;
-- user is responsible for the destination.
+Exported files leave the CareNest-owned sandbox/protection boundary once saved/shared.
 
 ## Encrypted backup
 
 Purpose:
 
-- manual portable backup/restore without automatic cloud upload.
+- manual portable local backup/restore without automatic cloud upload.
 
-Properties:
+Properties include password-derived key material, authenticated encryption, versioned format, database snapshot/integrity validation and document recovery material where required.
 
-- password-derived key;
-- PBKDF2-HMAC-SHA256;
-- authenticated AES-GCM encryption;
-- versioned backup format;
-- integrity/authentication checks before restore;
-- portable encrypted-document key recovery in the protected payload;
-- database snapshot uses WAL checkpoint and copied-database integrity verification in tests.
+Wrong password/tamper/truncation/malformed topology is rejected.
 
-No remote password-recovery system exists.
+No remote password-recovery service exists.
 
 ## App lock
 
 Purpose:
 
-- optional local privacy barrier before access to CareNest UI.
+- optional local privacy barrier before CareNest UI access.
 
-Security contract:
+Security contract includes no plaintext PIN persistence, random salt, PBKDF2-HMAC-SHA256 verifier, fixed-time comparison, secure storage and fail-closed invalid material.
 
-- no plaintext PIN persistence;
-- numeric PIN policy;
-- random salt;
-- PBKDF2-HMAC-SHA256 verifier;
-- fixed-time comparison;
-- verifier-buffer clearing where managed memory control permits;
-- disable operation removes stored lock material.
-
-Limitation:
-
-- app lock is not whole-database/device encryption.
+Limitation: app lock is not whole-database/device encryption.
 
 ## Notification diagnostics
 
 Purpose:
 
-- explain relevant platform capability/permission limitations.
+- explain relevant platform permission/capability limits.
 
-Android can surface permission/exact-alarm/battery-related limitations where APIs permit.
-
-Windows explicitly surfaces fallback limitations rather than implying background reliability that does not exist.
+Android can surface permission/alarm/battery constraints where supported. Windows exposes fallback limitations rather than implying guaranteed background reliability.
 
 ## Developer diagnostics
 
 Purpose:
 
-- help maintainers/users inspect safe operational state without exposing raw health data.
+- inspect privacy-safe operational state without exposing raw health data.
 
-Includes concepts such as:
+Examples include redacted schedule state, time-zone simulation, schema version/storage diagnostics and sanitized diagnostic output as implemented.
 
-- redacted schedule inspection;
-- time-zone simulation without rewriting stored schedule intent;
-- schema/database migration version display;
-- storage usage/cache controls;
-- sanitized diagnostic export.
+## Theme/presentation
 
-Logging follows `docs/security/LOGGING_PRIVACY.md`.
+Supports system/light/dark presentation and documented large-interface/reduced-motion/accessibility-oriented behavior where configured.
 
-## Theme and presentation
-
-Supported presentation preferences include:
-
-- system theme;
-- light theme;
-- dark theme;
-- large-interface preference;
-- reduced-motion preference.
-
-Manual accessibility checks remain a release gate.
+Real assistive-technology validation remains a manual release gate.
 
 ## About / legal / open source
 
-The app/repository surfaces:
+Application/repository surfaces include product identity, creator/repository links, business/support contacts, Apache-2.0 license, privacy, terms, security, notices and medical/reminder limitations.
 
-- product identity;
-- creator profile;
-- business/support contacts;
-- Apache-2.0 license;
-- privacy;
-- terms;
-- security;
-- project support;
-- medical/reminder limitations.
+Watermark/creator wording: `Made by the Sanskar` where used by project branding.
 
-Watermark/creator wording: `Made by the Sanskar`.
+## Repository project support
 
-## Voluntary project support
-
-Destination:
+Voluntary project support destination:
 
 `https://buymeacoffee.com/sanskarIN`
 
-Rules:
+**Current product boundary:** the distributed application source/package does **not** include or expose this external funding destination/card/command/artwork.
 
-- explicit external action;
-- no health-data query payload;
-- no medical feature entitlement;
-- no reminder-priority change;
-- no access to local records;
-- no emergency/support-priority entitlement;
-- store-channel policy review required before final distribution.
+Repository support:
+
+- is optional;
+- does not unlock app/health features;
+- does not change reminder reliability/priority;
+- does not provide medical/emergency service;
+- does not grant access to local health records;
+- is governed by third-party terms/privacy when opened from repository documentation.
+
+See `BUY_ME_A_COFFEE.md` and `docs/SUPPORT_CARENEST.md`.
+
+## Local privacy cleanup
+
+CareNest supports documented application-owned local cleanup/reset workflows.
+
+Deletion of CareNest-owned data cannot guarantee removal of copies previously exported/shared, captured in screenshots, stored in device backups or retained by external applications/services.
+
+## Strict compiled XAML bindings
+
+All binding-bearing pages/templates use typed compiled-binding metadata. The app project enables Source binding compilation and strict XAML compilation and treats `XC0022`–`XC0025` as errors.
+
+This is a build/source quality feature, not a user medical feature.
+
+## Platform targets
+
+Current target frameworks:
+
+- Android `net10.0-android`;
+- iOS/iPadOS `net10.0-ios`;
+- Mac Catalyst `net10.0-maccatalyst`;
+- Windows `net10.0-windows10.0.19041.0`.
+
+Automated builds are not a substitute for real-device/manual production evidence.
 
 ## Not part of CareNest v1
 
-Deliberately excluded from the current local-first release:
+Deliberately excluded:
 
 - required accounts;
 - CareNest backend storage;
-- automatic cloud sync;
-- silent remote caregiver sharing;
-- remote caregiver collaboration;
+- automatic CareNest cloud sync;
+- silent remote caregiver sharing/collaboration;
 - server-side health record storage;
-- analytics/telemetry without a future explicit consent/privacy design;
+- hidden analytics/telemetry networking;
 - diagnosis;
 - dosage calculation/inference;
 - treatment recommendations;
-- medication-interaction checking;
-- clinical risk scoring.
+- clinical medication-interaction checking;
+- clinical risk scoring;
+- emergency-service replacement;
+- guaranteed notification delivery.
 
-Any future networked/synchronization/collaboration expansion requires new architecture, consent, privacy, threat-model, security, deletion/export, and abuse-review work.
+Future networked/clinical scope requires new architecture, consent, privacy, security, threat-model, deletion/export, safety and store-policy review.
+
+## Current release status
+
+PR #74 verified 331/331 core tests plus all configured normal platform builds, store-candidate builds, inspection artifacts, CodeQL and unsuppressed Dependency Audit.
+
+CareNest remains `1.0.0-rc.1` because manual/device/package/accessibility/signing/store/tag/publication evidence remains open.
+
+Use `PROJECT_STATUS.md` and `docs/releases/NEXT_STEPS.md`.
