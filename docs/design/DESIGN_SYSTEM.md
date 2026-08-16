@@ -1,48 +1,51 @@
 # CareNest Design System
 
-CareNest aims for calm, clear, accessible, non-clinical organization across Android, iOS, Mac Catalyst, and Windows.
+CareNest aims for calm, clear, accessible, privacy-aware and non-clinical organization across Android, iOS/iPadOS, Mac Catalyst and Windows.
 
-The design must not imply medical certification, diagnosis, treatment authority, or emergency-service capability.
+The design must not imply medical certification, diagnosis, treatment authority, dosage selection, clinical interaction checking or emergency-service capability.
 
-## Design principles
+## 1. Design principles
 
-1. **Calm over alarming.** Health organization can already be stressful; normal states should not look like emergencies.
-2. **Clarity over decoration.** Primary actions, dates, reminder state, and limitations should be easy to scan.
-3. **Accessible by default.** Text scaling, semantics, contrast, keyboard/focus, and reduced motion are release concerns.
-4. **Privacy-aware.** Avoid unnecessary sensitive text in notification-like/public surfaces.
-5. **Non-clinical framing.** UI organizes user-entered information without presenting clinical conclusions.
+1. **Calm over alarming.** Normal organizational states should not look like emergencies.
+2. **Clarity over decoration.** Primary actions, dates, reminder state and limitations should be easy to scan.
+3. **Accessible by default.** Text scaling, semantics, contrast, keyboard/focus and reduced motion are release concerns.
+4. **Privacy-aware.** Avoid unnecessary sensitive text in notifications/public surfaces.
+5. **Non-clinical framing.** UI organizes explicit user input without generating clinical conclusions.
 6. **Cross-platform consistency.** Keep CareNest identity stable while respecting platform conventions.
+7. **Explicit boundaries.** External exports/support links/store actions should be visually distinguishable from local health organization.
 
-## Spacing tokens
+## 2. Spacing tokens
 
-Base spacing scale:
+Reference scale:
 
-- 4 — micro spacing;
-- 8 — compact internal spacing;
-- 12 — small control/group spacing;
-- 16 — standard content spacing;
-- 24 — section spacing;
-- 32 — large separation/hero spacing.
+- 4 — micro;
+- 8 — compact internal;
+- 12 — small control/group;
+- 16 — standard content;
+- 24 — section;
+- 32 — large/hero separation.
 
-Prefer token values rather than one-off arbitrary spacing.
+Prefer consistent token values over arbitrary per-screen spacing.
 
-## Corner radii
+## 3. Corner radii
+
+Reference roles:
 
 - 10 — controls/compact interactive surfaces;
-- 16 — cards/standard grouped surfaces;
-- 24 — hero/large highlighted surfaces.
+- 16 — cards/grouped surfaces;
+- 24 — large highlighted surfaces.
 
-Avoid excessive nested rounded containers that reduce information hierarchy.
+Avoid excessive nested rounded containers that obscure hierarchy.
 
-## Touch/click targets
+## 4. Touch/click targets
 
-Minimum intended touch target: **44×44 logical units**.
+Minimum intended interactive target: about **44×44 logical units** where platform conventions allow.
 
-Icon-only actions should still expose a target large enough for touch and meaningful accessibility text.
+Icon-only actions still require meaningful accessible naming and sufficient hit area.
 
-Destructive actions require clear labeling and should not be placed so closely to common primary actions that accidental activation becomes likely.
+Destructive actions should be separated from routine primary actions.
 
-## Typography
+## 5. Typography
 
 Use platform-default/scalable typography rather than fixed pixel assumptions.
 
@@ -51,34 +54,31 @@ Reference scale:
 - title: 28;
 - section heading: 20;
 - body: 16;
-- caption/supporting text: 13.
+- supporting/caption: 13.
 
-Text must wrap when localized or scaled.
+Text must wrap under localization and scaling. Avoid fixed-height assumptions around validation, safety or privacy text.
 
-Avoid fixed-height layout assumptions around safety/validation text.
-
-## Text hierarchy
+## 6. Text hierarchy
 
 Recommended order:
 
-1. screen/page title;
-2. short contextual description if needed;
+1. page title;
+2. short context/limitation when needed;
 3. grouped content;
-4. supporting/limitation text;
+4. supporting text;
 5. primary action;
 6. secondary/destructive action.
 
-Medication instruction/strength text is user content and must not be visually transformed into a CareNest dosage recommendation.
+Medicine strength/instruction text is user content and must never be visually reframed as a CareNest dosage recommendation.
 
-## Color roles
+## 7. Semantic color roles
 
-Use semantic roles instead of hard-coded meaning tied to one color:
+Use semantic roles rather than one-off colors:
 
 - background;
 - surface;
 - elevated/highlighted surface;
-- primary;
-- on-primary;
+- primary / on-primary;
 - primary text;
 - muted text;
 - divider/border;
@@ -88,230 +88,173 @@ Use semantic roles instead of hard-coded meaning tied to one color:
 - link/action;
 - focus indicator.
 
-Never rely on color alone to convey reminder/validation/stock state.
+Never rely on color alone for state/validation/stock meaning.
 
-## Status presentation
+## 8. Status presentation
 
-Reminder states can include:
+Reminder states can include Scheduled, Snoozed, Taken, Skipped, Delayed, Missed and Cancelled where applicable.
 
-- Scheduled;
-- Snoozed;
-- Taken;
-- Skipped;
-- Delayed;
-- Missed.
+Every state must include text/accessibility semantics in addition to color/iconography.
 
-Every state must include text or accessible semantics in addition to any color/icon.
+Stock/refill state also needs text describing the local estimate/threshold.
 
-Stock/refill state must also include text describing the local estimate/threshold rather than only green/amber/red color.
+## 9. Themes
 
-## Themes
-
-CareNest supports:
-
-- system;
-- light;
-- dark.
+CareNest supports system, light and dark presentation.
 
 Theme changes must not:
 
 - reset local data;
-- rewrite reminder schedule intent;
-- hide medical/reminder limitations;
-- make validation/focus indicators unreadable.
+- alter reminder schedule intent;
+- hide limitations/errors;
+- make focus/validation unreadable.
 
-Manual release testing checks light/dark/system behavior.
+Manual release testing covers representative theme behavior.
 
-## Motion
+## 10. Motion
 
-Motion should be short and optional.
+Motion should be short, optional and nonessential.
 
-Motion must never be required to understand:
+Motion must never be required to understand reminder state, errors, destructive outcomes, privacy/medical warnings or navigation.
 
-- reminder state;
-- validation error;
-- destructive action result;
-- privacy/medical warning;
-- navigation availability.
+Reduced-motion preference should minimize decorative movement where implemented.
 
-Reduced-motion preference disables/minimizes decorative transitions where implemented.
+## 11. Cards
 
-## Cards
+Use cards for coherent information groups such as profile summaries, medicine summaries, reminders, appointments, document metadata and settings groups.
 
-Cards are appropriate for grouped information such as:
+Do not wrap every line in decorative cards.
 
-- profile summaries;
-- medicine summary;
-- upcoming reminder summary;
-- appointment summary;
-- document metadata;
-- settings group;
-- About/support surfaces.
+The current application About surface contains normal project/legal/support contact information but **no external BMC funding card/action**.
 
-A card should represent one coherent unit rather than acting as a decorative container for every line.
-
-## Forms/editors
+## 12. Forms/editors
 
 Forms should:
 
 - clearly label required/optional fields;
-- keep label close to control;
-- allow multi-line wrapping;
-- provide inline actionable validation;
-- avoid raw exception text;
+- keep label/control association clear;
+- allow wrapping;
+- provide actionable validation;
+- avoid raw exception output;
 - separate destructive actions from save;
-- keep user-entered medicine text clearly distinct from application-generated limitation text.
+- distinguish user-entered medicine text from application limitations.
 
-## Schedule editor design
+## 13. Schedule editor
 
-Schedule editor should make explicit user intent visible.
-
-Users should be able to tell which values they entered:
+The schedule editor should clearly show values the user explicitly selected:
 
 - schedule kind;
 - start/end dates;
-- explicit time zone;
+- time zone;
 - reminder times;
-- weekday selection;
+- weekdays;
 - every-N-hours interval/start;
 - cycle on/off days;
 - follow-up minutes;
 - enabled state.
 
-Do not use UI wording that implies CareNest chose a medically appropriate frequency.
+Do not imply CareNest chose a medically appropriate frequency.
 
-As-needed must clearly indicate that no automatic reminder occurrences are created.
+As-needed must clearly indicate that no automatic occurrences are created.
 
-## Reminder state controls
+## 14. Reminder state actions
 
-Taken/Skipped/Delayed/Snooze/Missed actions should be clearly distinguishable and not represented as clinical recommendations.
+Taken/Skipped/Delayed/Snooze/Missed actions should be distinct and non-clinical.
 
-Snooze UI must result in an explicit future time.
+Snooze UI must produce an explicit future destination time.
 
-## Destructive actions
+Actions should not imply verified adherence.
+
+## 15. Destructive actions
 
 Delete/reset/restore-replacement actions should:
 
 - use explicit action names;
-- describe what local data is affected;
-- use confirmation where appropriate;
-- avoid accidental placement near routine save controls;
-- mention backup/export option when that helps avoid unintended data loss.
+- explain affected local data;
+- require confirmation where appropriate;
+- avoid accidental proximity to routine actions;
+- mention backup/export options when useful.
 
-## Empty states
+## 16. Empty states
 
-Empty states should explain what the user can do without creating urgency or medical advice.
+Explain the next organizational action without urgency/medical advice.
 
-Examples of intent:
+Examples:
 
 - no medicines recorded;
 - no upcoming reminders;
 - no documents imported;
 - no appointments recorded.
 
-Avoid wording that implies missing records are medically unsafe.
+## 17. Errors/validation
 
-## Validation/error states
+Errors should be human-readable, actionable, privacy-safe and accessible.
 
-Errors should be:
+Do not expose raw stack traces, database paths, encryption keys, backup passwords or internal IDs unnecessarily.
 
-- human-readable;
-- actionable;
-- privacy-safe;
-- accessible;
-- independent of color alone.
+## 18. Notification copy
 
-Do not expose:
+Prefer privacy-minimized generic wording.
 
-- raw stack traces;
-- database paths;
-- encryption keys;
-- backup password details;
-- internal record IDs unnecessarily.
-
-## Notification copy
-
-Notification content is privacy-minimized.
-
-Generic labels are preferred by default.
-
-Notification wording must not claim:
+Do not claim:
 
 - verified adherence;
 - dosage recommendation;
 - clinical urgency;
 - guaranteed delivery.
 
-## Medical limitation surfaces
+Lock-screen privacy must be considered during manual release testing.
 
-Medical/reminder limitations appear in onboarding/About/reports/documentation and should remain readable/accessibility-reachable.
+## 19. Medical limitation surfaces
 
-Core concepts:
+Onboarding/About/reports/documentation should keep these concepts accessible:
 
 - organizational only;
 - no diagnosis/treatment/dosage inference;
+- no clinical interaction/risk scoring;
 - no emergency service;
-- reminders can be affected by OS/permission/battery restrictions.
+- OS/device settings can affect reminders.
 
-## Brand identity
+## 20. Brand identity
 
-The CareNest logo combines a gentle nest/shield concept with a small calendar/check organization cue.
+The CareNest mark should communicate family organization, privacy, scheduling and calm utility.
 
-Design intent:
+Avoid symbols that imply official medical accreditation/certification.
 
-- family care/organization;
-- privacy/safety;
-- scheduling;
-- calm utility.
+## 21. Current logo/resource variants
 
-Avoid medical-accreditation imagery such as a red cross or symbols that imply professional certification.
+Use the actual version-controlled resources present in `src/CareNest.App/Resources/` for app icon, splash and CareNest mark variants.
 
-## Logo variants
+Do **not** document or create a packaged BMC/project-funding badge as part of the current application design system. The prior URL-bearing funding artwork was intentionally removed from application resources after package inspection found the destination embedded in Windows payload bytes.
 
-Repository assets include:
+Repository support documentation may use ordinary text/links outside the distributed application package.
 
-- adaptive app icon/foreground;
-- splash artwork;
-- standard CareNest mark;
-- light-surface mark;
-- dark-surface mark;
-- monochrome/system mark;
-- compact project-support badge;
-- custom CareNest Buy Me a Coffee project-support artwork.
+## 22. Watermark
 
-Use the correct variant for the surface/contrast requirement.
-
-## Watermark
-
-Required creator watermark:
+Project branding can use:
 
 `Made by the Sanskar`
 
-Appropriate locations:
+Appropriate contexts include project/splash/About/footer/creator surfaces where it does not interfere with user health content, accessibility or store policy.
 
-- splash/about/footer/creator surfaces.
+## 23. Repository project-support presentation
 
-Do not overlay the watermark on top of user health content in a way that hurts readability/privacy.
-
-## Project-support design
-
-Canonical destination:
+Canonical repository-only voluntary support destination:
 
 `https://buymeacoffee.com/sanskarIN`
 
-Support surfaces should describe voluntary project support.
+Rules:
 
-Do not style them as:
+- repository documentation/metadata only for current application boundary;
+- not a medical purchase;
+- not premium reminder delivery;
+- not emergency/clinical support;
+- not access to user records;
+- not an app feature entitlement.
 
-- medical purchase;
-- premium diagnosis/treatment;
-- paid emergency assistance;
-- priority health support;
-- paid access to user records.
+See `BUY_ME_A_COFFEE.md` and `docs/SUPPORT_CARENEST.md`.
 
-Custom CareNest support artwork must not be represented as an official Buy Me a Coffee trademark asset.
-
-## Responsive design
+## 24. Responsive design
 
 Layouts should tolerate:
 
@@ -321,46 +264,49 @@ Layouts should tolerate:
 - text scaling;
 - translated text expansion.
 
-Prefer flexible Grid/Stack layouts and scrolling where content can grow.
+Prefer flexible Grid/Stack layouts and scrolling for growable content.
 
-## Desktop interaction
+## 25. Desktop interaction
 
-Windows/Mac Catalyst should support expected pointer/keyboard use.
+Windows/Mac Catalyst primary flows should support expected pointer/keyboard interaction and must not require touch-only gestures.
 
-Primary flows must not require touch-only gestures.
+## 26. Accessibility
 
-## Accessibility
+See `docs/design/ACCESSIBILITY.md`.
 
-The complete accessibility specification is in `docs/design/ACCESSIBILITY.md`.
+Core requirements include semantic labels, logical focus order, keyboard navigation, large text, contrast, reduced motion and color-independent meaning.
 
-Core requirements include:
+Source semantics do not replace real assistive-technology testing.
 
-- semantic labels;
-- screen-reader usability;
-- logical focus order;
-- keyboard navigation;
-- large text;
-- contrast;
-- reduced motion;
-- color-independent state communication.
-
-## Localization
+## 27. Localization
 
 Strings should be localization-ready and avoid unnecessary concatenated fragments.
 
-Dates/times shown to users should respect locale where appropriate, while machine-readable exports use stable/invariant formats where required.
+Dates/times shown to users should respect locale where appropriate; machine-readable exports use stable/invariant formats where required.
 
 See `docs/design/LOCALIZATION.md`.
 
-## Store assets
+## 28. Store assets
 
-Use fictional/synthetic data in screenshots.
+Use synthetic/fictional data in screenshots.
 
-Store screenshots must not expose real user health information.
+Store assets must not expose real health information, imply clinical capability or depict a removed in-app funding feature.
 
 See `docs/design/STORE_ASSETS.md`.
 
-## Design review checklist
+## 29. Strict XAML design/development rule
+
+Binding-bearing UI is compiled with strict type information:
+
+- root `x:DataType`;
+- item-specific DataTemplate `x:DataType`;
+- typed picker display bindings;
+- typed explicit Source/ancestor bindings;
+- `XC0022`–`XC0025` as errors.
+
+Design examples/documentation should not recommend patterns that conflict with this build policy.
+
+## 30. Design review checklist
 
 For each major UI change verify:
 
@@ -371,9 +317,11 @@ For each major UI change verify:
 - destructive actions are distinct;
 - theme contrast works;
 - reduced motion is respected;
-- medical/reminder boundary wording remains accurate;
-- privacy-sensitive values are not added to public/notification surfaces unnecessarily;
-- mobile + desktop layouts remain usable.
+- medical/reminder wording remains accurate;
+- privacy-sensitive values are minimized;
+- mobile/desktop layouts remain usable;
+- no removed external funding app surface is reintroduced;
+- strict XAML compiled-binding policy remains valid.
 
 ## Related documents
 
@@ -382,4 +330,5 @@ For each major UI change verify:
 - `docs/design/STORE_ASSETS.md`
 - `docs/USER_GUIDE.md`
 - `docs/FEATURE_REFERENCE.md`
+- `docs/KNOWN_LIMITATIONS.md`
 - `docs/releases/MANUAL_TEST_MATRIX.md`
