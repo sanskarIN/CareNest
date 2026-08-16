@@ -3,6 +3,9 @@
     x:Class="CareNest.App.Views.DocumentsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:domain="clr-namespace:CareNest.Domain.Entities;assembly=CareNest.Domain"
+    xmlns:vm="clr-namespace:CareNest.App.ViewModels"
+    x:DataType="vm:DocumentsViewModel"
     Title="Documents">
   <ScrollView>
     <VerticalStackLayout Padding="20" Spacing="16" MaximumWidthRequest="980">
@@ -18,7 +21,7 @@
 
       <Label Text="Add a document" Style="{StaticResource SectionTitle}" />
       <Picker ItemsSource="{Binding Profiles}"
-              ItemDisplayBinding="{Binding Name}"
+              ItemDisplayBinding="{Binding Name, x:DataType=domain:PersonProfile}"
               SelectedItem="{Binding SelectedProfile}"
               Title="Profile" />
       <Entry Text="{Binding Title}"
@@ -58,7 +61,7 @@
       <CollectionView ItemsSource="{Binding Items}"
                       EmptyView="No matching documents are stored.">
         <CollectionView.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate x:DataType="vm:DocumentRow">
             <Border Style="{StaticResource Card}" Margin="0,0,0,10">
               <VerticalStackLayout Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">
@@ -80,7 +83,7 @@
                 <FlexLayout Wrap="Wrap">
                   <Button Text="Export"
                           Margin="0,0,8,8"
-                          Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ExportCommand}"
+                          Command="{Binding x:DataType=vm:DocumentsViewModel, Source={RelativeSource AncestorType={x:Type vm:DocumentsViewModel}}, Path=ExportCommand}"
                           CommandParameter="{Binding .}" />
                   <Button Text="Tags"
                           Margin="0,0,8,8"
