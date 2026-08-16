@@ -39,6 +39,7 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/DEVELOPER_REFERENCE.md` — development conventions and current technical baseline.
 - `docs/setup/DEVELOPMENT.md` — environment and build/test setup.
 - `docs/setup/PLATFORM_SETUP.md` — target-specific requirements.
+- `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` — authoritative executable/package creation guide for Windows, Android, iOS and Mac Catalyst, including complete repository-file coverage.
 - `docs/setup/TROUBLESHOOTING.md` — build/runtime troubleshooting.
 - `docs/CODEBASE_REFERENCE.md` — file/project responsibility map.
 - `docs/CONFIGURATION_REFERENCE.md` — package/build/configuration reference.
@@ -50,6 +51,8 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/MAINTENANCE_AND_OPERATIONS.md` — maintenance and incident operations.
 - `docs/setup/MAINTAINER_OPERATIONS.md` — setup/repository operations.
 - `docs/REPOSITORY_GOVERNANCE.md` — documentation/source/evidence governance.
+- `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` — complete commands, outputs, signing boundaries, package validation and executable troubleshooting.
+- `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md` — concise operator checklist for producing and validating platform artifacts.
 - `docs/releases/RELEASE_PROCESS.md` — production release process.
 - `docs/releases/RELEASE_CHECKLIST.md` — release gate checklist.
 - `docs/releases/MANUAL_TEST_MATRIX.md` — manual platform validation.
@@ -75,6 +78,7 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` — reminder correctness contract.
 - `docs/testing/SETTINGS_LIFECYCLE_CONTRACT.md` — settings lifecycle contract.
 - `docs/PLATFORM_BEHAVIOR_MATRIX.md` — automated versus manual platform evidence.
+- `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md` — executable/package validation checklist.
 - dated verification documents under `docs/releases/` — exact workflow evidence.
 
 ### Design, accessibility and localization
@@ -100,7 +104,23 @@ The architecture documentation is intentionally layered:
 - `docs/architecture/ADR-0002-reminder-occurrences.md` — reminder-occurrence decision.
 - `docs/architecture/ADR-0003-encrypted-backup-format.md` — backup format decision.
 
-## 4. Current source facts that documentation must preserve
+## 4. Executable and package documentation ownership
+
+`docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` owns the end-to-end executable/package creation procedure. It documents:
+
+- every repository area as build input, validation input, package input, documentation-only input or generated output;
+- the single MAUI application project that must be published;
+- Windows unpackaged `.exe` publication;
+- Android APK/AAB publication and signing boundaries;
+- iOS IPA publication and Apple signing/provisioning boundaries;
+- Mac Catalyst `.app`/`.pkg` publication and signing/notarization boundaries;
+- restore, quality gate, release preflight, tests and dependency audit;
+- output locations, clean rebuild behavior and common failures;
+- artifact hashing, evidence and secret-handling requirements.
+
+`docs/releases/EXECUTABLE_BUILD_CHECKLIST.md` is the concise operator companion. It does not replace the full guide or the release/store/security documents.
+
+## 5. Current source facts that documentation must preserve
 
 The current verified application project targets:
 
@@ -133,7 +153,7 @@ Current central package versions include:
 - xUnit `2.9.3`;
 - Microsoft.NET.Test.Sdk `17.14.1`.
 
-## 5. Current automated evidence
+## 6. Current automated evidence
 
 PR #74 frozen source head:
 
@@ -160,11 +180,11 @@ Verified results:
 
 Source: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
 
-## 6. Historical documentation
+## 7. Historical documentation
 
 `docs/history/` contains exact snapshots of previously active handoff/status/documentation files. Dated release documents intentionally retain older verification boundaries. Do not rewrite historical evidence merely to make old files look current.
 
-## 7. Production status boundary
+## 8. Production status boundary
 
 Documentation completeness does not mean production release completeness.
 
