@@ -6,11 +6,12 @@
 - Repository: `sanskarIN/CareNest`
 - Source hardening PR: #74 — `Compile and enforce MAUI XAML bindings`
 - Frozen implementation/test head: `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+- Merged `main` source SHA: `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 - Base before this continuation: `7f7bcab25d92e11783d396edc82d2981eeadadb1`
 - Implementation delta: 17 commits, 17 files
 - Intended behavior change: none. This continuation is a compile-time binding correctness, maintainability, and performance hardening pass.
 
-The source head above remains frozen while its GitHub Actions matrix completes. The final merged `main` SHA is recorded in the active handoff after merge.
+PR #74 was merged only after the full frozen-head GitHub Actions matrix completed successfully.
 
 ---
 
@@ -181,26 +182,21 @@ All commits were authored as `Sanskar <sanskarin@outlook.in>`.
 
 ### Core tests
 
-CareNest CI #735 / run `31938301209` has completed its core-test job successfully:
+CareNest CI #735 / run `31938301209` completed successfully:
 
 - formatting verification: success;
 - unit tests: **122 passed, 0 failed, 0 skipped**;
 - integration tests: **39 passed, 0 failed, 0 skipped**;
 - UI/source-policy tests: **170 passed, 0 failed, 0 skipped**;
-- total core tests: **331 passed, 0 failed, 0 skipped**.
+- total core tests: **331 passed, 0 failed, 0 skipped**;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success.
 
 The UI/source-policy count increased from 164 to 170 because this continuation adds six compiled-binding contract tests.
 
-### Normal platform compilation
-
-On the same frozen head, CareNest CI #735 has successfully compiled:
-
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release.
-
-These builds execute with `XC0022`–`XC0025` promoted to errors, so success is direct evidence that the migrated XAML passes strict compiled-binding enforcement on every configured target family.
+These platform builds execute with `XC0022`–`XC0025` promoted to errors, so success is direct evidence that the migrated XAML passes strict compiled-binding enforcement on every configured target family.
 
 ### Store-candidate configurations
 
@@ -211,6 +207,20 @@ CareNest Store Package Configuration #124 / run `31938301146` completed successf
 - iOS simulator store-candidate configuration: success;
 - Mac Catalyst store-candidate configuration: success.
 
+### Store inspection artifacts
+
+CareNest Store Inspection Artifacts #47 / run `31938301275` completed successfully:
+
+- store-safe payload scanner self-test: success;
+- unsigned Android AAB inspection publish/staging/provenance/upload: success;
+- Windows self-contained inspection publish/staging/provenance/upload: success;
+- iOS simulator inspection app build: success;
+- unsigned Mac Catalyst inspection app publish: success;
+- Apple inspection staging/checksums/provenance: success;
+- Apple inspection artifact upload: success.
+
+The package-inspection protections therefore remain green after the compiled-binding migration.
+
 ### Security and dependency gates
 
 - CodeQL #735 / run `31938301252`: **success**;
@@ -218,17 +228,21 @@ CareNest Store Package Configuration #124 / run `31938301146` completed successf
 - platform-neutral dependency graph audit: success;
 - MAUI app dependency graph audit: success.
 
-### Store inspection artifacts
+---
 
-CareNest Store Inspection Artifacts #47 / run `31938301275` is the final package-inspection gate for this source head.
+## Merge result
 
-Already completed successfully:
+PR #74 was merged with a merge commit so the 17 focused implementation/test commits remain individually visible in repository history.
 
-- store-safe payload scanner self-test;
-- unsigned Android AAB inspection publish/staging/provenance/upload;
-- Windows self-contained inspection publish/staging/provenance/upload.
+Merged `main` source:
 
-The Apple inspection job is recorded as final only after it completes. This document must not treat an in-progress job as passed.
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+
+PR source head verified by the complete matrix:
+
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+
+The merge introduces no additional executable delta beyond the verified PR head.
 
 ---
 
@@ -257,10 +271,12 @@ The change is confined to XAML binding metadata, XamlC project enforcement, and 
 
 ## Release interpretation
 
+The previous `XC0022` / `XC0025` compiled-binding cleanup item is now closed. The project also fails future configured builds for `XC0022`, `XC0023`, `XC0024`, and `XC0025` rather than silently accepting regression.
+
 Closing compiled-binding warnings improves compile-time correctness checking and binding execution efficiency, but it does not replace real-device, accessibility, package-upgrade, encryption-compatibility, signing, or store validation.
 
 CareNest therefore remains `1.0.0-rc.1`.
 
 The remaining production blockers stay external/manual unless those tests expose a real source defect.
 
-Final merge SHA, final Store Inspection result, and active handoff/status pointers are added after the frozen PR source is fully accepted and merged.
+Active status/handoff files point to this evidence record and the merged source boundary. Exact pre-binding versions remain under `docs/history/pre-xaml-compiled-bindings-20260816/`.
