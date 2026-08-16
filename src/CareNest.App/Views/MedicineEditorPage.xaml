@@ -3,6 +3,9 @@
     x:Class="CareNest.App.Views.MedicineEditorPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:domain="clr-namespace:CareNest.Domain.Entities;assembly=CareNest.Domain"
+    xmlns:vm="clr-namespace:CareNest.App.ViewModels"
+    x:DataType="vm:MedicineEditorViewModel"
     Title="Medicine">
   <ScrollView>
     <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="760">
@@ -13,7 +16,7 @@
 
       <Label Text="Profile" />
       <Picker ItemsSource="{Binding Profiles}"
-              ItemDisplayBinding="{Binding Name}"
+              ItemDisplayBinding="{Binding Name, x:DataType=domain:PersonProfile}"
               SelectedItem="{Binding SelectedProfile}"
               SemanticProperties.Description="Profile for this medicine record" />
 
