@@ -1,253 +1,230 @@
 # CareNest Privacy Model
 
-CareNest v1 is intentionally local-first. This privacy model explains the implemented data boundaries for developers, reviewers, store-submission work, and users evaluating how information moves through the product.
+**Release line:** `1.0.0-rc.1`
 
-This document complements `PRIVACY.md` and `docs/privacy/DATA_LIFECYCLE.md`. It does not replace jurisdiction-specific legal advice.
+CareNest v1 is intentionally local-first. This document describes the implemented data boundaries for users, developers, reviewers and store-submission work. It complements `PRIVACY.md` and `docs/privacy/DATA_LIFECYCLE.md` and is not jurisdiction-specific legal advice.
 
-## Privacy objective
+## 1. Privacy objective
 
-The v1 architecture minimizes required remote data processing by keeping normal CareNest records on the user's device and requiring explicit user action for export/share/external-link operations.
+CareNest minimizes required remote data processing by keeping normal application records on the user's device and requiring explicit user action for export/share/calendar/browser operations.
 
-## Data categories
+Current v1 has no required CareNest account/backend, no automatic CareNest cloud sync/upload and no hidden runtime analytics/telemetry client.
 
-CareNest can locally organize data such as:
+## 2. Data categories
+
+CareNest can locally organize sensitive data such as:
 
 - profile names/details/photos;
 - emergency contacts;
 - medicine names;
 - user-entered strength/instruction text;
-- reminder schedule values;
-- reminder state/history;
-- medication-log entries;
-- appointments and notes;
-- health documents and document metadata;
-- tags/folders;
+- schedule/reminder values;
+- reminder/log history;
+- appointments/notes;
+- document metadata/tags/folders;
+- imported health documents;
 - stock/refill estimates;
 - settings/preferences;
-- audit information;
-- app-lock configuration material;
-- backup metadata.
+- audit/backup metadata;
+- app-lock configuration material.
 
-These records can be sensitive even when they are described as organizational rather than clinical.
+Being organizational rather than diagnostic does not make this data non-sensitive.
 
-## No required CareNest account/backend
+## 3. No required account/backend
 
-The current release does not require:
+Current release does not require:
 
-- CareNest account registration;
+- CareNest registration;
 - phone-number authentication;
 - CareNest cloud database;
-- automatic cloud sync;
+- automatic CareNest synchronization;
 - remote caregiver account;
 - server-side analytics profile.
 
-A future version that changes this boundary requires explicit architecture/privacy/threat-model changes.
+A future change to this boundary requires explicit architecture/privacy/security/threat-model/store-disclosure review.
 
-## Local database
+## 4. Structured SQLite data
 
-Structured application data is stored in SQLite inside the application data area.
+Structured records are stored in SQLite within application-owned local storage.
 
-CareNest does not claim transparent whole-database encryption at rest. Device/application sandbox protections remain part of the threat model.
+CareNest does **not** claim transparent whole-database encryption. Protection relies primarily on app sandbox/device/OS security plus application access controls.
 
-Imported document payloads have a separate encrypted storage path.
+Imported document payloads use a separate encrypted storage path.
 
-## Encrypted documents
+## 5. Encrypted documents
 
-Sensitive imported documents use authenticated encryption with a per-installation key stored through platform secure secret storage.
+Application-owned imported document payloads use authenticated encryption with document key material stored through platform secure storage where applicable.
 
-Document metadata remains represented in structured local records so the application can organize/search/link documents.
+Document metadata remains in structured local records so CareNest can organize/search/link documents.
 
-CareNest does not automatically upload document payloads in v1.
+CareNest does not automatically upload document payloads.
 
-## App lock
+## 6. Manual backups
 
-The optional app lock stores derived verifier material rather than plaintext PIN.
+Manual backups are password-encrypted/authenticated portable files.
 
-The app lock is a privacy barrier for opening the CareNest UI. It is not a promise that every database field is encrypted or that a fully compromised device cannot access data.
+Privacy depends on:
 
-## Notification privacy
+- backup password strength/storage;
+- selected destination;
+- destination provider/device security;
+- retention of old backups;
+- external cloud/device backup behavior.
 
-Notifications are privacy-sensitive because the OS may display them on lock screens or connected devices.
+CareNest has no server-side backup-password recovery service.
 
-CareNest uses generic labels by default and avoids placing document content or sensitive health-record details in normal notification payloads.
+## 7. App lock
 
-Users still control OS notification-preview settings, and the operating system controls final display behavior.
+Optional app lock stores derived verifier material rather than plaintext PIN.
 
-## Diagnostic/logging privacy
+It is a local UI privacy barrier, not whole-database/device encryption and not protection against a fully compromised OS/device.
 
-CareNest uses privacy-minimized logging contracts.
+## 8. Notification privacy
 
-Routine structured logs should not contain:
+Notifications can be visible on lock screens or connected devices.
 
-- health-document content;
-- private free-text health notes;
+CareNest uses privacy-minimized/generic notification wording by default and avoids document contents, passwords/PINs/keys and unnecessary sensitive free text in normal payloads.
+
+The OS controls final display/history/preview behavior.
+
+## 9. Logging/diagnostics
+
+Routine CareNest logs should not contain:
+
+- health-document contents;
+- raw private health notes/instructions;
 - backup passwords;
 - plaintext app-lock PINs;
 - encryption keys;
-- full exception messages or stack traces from health-data operations;
-- record identifiers in reminder scheduling failure messages where avoidable.
+- signing credentials;
+- unnecessary raw sensitive exception messages/stack traces.
+
+Use safe operation/category and exception-type information where sufficient.
 
 See `docs/security/LOGGING_PRIVACY.md`.
 
-## Explicit outbound boundaries
+## 10. Explicit outbound boundaries
 
-CareNest can hand data to another destination only through an explicit user-facing operation such as:
+CareNest can hand data/control to external systems only through explicit user actions such as:
 
 - document export/share;
-- report export/share;
-- profile JSON export;
+- report/profile export/share;
 - appointment calendar export;
 - manual encrypted backup save/share;
-- opening legal/support/project-support web destinations.
+- opening repository/creator/legal/support web destinations.
 
-Once data is handed to another application/service/location, that destination has its own privacy/security policies.
+After handoff, the receiving app/service/location has its own privacy/security policy.
 
-## Reports and exports
+## 11. Application funding boundary
 
-CSV/PDF/JSON exports may contain sensitive plaintext organizational data.
+The distributed CareNest application source/package does **not** include or expose the external Buy Me a Coffee project-support destination.
 
-CareNest cannot enforce retention/security after a user saves or shares those files outside the application sandbox.
-
-Users should review exports before sharing.
-
-## Backup privacy
-
-Manual backups are encrypted, but they remain sensitive portable files.
-
-Privacy considerations include:
-
-- where the backup is stored;
-- who can access the destination;
-- how the password is stored;
-- whether old backups remain after local deletion;
-- whether a cloud-drive provider independently synchronizes the file.
-
-CareNest v1 has no remote password-recovery service.
-
-## Calendar privacy
-
-Appointment calendar export can transfer appointment data into an OS calendar or third-party calendar provider.
-
-After export, CareNest does not control whether that calendar provider syncs data remotely.
-
-## External project-support privacy
-
-CareNest can open:
+Repository documentation can contain the voluntary support URL:
 
 `https://buymeacoffee.com/sanskarIN`
 
-The action is voluntary and external.
+Opening that link occurs from repository/browser context, not as a current CareNest health-data application feature. Project support does not unlock health functionality or access local records.
 
-CareNest does not intentionally append profile IDs, medicine data, reminder data, document information, backup data, or app-lock data to the funding URL.
+## 12. Reports/exports
 
-The browser/provider becomes a separate privacy boundary after launch.
+PDF/CSV/JSON/document exports can contain sensitive plaintext organizational data.
 
-Funding does not unlock health functionality.
+Once a user saves/shares a copy outside application-controlled storage, CareNest cannot enforce its later retention/security or remotely revoke it.
 
-## GitHub/support privacy
+## 13. Calendar privacy
 
-Public issue trackers must not be used to upload real health records or secrets.
+Appointment calendar export can transfer information to an OS or third-party calendar provider. That provider may sync remotely according to its own policies.
 
-Users/reporters should not post:
+## 14. Backup privacy after export
 
-- health documents;
-- real backups;
-- backup passwords;
-- app-lock PINs;
-- private keys/signing credentials;
-- sensitive profile/medicine/appointment notes;
-- screenshots that expose private records unless they have been safely redacted.
+Deleting local CareNest data does not delete backup files stored in external locations. Users must manage those copies separately.
 
-The bug-report template includes privacy warnings.
-
-## Deletion model
-
-Deleting local CareNest data can remove the application's current local records/files according to the workflow, but it cannot recall copies previously exported to:
-
-- external file locations;
-- cloud drives;
-- calendar providers;
-- email/messaging apps;
-- screenshots;
-- OS/device backups;
-- manually retained encrypted CareNest backup files.
-
-The user must manage those copies separately.
-
-## Archive vs delete
+## 15. Archive versus delete
 
 Archive preserves local data but changes active behavior such as reminder eligibility.
 
-Delete is destructive local removal.
+Delete is destructive local removal. UI/documentation must not describe archive as deletion.
 
-Documentation/UI should not describe archive as deletion.
+## 16. Deletion limitations
 
-## No hidden analytics/telemetry
+Deleting/resetting CareNest-owned local data cannot reliably remove copies previously handed to:
 
-The local-first v1 runtime does not include an analytics/telemetry client as part of the product architecture.
+- external files/apps;
+- cloud drives;
+- calendars;
+- email/messaging;
+- screenshots/screen recordings;
+- OS/device backups;
+- manually retained encrypted backups.
 
-If telemetry is considered later, it requires:
+SQLite/OS physical remnants can also be subject to storage/device behavior; CareNest does not claim forensic secure erasure beyond implemented behavior.
 
-- explicit purpose;
-- consent design where appropriate;
-- data minimization;
-- retention/deletion policy;
-- privacy policy changes;
-- network permissions/endpoint review;
-- store disclosure changes;
-- security/threat-model review;
-- automated regression tests.
+## 17. OS/device copies
 
-## Data minimization principles for contributors
+Operating systems, enterprise management, device backup and snapshot systems can independently retain application data according to their configuration.
 
-When adding a field or feature:
+“Local-first” does not mean “the operating system can never back up data.”
 
-1. Store only what the feature needs.
-2. Prefer local processing for v1-compatible features.
-3. Do not put sensitive data into logs for debugging convenience.
-4. Keep notification payloads minimal.
-5. Require explicit export/share action.
-6. Define deletion behavior.
-7. Define backup/restore behavior.
-8. Update schema/privacy/store documentation if persistence changes.
-9. Add tests preventing accidental remote/network introduction when the feature remains local-first.
+## 18. Screenshots/accessibility tools
 
-## Medical-safety/privacy relationship
+Visible content can be captured by screenshots, screen recording, accessibility/overlay software or other privileged tooling according to device state.
 
-CareNest stores health-related organizational data, but it deliberately avoids clinical interpretation.
+A fully compromised device is outside the guaranteed privacy boundary.
 
-Privacy documentation must not imply that because the application is non-diagnostic the information is non-sensitive. User-entered medicine, appointment, reminder, and document records should still be treated as private.
+## 19. No hidden analytics/telemetry
 
-## Threat-model assumptions
+Current local-first runtime does not include an analytics/telemetry client as part of v1 architecture.
 
-CareNest cannot protect against every device-level threat.
+Future telemetry would require explicit purpose, data minimization, consent/retention/deletion policy, network/privacy/store disclosures, threat-model review and regression tests.
 
-Residual risks include:
+## 20. Contributor data-minimization rules
 
-- compromised/rooted/jailbroken device;
-- compromised OS secure storage;
-- screen capture/recording;
-- malicious accessibility/overlay software;
-- physical access to an unlocked device;
-- external destinations chosen by the user;
-- OS/cloud backup behavior;
-- weak app-lock PIN selection.
+When adding a field/feature:
 
-See `docs/security/THREAT_MODEL.md`.
+1. store only what the feature needs;
+2. prefer local processing for v1-compatible features;
+3. keep sensitive data out of logs;
+4. minimize notification payloads;
+5. require explicit export/share;
+6. define deletion and backup behavior;
+7. update schema/privacy/store docs if persistence changes;
+8. add source tests preventing accidental remote/network behavior when the feature remains local-first.
 
-## Store/privacy-disclosure rule
+## 21. Future cloud/remote features
 
-Store privacy/data-safety questionnaires must be completed from the behavior of the exact shipping build, not from aspirational marketing.
+Accounts/sync/remote caregiver access/server storage require new design for:
 
-If a future distribution build adds analytics, network sync, crash reporting, remote support, or other data transfer, the disclosures and privacy docs must change before submission.
+- purpose/consent;
+- authentication/authorization;
+- remote transfer/storage/retention;
+- encryption/key ownership;
+- revocation/deletion/export;
+- conflict/offline behavior;
+- incident response;
+- privacy/store disclosures.
 
-## Security incident/reporting boundary
+Do not treat such a feature as a minor infrastructure addition.
 
-Security reports should follow `SECURITY.md`.
+## 22. Security/reporting privacy
 
-Do not request real user health data as a default debugging strategy. Prefer synthetic reproduction data and privacy-safe diagnostics.
+Security reports follow `SECURITY.md`.
 
-## Related documentation
+Do not request or publicly post real user health records as a default debugging strategy. Prefer synthetic reproduction data and privacy-safe diagnostics.
+
+## 23. Current automated evidence boundary
+
+Current executable source verification is PR #74:
+
+- 331/331 core tests;
+- all configured Android/Windows/iOS-simulator/Mac-Catalyst Release builds;
+- all four store-candidate builds;
+- Store Inspection Artifacts;
+- CodeQL;
+- unsuppressed Dependency Audit.
+
+This evidence protects source policies but does not replace real-device/privacy presentation/store review.
+
+## 24. Related documentation
 
 - `PRIVACY.md`
 - `TERMS.md`
@@ -255,6 +232,7 @@ Do not request real user health data as a default debugging strategy. Prefer syn
 - `docs/privacy/DATA_LIFECYCLE.md`
 - `docs/architecture/DATA_STORAGE_AND_EXPORT.md`
 - `docs/architecture/BACKUP_AND_RESTORE.md`
+- `docs/security/SECURITY_MODEL.md`
 - `docs/security/THREAT_MODEL.md`
 - `docs/security/LOGGING_PRIVACY.md`
 - `docs/releases/STORE_SUBMISSION_CHECKLIST.md`
