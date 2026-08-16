@@ -1,62 +1,67 @@
-# CareNest Store Asset Guidance
+# CareNest Store Asset and Listing Guidance
 
-This document defines how to prepare CareNest visual assets and screenshots for public distribution while keeping privacy, branding, medical-safety, and store-policy boundaries accurate.
+**Release line:** `1.0.0-rc.1`
 
-Final store requirements can change. Always verify the current requirements for the exact distribution channel at submission time.
+This document defines how to prepare CareNest icons, screenshots, promotional images and store-listing content while preserving privacy, medical-safety, accessibility and package-policy boundaries.
 
-## Source assets
+Store requirements can change. Always review the current requirements for the exact distribution channel at submission time.
 
-Use version-controlled vector sources under the CareNest MAUI resources, including app icon/splash/brand variants.
+## 1. Current application-package boundary
 
-Relevant asset families include:
+The distributed CareNest application source/package intentionally contains **no external Buy Me a Coffee destination/card/command/artwork**.
 
-- adaptive app icon/foreground;
-- splash asset;
-- standard CareNest mark;
-- light-surface mark;
-- dark-surface mark;
-- monochrome/system mark;
-- compact CareNest project-support badge;
-- custom CareNest Buy Me a Coffee project-support vector artwork.
+Do not create store screenshots, listing copy or promotional graphics that imply a Buy Me a Coffee button exists inside the app.
 
-Do not share font files from development environments or use unlicensed third-party assets.
+Voluntary project support remains repository documentation/metadata only:
 
-## Store icon
+`https://buymeacoffee.com/sanskarIN`
 
-Render the CareNest app icon at each store-required size.
+Repository project support does not unlock health functionality, reminder priority/reliability, medical advice, emergency assistance or access to local records.
+
+## 2. Source assets
+
+Use the actual version-controlled application assets under `src/CareNest.App/Resources/`, including the current app icon, splash and CareNest mark variants present in source.
+
+Do not reintroduce removed packaged project-funding artwork merely to make a promotional image. The URL-bearing funding artwork was intentionally removed from the application package after package inspection found the external destination embedded in Windows payload bytes.
+
+Do not share development font files or use unlicensed third-party assets.
+
+## 3. Store icon
+
+Render the CareNest app icon at every store-required size.
 
 Guidelines:
 
-- no small text inside the store icon;
+- no small text inside the icon;
 - preserve safe margins;
+- verify masked/adaptive behavior where required;
 - verify appearance on light/dark launcher surfaces;
-- verify adaptive/masked icon behavior on Android;
-- verify monochrome/system icon requirements where applicable;
-- avoid a red cross/official medical-accreditation symbol.
+- avoid medical-accreditation imagery such as a red cross or symbols implying professional certification.
 
-The mark should communicate organization/care/privacy rather than medical certification.
+The visual identity should communicate organization, care, privacy and scheduling—not clinical authority.
 
-## Splash
+## 4. Splash
 
-Splash branding should be simple and fast-loading.
+Splash content should be simple, fast and privacy-safe.
 
-Allowed branding:
+Allowed content can include:
 
 - CareNest mark/name;
-- subtle `Made by the Sanskar` creator watermark where appropriate.
+- approved creator watermark such as `Made by the Sanskar` where appropriate.
 
-Do not place user data on splash surfaces.
+Never place user health information on splash artwork.
 
-## Feature/promotional graphic
+## 5. Promotional/feature graphic
 
-Suggested visual direction:
+A suitable direction is calm local-first organization using CareNest brand elements.
 
-- calm background;
-- CareNest shield/nest/calendar-check visual language;
-- product name;
-- short accurate phrase such as `Local-first health organization`.
+Accurate phrases can include:
 
-Avoid claims such as:
+- `Local-first health organization`;
+- `Organize reminders, appointments and documents locally`;
+- `Your schedules. Your device. Your records.`
+
+Avoid unsupported claims such as:
 
 - medically approved;
 - never miss a dose;
@@ -64,32 +69,34 @@ Avoid claims such as:
 - AI doctor;
 - dosage calculator;
 - treatment advisor;
-- interaction safety checker;
+- medication-interaction safety checker;
 - emergency assistant.
 
-These claims exceed the implemented product boundary.
+## 6. Screenshot data policy
 
-## Screenshots
-
-All public screenshots must use fictional/synthetic data.
+All public/store screenshots must use fictional/synthetic data.
 
 Never show:
 
 - real prescriptions;
 - real health documents;
-- real medicine notes for an identifiable person;
-- real appointments/clinician contact details;
+- identifiable medicine notes;
+- real appointments/clinician contact information;
 - real emergency contacts;
-- real backup filenames containing private data;
+- private backup filenames or paths;
 - private email/message content;
-- real user profile photos unless fully authorized/appropriate.
+- real user profile photos without appropriate authorization.
 
-Recommended screenshot set can cover:
+Use obviously fictional profile/medicine/document values that do not resemble a real person's health record.
 
-- onboarding/local-first statement;
+## 7. Recommended screenshot set
+
+A representative set can include:
+
+- onboarding/local-first and medical-limitation screen;
 - dashboard;
-- multiple family profiles;
-- medicine list/editor with clearly fictional values;
+- multiple local profiles;
+- medicines list/editor;
 - schedule editor;
 - upcoming reminders;
 - medication log;
@@ -97,187 +104,195 @@ Recommended screenshot set can cover:
 - encrypted document organizer with synthetic filenames;
 - reports/export screen;
 - settings/privacy/reminder diagnostics;
-- About/open-source/support screen.
+- About/legal/open-source/support-contact screen.
 
-## Screenshot copy
+Do **not** include an in-app BMC/project-funding screenshot because that feature is not part of the current distributed app package.
 
-Use accurate descriptions such as:
+## 8. Screenshot copy
+
+Accurate phrases include:
 
 - `Organize family health information locally`;
 - `Create reminders from your own schedule`;
 - `Keep imported documents encrypted locally`;
-- `Export your own reports and backups`.
+- `Export your own reports and backups`;
+- `No required CareNest account`.
 
-Do not imply CareNest chooses medicine timing/dosage for the user.
+Do not imply CareNest chooses medicine timing, dosage, treatment or clinical priority.
 
-## Notification screenshot safety
+## 9. Notification screenshots
 
 If showing a notification example:
 
 - use fictional data;
-- prefer generic notification labels;
-- do not imply guaranteed delivery;
-- do not show lock-screen private health content as a recommended configuration.
+- minimize health details;
+- do not imply delivery is guaranteed;
+- do not encourage sensitive lock-screen previews as a default;
+- reflect the actual notification wording shipped by the candidate build.
 
-## Reminder wording
+Marketing must distinguish deterministic CareNest schedule planning from OS-controlled notification delivery.
 
-Marketing/store text must preserve the distinction between:
+## 10. Reminder marketing boundary
 
-- deterministic CareNest schedule materialization; and
-- operating-system notification delivery.
+Operating-system permission, battery/background restrictions, force-stop/shutdown, clock/time-zone changes and platform policy can affect delivery.
 
-OS permissions, battery/background policy, force-stop/shutdown, and platform rules can affect delivery.
+Avoid slogans such as `Never miss a medicine again` or `Guaranteed reminders`.
 
-Avoid slogans such as `Never miss a medicine again` because they create an unsupported guarantee.
+## 11. Medical-safety listing boundary
 
-## Medical boundary
-
-Store assets/listings must not describe CareNest as providing:
+Store assets/descriptions must not describe CareNest as providing:
 
 - diagnosis;
 - dosage calculation/inference;
 - treatment recommendations;
-- medication-interaction checks;
-- clinical risk scores;
+- clinical medication-interaction checking;
+- clinical risk scoring;
 - emergency services;
-- verified medication adherence.
+- verified adherence.
 
 CareNest is an organizational tool based on explicit user-entered information.
 
-## Privacy/local-first claims
+## 12. Privacy/local-first claims
 
-Accurate v1 claims can describe:
+Accurate current v1 claims include:
 
-- no required CareNest account;
-- no required CareNest backend;
-- no automatic CareNest cloud sync/upload;
+- no required CareNest account/backend;
+- no automatic CareNest cloud synchronization/upload;
 - local SQLite structured records;
-- encrypted imported document payloads;
-- manual password-encrypted backups;
-- explicit user-controlled exports.
+- separately encrypted imported document payloads;
+- password-encrypted manual backups;
+- explicit user-controlled exports/shares.
 
-Do not claim whole-database encryption because current SQLite storage does not provide that guarantee.
+Do not claim:
 
-Do not claim that the OS never backs up application data; platform/device settings can independently affect backups.
+- transparent whole-database encryption;
+- that the OS/device can never back up application data;
+- that exported/shared copies remain under CareNest control.
 
-## App-lock claims
+## 13. App-lock claims
 
 Accurate wording:
 
-`Optional local app lock` or equivalent.
+`Optional local app lock`
 
-Do not advertise app lock as:
+Do not advertise it as:
 
-- full database encryption;
+- whole-database encryption;
 - device encryption;
 - protection against a rooted/jailbroken/fully compromised device.
 
-## Buy Me a Coffee / project-support surfaces
+## 14. Repository project support
 
-Canonical URL:
+Repository support metadata/documentation can mention:
 
 `https://buymeacoffee.com/sanskarIN`
 
-Support must be presented as voluntary project support.
+This is not a current in-app store surface.
 
-Do not present it as:
+Do not describe project support as:
 
 - purchase of medical functionality;
 - premium reminder delivery;
 - emergency support;
 - priority health support;
-- access to local CareNest data;
-- a subscription required to use core health-organizational functionality.
+- access to user records;
+- a subscription required for core organizational features.
 
-Custom CareNest support artwork must not be represented as official Buy Me a Coffee brand artwork.
+## 15. Store-policy review
 
-## Store policy review for external support link
+At submission time:
 
-Before including an external support/donation link in a store-distributed binary or listing:
+1. review current Apple App Store requirements relevant to the actual binary/listing;
+2. review current Google Play requirements relevant to the actual binary/listing;
+3. review current Microsoft/Windows distribution requirements where used;
+4. review health-organizer wording and privacy/data-safety declarations;
+5. verify screenshots/listing match the exact candidate package;
+6. record the review date/source/conclusion in release evidence.
 
-1. verify current Apple App Store rules for the exact category/channel;
-2. verify current Google Play rules for the exact category/channel;
-3. verify Windows/other channel requirements as applicable;
-4. document the decision in release evidence/checklists.
+The current application binary does not need an in-app funding-link toggle because the external project-funding destination is absent from application source/package by product policy.
 
-If a channel disallows the in-app link:
+## 16. Store descriptions
 
-- remove/disable the in-app action for that channel;
-- keep repository funding links where permitted;
-- do not relabel the funding action as a medical purchase to bypass policy.
+Short/long descriptions must match the shipping binary.
 
-## Store descriptions
+Do not advertise deferred features such as:
 
-The long/short descriptions must match the shipping binary.
+- automatic cloud synchronization;
+- remote caregiver collaboration;
+- required accounts;
+- diagnosis;
+- clinical decision support;
+- clinical interaction/risk scoring.
 
-Include accurate capabilities only.
+## 17. Privacy/data-safety forms
 
-If a feature is deferred (cloud sync, remote caregiver collaboration, accounts), do not advertise it as available.
+Complete forms from actual runtime behavior.
 
-## Privacy/data-safety forms
-
-Complete forms based on actual runtime behavior.
-
-Re-review if a later build adds:
+Re-review if a future build adds:
 
 - analytics;
-- crash reporting;
-- cloud sync;
-- account/authentication;
+- crash reporting/telemetry;
+- cloud synchronization;
+- accounts/authentication;
 - remote support;
 - server storage;
-- new third-party SDKs.
+- new third-party SDKs;
+- new export/share destinations.
 
-Current v1 documentation should not be reused blindly for a future network-enabled build.
+Do not blindly reuse current v1 declarations after a network/data-flow change.
 
-## Permission declarations
+## 18. Permission/capability descriptions
 
-Store permission/capability explanations must match actual target configuration.
+Store text must match actual target configuration.
 
-Examples to review:
+Review, as applicable:
 
 - notification permission;
 - Android alarm capabilities;
-- file/media/document picker access;
-- calendar export/interaction;
+- file/document picker access;
+- calendar export/integration;
 - Apple entitlements;
 - Windows capabilities.
 
-Do not request/store permissions solely for marketing screenshots.
+Do not request permissions solely to support marketing screenshots.
 
-## Platform screenshot sizes
+## 19. Platform screenshot sizing
 
-Generate platform/store-required dimensions from the final packaged UI/device classes rather than stretching one source screenshot.
+Generate required store dimensions from representative final candidate UI/device classes rather than stretching a single screenshot.
 
 Verify:
 
-- phone portrait/landscape if required;
-- tablet/iPad where required;
-- desktop window sizes where relevant;
+- required phone orientations/sizes;
+- tablet/iPad sizes where applicable;
+- desktop window sizes where applicable;
 - no clipped text;
-- correct status bar/system UI presentation.
+- correct system UI/status bar framing;
+- large-text/localization layouts where represented.
 
-## Localization
+## 20. Localization in listings
 
 If a store listing is localized:
 
-- translate marketing text with the same medical/privacy limits;
-- use localized screenshots only after that app locale is actually supported/tested where required;
-- do not advertise a language that is not shipped.
+- translate marketing text with the same medical/privacy boundaries;
+- use localized screenshots only for shipped/tested locales where appropriate;
+- do not advertise a language not actually supported;
+- review date/time formatting and text expansion.
 
-Current app language in `1.0.0-rc.1`: English.
+Current documented app language for `1.0.0-rc.1`: English unless the source/release candidate explicitly adds another tested locale.
 
-## Accessibility in store imagery
+## 21. Accessibility in store imagery
 
-Screenshots should demonstrate legible UI rather than extremely dense text.
+Screenshots should show readable, uncrowded UI.
 
-Do not hide accessibility settings/large-text compatibility in the product claim if manual verification remains incomplete.
+Do not claim complete accessibility certification merely because source semantics exist. Real screen-reader, large-text, keyboard/focus, contrast and reduced-motion validation remains a release gate.
 
-## Creator/support metadata
+## 22. Creator/support metadata
 
 Product: **CareNest**
 
-Creator profile: `https://www.github.com/sanskarIN`
+Creator: `https://www.github.com/sanskarIN`
+
+Repository: `https://github.com/sanskarIN/CareNest`
 
 Business: `sanskarin@outlook.in`
 
@@ -285,31 +300,57 @@ Support: `supportramsandesh@gmail.com`
 
 Watermark: `Made by the Sanskar`
 
-Voluntary support: `https://buymeacoffee.com/sanskarIN`
+Repository-only voluntary support: `https://buymeacoffee.com/sanskarIN`
 
-## Release asset checklist
+## 23. Current application identity
+
+- Application title: `CareNest`;
+- Application ID: `com.sanskar.carenest`;
+- Display version: `1.0.0-rc.1`;
+- Application version/build: `1`.
+
+Verify final store metadata against the exact signed package rather than assuming documentation is sufficient.
+
+## 24. Package inspection
+
+Before production submission record:
+
+- exact source SHA;
+- package filename/identity/version;
+- SHA-256;
+- signing/notarization/store provenance;
+- forbidden external-funding marker scan result;
+- installed About/legal/support-contact inspection;
+- smoke-test result.
+
+Internal CI inspection artifacts are not automatically store-ready production packages.
+
+## 25. Release asset checklist
 
 Before submission verify:
 
-- final app icon rendered from current source;
-- splash correct;
+- final icon/splash match current source;
 - screenshots use fictional data;
-- screenshots match exact shipping build/version;
+- screenshots match the exact shipping build/version;
 - no private health data;
 - no unsupported medical claims;
 - no guaranteed reminder claim;
 - no whole-database encryption claim;
-- support-link policy reviewed;
+- no screenshot/listing implying a removed in-app BMC funding surface;
 - privacy/data-safety forms match runtime;
-- listing links point to current privacy/terms/security/support docs;
-- package/bundle identity matches signed artifact.
+- support/privacy/terms/security links are current;
+- package/bundle identity matches the signed artifact;
+- accessibility/store-policy review is documented;
+- final package checksums/provenance are recorded.
 
 ## Related documentation
 
 - `docs/design/DESIGN_SYSTEM.md`
 - `docs/design/ACCESSIBILITY.md`
 - `docs/design/LOCALIZATION.md`
+- `docs/PLATFORM_BEHAVIOR_MATRIX.md`
 - `docs/releases/STORE_SUBMISSION_CHECKLIST.md`
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md`
 - `docs/releases/RELEASE_PROCESS.md`
 - `PRIVACY.md`
 - `PROJECT_STATUS.md`
