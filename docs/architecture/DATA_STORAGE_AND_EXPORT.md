@@ -1,226 +1,228 @@
 # CareNest Data Storage, Export, and Deletion Model
 
-CareNest v1 is local-first. This document explains where major data categories live, how they leave the application boundary, and what maintainers/users must understand about deletion and portability.
+**Release line:** `1.0.0-rc.1`  
+**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-## Trust boundary
+This document defines where CareNest data lives, when it is encrypted, how copies leave the application boundary and what deletion can/cannot guarantee.
 
-The primary CareNest trust boundary is the installed application plus the operating-system application sandbox and platform secure-storage facilities.
+## 1. Storage categories
 
-No CareNest backend/account is required in v1.
+CareNest uses multiple storage protections rather than one universal storage mechanism.
 
-## Structured records
+### Structured SQLite data
 
-Structured records are stored in a local SQLite database.
+Examples:
 
-Examples include:
-
-- profiles;
-- emergency contacts;
-- medicines;
-- medicine schedules;
-- schedule times;
-- reminder occurrences;
-- medication-log entries;
+- profiles/contacts;
+- medicines/schedules/times;
+- reminder occurrences/logs;
 - appointments;
-- document metadata;
-- tags/document-tag relationships;
+- document metadata/tags/folders;
 - stock adjustments;
-- settings;
-- backup metadata;
-- audit entries;
-- schema information.
+- settings/audit/backup metadata.
 
-The application does **not** claim transparent whole-database encryption at rest. The database relies primarily on the application sandbox/device protections.
+Protection: application sandbox/device/OS security plus application/repository access controls. CareNest does **not** claim transparent whole-database encryption.
 
-## Sensitive imported documents
+### Encrypted document payloads
 
-Imported health documents are stored through the encrypted document-vault path.
+Imported application-owned document bytes are stored separately from metadata using authenticated encryption.
 
-The document payload is encrypted independently from the SQLite metadata record. The per-installation document key is stored through platform secure secret storage.
+### Secure-storage material
 
-Database metadata can identify/organize a document without storing the original document bytes directly in the SQLite row.
+Small secret/configuration material such as the document master key and app-lock derived material uses platform secure storage where applicable.
 
-## App-lock secrets
+### Application cache/staging
 
-App-lock material is kept through platform secure secret storage.
+CareNest can create app-owned temporary/staging files during report/document/backup operations. Cleanup is best effort and lifecycle-limited while CareNest still owns the path.
 
-CareNest stores a salt/verifier/enabled state rather than a plaintext PIN.
+### External copies
 
-App lock is a local privacy barrier and is not a claim that every SQLite field is encrypted.
+Exports, shares, calendar entries, user-selected backups, screenshots and OS/device backups are outside CareNest-controlled storage after handoff/capture.
 
-## Backup files
+## 2. SQLite schema/storage boundary
 
-Manual CareNest backups are user-created portable files protected using password-derived authenticated encryption.
+SQLite stores structured organizational records and metadata, not the encrypted imported document bytes themselves.
 
-A backup may contain enough protected recovery material to recreate structured local records and restore encrypted document access on a clean installation.
+Database design includes explicit migrations, relationships/indexes, transactions where required, WAL/snapshot/integrity behavior and repository abstraction.
 
-After a backup is written to a user-selected location, that location becomes an external storage/privacy boundary.
+Current source dependency security is unsuppressed/green, but packaged existing-data compatibility remains a separate production gate.
 
-## Notification registrations
+## 3. Document-vault boundary
 
-Platform notification systems receive the minimum request data needed for supported reminder delivery.
-
-Notification labels are generic by default. Document contents and sensitive free-text health details are not intended to be embedded in routine notification payloads.
-
-The OS controls final notification delivery/display behavior.
-
-## Logs and diagnostics
-
-Routine CareNest diagnostic logging is privacy-redacted.
-
-Do not log:
-
-- health-document contents;
-- backup passwords;
-- plaintext app-lock PINs;
-- encryption keys;
-- private free-text health notes;
-- full exception messages/stack traces from user-data operation paths;
-- health-record identifiers in reminder scheduling failure messages where avoidable.
-
-See `docs/security/LOGGING_PRIVACY.md`.
-
-## Profile export
-
-CareNest supports explicit per-profile structured JSON export.
-
-An export is a user-controlled copy of local data.
-
-Once written/shared:
-
-- it is no longer protected solely by the CareNest application sandbox;
-- destination application/service/storage policies apply;
-- the user should inspect the destination before sharing sensitive information.
-
-## CSV exports
-
-Supported report/export categories include organizational CSV outputs such as:
-
-- upcoming schedule;
-- medication log;
-- missed reminders;
-- stock/refill;
-- appointment history;
-- document list.
-
-CSV files may be readable by many applications and therefore should be treated as potentially sensitive plaintext exports.
-
-## PDF reports
-
-CareNest can generate informational PDF summaries.
-
-Reports carry non-clinical/privacy limitations and must not present diagnosis, treatment recommendation, dosage inference, or clinical risk scoring.
-
-A PDF saved/shared outside CareNest is governed by its destination.
-
-## Document export/share
-
-Document export is explicit.
-
-Typical boundary transition:
+Import flow:
 
 ```text
-Encrypted CareNest document
-  -> explicit user export/share
-  -> decrypted/export copy
-  -> platform share/file destination
+User-selected source file
+  -> application/import service
+  -> authenticated encryption
+  -> CareNest-owned encrypted vault payload
+  -> SQLite metadata/tag/folder record
 ```
 
-The exported copy is no longer protected by the CareNest encrypted document-vault key unless the destination applies its own protection.
+Original external source file remains governed by its original location; CareNest does not claim to delete it.
 
-## Calendar export
-
-Appointment calendar export is explicit user action.
-
-After export, calendar data may be stored/synchronized by the target calendar application/provider. That behavior is outside the CareNest local-first storage boundary.
-
-## External project-support link
-
-The fixed project-support destination is:
-
-`https://buymeacoffee.com/sanskarIN`
-
-CareNest does not intentionally append profile, medicine, reminder, document, backup, or app-lock data to that URL.
-
-After the user opens the destination, the browser/external provider is a separate trust/privacy boundary.
-
-## Profile deletion
-
-Profile deletion is destructive and should remove/clean related local records according to repository relationship/cascade behavior.
-
-Because the application may also have encrypted document files associated with records, destructive-flow testing must verify both database relationship cleanup and expected file cleanup behavior.
-
-Users who want a copy should export or create an encrypted backup before deletion.
-
-## Document deletion
-
-Deleting a document should remove the intended local document record and protected document file according to the application workflow.
-
-Manual release testing must verify there are no unintended orphaned plaintext exports/caches created by normal operations.
-
-Previously exported copies outside CareNest cannot be remotely recalled by deleting the CareNest record.
-
-## App reset
-
-A local reset/destructive clear operation affects the installed application's local state. It cannot erase copies the user previously exported to other apps/services/locations.
-
-## Backup deletion
-
-Deleting CareNest local records does not automatically delete manually created backup files stored elsewhere.
-
-Users must manage backup retention/deletion at the destination where those backups were saved.
-
-## OS-level backups and device copies
-
-Operating systems or device-management tools may independently back up application data depending on platform/user/device policy.
-
-CareNest documentation should not claim that deleting a local record necessarily erases every historical copy that an OS or external backup system may have created.
-
-## Screenshots and notification previews
-
-CareNest cannot guarantee control over screenshots, screen recording, accessibility services, or OS notification-preview behavior on a compromised/misconfigured device.
-
-Use generic notification labels where privacy is important and configure device-level notification privacy appropriately.
-
-## Data lifecycle summary
-
-Data can move through these stages:
+## 4. Document export boundary
 
 ```text
-User input/import
-  -> local structured/encrypted storage
-  -> local editing/reminder/report processing
-  -> optional explicit export/share/backup/calendar/support action
-  -> external destination boundary
-  -> local deletion/archive/reset where requested
+Encrypted CareNest payload
+  -> decrypt to controlled output/staging
+  -> explicit user-selected save/share/open handoff
+  -> external plaintext/portable copy
 ```
 
-CareNest v1 does not add an automatic CareNest cloud-upload stage.
+After handoff, CareNest cannot remotely revoke or enforce retention/security of that external copy.
 
-## Developer requirements
+## 5. Report/profile export boundary
 
-Any new feature that handles user data must answer before merge:
+Supported portable outputs such as CSV/PDF/JSON are created only after explicit user action.
 
-- What data is created?
-- Where is it stored?
-- Is it encrypted or sandbox-protected only?
-- Can it appear in logs/notifications?
-- How is it exported?
-- How is it deleted?
-- Does it cross the local-device boundary?
-- Does it require new permissions?
-- Does it alter backup/restore compatibility?
-- Does it alter privacy/store disclosures?
+Safety/privacy controls include:
 
-Features that add remote transfer/synchronization require a new architecture and threat/privacy review.
+- informational/non-clinical wording;
+- formula-like spreadsheet content neutralization where applicable;
+- staged/atomic final-file behavior where documented;
+- cleanup of app-owned temporary output best effort;
+- external destination becomes responsible after handoff.
+
+## 6. Appointment calendar export
+
+Calendar export transfers explicit appointment information to the OS/provider selected by the user.
+
+That provider can synchronize/store the calendar entry under its own privacy/security policy. CareNest cannot delete every provider-side copy by deleting the local appointment.
+
+## 7. Backup storage boundary
+
+Manual backup flow:
+
+```text
+Local SQLite snapshot + required document recovery state
+  -> validated package
+  -> password-derived authenticated encryption
+  -> user-selected external backup file
+```
+
+The resulting backup file is encrypted, but the user controls its destination/password/retention. CareNest has no server-side password recovery.
+
+## 8. Restore boundary
+
+Restore reads an external encrypted backup, validates version/authentication/topology/database/key state and stages/replaces local data through documented rollback logic.
+
+Wrong password, tamper, truncation, trailing data or malformed topology fails closed.
+
+## 9. App-lock data
+
+App-lock PIN plaintext is not intended to be stored. Derived verifier/salt/enabled state uses secure storage where applicable.
+
+App lock protects UI access but does not convert SQLite into whole-database encryption.
+
+## 10. Reminder/OS state boundary
+
+Reminder data exists both as persisted CareNest occurrences and as OS scheduled-request state.
+
+OS request state is not CareNest database storage and cannot be atomically committed with SQLite. Reconciliation/cancellation/rebuild handles drift.
+
+## 11. Logging/diagnostic data
+
+CareNest diagnostics should avoid raw health text, document/backup contents, PIN/password/key material and unnecessary sensitive exception details.
+
+Diagnostic exports remain subject to user-selected external-copy risk after handoff.
+
+## 12. Local-first network boundary
+
+Current v1 does not automatically upload ordinary health-organizer data to a CareNest backend/cloud service and does not include a hidden analytics/telemetry client.
+
+Network/cloud features would create new storage/retention/deletion/authentication boundaries and require a new design review.
+
+## 13. Fixed external web links
+
+The application can explicitly open fixed normal repository/creator/privacy/terms/security/support destinations as implemented.
+
+These actions must not attach local health/profile/document/reminder/backup/app-lock data automatically.
+
+The external Buy Me a Coffee destination is **not** present in the current distributed application runtime/package. It exists only in repository support documentation/metadata.
+
+## 14. Archive behavior
+
+Archive preserves local records while changing active behavior. It is not deletion.
+
+Examples include archived profiles/medicines becoming ineligible for automatic reminder materialization according to current rules.
+
+## 15. Delete behavior
+
+Explicit record deletion removes intended CareNest-owned current records/files and coordinates related reminder/platform cleanup where required.
+
+Deletion cannot guarantee removal of external copies already exported/shared/synchronized/captured/backed up outside CareNest.
+
+## 16. Full local reset
+
+Full reset is intended to remove current CareNest-owned local application data such as structured database/files/settings/secure material according to the documented cleanup lifecycle.
+
+It cannot reliably erase:
+
+- manual backup files stored externally;
+- exported reports/documents;
+- calendar-provider copies;
+- screenshots/screen recordings;
+- OS/device/cloud backups outside CareNest control;
+- forensic remnants beyond implemented/OS behavior.
+
+## 17. Uninstall behavior
+
+Platform uninstall can remove app-owned data according to OS behavior, but external copies and OS/device backups can remain.
+
+Do not claim uninstall securely erases every physical or remotely synchronized copy.
+
+## 18. OS/device backup boundary
+
+The operating system, enterprise management, cloud/device backup or snapshot features can independently retain application data.
+
+Local-first means no required CareNest server—not that the OS can never back up local files.
+
+## 19. Privacy classification summary
+
+| Data | Primary location | CareNest encryption claim | External-copy risk |
+|---|---|---|---|
+| Structured profile/medicine/schedule/etc. | Local SQLite | No whole-DB encryption claim | OS/device backup, screenshots, exports |
+| Imported document payload | CareNest vault file | Authenticated encrypted payload | Original/import source and explicit exports |
+| Document metadata | SQLite | No whole-DB encryption claim | Exports/screenshots/OS backup |
+| App-lock verifier/key settings | Secure storage where applicable | Derived/secret material protected by platform store | Compromised device/secure store |
+| Manual backup | User-selected external file | Password-authenticated encryption | Destination/provider/password custody |
+| Reports/exports | User-selected external destination | Generally plaintext portable output | Destination owns copy |
+| OS reminder request | OS notification/alarm subsystem | OS-managed | OS history/preview/device state |
+
+## 20. Data-change checklist
+
+When adding/changing a stored category:
+
+1. define owning layer/store;
+2. define sensitivity and encryption claim;
+3. update schema/migration where needed;
+4. define backup/restore behavior;
+5. define export/share behavior;
+6. define deletion/reset behavior;
+7. define logging restrictions;
+8. update privacy/security/store documentation;
+9. add tests;
+10. perform packaged compatibility if persistence format/provider behavior changes.
+
+## 21. Current release evidence
+
+PR #74 source head:
+
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+
+Merged executable source:
+
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+
+Current automated verification includes 331/331 tests plus configured platform/store/security/dependency/inspection gates. Real packaged data compatibility remains open until actual evidence is recorded.
 
 ## Related documents
 
-- `PRIVACY.md`
-- `docs/privacy/DATA_LIFECYCLE.md`
 - `docs/privacy/PRIVACY_MODEL.md`
-- `docs/security/THREAT_MODEL.md`
-- `docs/security/LOGGING_PRIVACY.md`
-- `docs/architecture/BACKUP_AND_RESTORE.md`
+- `docs/privacy/DATA_LIFECYCLE.md`
 - `docs/architecture/DATABASE_SCHEMA.md`
-- `docs/releases/MANUAL_TEST_MATRIX.md`
+- `docs/architecture/DOCUMENT_VAULT.md`
+- `docs/architecture/BACKUP_AND_RESTORE.md`
+- `docs/security/SECURITY_MODEL.md`
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md`
