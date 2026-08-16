@@ -1,19 +1,22 @@
 # CareNest Maintenance and Operations Manual
 
-This manual defines how CareNest should be maintained after implementation work is complete. It applies to routine development, bug fixes, dependency changes, persistence/crypto changes, platform changes, documentation changes, verification, release preparation, and hotfixes.
+**Release line:** `1.0.0-rc.1`  
+**Current verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-CareNest is a local-first organizational health app. Maintenance must preserve its non-clinical boundary and must not silently introduce accounts, cloud synchronization, telemetry, diagnosis, dosage inference, treatment recommendations, interaction checking, risk scoring, or guaranteed notification-delivery claims.
+This manual governs routine maintenance, defect correction, dependency changes, persistence/crypto changes, platform changes, documentation work, verification, release preparation, incident response and hotfixes.
+
+CareNest is a local-first organizational health app. Maintenance must preserve the non-clinical boundary and must not silently introduce accounts, cloud synchronization, telemetry, diagnosis, dosage inference, treatment recommendations, clinical interaction/risk scoring or guaranteed notification-delivery claims.
 
 ## 1. Maintainer identity
 
-Requested repository-local Git identity:
+Repository-local convention:
 
 ```bash
 git config --local user.name "Sanskar"
 git config --local user.email "sanskarin@outlook.in"
 ```
 
-Preferred helpers:
+Helpers:
 
 ```bash
 build/scripts/setup-git.sh
@@ -23,45 +26,53 @@ build/scripts/setup-git.sh
 ./build/scripts/setup-git.ps1
 ```
 
-The helper scripts validate the repository root and configured values and fail on native Git errors.
+GitHub/API/connector commits should be described using actual commit metadata.
 
-Authenticated GitHub web/API/connector commits can use the GitHub account identity. Do not claim an arbitrary author email unless the actual commit metadata supports it.
+## 2. Maintenance cycle
 
-## 2. Daily/routine maintenance cycle
+For normal work:
 
-For normal repository maintenance:
-
-1. inspect current `main` and open pull requests/issues;
-2. identify whether a change affects runtime, tests, project/package/workflow/platform/build-script source, or documentation only;
-3. reproduce a reported defect with fictional/synthetic data;
-4. add the smallest appropriate regression test when possible;
-5. implement the correction at the lowest correct architectural layer;
+1. inspect current `main`, open PRs/issues and current status;
+2. classify whether the change affects runtime, persistence, crypto, platform, project/package/workflow/build scripts, tests or documentation only;
+3. reproduce defects with fictional/synthetic data;
+4. add the lowest-suitable regression test;
+5. implement at the lowest correct architecture layer;
 6. run targeted tests;
-7. run the full relevant test projects;
-8. run formatting;
-9. run dependency audit when package/restore behavior can change;
-10. run affected platform builds;
-11. update documentation and changelog/status evidence;
-12. create an exact-head verification checkpoint when the verified source boundary changed;
-13. never mark manual/device/store/signing evidence complete unless it was actually performed.
+7. run full affected suites;
+8. run formatting/quality gate;
+9. run unsuppressed dependency audit when restore/package behavior changes;
+10. run affected MAUI targets;
+11. update all related documentation;
+12. create fresh exact-source verification when the executable/test/build/workflow boundary changes;
+13. never mark manual/device/store/signing evidence complete without performing it.
 
-## 3. Issue triage
+## 3. Sources of truth
 
-Classify incoming reports before changing code.
+Use:
+
+- `PROJECT_STATUS.md` — current release state;
+- `docs/releases/NEXT_STEPS.md` — remaining production work;
+- latest exact-source verification record — current automated evidence;
+- `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — whole-project reference;
+- `docs/DOCUMENTATION_CATALOG.md` — navigation/authority map;
+- specialized subsystem docs — implementation detail;
+- `docs/history/` — historical snapshots.
+
+## 4. Issue triage
 
 ### Correctness
 
 Examples:
 
-- reminder state inconsistent with platform request;
+- reminder persisted/platform inconsistency;
 - stale data after edit/delete;
 - invalid UTC/time-zone behavior;
 - failed rollback/cleanup;
-- persistence corruption or migration issue;
-- export/backup restore failure;
-- UI state not refreshing after successful mutation.
+- database migration/corruption issue;
+- backup/export restore failure;
+- stale UI after successful mutation.
 
-Correctness defects should receive a regression test at the lowest useful layer.
+Correctness defects should receive regression tests.
 
 ### Security/privacy
 
@@ -73,248 +84,203 @@ Examples:
 - backup/document authentication issue;
 - key handling problem;
 - unsafe external data transmission;
-- committed credential/signing artifact.
+- committed signing/credential material.
 
-Treat these as release-blocking until scoped and resolved or explicitly tracked with an approved temporary risk decision.
+Treat these as release-blocking until resolved or explicitly risk-tracked.
 
 ### Platform limitation
 
 Examples:
 
 - Android battery/alarm restriction;
-- Windows closed-app notification limitation;
-- Apple permission/OS behavior;
-- device-specific background scheduling.
+- Windows closed-app reminder limitation;
+- Apple notification permission/OS policy;
+- device/vendor background scheduling.
 
-Distinguish a product defect from an OS/platform limitation. Document the limitation rather than promising delivery the platform cannot guarantee.
+Distinguish product defect from platform constraint; do not promise delivery the OS cannot guarantee.
 
 ### Documentation
 
-Documentation-only corrections do not change runtime behavior, but policy/source contract tests may still depend on documentation content. Significant documentation alignment can therefore justify a marker-only verification.
+Documentation-only changes do not intentionally alter runtime but can affect source-policy tests/links/contracts. Keep factual claims tied to exact source evidence.
 
 ### Feature request
 
-Check whether the request violates current v1 boundaries. Networked accounts/sync/caregiver collaboration, analytics, clinical interpretation, or medical decision support require a new architecture/privacy/security design before implementation.
+Networked accounts/sync/caregiver collaboration, analytics, clinical interpretation or medical decision support require new architecture/privacy/security/safety design before implementation.
 
-## 4. Bug-fix workflow
+## 5. Bug-fix workflow
 
-For a confirmed defect:
+1. reproduce with safe synthetic data;
+2. identify the failing invariant;
+3. write a regression test where practical;
+4. fix the smallest correct boundary;
+5. verify failure and success paths;
+6. run related integration/source-policy tests;
+7. run affected platform builds;
+8. update docs/status/evidence as appropriate;
+9. if verification-relevant source changed, verify the corrected exact source.
 
-1. record the exact failing scenario using synthetic data;
-2. decide whether the lowest meaningful regression belongs in UnitTests, IntegrationTests, or UiTests/source contracts;
-3. add the regression test first or in the same logical change;
-4. implement the fix without weakening analyzers/audit/quality gates;
-5. run the targeted test;
-6. run all affected suites;
-7. inspect cancellation/failure paths, not only the success path;
-8. update architecture/security/testing docs if behavior changed;
-9. update `CHANGELOG.md` and `what_changed.md` for substantial work;
-10. perform exact-head verification before promoting the new source baseline.
+Do not broaden refactoring during a release-blocking fix unless required for correctness.
 
-## 5. Reminder/platform changes
+## 6. Reminder maintenance
 
-Reminder work is unusually sensitive because SQLite state and operating-system scheduled requests are independent surfaces.
+Preserve:
 
-Before changing reminder logic, preserve these current invariants:
+- explicit user-entered schedules only;
+- profile/medicine/schedule ownership;
+- active/archive state handling;
+- explicit time-zone identifiers;
+- UTC planning windows;
+- deterministic DST rules;
+- stable occurrence identity;
+- valid future UTC snooze;
+- `SnoozedUntilUtc` as effective due time;
+- stale OS request reconciliation;
+- cancellation before replacement/suppression/invalidation;
+- cancellation-first handled actions;
+- retryable cancellation failure;
+- persistence/platform compensation and restoration/rebuild.
 
-- schedule intent comes only from explicit user-entered values;
-- no medicine text is parsed into dosage/frequency advice;
-- planner/rebuild transport boundaries use explicit UTC;
-- snooze requires explicit future UTC;
-- `SnoozedUntilUtc` is the effective due time for a valid snooze;
-- old platform request cancellation occurs before replacement/suppression/invalidation when a previous request exists;
-- handled Taken/Skipped/Delayed/Missed/Snoozed/Cancelled transitions are cancellation-first;
-- cancellation failure remains retryable;
-- later essential failure attempts non-cancelled restoration/rebuild;
-- medicine/profile deletion cancels future platform requests before database cascade and compensates if persistence fails;
-- appointment database/platform scheduling uses compensation rather than pretending to be one transaction;
-- logging remains privacy-minimized.
+Update `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` if the contract changes.
 
-Required review after a reminder change:
+## 7. Date/time maintenance
 
-- unit/service tests;
-- reminder reconciliation integration tests;
-- UI/source contracts;
-- Android/Windows/Apple platform compile;
-- manual target checks if platform behavior changed;
-- notification/platform architecture docs.
+- do not relabel local/unspecified ticks as UTC;
+- appointments require true UTC starts;
+- schedule planning keeps explicit time-zone context;
+- invalid DST-gap input must not silently become another local time;
+- snooze deadlines are explicit UTC values.
 
-## 6. Database/schema changes
+## 8. Schema/database changes
 
-CareNest currently uses versioned local SQLite storage.
+For a schema change:
 
-For every schema change:
+1. add an ordered migration;
+2. coordinate DDL/version state transactionally where required;
+3. preserve supported prior upgrade paths;
+4. update `DATABASE_SCHEMA.md`;
+5. add integration tests;
+6. review relationship/cascade cleanup;
+7. review backup/restore/export implications;
+8. update privacy/data lifecycle if categories change;
+9. run packaged compatibility before production.
 
-1. assign the next ordered schema version;
-2. implement migration without destroying supported prior-version data;
-3. coordinate migration DDL and schema-version update transactionally;
-4. add migration/repository integration coverage;
-5. preserve WAL/busy-timeout/snapshot behavior;
-6. review backup/restore compatibility;
-7. update `docs/architecture/DATABASE_SCHEMA.md`;
-8. update privacy/data-lifecycle docs if a new data category is introduced;
-9. update test/release compatibility matrices;
-10. perform packaged upgrade testing with fictional prior-version data before production promotion.
+## 9. SQLite dependency changes
 
-Do not use a clean fresh-install database as the only evidence for a migration change.
+Current source security path is unsuppressed. Do not restore the old `GHSA-2m69-gcr7-jv3q` suppression.
 
-## 7. SQLite native/provider dependency changes
+For SQLite package/provider/native changes:
 
-SQLite package security and stored-data compatibility are separate properties.
+- follow `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`;
+- audit both platform-neutral and MAUI graphs;
+- run tests/platform builds;
+- inspect resolved transitive graph;
+- perform packaged existing-data/encrypted-data compatibility;
+- update risk/configuration docs.
 
-Current verified graph intent:
+Dependency security and packaged compatibility are separate concerns.
 
-- `sqlite-net-pcl` `1.9.172`;
-- `SQLitePCLRaw.bundle_green` `2.1.11`;
-- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
-- Android native/provider leaves and selected providers at `2.1.12`;
-- central transitive pinning enabled;
-- no former exact `GHSA-2m69-gcr7-jv3q` suppression.
+## 10. Document-vault changes
 
-For a provider/native update:
+Review:
 
-1. review upstream package/release/security information;
-2. update central package pins deliberately;
-3. restore and inspect resolved graphs;
-4. run unsuppressed dependency audit;
-5. run all core tests;
-6. build all four platform targets;
-7. verify packaged upgrade of representative fictional existing data;
-8. verify SQLite integrity and all structured data categories;
-9. verify reminder rebuild/reconciliation;
-10. verify encrypted document access through existing key state;
-11. verify current backup create/restore and compatible historical synthetic backup if available;
-12. update dependency risk/migration/release docs;
-13. exact-head verify the final source.
+- authenticated encryption/framing;
+- key ownership/secure storage;
+- legacy read compatibility;
+- import/export/share boundaries;
+- temporary plaintext cleanup;
+- rollback after metadata/audit failures;
+- backup portability;
+- logging/privacy.
 
-Do not restore an old audit suppression merely because packaged compatibility testing is still incomplete.
+Missing/corrupt key state with existing ciphertext must fail closed rather than silently generating unrelated replacement key material.
 
-## 8. Dependency updates in general
+## 11. Backup-format changes
 
-Dependabot/open package PRs are proposals, not automatic upgrades.
+Before changing backup framing/topology/derivation:
 
-Before merging a dependency change:
+- define format version and compatibility;
+- update architecture/security/threat model;
+- add wrong-password/tamper/truncation/trailing-data tests;
+- validate strict archive topology;
+- verify SQLite snapshot integrity;
+- verify encrypted-document recovery material;
+- verify clean-install restore;
+- retain genuine historical fixtures where they exist;
+- document rollback/migration behavior.
 
-- read the package release/security notes;
-- identify runtime/platform/persistence/crypto impact;
-- update central package version;
-- run restore/build/test/audit;
-- run affected platform builds;
-- update documentation if behavior/toolchain changes;
-- run relevant packaged/manual checks;
-- use a new exact-head verification baseline.
+## 12. App-lock changes
 
-If a dependency update changes MAUI SDK/runtime behavior, test all supported platform builds and the relevant manual interaction paths before release.
+Preserve:
 
-## 9. Encryption/document-vault changes
+- no plaintext PIN persistence;
+- random salt;
+- PBKDF2-HMAC-SHA256 verifier;
+- fixed-time comparison;
+- secure-store material;
+- strict material validation;
+- update/disable rollback;
+- fail-closed corrupt/missing state;
+- explicit statement that app lock is not whole-database encryption.
 
-For changes to document encryption, key storage, stream framing, export or cache behavior:
+Biometric/remote recovery requires a separate threat-model decision.
 
-- review `DOCUMENT_VAULT.md`, `SECURITY_MODEL.md`, and `THREAT_MODEL.md`;
-- preserve fail-closed behavior when existing ciphertext depends on missing/corrupt key material;
-- do not silently create an unrelated replacement key for existing encrypted payloads;
-- preserve authenticated encryption and tamper rejection;
-- retain supported historical read compatibility unless a proven migration/recovery plan replaces it;
-- clear application-owned mutable key material where practical;
-- ensure failed import/export cleans newly created artifacts best effort;
-- ensure successful plaintext export is clearly outside the encrypted vault boundary;
-- add integration and source-contract tests;
-- perform packaged historical-fixture checks before production promotion.
+## 13. Reports/exports changes
 
-## 10. Backup format changes
-
-Before changing backup package format, password derivation, encrypted framing, archive topology, key portability, or restore transaction boundaries:
-
-1. define the new package/stream version explicitly;
-2. preserve or intentionally migrate supported historical formats;
-3. add round-trip/wrong-password/tamper/truncation/trailing-data tests;
-4. validate strict archive topology before extraction;
-5. test missing/invalid document-key material;
-6. preserve exact prior secure-store key restoration on failed restore where prior bytes existed;
-7. keep primary cryptographic/restore completion distinct from later non-critical bookkeeping;
-8. add canonical synthetic historical fixtures where possible;
-9. update architecture/security/testing/release docs;
-10. perform clean-install packaged restore and historical compatibility checks.
-
-## 11. Logging/privacy changes
-
-Every new log statement must be reviewed for private data.
-
-Normal sensitive-path logs should not include:
-
-- medicine names/instructions/health notes;
-- document contents;
-- backup contents/passwords;
-- app-lock PIN;
-- encryption keys;
-- raw exception message or stack trace from health-data operations;
-- record identifiers unless truly necessary and explicitly reviewed.
-
-Prefer fixed operation/category text and exception type name when diagnostic context is needed.
-
-Run logging-privacy source contracts after changes.
-
-## 12. External links/funding changes
-
-Current voluntary project support URL:
-
-`https://buymeacoffee.com/sanskarIN`
-
-External support must remain:
+Preserve:
 
 - explicit user action;
-- separate from health functionality;
-- free of health/profile/document/reminder identifiers in the URL;
-- not a medical/support entitlement;
-- subject to current store policy review at submission time.
+- formula-like CSV content neutralization;
+- staged/atomic final output where documented;
+- cleanup of app-owned temporary files;
+- no claim that external copies can be revoked after handoff;
+- required safety/privacy wording.
 
-Adding embedded payment/funding SDKs requires new privacy/security/store-policy architecture review.
+## 14. Logging changes
 
-## 13. Accessibility/design changes
+Do not log:
 
-For UI changes, review:
+- user-entered health content;
+- document/backup contents;
+- PIN/password/key material;
+- signing credentials;
+- unnecessary sensitive exception messages/stack traces.
 
-- semantic labels;
-- focus order;
-- text scaling;
-- contrast;
-- dark/light/system themes;
-- keyboard navigation on desktop;
-- reduced motion;
-- color-independent status cues;
-- responsive layout.
+Prefer safe operation/category context and exception type when sufficient.
 
-Automated XAML/source semantics checks are helpful but do not replace real assistive-technology testing.
+## 15. Network/cloud changes
 
-## 14. Localization changes
+Current v1 is local-first/account-free.
 
-For a new locale:
+A networked feature requires explicit design covering authentication, authorization, consent, key management, privacy, deletion/export, threat model, offline/conflict behavior and store disclosures.
 
-- move/verify strings in resources;
-- verify culture-aware presentation dates/times;
-- preserve machine-readable invariant formats where required;
-- test text expansion;
-- test plural/grammar needs;
-- test accessibility;
-- test RTL layout before shipping an RTL locale;
-- update store text/screenshots if applicable.
+Do not casually add HTTP/telemetry clients to current local-first runtime.
 
-## 15. Documentation maintenance
+## 16. XAML/UI maintenance
 
-Behavior, architecture, security, dependency, release or setup changes must update the corresponding documentation in the same work.
+Current build policy requires strict compiled bindings:
 
-Primary documentation entry points:
+- real root `x:DataType`;
+- item `x:DataType` in binding templates;
+- typed picker display bindings;
+- typed explicit Source/ancestor bindings;
+- `XC0022`–`XC0025` as errors;
+- no matching warning/type-safety bypass.
 
-- `docs/COMPLETE_PROJECT_DOCUMENTATION.md`;
-- `docs/CODEBASE_REFERENCE.md`;
-- `docs/CONFIGURATION_REFERENCE.md`;
-- `docs/README.md`.
+New UI work must preserve this policy and update accessibility/manual matrices as needed.
 
-Do not remove historical evidence merely because a newer baseline exists. Mark historical material as historical and add a current authoritative correction/addendum.
+## 17. Documentation maintenance
 
-## 16. Local verification
+Behavior, architecture, data, security, dependencies, release/setup/platform changes must update documentation in the same work.
 
-Before pushing significant changes:
+For major documentation work:
+
+- update `docs/DOCUMENTATION_CATALOG.md`;
+- preserve exact prior active files under `docs/history/` when replacing major canonical references;
+- keep historical evidence source-boundary-specific;
+- never rewrite old verification counts as though they were current;
+- never mark manual work complete because a runbook exists.
+
+## 18. Local quality verification
 
 ```bash
 build/scripts/quality-gate.sh
@@ -340,206 +306,171 @@ or:
 
 Dependency audit failures are blocking.
 
-## 17. Exact-head verification protocol
+## 19. Exact-source verification
 
 When runtime, tests, project/package/workflow/platform/build-script source changes:
 
-1. finish all source/test/docs changes required by the behavior;
-2. freeze the exact `main` source SHA;
-3. create a temporary verification branch from that SHA;
-4. add only one marker under `build/verification/`;
-5. open a PR against `main`;
-6. verify the diff is marker-only beyond frozen source;
-7. require CareNest CI, CodeQL and Dependency Audit success;
-8. if a gate fails, fix the defect on `main` rather than weakening policy;
-9. create a new exact-head checkpoint from corrected source;
-10. record exact test totals and run IDs;
-11. close the marker PR without merge.
+1. finish required source/test/docs changes;
+2. freeze exact candidate source;
+3. use the repository verification protocol;
+4. require the configured CI/security/dependency/store-package/store-inspection gates as applicable;
+5. fix failures in source rather than weakening gates;
+6. record exact source/test/run evidence;
+7. keep marker-only verification artifacts out of `main` when the protocol says so.
 
 See `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
 
-## 18. Documentation-only changes after a verified source
+## 20. Documentation-only heads
 
-Documentation-only commits may be made after a verified runtime/source boundary if they truly do not modify runtime/test/project/workflow/package/platform/build-script files.
+A documentation-only commit can sit above a verified executable source if comparison proves no source/test/project/workflow/build/package/runtime files changed.
 
-For a release decision, prove that relationship with commit comparison and do not imply the newer documentation commit itself was platform compiled if it was not.
+Do not claim the newer documentation SHA itself was a new executable baseline unless the workflows actually verified it.
 
-If documentation is consumed by executable repository policy tests, a final documentation-policy marker verification is recommended before freezing a release candidate.
+## 21. Pull-request review checklist
 
-## 19. Pull-request review checklist
+Review, as applicable:
 
-A reviewer should confirm, as applicable:
+- behavior intent;
+- medical-safety boundary;
+- local-first/privacy boundary;
+- no secrets/private user data;
+- architecture direction;
+- no direct SQL in ViewModels;
+- no casual runtime network/telemetry;
+- async/cancellation safety;
+- failure/rollback paths;
+- reminder reconciliation ordering;
+- persistence/crypto compatibility;
+- strict XAML compliance;
+- regression tests;
+- formatter/analyzer/audit gates unchanged;
+- docs/status/evidence updated;
+- manual work not falsely completed.
 
-- intended behavior is clear;
-- medical-safety boundary remains intact;
-- local-first/privacy boundary remains intact;
-- no secret/signing/user data committed;
-- architecture direction preserved;
-- no SQL in ViewModels;
-- no casual runtime network/telemetry client;
-- async/cancellation behavior is safe;
-- failure/rollback paths handled;
-- reminder platform reconciliation ordering preserved;
-- persistence/crypto compatibility considered;
-- regression tests added;
-- formatting/analyzer/audit gates not weakened;
-- docs/changelog/status updated;
-- manual release work is not falsely marked complete.
+## 22. Current workflow matrix
 
-## 20. Release candidate preparation
-
-Before selecting the production commit:
-
-- complete all source changes;
-- complete required exact-head automated verification;
-- complete manual platform/device matrix;
-- complete notification checks;
-- complete packaged SQLite/encrypted-data/backup compatibility checks;
-- complete accessibility checks;
-- review current store policies/disclosures;
-- configure signing outside Git;
-- generate/inspect signed packages;
-- prepare store assets/listings;
-- update release notes/changelog/status;
-- ensure release checklist has no applicable unchecked blocker.
-
-## 21. Production tag process
-
-Production tags matching `v*` are configured to run the exact tagged commit through:
+Configured repository automation includes:
 
 - CareNest CI;
 - CodeQL;
 - Dependency Audit;
+- Store Package Configuration;
+- Store Inspection Artifacts;
 - Release Gate;
-- CareNest Release Evidence.
+- Release Evidence.
 
-Tag process:
+Production-style `v*` tags are expected to participate in the applicable full release matrix.
 
-1. select the exact approved commit;
-2. create the intended immutable version tag;
-3. wait for every required tagged workflow to succeed;
-4. inspect Release Evidence provenance and checksums;
-5. verify signed artifacts correspond to the same approved source;
-6. publish only after all applicable manual/store/signing gates are satisfied.
+## 23. Package funding boundary
 
-Do not move a failed release tag to make it look successful. Fix on a new commit, repeat required verification, and use a corrected approved version/tag according to release policy.
+The distributed application source/package contains no external Buy Me a Coffee destination/card/command/artwork.
 
-## 22. Release Evidence operation
+Do not reintroduce an app funding build toggle/surface as a routine maintenance change. Repository funding metadata/docs remain separate and do not create health/medical entitlement.
 
-The Release Evidence workflow captures:
+## 24. Release candidate preparation
 
-- source/ref/run identity;
-- run attempt;
-- toolchain information;
-- tracked-source manifest/checksums;
-- unit/integration/UI TRX;
-- transitive dependency inventories;
-- workspace-integrity evidence;
-- evidence checksums.
+Before production selection complete applicable:
 
-Available evidence is uploaded before aggregate failure evaluation. A failed run can therefore have an artifact; artifact existence alone is not approval.
-
-## 23. Signing operations
-
-Signing credentials never belong in Git.
-
-Maintain separately:
-
-- Android production keystore/private key;
-- Apple certificates/private keys/provisioning configuration;
-- Windows signing certificate/private key;
-- store/CI credentials.
-
-Release documentation can record non-secret certificate/profile identifiers and provenance but must not contain private key material or passwords.
-
-## 24. Store submission operations
-
-Before submission:
-
-- verify app identifiers/version/build numbers;
-- verify signed package contents;
-- verify current platform permission descriptions;
-- verify privacy/data-safety forms against actual behavior;
-- verify health-organizer wording does not imply clinical decision support;
-- verify support/privacy/terms/security links;
-- verify voluntary external support link against current store policy;
-- use fictional data in screenshots;
-- archive approved store text/assets and package checksums.
-
-## 25. Hotfix process
-
-For a production-blocking hotfix:
-
-1. reproduce the issue from the released tag/source;
-2. make the smallest safe correction on a new branch/commit from the appropriate maintained line;
-3. add regression coverage;
-4. run all affected tests and platform builds;
-5. run CodeQL/dependency audit as applicable;
-6. repeat relevant manual/device/compatibility checks;
-7. exact-head verify the corrected source;
-8. update changelog/release notes/status;
-9. create a new version tag; never rewrite the old release tag;
-10. run tagged Release Gate/Release Evidence;
-11. publish corrected packages only after approval.
-
-## 26. Rollback/recovery planning
-
-CareNest is local-first, so rollback cannot assume server-side data repair.
-
-Before a risky persistence/crypto release:
-
-- ensure users can make a backup using the prior version where practical;
-- define backward/forward data compatibility;
-- retain compatible readers/migrations as needed;
-- keep canonical synthetic old-version fixtures;
-- never publish a rollback plan that would make newer encrypted/database state unreadable by the chosen rollback version without clear recovery steps.
-
-## 27. Incident response
-
-If a privacy/security defect is discovered:
-
-1. stop production promotion if not yet released;
-2. scope affected versions/data surfaces;
-3. avoid posting sensitive reproduction data publicly;
-4. fix the source and add regression coverage;
-5. review whether keys/passwords/signing credentials could be exposed;
-6. rotate/revoke credentials when necessary;
-7. update `SECURITY.md`/security model/risk register as appropriate;
-8. perform exact-head verification;
-9. release a new version without rewriting historical evidence.
-
-For a dependency advisory, determine actual resolved package graph/exposure and do not equate suppression with remediation.
-
-## 28. Current automated baseline
-
-Authoritative release-engineering source verification: PR #56.
-
-- source/base: `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
-- marker head: `e3bc621cea05364a69abee0dadbd71a67c17bddb`
-- CareNest CI #571 / `31770929379`: success
-- 122 unit + 39 integration + 124 UI-contract/policy = 285/285
-- Android Release: success
-- Windows Release: success
-- iOS simulator Release: success
-- Mac Catalyst Release: success
-- CodeQL #571 / `31770929382`: success
-- unsuppressed Dependency Audit #41 / `31770929383`: success
-
-PR #56 was closed without merge and its marker is not part of `main`.
-
-## 29. Current production-blocking work
-
-Automated source verification is complete for the PR #56 baseline. Production `1.0.0` still requires actual evidence for:
-
-- supported-platform manual matrices;
-- real notification delivery and recovery;
-- packaged SQLite existing-data compatibility;
-- encrypted document/backup compatibility;
+- exact-source automated verification;
+- Android/Windows/iPhone/iPad/Mac Catalyst manual matrices;
+- real notification delivery/lifecycle;
+- packaged SQLite compatibility;
+- packaged encrypted document/backup compatibility;
 - accessibility;
 - current store policy/disclosures;
-- signing and signed package inspection;
+- production signing outside Git;
+- final signed-package checksums/provenance/inspection;
 - store assets/listings;
-- exact final production-tag workflow/evidence;
-- final version/build/checksum/release publication.
+- final source/tag/release evidence.
 
-Do not mark these complete through documentation alone.
+## 25. Production tag process
+
+1. select exact approved production commit;
+2. create intended immutable version tag;
+3. require tagged CI/CodeQL/Dependency Audit/Store Package/Store Inspection/Release Gate/Release Evidence success;
+4. verify signed package provenance/checksums match the approved source;
+5. publish only after manual/store/signing evidence is complete.
+
+Do not move a failed/rejected production tag to another commit.
+
+## 26. Release Evidence operation
+
+Release Evidence records exact candidate identity, tracked-file manifests/checksums, tests/dependencies/workspace information and evidence checksums.
+
+Artifact existence alone is not approval; the run outcome and provenance must be reviewed.
+
+## 27. Signing operations
+
+Signing material remains outside Git:
+
+- Android keystore/private keys;
+- Apple private keys/certificates/provisioning;
+- Windows signing private keys;
+- store/CI credentials.
+
+Documentation can record non-secret identifiers/fingerprints/provenance.
+
+## 28. Store submission operations
+
+Before submission verify:
+
+- identity/version/build;
+- signed package contents/checksum;
+- current platform permission descriptions;
+- privacy/data-safety declarations;
+- non-clinical health-organizer wording;
+- support/privacy/terms/security links;
+- screenshots use fictional data;
+- current store policies;
+- package contains no prohibited/unexpected external funding marker.
+
+## 29. Hotfix process
+
+1. reproduce from released/candidate source;
+2. make smallest safe fix;
+3. add regression coverage;
+4. run affected tests/platform/security/dependency gates;
+5. repeat required manual/compatibility checks;
+6. exact-source verify corrected source;
+7. update changelog/status/release notes;
+8. create a new version/tag rather than rewriting historical tag/evidence.
+
+## 30. Incident response
+
+For privacy/security incidents:
+
+1. stop promotion if appropriate;
+2. scope affected versions/data surfaces;
+3. avoid posting sensitive reproduction data publicly;
+4. fix and add regression coverage;
+5. assess key/credential exposure and rotate/revoke when needed;
+6. update security/risk documentation;
+7. verify corrected source;
+8. release a new version without rewriting history.
+
+## 31. Current automated baseline
+
+PR #74 frozen source head:
+
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+
+Merged executable source:
+
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+
+Verified:
+
+- 331/331 core tests;
+- all four normal Release targets;
+- all four store-candidate targets;
+- Android/Windows/Apple inspection artifacts;
+- CodeQL;
+- unsuppressed Dependency Audit.
+
+See `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+
+## 32. Current production-blocking work
+
+Production `1.0.0` remains blocked on actual evidence for real-device behavior, notification lifecycle, packaged data/encryption compatibility, accessibility, signing, final signed-package inspection, current store policy/metadata, exact production tag/release gates and publication.
+
+Use `docs/releases/NEXT_STEPS.md` as the authoritative checklist.
