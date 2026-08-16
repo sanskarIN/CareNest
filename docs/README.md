@@ -36,6 +36,8 @@ Remaining production work: [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md).
 
 - [`DOCUMENTATION_CATALOG.md`](DOCUMENTATION_CATALOG.md) — complete navigation, audience and authority map.
 - [`COMPLETE_PROJECT_DOCUMENTATION.md`](COMPLETE_PROJECT_DOCUMENTATION.md) — end-to-end whole-project reference.
+- [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md) — complete Windows/Android/iOS/Mac Catalyst executable, package, signing, validation and repository-file coverage guide.
+- [`releases/EXECUTABLE_BUILD_CHECKLIST.md`](releases/EXECUTABLE_BUILD_CHECKLIST.md) — concise release-operator checklist and copy/paste build commands.
 - [`GETTING_STARTED.md`](GETTING_STARTED.md) — quickest safe entry point for users/developers.
 - [`USER_GUIDE.md`](USER_GUIDE.md) — complete user workflows.
 - [`FEATURE_REFERENCE.md`](FEATURE_REFERENCE.md) — feature-by-feature reference.
@@ -109,7 +111,7 @@ Platform-neutral projects must not accidentally depend on MAUI. ViewModels shoul
 - Mac Catalyst: `net10.0-maccatalyst`, minimum 15.
 - Windows: `net10.0-windows10.0.19041.0`, minimum Windows 10.0.19041.0.
 
-See [`setup/PLATFORM_SETUP.md`](setup/PLATFORM_SETUP.md) and [`PLATFORM_BEHAVIOR_MATRIX.md`](PLATFORM_BEHAVIOR_MATRIX.md).
+See [`setup/PLATFORM_SETUP.md`](setup/PLATFORM_SETUP.md), [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md) and [`PLATFORM_BEHAVIOR_MATRIX.md`](PLATFORM_BEHAVIOR_MATRIX.md).
 
 ## Strict XAML compiled-binding policy
 
@@ -172,6 +174,7 @@ Automated source/semantics checks do not replace real assistive-technology evide
 - [`setup/PLATFORM_SETUP.md`](setup/PLATFORM_SETUP.md)
 - [`setup/TROUBLESHOOTING.md`](setup/TROUBLESHOOTING.md)
 - [`setup/MAINTAINER_OPERATIONS.md`](setup/MAINTAINER_OPERATIONS.md)
+- [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md)
 - [`DEVELOPER_REFERENCE.md`](DEVELOPER_REFERENCE.md)
 
 ## Testing
@@ -188,6 +191,8 @@ At PR #74: 122 unit + 39 integration + 170 UI/source-policy = 331 tests.
 
 Current operational documents:
 
+- [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md)
+- [`releases/EXECUTABLE_BUILD_CHECKLIST.md`](releases/EXECUTABLE_BUILD_CHECKLIST.md)
 - [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md)
 - [`releases/RELEASE_PROCESS.md`](releases/RELEASE_PROCESS.md)
 - [`releases/RELEASE_CHECKLIST.md`](releases/RELEASE_CHECKLIST.md)
