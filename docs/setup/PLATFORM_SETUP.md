@@ -1,52 +1,51 @@
 # CareNest Cross-Platform Setup Guide
 
-This guide complements `docs/setup/DEVELOPMENT.md` with platform-specific prerequisites and validation steps for Android, Windows, iOS, and Mac Catalyst development.
+**Release line:** `1.0.0-rc.1`  
+**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-CareNest targets .NET 10 / .NET MAUI. Workload/toolchain versions can change, so always verify the currently installed .NET SDK and MAUI workloads on the development host before building.
+This guide covers platform-specific prerequisites and validation for Android, Windows, iOS/iPadOS and Mac Catalyst. Always verify the SDK/workload versions installed on the actual development host.
 
-## Common prerequisites
+## 1. Common prerequisites
 
-All development hosts need:
+All hosts need:
 
 - Git;
 - .NET 10 SDK compatible with the repository;
-- access to NuGet package restore;
+- NuGet restore access;
 - repository clone;
-- appropriate MAUI workload for the target being built.
+- MAUI workload/toolchain for the selected target.
 
-Recommended first checks:
+Check:
 
 ```bash
 git --version
 dotnet --info
 dotnet workload list
-dotnet restore src/CareNest.Domain/CareNest.Domain.csproj
 ```
 
-The repository's Git setup scripts configure the requested repository-local maintainer identity:
+Apple host:
 
 ```bash
-git config --local user.name "Sanskar"
-git config --local user.email "sanskarin@outlook.in"
+xcodebuild -version
 ```
 
-Use:
-
-- `build/scripts/setup-git.sh`, or
-- `build/scripts/setup-git.ps1`.
-
-The helper scripts locate the repository root, fail on Git errors, and verify the configured values.
-
-## Clone
+## 2. Clone
 
 ```bash
 git clone https://github.com/sanskarIN/CareNest.git
 cd CareNest
 ```
 
-## Platform-neutral validation first
+## 3. Maintainer identity
 
-Before installing/diagnosing MAUI target workloads, validate shared projects where possible:
+```bash
+git config --local user.name "Sanskar"
+git config --local user.email "sanskarin@outlook.in"
+```
+
+Or use `build/scripts/setup-git.sh` / `setup-git.ps1`.
+
+## 4. Validate platform-neutral source first
 
 ```bash
 dotnet build src/CareNest.Shared/CareNest.Shared.csproj -c Release
@@ -59,51 +58,50 @@ dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c 
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
-For local policy/audit checks use:
+Local repository gate:
 
 ```bash
 build/scripts/quality-gate.sh
 ```
 
-or the PowerShell equivalent. The local quality gate includes blocking unsuppressed NuGet audit for the core test dependency graphs.
+or PowerShell equivalent.
 
-## Why `CareNestTargetFramework` exists
+## 5. Target isolation
 
-The MAUI application is multi-targeted. A host that only has one platform workload should not have to evaluate every unrelated target.
-
-Use the repository's `CareNestTargetFramework` property when building a specific platform:
+Use:
 
 ```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f <target-framework> \
-  -c Release \
-  -p:CareNestTargetFramework=<target-framework>
+  -f <tfm> -c Release \
+  -p:CareNestTargetFramework=<tfm>
 ```
 
-This keeps the platform-specific target narrow and prevents app target-framework values from leaking into referenced platform-neutral projects.
+Current targets:
 
-# Android
+- Android `net10.0-android` — minimum API 24;
+- iOS `net10.0-ios` — minimum iOS 15;
+- Mac Catalyst `net10.0-maccatalyst` — minimum 15;
+- Windows `net10.0-windows10.0.19041.0` — minimum 10.0.19041.0.
 
-## Host
+## Android
 
-Android development can be performed on a supported Windows/macOS/Linux host with the Android/.NET MAUI workload and Android SDK tooling supported by the installed .NET SDK.
+### Host/tooling
 
-## Install workload
+Use a supported host with Android SDK/JDK and MAUI Android workload.
 
 ```bash
 dotnet workload install maui-android
 ```
 
-## Build
+### Build
 
 ```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f net10.0-android \
-  -c Release \
+  -f net10.0-android -c Release \
   -p:CareNestTargetFramework=net10.0-android
 ```
 
-## Audit the Android app graph
+### Audit MAUI graph
 
 ```bash
 dotnet restore src/CareNest.App/CareNest.App.csproj \
@@ -112,50 +110,41 @@ dotnet restore src/CareNest.App/CareNest.App.csproj \
   -p:NuGetAuditMode=all
 ```
 
-This is the MAUI graph audited by the repository Dependency Audit workflow.
+### Manual Android validation
 
-## Android-specific manual verification
-
-A release candidate must be tested for:
+Before production validate representative targets for:
 
 - fresh install/onboarding;
-- notification permission denied;
-- notification permission granted;
-- future snooze whose original due time has passed;
-- cancellation-first Taken/Skipped/Delayed/Missed actions;
-- snooze replacement cancellation/order;
-- stale OS request cleanup after schedule changes;
-- medicine/profile delete reminder cleanup;
-- exact/inexact alarm diagnostics;
-- battery-optimization diagnostics;
-- reboot reminder rebuild;
-- time/time-zone change rebuild;
-- force-stop/OS limitation messaging;
-- file/document import/export/share;
-- encrypted backup/restore;
-- packaged SQLite existing-data compatibility after native/provider updates;
-- app-lock cold start;
-- large text/accessibility behavior.
+- notification permission denied/granted;
+- actual reminder delivery;
+- exact/inexact alarm behavior;
+- battery optimization/vendor background behavior;
+- force-stop limitation messaging;
+- reboot/restart recovery;
+- clock/time-zone/DST changes;
+- reminder create/edit/delete;
+- Taken/Skipped/Delayed/Missed action ordering;
+- snooze cancellation/replacement;
+- schedule/medicine/profile stale-request cleanup;
+- file/document picker/share;
+- backup/restore;
+- packaged SQLite compatibility;
+- app lock;
+- accessibility.
 
-CareNest does not claim that Android can guarantee reminder delivery under all OS/battery/force-stop states.
+CareNest does not guarantee notification delivery under every OS state.
 
-# Windows
+## Windows
 
-## Host
+### Host/tooling
 
-Use a supported Windows development host with Visual Studio/Build Tools components required by .NET MAUI Windows development and the applicable .NET MAUI workload.
-
-## Install workload
-
-The current GitHub Actions Windows build installs the supported MAUI workload with:
+Use a supported Windows MAUI development host.
 
 ```powershell
 dotnet workload install maui
 ```
 
-Use the installed .NET SDK/workload guidance if a future SDK changes the workload model. Keep local commands aligned with the repository CI that is actually proving the target.
-
-## Build
+### Build
 
 ```powershell
 dotnet build src/CareNest.App/CareNest.App.csproj `
@@ -164,219 +153,208 @@ dotnet build src/CareNest.App/CareNest.App.csproj `
   -p:CareNestTargetFramework=net10.0-windows10.0.19041.0
 ```
 
-Use the exact framework declared by the current project file if it changes in a later version.
+### Manual Windows validation
 
-## Windows-specific manual verification
+Validate:
 
-Verify:
-
-- fresh install/onboarding;
-- window resizing;
-- keyboard navigation;
-- theme switching;
-- document picker/share behavior;
-- backup/restore;
-- packaged SQLite existing-data compatibility after native/provider updates;
-- app lock;
-- in-process notification/fallback diagnostics;
+- install/startup/navigation;
+- core CRUD;
+- running-app notifications;
+- closed-app limitation behavior;
 - same-ID timer replacement/cancellation;
-- cancellation-first handled reminder actions;
-- snooze replacement.
+- reminder actions/snooze;
+- restart/recovery;
+- document/file picker/share;
+- backup/restore;
+- packaged SQLite compatibility;
+- app lock;
+- keyboard/focus;
+- light/dark/system theme;
+- accessibility.
 
-The current Windows reminder path has explicit limitations and must not be described as guaranteed while the application is not running.
+The current Windows reminder fallback has in-process limitations and must not be presented as guaranteed closed-app delivery.
 
-# iOS
+## iOS / iPadOS
 
-## Host
+### Host/tooling
 
-iOS builds require a compatible macOS/Xcode/.NET MAUI Apple toolchain.
-
-The GitHub-hosted CI currently uses a macOS 26 runner compatible with the .NET 10 Apple workload. A local developer must use an Xcode version supported by the installed .NET Apple workload.
-
-## Install workload
+Requires compatible macOS/Xcode/.NET Apple workload.
 
 ```bash
 dotnet workload install maui-ios
 ```
 
-## Simulator build
+### Simulator build
 
 ```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f net10.0-ios \
-  -c Release \
+  -f net10.0-ios -c Release \
   -p:CareNestTargetFramework=net10.0-ios \
   -p:RuntimeIdentifier=iossimulator-arm64
 ```
 
 Use a simulator RID compatible with the host architecture.
 
-## Device/store signing
+### Device/store signing
 
-Production device/App Store builds require Apple signing certificates, provisioning profiles, bundle identity, and entitlements configured outside the repository.
+Production device/App Store work requires signing/provisioning outside Git.
 
-Do not commit signing secrets/profiles.
+Never commit private keys, certificate passwords or provisioning secrets.
 
-## iOS-specific manual verification
+### Manual iOS/iPadOS validation
 
-Verify:
+Use real devices for:
 
 - notification permission denied/granted;
-- local notification scheduling/delivery behavior;
-- future snooze effective due time;
-- cancellation-first handled reminder actions;
-- snooze replacement;
-- stale request reconciliation after schedule/state changes;
-- app restart/rebuild behavior;
-- time-zone changes;
-- document picker/share;
+- actual local notification delivery;
+- reminder actions/snooze;
+- stale request reconciliation;
+- restart/lifecycle recovery;
+- time-zone/DST changes;
+- files/share;
 - backup/restore;
-- packaged SQLite existing-data compatibility after native/provider updates;
+- packaged SQLite compatibility;
 - app lock;
-- Dynamic Type/text scaling;
-- VoiceOver/semantic labels;
-- light/dark/system theme.
+- Dynamic Type;
+- VoiceOver;
+- theme/contrast;
+- notification preview privacy.
 
-OS notification delivery remains controlled by iOS policy.
+Simulator compilation is not real-device notification evidence.
 
-# Mac Catalyst
+## Mac Catalyst
 
-## Host
+### Host/tooling
 
-Mac Catalyst requires compatible macOS, Xcode, .NET 10, and MAUI Mac Catalyst workload.
-
-## Install workload
+Requires compatible macOS/Xcode/.NET Mac Catalyst workload.
 
 ```bash
 dotnet workload install maui-maccatalyst
 ```
 
-## Build
+### Build
 
 ```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f net10.0-maccatalyst \
-  -c Release \
+  -f net10.0-maccatalyst -c Release \
   -p:CareNestTargetFramework=net10.0-maccatalyst
 ```
 
-## Mac-specific manual verification
+### Manual Mac validation
 
-Verify:
+Validate:
 
-- window resizing;
-- keyboard/focus behavior;
-- notifications;
-- cancellation-first reminder actions;
-- snooze/replacement reconciliation;
+- install/execution;
+- notification permission/delivery;
+- reminder actions/reconciliation;
+- restart/lifecycle;
 - file operations;
 - backup/restore;
-- packaged SQLite existing-data compatibility after native/provider updates;
+- packaged SQLite compatibility;
 - app lock;
-- theme/accessibility behavior.
+- keyboard/focus;
+- theme/contrast;
+- VoiceOver/accessibility;
+- signed/notarized behavior when available.
 
-Production distribution may also require signing/notarization or store configuration outside Git.
+## Strict XAML build behavior
 
-# Formatting
+Every target builds with the current strict XAML policy:
 
-The platform-neutral projects/test projects are subject to:
+- Source binding compilation enabled;
+- strict XAML compilation enabled;
+- `XC0022`–`XC0025` as errors.
 
-```bash
-dotnet format <project> --verify-no-changes
-```
+A target build that exposes a binding type error should be fixed in XAML/source rather than suppressed.
 
-CI runs platform-neutral formatting independently from MAUI platform build jobs.
+## Release preflight
 
-# Release preflight scripts
-
-On a fully provisioned host use:
+Bash:
 
 ```bash
 build/scripts/release-preflight.sh
 ```
 
-or PowerShell:
+PowerShell:
 
 ```powershell
 ./build/scripts/release-preflight.ps1
 ```
 
-The preflight treats unsuppressed NuGet audit as blocking. When `CARENEST_TARGET` is set, that target is audited before the optional MAUI Release build.
-
-Example Android target selection:
+With target selection:
 
 ```bash
 CARENEST_TARGET=net10.0-android build/scripts/release-preflight.sh
 ```
 
-PowerShell:
+or PowerShell environment equivalent.
 
-```powershell
-$env:CARENEST_TARGET = 'net10.0-android'
-./build/scripts/release-preflight.ps1
+The current release build does not use an application funding-link toggle. The external BMC destination is absent from application package source by policy.
+
+## Store-package preflight
+
+Use:
+
+```bash
+CARENEST_TARGET=net10.0-android \
+./build/scripts/store-package-preflight.sh
 ```
 
-# Exact release tags
+or the PowerShell wrapper with an explicit supported target.
 
-Tags matching `v*` are configured to verify the exact tagged commit through:
+The wrapper does not configure production signing or publish to a store.
+
+## Internal inspection artifacts
+
+The Store Inspection Artifacts workflow creates internal evidence for Android, Windows and Apple targets, runs the fail-closed payload scanner, records checksums/provenance and avoids production signing secrets.
+
+These artifacts are not production/store-ready packages.
+
+## Exact production tags
+
+Production-style tags matching `v*` are configured to participate in:
 
 - CareNest CI;
 - CodeQL;
 - Dependency Audit;
+- Store Package Configuration;
+- Store Inspection Artifacts;
 - Release Gate;
-- CareNest Release Evidence.
+- Release Evidence.
 
-A successful local platform build does not replace those exact-tag gates or the manual matrix.
+A successful local build or tag creation does not replace manual/device/package/signing/store evidence.
 
-# Signing secrets
+## Signing secrets
 
 Never commit:
 
-- Android keystores;
-- `.jks` signing files;
-- Apple `.p12` certificates;
-- private keys;
-- provisioning-profile secrets;
-- Windows signing certificates/private keys;
-- `.env` files containing credentials;
-- service-account credentials.
+- Android keystores/private keys;
+- Apple `.p12`/private key/provisioning secrets;
+- Windows signing private keys/certificates containing private material;
+- production service credentials;
+- `.env` secrets.
 
-Repository policy tests reject common secret/signing file patterns, but maintainers remain responsible for secret hygiene.
+## SQLite dependency note
 
-# NuGet/SQLite dependency note
+The former tracked source dependency exception is remediated and the exact audit suppression is removed.
 
-The former `GHSA-2m69-gcr7-jv3q` source exception is resolved in the current RC1 dependency graph.
+Current graph intent includes sqlite-net-pcl `1.9.172`, bundle_green `2.1.11`, native `lib.e_sqlite3` `3.53.3`, and Android/provider leaves `2.1.12` where pinned.
 
-Current graph intent:
+Do not change SQLite native/provider/bundle versions without full audit/test/platform/migration/packaged compatibility review.
 
-- `sqlite-net-pcl` `1.9.172`;
-- `SQLitePCLRaw.bundle_green` `2.1.11`;
-- central transitive pinning enabled;
-- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
-- Android native/provider leaves and selected providers at `2.1.12`;
-- no old advisory `NuGetAuditSuppress` entry.
-
-`SqliteDependencySecurityContractTests` protects the maintained package floor and suppression absence.
-
-Read:
-
-- `docs/security/DEPENDENCY_RISK_REGISTER.md`;
-- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
-
-Do not silently change SQLite provider/bundle/native versions without running the full migration/regression/platform/dependency matrix and packaged existing-data/encrypted-data compatibility checks.
-
-Do not restore the old suppression to bypass those manual checks.
-
-# Troubleshooting
-
-See `docs/setup/TROUBLESHOOTING.md` for common restore/workload/platform issues.
-
-When diagnosing:
+## Troubleshooting sequence
 
 1. capture `dotnet --info`;
 2. capture `dotnet workload list`;
-3. identify exact target framework;
-4. reproduce platform-neutral build/tests separately;
-5. run the blocking dependency audit;
-6. verify Xcode/Android SDK/Windows tooling compatibility;
-7. avoid posting user health data or real backups in issue logs.
+3. identify exact TFM;
+4. run platform-neutral tests separately;
+5. run dependency audit;
+6. isolate restore versus compile versus platform toolchain failure;
+7. compare local toolchain to CI;
+8. use `docs/setup/TROUBLESHOOTING.md`.
+
+## Current verified platform baseline
+
+PR #74 passed Android, Windows, iOS simulator and Mac Catalyst normal Release builds plus all four store-candidate configurations and Android/Windows/Apple inspection workflows.
+
+Real-device/manual production rows remain open. See `docs/PLATFORM_BEHAVIOR_MATRIX.md` and `docs/releases/NEXT_STEPS.md`.
