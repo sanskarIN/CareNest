@@ -1,0 +1,46 @@
+# Security Policy
+
+## Supported versions
+
+Security fixes are prioritized for the newest release line.
+
+## Reporting
+
+Do not open a public issue for a vulnerability that could expose health records, backups, lock credentials, documents, notification contents, or sensitive data passed to an external link. Report privately to:
+
+- Business/security contact: `sanskarin@outlook.in`
+- Support: `supportramsandesh@gmail.com`
+
+Include affected version, platform, reproduction conditions, impact, and suggested mitigation. Do not include real user health data.
+
+## Security design
+
+- No required account or server in v1.
+- Imported health documents are encrypted locally with AES-256-GCM.
+- Backup files are encrypted with password-derived AES-256-GCM keys.
+- PINs are not stored directly; the app stores a random salt and a PBKDF2-HMAC-SHA256 verifier in secure platform storage, uses fixed-time verification, and clears verifier buffers after checks where the managed runtime permits.
+- The optional app lock is a local privacy barrier, not full database encryption or a substitute for device authentication. Weak numeric PINs can still have limited entropy, especially on a compromised device.
+- Structured logs redact sensitive content; full exception objects/messages/stack traces and health-record identifiers are not required for normal CareNest diagnostics.
+- SQLite records rely on platform application sandbox protections; CareNest does **not** claim transparent database encryption at rest.
+- No production secrets belong in source control.
+- Repository, policy, creator and voluntary project-support destinations are fixed external links opened only after explicit user action.
+- The Buy Me a Coffee project-support link does not embed CareNest health data, profile identifiers, document metadata, reminder history, backup data, payment credentials, or CareNest secrets in the URL.
+- The external funding provider remains outside the CareNest trust boundary and is governed by its own security/privacy controls after the user leaves CareNest.
+
+## Logging privacy
+
+The detailed logging boundary is documented in `docs/security/LOGGING_PRIVACY.md`. Runtime and diagnostic changes must preserve that contract.
+
+## Dependency security
+
+Known dependency advisories, remediations, and any future temporary narrowly scoped audit exception are tracked in `docs/security/DEPENDENCY_RISK_REGISTER.md`.
+
+The previously tracked SQLite native dependency exception for `GHSA-2m69-gcr7-jv3q` has been remediated in the current RC1 source graph by centrally pinning maintained native/provider leaves and removing the exact `NuGetAuditSuppress` entry. `SqliteDependencySecurityContractTests` protects the maintained package floor and prevents silently restoring the old suppression.
+
+A suppression is never considered remediation. Any future exception must remain exact, temporary, documented, and release-blocking according to the risk decision. A successful vulnerability audit also does not replace packaged existing-database, encrypted-document, backup, or real-device compatibility testing after a native persistence-provider change.
+
+See:
+
+- `docs/security/DEPENDENCY_RISK_REGISTER.md`;
+- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`;
+- `docs/security/THREAT_MODEL.md`.

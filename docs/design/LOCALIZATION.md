@@ -2,25 +2,23 @@
 
 CareNest `1.0.0-rc.1` ships English (`en`) first and is structured for future resource-based localization.
 
-Localization must preserve the product's local-first, privacy, medical-safety, and reminder-delivery meanings. A translated string must not accidentally turn organizational wording into a diagnosis, dosage recommendation, treatment recommendation, emergency promise, or guaranteed reminder-delivery claim.
+Localization must preserve local-first, privacy, medical-safety and reminder-delivery meanings. A translation must not turn organizational wording into diagnosis, dosage/treatment recommendation, emergency promise or guaranteed notification delivery.
 
-## Current language status
+## 1. Current language status
 
-Enabled application language in the current release candidate:
+Enabled shipping language:
 
 - English (`en`).
 
-The app follows device UI culture/resource lookup behavior while English remains the only shipping resource set.
+Additional locales must not be described as supported until translated, reviewed, built, accessibility-tested and shipped.
 
-## Resource architecture
+## 2. Resource architecture
 
-User-facing product/safety strings are backed by:
+User-facing strings are backed by application resource files such as:
 
 `src/CareNest.App/Resources/Strings/AppResources.resx`
 
-and exposed through the application's resource/text abstraction such as `AppText`.
-
-Future languages should use sibling satellite resource files, for example:
+Future locale resources can use sibling `.resx` files, for example:
 
 ```text
 AppResources.hi.resx
@@ -28,236 +26,146 @@ AppResources.es.resx
 AppResources.fr.resx
 ```
 
-Do not fork persistence models or domain values merely to add a display language.
+Do not fork domain/persistence values merely to add display language.
 
-## What should be localized
+## 3. What should be localized
 
 Examples:
 
-- navigation labels;
-- buttons/actions;
-- onboarding text;
-- validation messages;
-- settings labels;
-- medical/reminder limitations;
-- privacy/support/about labels;
+- navigation/buttons/actions;
+- onboarding;
+- validation/errors;
+- settings;
+- medical/reminder/privacy limitations;
 - status display text;
-- report headings/disclaimers where output localization is intentionally supported;
+- About/legal/support-contact labels;
+- report headings/disclaimers when an output is intentionally localized;
 - accessibility semantic labels.
 
-## What must not be automatically translated
+## 4. What must not be automatically translated
 
-Do not automatically translate user-entered content such as:
+Do not automatically translate user-entered medicine names, strength/instruction text, clinician names, appointment/profile notes, document titles/files, emergency-contact names or custom labels.
 
-- medicine names;
-- strength text;
-- instruction text;
-- clinician names;
-- appointment notes;
-- profile notes;
-- document titles/files;
-- emergency-contact names;
-- custom labels.
+Medicine text remains opaque user data and must not be transformed into application-generated dosage/frequency language.
 
-These values are user data and may need to remain exactly as entered.
+## 5. Safety-critical translation
 
-## Opaque medicine-text rule
+Translations must preserve that CareNest:
 
-Localization must not parse/transform medicine strength/instruction text into application-generated dosage/frequency wording.
+- is organizational only;
+- does not diagnose;
+- does not calculate/infer dosage;
+- does not recommend treatment;
+- does not perform clinical interaction/risk scoring;
+- is not an emergency service;
+- cannot guarantee reminder delivery;
+- creates no automatic reminder for as-needed schedules;
+- does not silently replace invalid DST-gap local times.
 
-CareNest stores these values as opaque user-entered strings.
+Safety/privacy/reminder limitation strings require dedicated human/context review rather than unreviewed machine translation.
 
-## Safety-critical strings
+## 6. Layout rules
 
-Translations must preserve the exact intent of concepts such as:
+Localized UI must allow wrapping/dynamic height, keep actions reachable under string expansion, support large text and remain usable on narrow phones, tablets and resizable desktop windows.
 
-- CareNest is organizational only;
-- it does not diagnose;
-- it does not calculate/infer dosage;
-- it does not recommend treatment;
-- it does not check interactions/clinical risk;
-- it is not an emergency service;
-- reminder delivery can be affected by OS permissions/battery/background policy;
-- as-needed schedules do not create automatic reminders;
-- invalid DST-gap times are not silently moved to an invented replacement time.
+Avoid sentence-fragment concatenation that assumes English grammar/order. Prefer complete resource strings with placeholders whose order can vary.
 
-Safety translations should receive dedicated review rather than casual machine translation.
+## 7. Placeholders
 
-## Layout rules
+Review placeholders for grammar/plurals/date-time formatting, accessibility output and privacy-sensitive notification content.
 
-Localized UI must:
+Do not introduce sensitive data into a generic notification merely because a localized template supports placeholders.
 
-- allow text wrapping;
-- allow dynamic height;
-- avoid fixed widths/heights for long safety/validation text;
-- keep primary actions reachable under string expansion;
-- support large system text sizes;
-- avoid overlapping icons/text;
-- preserve readable cards/forms in narrow phone layouts and desktop resizing.
+## 8. Dates/times/numbers
 
-## Avoid sentence-fragment concatenation
+Presentation may use locale conventions while persistence/reminder identity remains stable.
 
-Do not construct translated sentences from multiple independently translated fragments when word order/grammar can vary.
-
-Prefer one complete resource string with placeholders.
-
-Bad pattern:
-
-```text
-"Reminder for " + medicine + " is " + state
-```
-
-Prefer a localized full template whose placeholder order can vary by language.
-
-## Placeholders
-
-Use named/positional placeholders only when they do not expose hidden private data or force English word order.
-
-Review placeholders for:
-
-- grammatical gender/plural forms;
-- date/time formatting;
-- screen-reader output;
-- privacy-sensitive information in notification text.
-
-## Dates and times
-
-Presentation can be locale-aware.
-
-Persistence/reminder identity rules must not mutate because of localization.
-
-Keep:
+Preserve:
 
 - stored UTC values as UTC;
-- explicit schedule time-zone IDs unchanged;
-- machine-readable export formats invariant where required;
-- user-entered local schedule intent unchanged.
+- explicit time-zone IDs;
+- stable/invariant machine-readable export formats where defined;
+- user-entered schedule intent.
 
-Display formatting may use locale conventions without rewriting stored timestamps.
+## 9. Time-zone IDs
 
-## Numbers
+Do not translate stored time-zone identifiers. A future UI can show friendly localized descriptions while retaining the stable scheduling identifier.
 
-User-facing numbers can use locale formatting where appropriate.
+## 10. RTL languages
 
-Machine-readable CSV/JSON fields requiring stable interchange should use deliberately defined invariant formatting rather than whatever UI culture is active.
+Before shipping RTL support test layout mirroring, navigation/back affordances, directional icons, schedule editor layouts, document/report controls, keyboard/focus order, About/legal/support surfaces and screen-reader behavior.
 
-## Time-zone names
+Do not enable an RTL locale based only on resource compilation.
 
-Do not translate/replace stored time-zone IDs.
+## 11. Accessibility and localization
 
-The UI can show friendly localized descriptions if a future feature adds them, but the stable stored identifier remains the scheduling contract.
-
-## Right-to-left languages
-
-Before shipping an RTL locale:
-
-- test mirrored layout;
-- test navigation/back affordances;
-- test icons whose direction conveys meaning;
-- test schedule editor weekday/time layouts;
-- test document/report controls;
-- test keyboard/focus order;
-- test charts/visuals if future versions add them;
-- test project-support/about surfaces;
-- run screen-reader review in the target locale.
-
-Do not enable RTL language support based only on successful resource compilation.
-
-## Accessibility and localization
-
-Localized semantic labels must remain natural and concise.
-
-Avoid translating visible text while leaving English-only accessibility labels.
-
-Large-text and screen-reader testing should be repeated for new shipping locales because translated text length/pronunciation can expose issues not visible in English.
+Visible localized strings and semantic labels must remain aligned and natural. Repeat large-text and screen-reader testing for new shipping locales.
 
 See `docs/design/ACCESSIBILITY.md`.
 
-## Notifications
+## 12. Notifications
 
-Notification translation must preserve privacy minimization.
+Notification translation must preserve privacy minimization and the non-guaranteed-delivery boundary.
 
-Do not localize by inserting sensitive medicine/profile content into a previously generic notification string.
+Do not insert sensitive medicine/profile content into a previously generic notification unless an explicitly designed/tested product behavior requires it.
 
-Generic notification labels should remain generic unless the user explicitly configures otherwise according to implemented product behavior.
-
-## Reports/exports
+## 13. Reports/exports
 
 If reports become localized:
 
-- keep medical/privacy disclaimer meaning equivalent;
+- preserve medical/privacy disclaimer meaning;
 - keep machine-readable formats stable;
-- document which outputs are localized vs invariant;
-- add regression tests for headers/disclaimers;
-- ensure receiving software can still parse expected CSV/JSON representations.
+- document localized versus invariant outputs;
+- add tests for headings/disclaimers;
+- ensure CSV/JSON consumers still receive defined representations.
 
-## Branding
+## 14. Branding and fixed identifiers
 
-Product name **CareNest** and creator watermark `Made by the Sanskar` are brand identifiers and normally remain unchanged unless an explicit branding decision says otherwise.
+Product name **CareNest** and creator watermark `Made by the Sanskar` normally remain unchanged unless an explicit branding decision says otherwise.
 
-Canonical links/emails must not be translated:
+Do not translate fixed identifiers such as:
 
-- `https://github.com/sanskarIN/CareNest`
-- `https://www.github.com/sanskarIN`
-- `https://buymeacoffee.com/sanskarIN`
-- `sanskarin@outlook.in`
-- `supportramsandesh@gmail.com`
+- repository `https://github.com/sanskarIN/CareNest`;
+- creator `https://www.github.com/sanskarIN`;
+- business `sanskarin@outlook.in`;
+- support `supportramsandesh@gmail.com`.
 
-## Resource key stability
+Repository-only voluntary project support URL `https://buymeacoffee.com/sanskarIN` is not a current in-app localized action/resource. The distributed application package contains no BMC funding surface.
 
-Use meaningful resource keys so tests and future translations remain maintainable.
+## 15. Translation workflow
 
-Repository branding/localization contract tests protect key safety/branding resources from accidental deletion.
+For a new locale:
 
-## Translation workflow
-
-Recommended workflow for a new locale:
-
-1. select target locale based on real user demand;
-2. create sibling `.resx` resource file;
+1. select locale based on real product need;
+2. add sibling resource file;
 3. translate UI strings with context;
-4. separately review safety/privacy/reminder limitation text;
-5. verify placeholders/plurals/date/time formatting;
-6. build target platforms;
-7. test phone/tablet/desktop layouts;
-8. test large text/accessibility semantics;
-9. test RTL if applicable;
-10. update store listing/screenshots if localized;
-11. add localization contract tests where useful;
-12. update privacy/release documentation if translated policies/listings are published.
+4. separately review safety/privacy/reminder text;
+5. verify placeholders/plurals/date/time;
+6. build all intended target platforms;
+7. test mobile/tablet/desktop layouts;
+8. test large text/accessibility;
+9. test RTL where applicable;
+10. localize store listing/screenshots only when the app actually ships that locale;
+11. add resource/localization contracts where useful;
+12. update privacy/release docs if translated policies/listings are published.
 
-## Machine translation
+## 16. Machine translation
 
-Machine translation may help produce a draft for non-safety copy, but must not be treated as final review for medical/privacy/legal/reminder limitation text.
+Machine translation can assist drafts for non-safety copy but is not final review for medical/privacy/legal/reminder limitation text.
 
-Never machine-translate user-entered health content automatically as part of normal CareNest v1 behavior.
+Never automatically translate user-entered health content as normal CareNest v1 behavior.
 
-## Fallback behavior
+## 17. Fallback behavior
 
-If a resource is missing, the application should fall back according to .NET resource lookup rather than inventing or silently removing safety text.
+Missing resources should fall back through normal .NET resource lookup rather than inventing or silently removing safety text.
 
 A missing safety resource in a shipping locale is a release defect.
 
-## Testing
+## 18. Testing
 
-Localization-related automated checks should protect:
+Automated checks can protect resource validity, required safety keys and brand/support identifiers.
 
-- resource file validity;
-- required safety keys;
-- brand/support URL consistency;
-- no accidental removal of key disclaimers.
-
-Manual checks remain necessary for:
-
-- truncation/wrapping;
-- layout direction;
-- screen readers;
-- translated meaning/context;
-- store listing quality.
-
-## Current limitation
-
-English is the only enabled shipping language in `1.0.0-rc.1`. Additional `.resx` satellite resources are future work and should not be described as already supported languages until they are actually included, reviewed, tested, and shipped.
+Manual checks remain required for wrapping/truncation, directionality, screen readers, translated meaning/context and store listing quality.
 
 ## Related documentation
 

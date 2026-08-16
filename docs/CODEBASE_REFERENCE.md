@@ -1,8 +1,11 @@
 # CareNest Codebase and API Reference
 
-This document maps the implementation source to its responsibilities. It complements `COMPLETE_PROJECT_DOCUMENTATION.md` and the architecture documents by naming the concrete source files and explaining where new work belongs.
+**Release line:** `1.0.0-rc.1`  
+**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-## 1. Solution and dependency direction
+This reference maps the current repository layers and major source units to their responsibilities. Use the source tree itself as the final authority for exact filenames if later changes add/rename files.
+
+## 1. Dependency direction
 
 ```text
 CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure <- CareNest.App
@@ -10,384 +13,371 @@ CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastru
 
 Tests depend on the layers they validate. Platform-neutral projects must not gain MAUI dependencies.
 
-## 2. Shared project
+## 2. `CareNest.Shared`
 
 Path: `src/CareNest.Shared/`
 
-- `CareNest.Shared.csproj` — shared project definition.
-- `AppConstants.cs` — canonical product/repository/contact/support/funding constants used across appropriate app surfaces.
-- `Guard.cs` — reusable argument/state guard helpers.
-- `Result.cs` — small shared result primitive where used.
-- `SecretKeys.cs` — canonical secure-storage key identifiers; values identify secret slots rather than containing secret material.
-- `SettingKeys.cs` — canonical settings keys.
-- `TimeProviderExtensions.cs` — shared deterministic time-provider helper behavior.
+Important shared units include:
 
-Shared code should remain small, dependency-light, and free from MAUI/persistence implementation details.
+- `CareNest.Shared.csproj` — shared project definition;
+- `AppConstants.cs` — current product/repository/contact/support/medical-limitation constants and general application defaults;
+- `Guard.cs` — guard helpers;
+- `Result.cs` — shared result primitive where used;
+- `SecretKeys.cs` — secure-storage slot identifiers, not secret values;
+- `SettingKeys.cs` — settings keys;
+- `TimeProviderExtensions.cs` — time-provider helper behavior.
 
-## 3. Domain project
+`AppConstants` currently contains no external Buy Me a Coffee destination. The application funding surface was removed from runtime/package source.
+
+Shared code should remain dependency-light and free from MAUI/persistence implementation details.
+
+## 3. `CareNest.Domain`
 
 Path: `src/CareNest.Domain/`
 
-### Project/common
+### Common
 
-- `CareNest.Domain.csproj`
-- `Common/EntityBase.cs` — base identity/timestamp-style entity state shared by domain records.
+- `Common/EntityBase.cs` — common identity/timestamp-style entity state.
 
-### Entities
+### Core entities
 
-- `Entities/AppSetting.cs` — persisted application setting record.
-- `Entities/Appointment.cs` — appointment data, including explicit UTC scheduling fields.
-- `Entities/AuditEntry.cs` — privacy-minimized audit/event record.
-- `Entities/BackupMetadata.cs` — local backup history/metadata record.
-- `Entities/CareDocument.cs` — encrypted-document metadata record; encrypted payload bytes live outside normal SQLite metadata.
-- `Entities/DocumentTag.cs` — document/tag relationship.
-- `Entities/EmergencyContact.cs` — user-entered contact information.
-- `Entities/MedicationLogEntry.cs` — user/reminder medication-log state.
-- `Entities/Medicine.cs` — user-entered medicine record; strength/instruction text remains opaque and non-clinical.
-- `Entities/MedicineSchedule.cs` — explicit schedule configuration.
-- `Entities/PersonProfile.cs` — local person/family profile.
-- `Entities/ReminderOccurrence.cs` — materialized reminder state and platform-request association.
-- `Entities/ScheduleTime.cs` — explicit user-entered schedule clock time.
-- `Entities/StockAdjustment.cs` — user-entered stock/refill adjustment information.
+- `Entities/AppSetting.cs` — persisted app setting record;
+- `Entities/Appointment.cs` — appointment data including UTC scheduling fields;
+- `Entities/AuditEntry.cs` — privacy-minimized audit/event record;
+- `Entities/BackupMetadata.cs` — backup metadata/history;
+- `Entities/CareDocument.cs` — encrypted-document metadata; payload bytes live outside normal metadata storage;
+- `Entities/DocumentTag.cs` — document/tag relationship;
+- `Entities/EmergencyContact.cs` — user-entered contact information;
+- `Entities/MedicationLogEntry.cs` — medication/reminder history state;
+- `Entities/Medicine.cs` — user-entered medicine information; strength/instruction text remains opaque;
+- `Entities/MedicineSchedule.cs` — explicit schedule configuration;
+- `Entities/PersonProfile.cs` — local profile/person;
+- `Entities/ReminderOccurrence.cs` — materialized reminder state/platform-request association;
+- `Entities/ScheduleTime.cs` — explicit schedule clock time;
+- `Entities/StockAdjustment.cs` — user-entered stock/refill adjustment;
 - `Entities/Tag.cs` — reusable local tag.
 
-### Enums
+### Enums/rules
 
-- `Enums/DomainEnums.cs` — recognized lifecycle/schedule/reminder/log enum values.
-
-Undefined/unrecognized enum values must fail validation rather than being persisted as if they were known behavior.
-
-### Rules
-
-- `Rules/AppointmentRules.cs` — appointment validation, including explicit UTC/time-zone shape.
-- `Rules/MedicineRules.cs` — medicine/schedule structural validation; never infers dosage or medical intent.
+- `Enums/DomainEnums.cs` — recognized lifecycle/schedule/reminder/log enum values;
+- `Rules/AppointmentRules.cs` — appointment structural validation including UTC/time-zone shape;
+- `Rules/MedicineRules.cs` — medicine/schedule structural validation;
 - `Rules/ProfileRules.cs` — profile validation.
 
-## 4. Application project
+Domain rules must reject structurally invalid input without becoming a diagnostic/dosage/treatment engine.
+
+## 4. `CareNest.Application`
 
 Path: `src/CareNest.Application/`
 
 ### Contracts
 
-- `Contracts/ICareNestRepository.cs` — structured local repository abstraction used by application services.
-- `Contracts/IInfrastructureServices.cs` — platform/infrastructure-facing abstractions such as encryption, notifications, files/reports/backup-related dependencies where defined.
-- `Contracts/IReminderCoordinator.cs` — platform-neutral reminder coordination API.
-- `Contracts/IUseCaseServices.cs` — higher-level application use-case service interfaces.
+Important interfaces include:
 
-Application contracts should expose behavior rather than SQLite/MAUI implementation details.
+- `Contracts/ICareNestRepository.cs` — structured repository abstraction;
+- `Contracts/IInfrastructureServices.cs` — infrastructure/platform service abstractions;
+- `Contracts/IReminderCoordinator.cs` — reminder coordination contract;
+- `Contracts/IUseCaseServices.cs` — higher-level use-case contracts.
+
+Contracts expose behavior rather than SQLite/MAUI implementation details.
 
 ### Services
 
-- `Services/AppointmentService.cs` — appointment save/delete/rebuild orchestration, UTC enforcement, permission-aware notification scheduling, and database/platform compensation.
-- `Services/BackupReminderCoordinator.cs` — explicit backup-reminder scheduling/cancellation using local backup state and notification permission.
-- `Services/DocumentService.cs` — encrypted document import/export/delete orchestration, metadata/payload compensation, and audit boundaries.
-- `Services/MedicineService.cs` — medicine/schedule save/delete orchestration, explicit stock behavior, and reminder reconciliation.
-- `Services/ProfileService.cs` — profile create/update/delete orchestration, reminder reconciliation, encrypted document/photo cleanup, and audit boundaries.
-- `Services/ReminderCoordinator.cs` — persisted occurrence ↔ OS request reconciliation, handled action ordering, snooze/effective-due behavior, overdue handling, cancellation-first transitions, and compensation/recovery.
-- `Services/ReminderPlanner.cs` — deterministic, platform-neutral occurrence materialization from explicit user-entered schedules.
+Major application services include:
 
-### Important application invariants
+- `AppointmentService` — appointment save/delete/rebuild, UTC/permission validation, DB/platform compensation;
+- `BackupReminderCoordinator` — backup reminder scheduling/cancellation;
+- `DocumentService` — encrypted document import/export/delete orchestration and rollback/audit boundaries;
+- `MedicineService` — medicine/schedule/stock/reminder orchestration;
+- `ProfileService` — profile lifecycle, reminder reconciliation, document/photo cleanup and audit coordination;
+- `ReminderCoordinator` — persisted occurrence ↔ OS request reconciliation, handled actions, snooze/effective-due behavior and recovery;
+- `ReminderPlanner` — deterministic platform-neutral occurrence materialization from explicit schedules.
 
-- planner windows use explicit UTC values;
-- appointments require actual UTC instants;
-- snooze requires explicit future UTC;
-- `SnoozedUntilUtc` is the effective due time for a valid snooze;
+### Application invariants
+
+- planner windows use true UTC;
+- appointments use true UTC starts;
+- snooze uses explicit future UTC;
+- valid `SnoozedUntilUtc` is effective due time;
 - stale platform requests are cancelled before replacement/suppression/invalidation;
-- handled actions cancel the old platform request before handled-state persistence;
-- cancellation failure remains retryable;
-- database/OS scheduling surfaces use compensation rather than pretending to be one transaction;
-- no clinical inference is introduced into services.
+- handled actions use cancellation-first ordering;
+- platform cancellation failure remains retryable;
+- DB/platform operations use compensation/recovery;
+- no clinical inference is introduced.
 
-## 5. Infrastructure project
+## 5. `CareNest.Infrastructure`
 
 Path: `src/CareNest.Infrastructure/`
 
-### Backup
+Major responsibility folders:
 
-- `Backup/BackupArchiveValidator.cs` — validates decrypted backup topology against the expected allowlist before extraction.
-- `Backup/BackupManifest.cs` — backup manifest model.
-- `Backup/EncryptedBackupService.cs` — database/document backup packaging, password-derived encryption, restore validation/commit/rollback, key portability, and completion semantics.
-
-### Configuration
-
-- `Configuration/CareNestStorageOptions.cs` — local database/document/backup-related storage path options.
-
-### Documents
-
-- `Documents/EncryptedDocumentStore.cs` — encrypted document payload storage, master-key access, encrypt/decrypt/export lifecycle, and failure cleanup.
+```text
+Backup/
+Configuration/
+Documents/
+Persistence/
+Reports/
+Security/
+```
 
 ### Persistence
 
-- `Persistence/CareNestRepository.cs` — concrete structured data repository and atomic multi-step operations.
-- `Persistence/SchemaInfo.cs` — schema version record.
-- `Persistence/SqliteDatabase.cs` — SQLite connection initialization, migrations, WAL/busy-timeout configuration, checkpoint/snapshot/integrity-related behavior.
+Contains SQLite database initialization/migrations/repository implementation and consistency behavior.
+
+Responsibilities include:
+
+- schema creation/migration;
+- repository operations;
+- transactions;
+- WAL/busy-timeout/snapshot/integrity support;
+- relationship cleanup;
+- safe persistence boundaries for application services.
+
+### Documents
+
+Contains encrypted application-owned document storage implementation and related filesystem/encryption handling.
+
+### Backup
+
+Contains manual backup creation/inspection/restore implementation, encrypted framing/topology validation and rollback/recovery behavior.
 
 ### Reports
 
-- `Reports/CsvWriter.cs` — CSV output with portable spreadsheet formula-like string neutralization and safe staging behavior.
-- `Reports/ReportService.cs` — profile/report/export construction.
-- `Reports/SimplePdfWriter.cs` — project PDF writer used by report generation.
+Contains report/export implementations and safe output generation/cleanup behavior.
 
 ### Security
 
-- `Security/ChunkedAead.cs` — chunked AES-256-GCM authenticated stream framing; new writes use v2 authenticated termination and reads retain v1 compatibility where supported.
+Contains infrastructure cryptographic helpers/services used by documents/backups and related secure behavior.
 
-### Project metadata
+### Configuration
 
-- `CareNest.Infrastructure.csproj`
-- `Properties/AssemblyInfo.cs`
+Contains infrastructure configuration/support code where required.
 
-## 6. MAUI application project
+Infrastructure is platform-neutral relative to MAUI UI, even though it can depend on application/domain/shared abstractions and platform-neutral libraries.
+
+## 6. `CareNest.App`
 
 Path: `src/CareNest.App/`
 
-### Composition/startup
+Responsibilities:
+
+- MAUI single-project composition;
+- dependency injection;
+- startup/shell/navigation;
+- ViewModels;
+- XAML pages/resources;
+- platform adapters;
+- notification/alarm integrations;
+- file/share/calendar/browser integrations;
+- secure storage/preferences/app-lock host integrations;
+- Android/iOS/Mac Catalyst/Windows target code.
 
-- `CareNest.App.csproj` — multi-target MAUI project definition.
-- `App.xaml` / `App.xaml.cs` — application resources and startup app object.
-- `MauiProgram.cs` — dependency injection/composition root, infrastructure/application/platform registration.
-- `GlobalUsings.cs` — application-level shared imports.
+### Application project
 
-### Navigation
+`CareNest.App.csproj` declares:
 
-- `Navigation/RouteNames.cs` — canonical app routes.
+- .NET MAUI single-project;
+- Android/iOS/Mac Catalyst/Windows target frameworks;
+- application ID/version;
+- MAUI resources;
+- strict compiled XAML binding policy;
+- target isolation through `CareNestTargetFramework`.
 
-ViewModels should use navigation abstractions/routes rather than embedding persistence/platform details.
+## 7. App startup/composition
 
-### Converters
+Important top-level units include:
 
-- `Converters/CommonConverters.cs` — reusable binding converters.
+- `App.xaml` / `App.xaml.cs` — application resources/lifecycle;
+- `AppShell.xaml` / code-behind — shell/navigation structure;
+- `MauiProgram.cs` — dependency injection/service/ViewModel/page registration;
+- startup/lock/shell routing code as defined by current source.
 
-### Platform implementations
+Keep dependency registration centralized and avoid service-location logic inside ViewModels.
 
-#### Android
+## 8. ViewModels
 
-- `Platforms/Android/AndroidManifest.xml`
-- `Platforms/Android/MainActivity.cs`
-- `Platforms/Android/MainApplication.cs`
-- `Platforms/Android/PlatformNotificationService.Android.cs`
-- Android resources under `Platforms/Android/Resources/`
+Path: `src/CareNest.App/ViewModels/`
 
-Android notification/recovery behavior must account for permission, alarm capability/policy, battery restrictions, reboot, time/time-zone changes, force-stop, and receiver lifetime.
+Current ViewModels include major surfaces for:
 
-#### iOS
+- About;
+- appointments list/editor;
+- dashboard;
+- documents;
+- lock;
+- medication log;
+- medicines list/editor;
+- onboarding;
+- profiles list/editor;
+- reports;
+- schedule editor;
+- settings.
 
-- `Platforms/iOS/AppDelegate.cs`
-- `Platforms/iOS/Info.plist`
-- `Platforms/iOS/PlatformNotificationService.iOS.cs`
-- `Platforms/iOS/Program.cs`
+`ObservableViewModel` supplies common observable/command/async state behavior where used.
 
-#### Mac Catalyst
+ViewModel rules:
 
-- `Platforms/MacCatalyst/AppDelegate.cs`
-- `Platforms/MacCatalyst/Info.plist`
-- `Platforms/MacCatalyst/PlatformNotificationService.MacCatalyst.cs`
-- `Platforms/MacCatalyst/Program.cs`
+- use application/infrastructure abstractions;
+- no direct `SQLiteAsyncConnection`/repository implementation reach-through;
+- no casual network client creation;
+- avoid prohibited `async void`/`Task.Run` patterns;
+- propagate cancellation where appropriate;
+- keep medical text opaque/non-clinical.
 
-#### Windows
+## 9. XAML views
 
-- `Platforms/Windows/App.xaml`
-- `Platforms/Windows/App.xaml.cs`
-- `Platforms/Windows/Package.appxmanifest`
-- `Platforms/Windows/PlatformNotificationService.Windows.cs`
+Path: `src/CareNest.App/Views/`
 
-The Windows fallback is documented as an in-process limitation rather than guaranteed closed-app delivery.
+Binding-bearing pages include:
 
-### Resources
+- `AboutPage.xaml`;
+- `AppointmentEditorPage.xaml`;
+- `AppointmentsPage.xaml`;
+- `DashboardPage.xaml`;
+- `DocumentsPage.xaml`;
+- `LockPage.xaml`;
+- `MedicationLogPage.xaml`;
+- `MedicineEditorPage.xaml`;
+- `MedicinesPage.xaml`;
+- `OnboardingPage.xaml`;
+- `ProfileEditorPage.xaml`;
+- `ProfilesPage.xaml`;
+- `ReportsPage.xaml`;
+- `ScheduleEditorPage.xaml`;
+- `SettingsPage.xaml`.
 
-`src/CareNest.App/Resources/` contains application icon, splash/branding, images, fonts/styles/raw assets as applicable.
+`StartupPage.xaml` and shell/resource surfaces have separate roles and do not require a page ViewModel binding type when they contain no runtime bindings.
 
-Known branding assets include:
+## 10. XAML binding contract
 
-- `Resources/AppIcon/appicon.svg`
-- `Resources/AppIcon/appiconfg.svg`
-- `Resources/Images/buy_me_a_coffee_carenest.svg`
-- `Resources/Images/carenest_mark.svg`
-- `Resources/Images/carenest_mark_dark.svg`
-- `Resources/Images/carenest_mark_light.svg`
-- `Resources/Images/carenest_monochrome.svg`
+All binding-bearing pages/templates are compiled with strict type metadata:
 
-Support/funding artwork must remain a voluntary project-support surface and must not be represented as health entitlement or medical functionality.
+- root page ViewModel `x:DataType`;
+- item-specific DataTemplate types;
+- typed picker display binding contexts;
+- typed explicit Source/ancestor bindings;
+- Source binding compilation enabled;
+- strict XAML compilation enabled;
+- `XC0022`–`XC0025` treated as errors.
 
-### Presentation/services/views/viewmodels
+`CompiledBindingContractTests` protects this dynamically.
 
-The MAUI tree also contains the concrete UI, ViewModel, app-navigation, secure storage, file/share/browser/calendar, app-lock, onboarding/startup, notification diagnostics, settings and other platform-composition files. Their architectural rule is consistent: UI/ViewModels depend on application/platform abstractions rather than issuing SQL or inventing medical behavior.
+## 11. Platform folders
 
-For page-by-page behavior see `docs/USER_GUIDE.md`, `docs/FEATURE_REFERENCE.md`, `docs/architecture/APPLICATION_FLOWS.md`, and `docs/architecture/SERVICE_BOUNDARIES.md`.
+`src/CareNest.App/Platforms/Android/`
 
-## 7. Unit-test project
+- Android manifest/application/activity integration;
+- notification/alarm/broadcast integration;
+- platform-specific services/resources.
 
-Path: `tests/CareNest.UnitTests/`
+`src/CareNest.App/Platforms/iOS/`
 
-Concrete test files include:
+- app delegate/program/info plist;
+- iOS notification/platform service integration.
 
-- `AppointmentAndProfileRulesTests.cs`
-- `AppointmentServiceTests.cs`
-- `BackupReminderCoordinatorTests.cs`
-- `DocumentServiceTests.cs`
-- `MedicineRulesTests.cs`
-- `MedicineServiceTests.cs`
-- `ProfileServiceTests.cs`
-- `ReminderCoordinatorActionRecoveryTests.cs`
-- `ReminderCoordinatorActionValidationTests.cs`
-- `ReminderPlannerArchivedProfileTests.cs`
-- `ReminderPlannerBoundaryTests.cs`
-- `ReminderPlannerDstMatrixTests.cs`
-- `ReminderPlannerEdgeCaseTests.cs`
-- `ReminderPlannerOwnershipTests.cs`
-- `ReminderPlannerPropertyTests.cs`
-- `ReminderPlannerTests.cs`
-- `ReminderPlannerUtcWindowTests.cs`
-- `ScheduleValidationHardeningTests.cs`
-- reusable test doubles under `TestDoubles/` including document-store, deterministic time, notification, reminder-coordinator and repository doubles.
+`src/CareNest.App/Platforms/MacCatalyst/`
 
-The authoritative PR #56 baseline contains 122 unit tests.
-
-## 8. Integration-test project
-
-Path: `tests/CareNest.IntegrationTests/`
-
-This suite validates behavior that crosses implementation boundaries, including:
-
-- SQLite migrations/repository behavior;
-- WAL/busy timeout/snapshot integrity;
-- rollback/transaction behavior;
-- encrypted document round-trip/tamper/key state;
-- backup create/inspect/restore/wrong-password/tamper/topology/key behavior;
-- chunked AEAD v2 framing and v1 read compatibility;
-- report/export safety;
-- reminder reconciliation behavior.
-
-The authoritative PR #56 baseline contains 39 integration tests.
-
-## 9. UI-contract/policy test project
-
-Path: `tests/CareNest.UiTests/`
-
-This suite contains source/XAML/repository policy contracts rather than claiming full target-device UI automation.
+- app delegate/program/info plist;
+- Mac Catalyst platform service integration.
 
-Coverage includes:
-
-- architecture dependency direction;
-- repository/source hygiene;
-- required data model;
-- ViewModel boundaries;
-- XAML semantics/accessibility intent;
-- branding/support surfaces;
-- async-safety rules;
-- logging privacy;
-- app-lock source/crypto contracts;
-- reminder UTC/snooze/reconciliation/compensation rules;
-- Android receiver lifecycle;
-- Windows notification timer ownership/race rules;
-- backup/document/report safety contracts;
-- SQLite dependency-security floor/suppression absence;
-- release workflow exact-tag/manual triggers;
-- Dependency Audit event-safety;
-- Release Evidence provenance/failure preservation/rerun identity;
-- release-preflight blocking audit behavior;
-- local quality-gate clean-checkout/fail-closed behavior;
-- repository-local Git setup;
-- production Release Gate fail-closed matching.
-
-The authoritative PR #56 baseline contains 124 UI-contract/policy tests.
-
-## 10. Build scripts
-
-Path: `build/scripts/`
-
-- `quality-gate.sh`
-- `quality-gate.ps1`
-- `release-preflight.sh`
-- `release-preflight.ps1`
-- `setup-git.sh`
-- `setup-git.ps1`
-
-Quality/preflight scripts must fail on required native-command/dependency-audit failures. Dependency audit is not warning-only.
-
-Git setup uses repository-local identity:
-
-- name: `Sanskar`
-- email: `sanskarin@outlook.in`
-
-## 11. GitHub automation
-
-Path: `.github/workflows/`
-
-- `ci.yml` — formatting, core tests and platform Release builds.
-- `codeql.yml` — CodeQL analysis.
-- `dependency-review.yml` — NuGet dependency auditing and PR-specific dependency comparison where applicable.
-- `release-gate.yml` — fail-closed production release checklist/risk/core-test gate.
-- `release-evidence.yml` — exact-source provenance/test/dependency/checksum evidence artifact.
-
-Production tags matching `v*` are configured to run the exact tagged commit through the required production workflows described in the release documentation.
-
-## 12. Central build/package files
-
-- `CareNest.sln` — solution project graph.
-- `Directory.Build.props` — shared build/analyzer/audit behavior.
-- `Directory.Packages.props` — centrally managed package versions, including maintained SQLite native/provider pins.
-- `NuGet.config` — package source configuration.
-- `.editorconfig` — source formatting/style policy.
-- `.gitignore` — generated/local/secret artifact exclusions.
-
-## 13. Root governance and project files
-
-- `README.md` — public project entry point.
-- `LICENSE` — Apache License 2.0.
-- `NOTICE` — required project notice.
-- `CONTRIBUTING.md` — contributor rules.
-- `CODE_OF_CONDUCT.md` — community conduct.
-- `SECURITY.md` — vulnerability/security policy.
-- `PRIVACY.md` — user privacy statement.
-- `TERMS.md` — project terms/limitations.
-- `SUPPORT.md` — support channels.
-- `BUY_ME_A_COFFEE.md` — voluntary project support information.
-- `CHANGELOG.md` — release/change history.
-- `PROJECT_STATUS.md` — current source/release status.
-- `DECISIONS.md` — architectural/project decision record.
-- `what_changed.md` — detailed continuation ledger.
-
-## 14. Where to add new code
-
-Use the lowest appropriate layer:
-
-- reusable primitive/constant with no domain semantics → Shared;
-- entity/enum/structural validation → Domain;
-- use-case contract/orchestration/deterministic planner behavior → Application;
-- SQLite/filesystem/crypto/report implementation → Infrastructure;
-- XAML/ViewModel/navigation/platform API implementation → App;
-- deterministic behavior test → UnitTests;
-- persistence/crypto/filesystem integration test → IntegrationTests;
-- source/XAML/architecture/repository/security/release policy → UiTests.
-
-## 15. Forbidden shortcuts
-
-Do not:
-
-- put SQL directly in a ViewModel;
-- make Domain/Application depend on MAUI;
-- add a network/telemetry client to local-first v1 without explicit architecture/privacy/security review;
-- infer dosage/treatment from medicine text;
-- use broad audit/analyzer suppression to hide a real defect;
-- make platform notification state and SQLite state look atomic when they are not;
-- silently replace a missing encryption key that existing ciphertext depends on;
-- remove legacy encrypted-format compatibility without a tested migration/recovery plan;
-- commit real health records, backups, PINs, passwords, encryption keys or signing material.
-
-## 16. Current verified source
-
-Authoritative release-engineering verification: PR #56.
-
-- source/base: `4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
-- marker head: `e3bc621cea05364a69abee0dadbd71a67c17bddb`
-- CareNest CI #571 / `31770929379`: success
-- unit: 122 passed
-- integration: 39 passed
-- UI-contract/policy: 124 passed
-- total: 285 passed
-- Android/Windows/iOS simulator/Mac Catalyst Release: success
-- CodeQL #571 / `31770929382`: success
-- unsuppressed Dependency Audit #41 / `31770929383`: success
-
-See `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` for the exact evidence and `docs/testing/TESTING_GUIDE.md` for test-layer details.
+`src/CareNest.App/Platforms/Windows/`
+
+- Windows app/package manifest/integration;
+- in-process reminder fallback/platform service.
+
+## 12. Resources
+
+`src/CareNest.App/Resources/` contains app icon, splash, images, raw files, styles and other MAUI resources.
+
+The external BMC destination/artwork that previously entered Windows package bytes has been removed from application resources. Do not reintroduce it casually.
+
+## 13. Test projects
+
+### `tests/CareNest.UnitTests`
+
+Deterministic domain/application tests using fakes/test doubles.
+
+### `tests/CareNest.IntegrationTests`
+
+SQLite/encryption/filesystem/backup/report integration tests.
+
+### `tests/CareNest.UiTests`
+
+XAML/source/repository policy tests rather than full physical-device automation.
+
+Current PR #74 counts: 122 + 39 + 170 = 331.
+
+## 14. Build scripts
+
+`build/scripts/` includes repository helpers for:
+
+- Git identity setup;
+- local quality gate;
+- release preflight;
+- store-package preflight;
+- store-safe payload verification/scanning;
+- other release/evidence support defined by the current tree.
+
+Do not weaken fail-closed behavior to obtain green output.
+
+## 15. GitHub workflows
+
+`.github/workflows/` includes:
+
+- CI;
+- CodeQL;
+- dependency audit/review;
+- store package verification;
+- store inspection artifacts;
+- Release Gate;
+- Release Evidence.
+
+Production-style `v*` tag flow is documented in the release docs.
+
+## 16. Where new work belongs
+
+### New domain invariant
+
+`CareNest.Domain` plus unit tests.
+
+### New application use case/orchestration
+
+`CareNest.Application` contracts/services plus unit tests.
+
+### New SQLite/filesystem/crypto/report implementation
+
+`CareNest.Infrastructure` plus integration tests.
+
+### New MAUI screen/platform integration
+
+`CareNest.App` plus UI/source-policy and platform/manual validation.
+
+### New cross-cutting primitive
+
+`CareNest.Shared` only if truly shared and dependency-light.
+
+## 17. New network/cloud work
+
+Do not place an HTTP client in a convenient layer and call the feature complete. Current v1 is local-first/account-free.
+
+A networked feature requires explicit authentication, authorization, consent, key management, privacy, deletion/export, offline/conflict, threat-model and store-policy design.
+
+## 18. Medical-safety boundary
+
+No layer should infer or recommend dosage/treatment/clinical interaction/risk from user medicine/profile/document data.
+
+The architecture exists to organize explicit user input, not transform it into medical advice.
+
+## 19. Current source verification
+
+PR #74 source head:
+
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+
+Merged executable source:
+
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+
+Verified 331/331 tests plus all configured target/store/security/dependency/inspection gates.
+
+See `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.

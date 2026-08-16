@@ -1,218 +1,251 @@
 # CareNest Production Quality Gate
 
-CareNest must not be described as bug-free. A production release is acceptable only when the preventive controls and evidence below are complete for the exact release commit.
+**Release line:** `1.0.0-rc.1`  
+**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-## Source quality
+CareNest must not be described as globally bug-free. Production promotion is acceptable only when the applicable automated, manual, package, accessibility, signing and store evidence below is complete for the exact candidate.
 
-- Runtime source contains no TODO/FIXME/NotImplemented implementation placeholders.
-- Nullable reference types and analyzers remain enabled.
-- CI warnings-as-errors policy remains enabled for CI builds except explicitly documented advisory analyzer exceptions.
-- Platform-neutral projects pass `dotnet format --verify-no-changes`.
-- Shared/Domain/Application/Infrastructure project dependency direction passes architecture contract tests.
-- Concrete ViewModels do not directly access SQLite infrastructure or create network clients.
-- Runtime source does not synchronously block on tasks through `.Wait()`, `.Result`, `GetAwaiter().GetResult()`, `Thread.Sleep`, `Task.WaitAll` or `Task.WaitAny` patterns.
-- New service behavior has direct platform-neutral tests where orchestration can be verified without MAUI/SQLite.
-- Analyzer findings exposed by marker-only verification are fixed in source/tests rather than hidden by weakening the analyzer gate.
+## 1. Source quality
 
-## Product safety and scheduling integrity
+Required:
 
-- No diagnosis, treatment recommendation, dosage calculation/inference, medication-interaction checking or clinical risk scoring is introduced.
-- Medicine strength and instruction values remain opaque user-entered text.
-- As-needed schedules do not automatically create reminders.
-- Archived profiles, paused/completed/archived medicines and disabled schedules do not automatically materialize reminders.
-- Daily, selected-weekday, cycle, custom-range and every-N-hours behavior is derived only from explicit user-entered schedule values.
-- Planning windows remain half-open (`fromUtc` inclusive, `toUtc` exclusive) so adjacent rebuild windows do not duplicate boundary occurrences.
-- Planner window start/end and reminder rebuild overrides require actual UTC `DateTime` values.
-- Duplicate explicit clock times do not create duplicate occurrence identities.
-- Reminder ownership is verified across profile → medicine → schedule → persisted schedule-time relationships before materialization.
-- Unknown schedule kinds, unsupported weekday-mask bits, invalid explicit intervals and invalid time-zone identifiers are rejected rather than silently reinterpreted.
-- Invalid daylight-saving spring-forward local times do not cause CareNest to invent an alternate reminder time.
-- Ambiguous daylight-saving fall-back local times remain deterministic across rebuilds.
-- Representative DST gap/overlap coverage spans North America, Europe, Australia and New Zealand when those identifiers exist on the test host.
-- Deterministic property-style recurrence tests use fixed seeds/explicit synthetic schedules and remain reproducible.
-- Snooze actions require an explicit future UTC timestamp before persistence or platform scheduling.
-- Snoozed rows use `SnoozedUntilUtc` as their effective due time for upcoming and overdue behavior.
-- Rebuild cancels existing OS requests before replacement, suppression or invalidation.
-- Platform cancellation failure leaves reminder state retryable rather than falsely reconciled.
-- Schedule edits preserve old future occurrence identities until OS-request reconciliation can cancel stale requests.
-- Medicine/profile delete flows cancel future OS requests before cascade and compensate with non-cancelled rebuild if persistence fails.
-- Medicine/profile save flows reconcile reminders before non-critical audit bookkeeping can make an already-applied record transition appear failed.
-- Appointment persistence has explicit platform-reminder reconciliation/compensation coverage.
-- Reminder actions cancel the old OS request before committing handled state and use non-cancelled state/rebuild compensation when later persistence/snooze scheduling fails.
-- Appointment `StartsUtc` requires actual `DateTimeKind.Utc`; local/unspecified appointment clock values are rejected instead of relabeled.
-- Appointment time-zone identifiers are trimmed/validated separately from the UTC instant.
-- Notification permission is not requested during onboarding; it is requested only at an explicit reminder-capable action.
-- An appointment save whose permission request remains denied creates no platform notification schedule.
-- Appointment/background rebuild does not repeatedly prompt and does not schedule while permission remains denied.
-- Stock changes use only user-configured values.
-- Medical/reminder limitations remain visible in onboarding and About.
+- nullable/analyzer policy remains enabled;
+- platform-neutral formatting passes;
+- project dependency direction remains correct;
+- ViewModels do not directly issue SQLite operations or casually create network clients;
+- prohibited sync-over-async/async misuse remains guarded by source-policy tests;
+- new behavior has appropriate lowest-layer regression tests;
+- analyzer/compiler failures are fixed rather than broadly suppressed;
+- strict XAML compiled-binding policy remains enabled.
 
-## Document-vault consistency/security
+## 2. Strict XAML quality
 
-- New document payloads use AES-256-GCM chunked framing v2 with an authenticated terminal record.
-- Legacy framing-v1 encrypted documents remain readable for compatibility; existing v1 ciphertext is not represented as retroactively upgraded.
-- V2 integration tests reject chunk-boundary prefix truncation and trailing data.
-- New `CareDocument.EncryptionVersion` metadata records stream format v2.
-- Caller-owned copies of the document master key are zeroed after crypto operations where practical.
-- Generated document-key buffers are cleared if secure-store persistence fails.
-- A document metadata-save failure removes the newly created encrypted payload.
-- An audit failure after metadata save attempts rollback of both metadata record and encrypted payload.
-- Rollback cleanup failure is surfaced rather than silently hidden.
-- Explicit export constrains the temporary output filename to a safe leaf filename.
-- Successful decrypted exports use managed cache ownership.
-- Failed/cancelled plaintext exports remove application-owned incomplete files best effort.
-- Application-owned report cache files are removed after share handoff where CareNest still controls the temporary copy.
+Required:
 
-## Backup/restore security
+- Source binding compilation enabled;
+- strict XAML compilation enabled;
+- `XC0022`, `XC0023`, `XC0024`, `XC0025` remain errors;
+- binding-bearing pages have accurate root `x:DataType`;
+- binding-bearing DataTemplates have item-specific types;
+- picker display bindings are typed where context changes;
+- explicit Source/ancestor bindings are typed;
+- no matching `NoWarn`, `x:Object` or `x:Null` bypass.
 
-- Backup encryption tests pass for round-trip, wrong-password and tamper rejection.
-- New encrypted backup payload streams use authenticated framing v2; legacy framing v1 remains readable for compatibility.
-- V2 authenticated terminal/trailing-data behavior is tested through the shared framing tests.
-- Decrypted backup ZIP topology is validated before extraction.
-- Duplicate archive entries are rejected.
-- Unexpected archive entries are rejected.
-- Nested document entries are rejected.
-- Non-`.cndoc` document entries are rejected.
-- Manifest document count must match the archive.
-- A document-bearing backup requires a valid 32-byte document master key.
-- Invalid schema/document-count metadata is rejected.
-- Extraction retains full-path containment checks as defense in depth.
-- Password-derived key/salt buffers are zeroed after backup crypto paths where practical.
-- Copied document-key buffers used during backup creation/restore are zeroed after use where practical.
-- WAL snapshot tests verify copied committed data and SQLite integrity rather than only file existence.
-- A pre-cancelled snapshot operation leaves no output file.
-- Primary encrypted backup/restore success is not falsely reported as failure only because later local bookkeeping/audit persistence fails.
-- Failed restore rolls the document key back to its exact prior byte state where prior bytes existed.
+## 3. Product safety
 
-## Privacy/security
+Required:
 
-- No required CareNest account/server/network client is introduced in v1.
-- No analytics/telemetry client is introduced.
-- No common signing/credential files are committed.
-- Error/reminder logging does not pass full exception objects or health-record identifiers to the structured logger.
-- Planner ownership mismatches fail closed instead of silently creating occurrences under another local entity.
-- App-lock source contracts verify salted PBKDF2-HMAC-SHA256, fixed-time comparison, no plaintext PIN persistence, verifier-buffer clearing and stored lock-material removal.
-- App lock remains described as a local privacy barrier, not whole-database/device encryption.
-- Sensitive mutable caller-owned buffers are cleared where practical without claiming total process/OS-memory erasure.
-- SQLite migration/integrity tests pass.
-- CodeQL passes.
-- Dependency Audit passes without the former `GHSA-2m69-gcr7-jv3q` `NuGetAuditSuppress` exception.
-- SQLite native/provider package floors are guarded by `SqliteDependencySecurityContractTests`.
-- The dependency remediation is not represented as proof of packaged existing-database/backup/device compatibility; those manual release checks remain separate.
+- no diagnosis;
+- no dosage calculation/inference;
+- no treatment recommendation;
+- no clinical interaction/risk scoring;
+- no emergency-service replacement;
+- no guaranteed reminder-delivery claim;
+- medicine strength/instructions remain opaque user text;
+- schedules derive only from explicit user input;
+- as-needed schedules create no automatic occurrence;
+- inactive/archived states suppress automatic reminder materialization as documented.
 
-## Release-engineering quality controls
+## 4. Reminder integrity
 
-- CareNest CI, CodeQL and Dependency Audit support exact `v*` tag execution.
-- CareNest CI, CodeQL and Dependency Audit expose manual execution paths where configured.
-- Dependency Audit does not dereference pull-request-only metadata during tag/manual runs.
-- Release Gate and Release Evidence support exact `v*` tags and manual execution.
-- Release Gate detects open dependency-risk status independent of indentation/case and detects nested unchecked checklist rows.
-- Release Gate requires the core release/status/security/evidence documents and all three core test suites.
-- Release Evidence records exact commit/ref/run/attempt identity.
-- Release Evidence records tracked-file manifests and SHA-256 source checksums.
-- Release Evidence attempts unit, integration, UI-contract, dependency-inventory, and workspace-integrity evidence independently.
-- Release Evidence uploads available evidence before the aggregate failure gate so a failed run remains diagnosable.
-- Release Evidence artifact names include commit SHA, run ID, and run attempt.
-- Release-preflight Bash/PowerShell scripts treat unsuppressed dependency audit failures as blocking.
-- Quality-gate Bash/PowerShell scripts work from a clean checkout and fail on required native-command errors.
-- Repository Git setup scripts use repository-local identity, verify `Sanskar` / `sanskarin@outlook.in`, and fail closed on native Git errors.
-- Executable UI-contract tests guard these workflow/script/release-policy expectations.
+Required source/test behavior includes:
 
-## Cross-platform automated evidence
+- true UTC planning boundaries;
+- half-open planning windows;
+- deterministic time-zone/DST handling;
+- ownership/state validation;
+- stable occurrence identity/deduplication;
+- valid future UTC snooze;
+- `SnoozedUntilUtc` as effective due time;
+- stale OS request reconciliation;
+- cancellation before replacement/suppression/invalidation;
+- cancellation-first handled actions;
+- retryable platform cancellation failure;
+- restoration/rebuild compensation when later persistence/platform work fails;
+- appointment true-UTC/permission/compensation behavior.
 
-- Unit tests pass.
-- Integration tests pass.
-- UI/repository/release-policy contract tests pass.
-- Android Release build passes.
-- Windows Release build passes.
-- iOS simulator Release build passes.
-- Mac Catalyst Release build passes.
-- CodeQL passes.
-- Unsuppressed Dependency Audit passes.
-- Release Evidence artifacts are generated for the exact final production release commit/tag before publication.
+## 5. Persistence quality
 
-## Current exact automated baseline
+Required:
 
-Authoritative marker-only verification: PR #56 — `Verify complete CareNest release-engineering source`.
+- ordered/idempotent migrations;
+- transactional multi-step consistency where needed;
+- repository abstraction instead of direct ViewModel SQL;
+- WAL/snapshot/integrity behavior remains tested;
+- destructive cleanup/rollback is explicit;
+- source dependency security is not confused with packaged data compatibility.
 
-Frozen source/base SHA:
+## 6. Document-vault quality
 
-`4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
+Required:
 
-Verification marker head:
+- authenticated encrypted payloads;
+- current v2 framing for new writes;
+- documented legacy v1 read compatibility;
+- tamper/truncation/trailing-data rejection;
+- missing/corrupt key fail closed;
+- no silent unrelated replacement key for existing ciphertext;
+- import/export/delete cleanup/rollback;
+- explicit plaintext export boundary.
 
-`e3bc621cea05364a69abee0dadbd71a67c17bddb`
+## 7. Backup/restore quality
 
-Final evidence:
+Required:
 
-- CareNest CI #571 / `31770929379`: **success**;
-- platform-neutral formatting: **success**;
-- **122 unit tests**: passed;
-- **39 integration tests**: passed;
-- **124 UI-contract/policy tests**: passed;
-- **285 total core tests**: passed;
-- Android Release: **success**;
-- Windows Release: **success**;
-- iOS simulator Release: **success**;
-- Mac Catalyst Release: **success**;
-- CodeQL #571 / `31770929382`: **success**;
-- unsuppressed Dependency Audit #41 / `31770929383`: **success**.
+- authenticated password-encrypted backups;
+- versioned format;
+- wrong-password/tamper/truncation/trailing-data rejection;
+- strict archive topology;
+- SQLite snapshot/integrity validation;
+- encrypted-document recovery material rules;
+- rollback/cleanup after failed restore;
+- legacy compatibility where documented.
 
-PR #56 was closed without merge. Its verification marker is not part of `main`.
+## 8. App-lock quality
 
-`docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` records the authoritative final release-engineering evidence. PR #54 remains the historical completed runtime bug-audit baseline.
+Required:
 
-### Verification failures/supersession retained as evidence of gate behavior
+- no plaintext PIN persistence;
+- random salt;
+- PBKDF2-HMAC-SHA256 verifier;
+- fixed-time comparison;
+- secure-store ownership;
+- strict material validation;
+- rollback/fail-closed behavior;
+- app lock described as privacy barrier, not whole-database encryption.
 
-- PR #31 exposed CA1861 in new profile-service test source; it was fixed without analyzer suppression.
-- PR #39 exposed CA1001 and a formatter defect; the accidentally merged failed marker was explicitly removed from `main`.
-- PR #40 demonstrated platform/CodeQL/audit success but core formatting failed, so it was not promoted.
-- PR #43 was incorrectly described as green in earlier documentation; actual CareNest CI #448 failed integration tests and skipped the UI suite.
-- PR #44 reproduced future-snooze, overdue-snooze and stale-occurrence defects; source was fixed instead of reusing PR #43 evidence.
-- PR #46 exposed broader OS-reminder reconciliation contracts.
-- PR #49 exposed CA1861 in new reminder reconciliation assertions; tests were corrected instead of suppressing the analyzer.
-- PRs #47/#48/#50 supplied useful unsuppressed SQLite-audit evidence while source was moving, but were not final combined-source baselines.
-- PRs #51/#52 were superseded when later runtime/test source changed.
-- PR #53 independently corroborated the final bug-audit source; PR #54 was retained as that audit's authoritative checkpoint.
-- PR #55 passed 277/277 core tests, Android, Windows, CodeQL and unsuppressed Dependency Audit but was intentionally superseded when the complete-file audit found further legitimate release-tooling/documentation fixes.
-- PR #56 is the authoritative completed release-engineering baseline.
+## 9. Privacy/security quality
 
-This automated baseline is necessary but not sufficient for final public release. The exact promoted production commit/tag still needs successful exact-tag Release Gate/Release Evidence after all applicable manual/store/signing/packaged-data blockers are complete.
+Required:
 
-## Manual evidence still required
+- no required CareNest account/backend in current v1;
+- no automatic CareNest cloud sync/upload;
+- no hidden runtime analytics/telemetry client;
+- no committed signing/credential secrets;
+- privacy-minimized logging;
+- no raw health/document/PIN/password/key data in normal diagnostics;
+- CodeQL passes;
+- unsuppressed Dependency Audit passes;
+- former SQLite exact suppression remains absent;
+- dependency floors remain protected by source-policy tests.
 
-- Android device/emulator matrix complete.
-- Windows manual matrix complete.
-- iOS/iPadOS manual matrix complete.
-- Mac Catalyst manual matrix complete.
-- Notification permission and delivery limitations tested.
-- Appointment permission-denied/granted behavior tested on target platforms.
-- Android exact-alarm/battery/reboot behavior tested on representative devices.
-- Time-zone change behavior tested.
-- Snooze and cancellation-first reminder-action behavior tested against real platform notification scheduling.
-- Representative upgrade/install containing fictional pre-remediation SQLite data tested.
-- Existing structured records remain readable after the SQLite native/provider update.
-- Existing encrypted documents remain decryptable after the dependency update.
-- Pre-remediation/current encrypted backup compatibility tested on packaged builds where canonical fixtures are available.
-- Document import/export/delete tested.
-- New v2 encrypted document read/write tested in packaged builds.
-- Legacy v1 document compatibility tested with a canonical historical fixture when available.
-- Calendar export tested.
-- Encrypted backup/restore tested on clean installation/release build.
-- New v2 encrypted backup creation/readback tested in packaged builds.
-- Legacy v1 backup compatibility tested with a canonical historical fixture when available.
-- App lock cold-start flow tested.
-- Screen-reader, keyboard, large-text, reduced-motion and contrast checks complete.
+## 10. Application funding/package quality
 
-## Distribution evidence still required
+Required:
 
-- Current Apple/Google policy review for the voluntary project-support link is complete.
-- Channel-specific support-link visibility follows current store rules.
-- Signing identities are supplied outside Git.
-- Signed packages are built from the exact verified production commit.
-- Store listing/privacy/data-safety claims match actual implementation.
-- Release notes include known limitations and do not promise guaranteed reminder delivery.
-- Final package/release notes distinguish v2 new-write hardening from retained v1 read compatibility if that distinction is relevant to users/support.
-- Exact approved production `v*` tag completes CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence successfully.
+- no external Buy Me a Coffee destination/card/command/artwork under distributed application runtime/package source;
+- repository-only voluntary support remains separate;
+- funding never creates health/reminder/medical entitlement;
+- forbidden-marker package scanner remains fail closed;
+- no obsolete application funding-link toggle is required for store builds.
 
-Any failed, unknown or stale required gate blocks final production promotion until it is resolved or explicitly documented as not applicable by the release owner.
+## 11. Automated test/build quality
+
+Current accepted PR #74 evidence:
+
+- 122/122 unit;
+- 39/39 integration;
+- 170/170 UI/source-policy;
+- **331/331 total**;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- Store Package Configuration: success on all four targets;
+- Store Inspection Artifacts: success;
+- CodeQL: success;
+- Dependency Audit: success.
+
+This evidence belongs to the exact PR #74 source head `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9` and merged executable source `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`.
+
+## 12. Release-engineering quality
+
+Required configuration includes:
+
+- CI, CodeQL and Dependency Audit for applicable PR/tag/manual paths;
+- Store Package Configuration;
+- Store Inspection Artifacts;
+- fail-closed Release Gate;
+- Release Evidence with exact source/ref/run identity and checksums;
+- quality/release preflight that treats required dependency audit failures as blocking;
+- repository-local Git identity helpers that fail closed;
+- production-style `v*` tag coverage for all seven applicable workflows.
+
+## 13. Manual platform evidence
+
+Before production complete applicable rows in:
+
+- `docs/releases/MANUAL_TEST_MATRIX.md`;
+- `docs/PLATFORM_BEHAVIOR_MATRIX.md`.
+
+This includes real notification permission/delivery/lifecycle behavior, Android alarm/battery/reboot behavior, Windows limitation behavior, Apple real-device behavior, reminder actions/reconciliation, files/backups/app lock and themes/accessibility.
+
+## 14. Packaged compatibility evidence
+
+Before production verify with fictional representative data:
+
+- packaged SQLite upgrade/open/integrity/readability/editability;
+- schema version/migrations;
+- reminder reconciliation;
+- existing/current encrypted documents;
+- current backup/restore;
+- wrong-password/tamper/truncation behavior;
+- genuine historical fixtures where real prior bytes exist.
+
+A green NuGet audit is not a substitute.
+
+## 15. Accessibility evidence
+
+Manual evidence must cover representative:
+
+- screen readers;
+- large text/scaling;
+- keyboard/focus;
+- contrast/themes;
+- reduced motion;
+- color-independent meaning;
+- destructive confirmation readability.
+
+## 16. Production signing/package evidence
+
+Required:
+
+- signing identities/secrets configured outside Git;
+- exact source/package identity recorded;
+- final signed package SHA-256 recorded;
+- signing/notarization/store provenance recorded;
+- forbidden-marker scan on final signed package;
+- install/smoke test of final candidate.
+
+## 17. Store/policy evidence
+
+At submission time verify current channel rules and actual candidate behavior for:
+
+- health-organizer claims;
+- notification limitations;
+- privacy/data-safety;
+- permissions/capabilities;
+- screenshots with fictional data;
+- support/privacy/terms/security links;
+- final package identity;
+- absence of removed in-app BMC funding surface from listing/screenshots.
+
+## 18. Exact production tag evidence
+
+The approved immutable `v*` tag must complete:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Store Package Configuration;
+- Store Inspection Artifacts;
+- Release Gate;
+- Release Evidence.
+
+Do not move a failed/rejected tag to different source.
+
+## 19. Final production rule
+
+Any required quality gate that is failed, stale, unknown or not actually performed blocks production promotion unless explicitly documented as non-applicable with a defensible reason.
+
+Current status remains `1.0.0-rc.1` until the applicable production evidence is complete.

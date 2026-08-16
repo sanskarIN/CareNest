@@ -1,45 +1,89 @@
-# Privacy Notice
+# CareNest Privacy Notice
 
-CareNest v1 is local-first and does not require an account.
+CareNest `1.0.0-rc.1` is a local-first organizational application and does not require a CareNest account or CareNest-owned backend.
 
 ## Data stored locally
 
-Depending on what the user enters, the app can store local profiles, medicine names/instructions, reminder history, appointments, notes, stock adjustments, emergency-contact references, tags, and imported health documents.
+Depending on what the user enters, CareNest can store local profiles, emergency contacts, medicine names and user-entered instructions/strength text, schedules/reminder history, appointments/notes, stock adjustments, tags, settings and imported health documents.
+
+Structured records use local SQLite application storage. CareNest does **not** claim transparent whole-database encryption.
+
+Imported application-owned document payloads use a separate encrypted document-vault path.
 
 ## Network behavior
 
-The core application does not require a network connection and does not automatically upload health data or documents to a cloud service. Opening external repository/support links or using operating-system share/export features can involve other apps or services chosen by the user.
+The core application does not require a network connection and does not automatically upload health data/documents to a CareNest cloud service.
 
-## External voluntary project-support link
+Explicit actions such as opening repository/creator/legal/support web pages or using operating-system share/export/calendar features can involve external apps/services chosen by the user. CareNest does not automatically attach local health/profile/document/reminder/backup/app-lock data to ordinary fixed web links.
 
-CareNest can open the external Buy Me a Coffee page at `https://buymeacoffee.com/sanskarIN` when the user explicitly chooses the project-support action. CareNest does not automatically send medicine records, reminders, documents, profile information, backup contents, app-lock data, or other health-related content to that site.
+## Voluntary project support
 
-After the external site is opened, its own privacy practices, cookies, account/payment processing, and terms apply independently of CareNest. Supporting the project is optional and does not change CareNest health functionality or grant the project access to local CareNest data.
+The distributed CareNest application package currently does **not** include or expose the external Buy Me a Coffee project-funding destination/card/command/artwork.
+
+Voluntary project support is available only through repository documentation/metadata:
+
+`https://buymeacoffee.com/sanskarIN`
+
+If a user separately visits that external service, its own privacy, cookies, account/payment processing and terms apply. Supporting the project does not change CareNest health functionality or give the project access to local CareNest data.
 
 ## Documents
 
-Imported document bytes are encrypted within CareNest local storage. Exporting a document creates a decrypted copy for the destination/share target selected by the user; that copy is then governed by the destination app or storage provider.
+Imported document bytes are encrypted within CareNest application-owned vault storage. Metadata remains in local structured storage.
+
+Explicit export/open/share creates or hands off a decrypted/portable copy to the destination chosen by the user. That copy is then governed by the destination app/storage/provider and cannot be remotely revoked by CareNest.
 
 ## Database protection
 
-The SQLite database is stored in the app's platform sandbox. CareNest does not claim whole-database encryption in this release. Device-level encryption, account security, screen lock, backups, rooted/jailbroken devices, malware, and operating-system compromise affect protection.
+SQLite records rely primarily on the app sandbox and device/OS security. Device encryption, screen lock, OS/device backups, malware, rooted/jailbroken state and operating-system compromise affect protection.
 
 ## Backups
 
-Backups are manual, user-initiated, and encrypted with a password. Users choose where to store or share them. Losing the password can make a backup unrecoverable.
+Backups are manual, user-initiated and password-encrypted/authenticated. Users choose the destination and are responsible for protecting the password/file. CareNest has no server-side backup-password recovery service.
+
+## App lock
+
+Optional app lock is a local privacy barrier. PIN plaintext is not intended to be stored; derived verifier/salt material uses secure platform storage where applicable.
+
+App lock is not whole-database/device encryption or protection against a fully compromised device.
+
+## Notifications
+
+Notification contents are privacy-minimized where practical, but the operating system controls final lock-screen/history display. Users should review OS notification-preview settings for their privacy needs.
+
+CareNest cannot guarantee reminder delivery under every permission, shutdown, force-stop, battery/vendor or OS state.
 
 ## Diagnostics
 
-Logs are designed not to contain document contents, lock PINs, backup passwords, full sensitive notes, medicine/profile names, or raw health-record identifiers. Developer schedule inspection uses redacted labels.
+Routine logs are designed not to contain document contents, lock PINs, backup passwords, encryption keys, full sensitive notes/medicine/profile names or raw health-record identifiers.
 
-CareNest error logging records a safe exception type/category where needed for troubleshooting but intentionally does not pass full exception objects, exception messages, stack traces, user-entered record text, or file/document paths to the application logger. Global unhandled-exception observation follows the same redaction boundary.
+Sensitive-path logging should use safe operation/category and exception type instead of full raw exception messages/stack traces/paths where avoidable.
 
-This privacy boundary reduces accidental disclosure through diagnostics; it does not make public logs an appropriate place for health information. Users and maintainers should still review diagnostic exports before sharing them.
+Users/maintainers should still review diagnostic exports before sharing them.
+
+## Exports and external copies
+
+Reports, documents, backups and calendar entries created/exported by explicit user action can leave CareNest-controlled storage. External providers/apps may retain or synchronize them according to their own policies.
 
 ## Deletion
 
-Profiles and their associated CareNest records can be deleted from the app with confirmation. Users can also reset all application data. Previously exported files/backups are not deleted from external destinations automatically.
+Users can delete profiles/associated CareNest records with confirmation and can reset application-owned local data through documented workflows.
+
+Deletion does not automatically remove copies already exported/shared, saved in external backups/calendars/cloud drives, captured in screenshots or retained by OS/device backup systems.
+
+## No hidden analytics/telemetry
+
+Current v1 does not include a hidden runtime analytics/telemetry client.
+
+A future network/cloud/analytics feature would require updated consent, privacy, security, retention/deletion, threat-model and store-disclosure review before release.
+
+## Medical boundary
+
+CareNest organizes user-entered information. It does not diagnose conditions, calculate/infer dosage, recommend treatment, perform clinical medication-interaction checking, calculate clinical risk, verify adherence or provide emergency services.
 
 ## Contact
 
-Privacy questions: `sanskarin@outlook.in`
+Privacy/business questions: `sanskarin@outlook.in`
+
+Support: `supportramsandesh@gmail.com`
+
+Detailed privacy architecture: `docs/privacy/PRIVACY_MODEL.md` and `docs/privacy/DATA_LIFECYCLE.md`.

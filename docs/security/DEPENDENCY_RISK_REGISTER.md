@@ -1,65 +1,137 @@
-# Dependency Risk Register
+# CareNest Dependency Risk Register
 
-This register tracks dependency advisories that affect the CareNest release line and documents any temporary exception, remediation, and release evidence. A successful restore/build is not by itself a security resolution; the actual resolved dependency graph, NuGet audit result, regression matrix, and release state all matter.
+**Release line:** `1.0.0-rc.1`  
+**Current verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-## Resolved-in-source dependency remediation
+This register tracks dependency advisories/remediation and separates source dependency security from packaged existing-data compatibility.
 
-### GHSA-2m69-gcr7-jv3q — SQLite native package resolved by sqlite-net-pcl
+## 1. Current status
 
-- **Status:** Resolved in the current source dependency graph and verified by the final unsuppressed PR #54 automated matrix; packaged existing-data/manual release evidence remains part of the normal RC1 production checklist.
-- **Originally observed by:** GitHub Actions / NuGet audit during CareNest `1.0.0-rc.1` verification.
-- **Old resolved native path:** `SQLitePCLRaw.lib.e_sqlite3` `2.1.11` and the Android native variant `2.1.11` through the `sqlite-net-pcl` / `SQLitePCLRaw.bundle_green` dependency chain.
-- **Old exception:** `Directory.Build.props` temporarily suppressed only `GHSA-2m69-gcr7-jv3q`. No severity-wide or wildcard audit suppression was used.
-- **Correction to the old investigation:** the earlier repository note that the `2.1.12` maintenance path did not exist was too broad. `SQLitePCLRaw.bundle_green` remains at the available `2.1.11` bundle version, but newer compatible native/provider leaves are available and can be selected through central transitive pinning.
-- **Current package strategy:** keep `sqlite-net-pcl` `1.9.172` and `SQLitePCLRaw.bundle_green` `2.1.11`, while centrally pinning the shipping native/provider leaves to the maintained path.
-- **Current native/provider pins:**
-  - `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
-  - `SQLitePCLRaw.lib.e_sqlite3.android` `2.1.12`;
-  - `SQLitePCLRaw.provider.e_sqlite3` `2.1.12`;
-  - `SQLitePCLRaw.provider.sqlite3` `2.1.12`;
-  - `SQLitePCLRaw.provider.dynamic_cdecl` `2.1.12`.
-- **Remediation commits on `main`:**
-  - `66cd701f84afd5021a28e7e3327b7da4fad249aa` — `fix: pin patched SQLite native dependency path`;
-  - `e939d5bd912d09ffa150c804519c15e2506b7bd7` — `security: remove resolved SQLite audit suppression`;
-  - `04868965c43d8a6d09b40075d92f20da9b26e32a` — `test: guard patched SQLite dependency baseline`.
-- **Audit suppression:** removed. `Directory.Build.props` no longer contains `NuGetAuditSuppress` or the advisory identifier.
-- **Regression guard:** `tests/CareNest.UiTests/SqliteDependencySecurityContractTests.cs` requires the patched native/provider floor and requires that the old audit suppression not return.
-- **Unsuppressed audit evidence observed during remediation:**
-  - PR #47 Dependency Audit #28 / run `31765223239`: success;
-  - PR #48 Dependency Audit #29 / run `31765388861`: success;
-  - PR #50 Dependency Audit #31 / run `31765668949`: success.
-- **Authoritative final automated evidence:** PR #54 Dependency Audit #35 / run `31766059132`: success without the former advisory suppression, including the platform-neutral and Android MAUI application dependency graphs. The same exact verified source also passed CareNest CI #503 / `31766059137` with 122 unit, 39 integration and 100 UI-contract/policy tests (261 total), Android Release, Windows Release, iOS simulator Release and Mac Catalyst Release, plus CodeQL #503 / `31766059215`.
-- **Evidence boundary:** the resolved dependency graph is remediated for the verified source. CareNest does not claim that the external GitHub advisory record itself was modified or reclassified. PRs #47, #48 and #50 remain intermediate evidence; PR #54 is the final automated source baseline.
-- **Data-boundary continuity:** the remediation does not introduce a server, account, remote database listener, cloud synchronization requirement, telemetry client, or user-controlled raw SQL path. CareNest remains local-first and continues to use the existing repository/application persistence boundary.
-- **Database behavior intent:** no schema, entity, migration semantic, backup format, document-key model, or user-visible health-record transformation was intentionally changed by the package pin update.
-- **Manual release follow-through:** upgrade/install, existing-database, backup/restore, encrypted-document, reminder-rebuild, and packaged-target checks remain required under the normal release matrix. They must not be inferred from NuGet audit or hosted builds alone.
-- **Review trigger:** every SQLite/sqlite-net-pcl/SQLitePCLRaw update, every release candidate, any new advisory, and any persistence-provider change.
-- **Owner documents:** `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`, `docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md`, `docs/releases/NEXT_STEPS.md`, `PROJECT_STATUS.md`, and `what_changed.md` record the release-level evidence and remaining manual work.
+The previously tracked SQLite advisory path `GHSA-2m69-gcr7-jv3q` is **resolved in the current source dependency graph**.
 
-## Historical exception timeline
+The former exact `NuGetAuditSuppress` entry has been removed and remains absent.
 
-The temporary exception existed only to keep unrelated CI failures observable while no verified repository-compatible remediation had yet been established. It was intentionally narrow and visible.
+Current source is audited without that suppression.
 
-The remediation process used several superseded checkpoints because `main` was concurrently receiving reminder-reconciliation fixes:
+## 2. Current SQLite package strategy
 
-1. PR #47 proved the unsuppressed dependency graph restored/audited successfully, but `main` advanced afterward.
-2. PR #48 again passed unsuppressed Dependency Audit and CodeQL, while its combined CI snapshot exposed an unrelated transient reminder-interface compile break on the moving base.
-3. The reminder interface/source was corrected/simplified on `main`; PR #48 was closed without merge.
-4. PR #50 again passed unsuppressed Dependency Audit, but its source snapshot predated later analyzer-safe reminder test fixes.
-5. The three SQLite remediation changes were committed directly to `main` so all subsequent source verification exercised the patched graph instead of repeatedly rebasing a parallel dependency PR.
-6. PR #54 then verified the final combined runtime/test/dependency source with the suppression absent, the unsuppressed audit green, all 261 core tests green, all four platform Release builds green, and CodeQL green.
+Central package intent:
 
-No failed/superseded marker PR is represented as final release evidence.
+- `sqlite-net-pcl` `1.9.172`;
+- `SQLitePCLRaw.bundle_green` `2.1.11`;
+- `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
+- `SQLitePCLRaw.lib.e_sqlite3.android` `2.1.12`;
+- `SQLitePCLRaw.provider.e_sqlite3` `2.1.12`;
+- `SQLitePCLRaw.provider.sqlite3` `2.1.12`;
+- `SQLitePCLRaw.provider.dynamic_cdecl` `2.1.12`;
+- central transitive pinning enabled.
 
-## Rules for dependency exceptions and remediation
+The bundle can remain at its compatible available version while maintained native/provider leaves are centrally pinned.
 
-1. Never suppress an advisory without recording the exact advisory identifier and dependency path here.
-2. Never use a wildcard, package-family-wide, or severity-wide suppression to make CI green.
-3. Prefer upgrading or replacing the dependency over retaining an exception.
-4. Verify the **resolved** transitive graph, not only the direct package declarations.
-5. Re-run unit, integration, UI-contract, platform build, CodeQL, Dependency Audit, backup/restore, migration, and document tests after SQLite-related dependency changes.
-6. Remove a matching `NuGetAuditSuppress` entry as soon as a verified compatible dependency path exists.
-7. Add a regression contract when practical so a vulnerable pin or obsolete suppression cannot silently return.
-8. Do not mark public `1.0.0` production release work complete solely because the dependency advisory is resolved; manual device, encrypted-data, accessibility, store, signing, and release-evidence gates remain separate.
-9. If a future SQLite update causes data corruption, migration failure, backup incompatibility, reminder-state inconsistency, or target build regression, block/revert that update even if its vulnerability audit is otherwise clean.
-10. Keep dependency decisions consistent with CareNest's local-first privacy and non-clinical safety boundaries.
+## 3. Source remediation history
+
+Key remediation commits retained in history include:
+
+- `66cd701f84afd5021a28e7e3327b7da4fad249aa` — pin patched SQLite native dependency path;
+- `e939d5bd912d09ffa150c804519c15e2506b7bd7` — remove resolved SQLite audit suppression;
+- `04868965c43d8a6d09b40075d92f20da9b26e32a` — guard patched SQLite dependency baseline.
+
+Earlier PR #47/#48/#50/#54 evidence remains useful history for the remediation process, but it is not the current overall CareNest source baseline.
+
+## 4. Regression guard
+
+`tests/CareNest.UiTests/SqliteDependencySecurityContractTests.cs` protects:
+
+- maintained native/provider version floors;
+- absence of the old exact audit suppression;
+- central dependency-security intent.
+
+Do not weaken this contract merely to make a package update restore.
+
+## 5. Current authoritative automated evidence
+
+PR #74 frozen source head:
+
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+
+Merged executable source:
+
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+
+Dependency Audit #91 / run `31938301172` succeeded on both configured platform-neutral and MAUI graphs with the former suppression absent.
+
+The same source also passed:
+
+- CareNest CI #735 / `31938301209` with **331/331** core tests;
+- Android, Windows, iOS simulator and Mac Catalyst Release builds;
+- Store Package Configuration #124 / `31938301146`;
+- Store Inspection Artifacts #47 / `31938301275`;
+- CodeQL #735 / `31938301252`.
+
+Permanent current evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+
+## 6. What the remediation did not intentionally change
+
+The package pin remediation did not intentionally change:
+
+- schema/entity meaning;
+- migration semantics;
+- backup format;
+- encrypted document key model;
+- reminder schedule semantics;
+- user health-data transformation;
+- local-first account/network boundary.
+
+That intent does not replace packaged compatibility testing.
+
+## 7. Packaged compatibility remains a separate gate
+
+Before production promotion with the current dependency path, validate representative fictional existing data through realistic packages:
+
+- database opens/integrity passes;
+- profiles/medicines/schedules/reminders/logs/appointments/documents/stock/tags/settings remain readable/editable;
+- reminder reconciliation succeeds;
+- no duplicate/stale OS requests;
+- existing encrypted documents remain decryptable through unchanged key path;
+- current backups restore;
+- genuine historical backups/documents restore where real prior fixtures exist and documented compatibility applies.
+
+A clean dependency audit is not proof of these behaviors.
+
+## 8. Future dependency exception rules
+
+1. Prefer upgrade/replacement over suppression.
+2. If a temporary exception is unavoidable, record exact advisory/package/path/reason/owner/expiry here.
+3. Never use wildcard/package-family/severity-wide suppression merely to obtain green CI.
+4. Verify the resolved transitive graph, not only direct declarations.
+5. Add regression contracts for remediated pins/suppressions when practical.
+6. Re-run unit/integration/UI-source-policy tests, affected platform builds, CodeQL and Dependency Audit.
+7. For persistence/crypto/native provider changes, perform packaged compatibility.
+8. Remove an exception as soon as a verified compatible path exists.
+9. Block/revert an update that corrupts data or breaks compatibility even when audit is clean.
+10. Keep changes consistent with local-first/privacy/non-clinical product boundaries.
+
+## 9. Current open dependency risks
+
+No current exact SQLite advisory suppression remains in source.
+
+This register must be updated if a new dependency advisory, compatible remediation decision or approved temporary exception affects the release line.
+
+## 10. Review triggers
+
+Review this register for:
+
+- every SQLite/sqlite-net-pcl/SQLitePCLRaw change;
+- every release candidate;
+- new GitHub/NuGet advisory affecting resolved graph;
+- MAUI/runtime/tooling dependency changes with security implications;
+- new network/telemetry/crypto dependency;
+- production release approval.
+
+## Related documents
+
+- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md`
+- `docs/releases/SECURITY_RELEASE_REVIEW.md`
+- `PROJECT_STATUS.md`
+- `docs/releases/NEXT_STEPS.md`

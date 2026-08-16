@@ -1,77 +1,76 @@
 # CareNest Troubleshooting Guide
 
-This guide covers development and end-user troubleshooting for CareNest `1.0.0-rc.1` while preserving privacy and medical/reminder limitations.
+This guide covers development and user troubleshooting for CareNest `1.0.0-rc.1` while preserving privacy, security and medical/reminder limitations.
 
-> CareNest is an organizational tool. Troubleshooting reminder delivery must not be treated as medical advice or a guarantee that a reminder will fire under every operating-system/device condition.
+> CareNest is an organizational tool. Troubleshooting reminder delivery is not medical advice and cannot create a guarantee that an operating system will deliver a notification under every device state.
 
-## Notifications do not arrive
+## 1. Notifications do not arrive
 
 Check in this order:
 
-1. Open CareNest Settings / notification diagnostics.
-2. Confirm the relevant medicine/profile/schedule is active.
+1. Open CareNest Settings/notification diagnostics.
+2. Confirm the relevant profile/medicine/schedule is active.
 3. Confirm the schedule is enabled.
-4. Confirm the schedule has the intended time zone.
-5. Confirm the explicit user-entered times/interval/cycle/weekday values.
-6. Confirm notification permission is granted.
+4. Confirm the stored time zone is intended.
+5. Confirm explicit user-entered times/interval/cycle/weekday values.
+6. Confirm notification permission.
 7. Check quiet hours.
-8. Check snooze/follow-up state if applicable.
-9. On Android, check exact-alarm capability and battery optimization diagnostics.
-10. Rebuild future reminders from the applicable developer/diagnostic option.
-11. Use a test reminder if the app exposes the test action.
+8. Check snooze/follow-up state.
+9. On Android, check alarm capability/battery optimization/vendor restrictions.
+10. Rebuild future reminders through the applicable diagnostic/recovery action.
+11. Use a test notification if the current UI exposes one.
 
-CareNest cannot guarantee notification delivery when a device is powered off, force-stopped, heavily battery restricted, denied permission, blocked by platform policy, or otherwise prevented by the OS.
+CareNest cannot guarantee delivery when the OS blocks scheduling/delivery, the device is off/force-stopped, permission is denied or background execution is restricted.
 
-## A reminder still appears after a schedule/state change
+## 2. Reminder still appears after schedule/state change
 
-Persisted CareNest occurrence state and the operating-system scheduled request are separate surfaces.
+Persisted CareNest occurrence state and the OS request are separate surfaces.
 
-Current reconciliation rules attempt to cancel an existing platform request before replacement, suppression, or invalidation.
+Current reconciliation cancels stale platform requests before replacement/suppression/invalidation where required.
 
 Check:
 
-- whether the old occurrence still records a platform notification identifier;
+- occurrence/platform request identifier state;
 - whether platform cancellation failed;
-- whether the schedule/medicine/profile state still makes the occurrence valid;
+- current schedule/medicine/profile eligibility;
 - quiet-hour changes;
-- whether the app has completed a startup/rebuild recovery pass;
-- target OS notification settings/capabilities.
+- startup/rebuild reconciliation;
+- target OS settings/capabilities.
 
-A platform cancellation failure intentionally leaves the state retryable instead of falsely reporting successful cleanup.
+Cancellation failure intentionally remains retryable rather than being reported as successful cleanup.
 
-## A Taken/Skipped/Delayed/Missed action failed
+## 3. Taken/Skipped/Delayed/Missed action failed
 
-Handled reminder actions use cancellation-first ordering.
+Handled actions use cancellation-first ordering where required.
 
-CareNest first attempts to cancel the existing platform request, then persists the handled state. If a later persistence step fails after cancellation, CareNest attempts non-cancelled previous-state restoration and reminder rebuild.
+CareNest attempts to cancel the existing platform request before persisting handled state. If later persistence fails, recovery/rebuild can be attempted.
 
-If both the original action and recovery fail, an aggregate error can be surfaced rather than falsely reporting a consistent result.
+Troubleshoot with synthetic data and privacy-safe logs. Do not log raw health text, document contents, passwords/PINs/keys or unnecessary sensitive exception content.
 
-Troubleshoot using synthetic data and privacy-safe logs. Do not log medicine/profile names, private notes, reminder identifiers, exception messages, or stack traces merely to diagnose platform cancellation/recovery.
+## 4. Snoozed reminder disappears/fires at original time
 
-## Snoozed reminder disappears or fires at the original time
-
-For a valid snoozed occurrence, `SnoozedUntilUtc` is the effective due time.
+For a valid snooze, `SnoozedUntilUtc` is effective due time.
 
 Check:
 
-- the snooze value exists;
-- the snooze value is UTC at the application boundary;
-- the snooze value is in the future when the action is created;
-- the schedule/medicine/profile remains eligible;
-- platform cancellation of the old request succeeded;
-- replacement scheduling succeeded and is not suppressed by quiet hours;
-- startup/rebuild recovery ran after an interrupted action.
+- snooze value exists;
+- value is true UTC;
+- it was future-dated when created;
+- profile/medicine/schedule remains eligible;
+- old platform request cancellation succeeded;
+- replacement scheduling succeeded;
+- quiet hours/platform policy did not suppress delivery;
+- startup/rebuild recovery completed after interruption.
 
-The old `ScheduledUtc` is historical schedule identity; it should not make a future snooze disappear simply because the original time has passed.
+The original `ScheduledUtc` remains historical schedule identity and should not make a still-future snooze overdue.
 
-## A schedule exists but no automatic reminder is expected
+## 5. Schedule exists but no automatic reminder is expected
 
-Confirm whether the schedule is `AsNeeded`.
+Check whether it is `AsNeeded`.
 
-As-needed schedules intentionally create **no automatic occurrences**.
+As-needed schedules intentionally create no automatic occurrences.
 
-Also confirm the medicine/profile/schedule state:
+Also check:
 
 - disabled schedule;
 - paused medicine;
@@ -79,63 +78,67 @@ Also confirm the medicine/profile/schedule state:
 - archived medicine;
 - archived profile.
 
-These states suppress applicable automatic materialization.
+These states suppress automatic materialization as documented.
 
-## Reminder time looks wrong after time-zone/DST change
-
-CareNest stores explicit local schedule intent with a time-zone ID.
+## 6. Reminder time looks wrong after time-zone/DST change
 
 Check:
 
 - stored schedule time-zone ID;
 - device current time zone;
-- whether the local time is in a daylight-saving gap/overlap;
-- developer diagnostics/time-zone simulation if available.
+- DST gap/overlap for that local time;
+- diagnostic/time-zone simulation if available.
 
-Important behavior:
+Important rules:
 
-- invalid spring-forward local time is not silently moved to another guessed time;
+- invalid spring-forward local time is not silently moved to a guessed replacement;
 - ambiguous fall-back time resolves deterministically;
-- stored schedule intent should not be silently rewritten merely because device time zone changed.
+- stored schedule intent is not silently rewritten merely because device time zone changes.
 
 See `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`.
 
-## Snooze is rejected
+## 7. Snooze is rejected
 
-Snooze must resolve internally to an explicit future UTC time.
+Snooze must resolve to an explicit future UTC time.
 
-It is rejected if:
+It is rejected when:
 
-- no snooze time was supplied;
-- the value is not UTC at the coordinator boundary;
-- the value is not later than current UTC time.
+- no time was supplied;
+- the value is not UTC at the application boundary;
+- it is not later than current UTC when created.
 
-## Android reminders are inconsistent
+## 8. Android reminders are inconsistent
 
 Review:
 
 - notification permission;
-- exact-alarm capability;
+- exact/inexact alarm capability;
 - battery optimization;
-- manufacturer-specific background restrictions;
+- manufacturer background restrictions;
 - force-stop state;
-- reboot behavior;
-- time/time-zone changes;
-- platform cancellation/replacement behavior after schedule edits or handled actions.
+- reboot/restart;
+- clock/time-zone changes;
+- cancellation/replacement after edits/actions.
 
-A successful CI build cannot prove real delivery on every Android device/vendor policy.
+A green CI build cannot prove delivery on every Android device/vendor policy.
 
-Use `docs/releases/MANUAL_TEST_MATRIX.md` for release evidence.
+Use `docs/releases/MANUAL_TEST_MATRIX.md`.
 
-## Windows reminder limitation
+## 9. Windows reminder limitation
 
-The current Windows fallback does not claim reliable notification delivery while CareNest is not running.
+The current Windows fallback does not claim reliable delivery while CareNest is not running.
 
-If reminders work while the app is open but not when closed, review the documented Windows limitation rather than presenting it as a guaranteed background service.
+If reminders work only while the app is open, review the documented limitation instead of treating the app as a guaranteed background service.
 
-For same-ID replacement issues, verify that an older timer does not remove a newer replacement owner and that cancellation/disposal lifetime follows the current in-process notification implementation.
+For same-ID issues, verify older timer cleanup cannot remove ownership of a newer replacement timer.
 
-## Build fails before MAUI compilation
+## 10. iOS/Mac reminder issues
+
+Check permission, notification settings, app lifecycle, time zone, target OS version and signing/provisioning for real-device builds.
+
+Simulator compilation is not proof of real-device delivery.
+
+## 11. Build fails before MAUI compilation
 
 Run:
 
@@ -144,7 +147,7 @@ dotnet --info
 dotnet workload list
 ```
 
-Then build platform-neutral projects:
+Then isolate platform-neutral builds:
 
 ```bash
 dotnet build src/CareNest.Shared/CareNest.Shared.csproj -c Release
@@ -153,11 +156,11 @@ dotnet build src/CareNest.Application/CareNest.Application.csproj -c Release
 dotnet build src/CareNest.Infrastructure/CareNest.Infrastructure.csproj -c Release
 ```
 
-If these fail, address shared source/restore/analyzer problems before diagnosing platform workloads.
+Fix restore/compiler/analyzer problems there before diagnosing platform workloads.
 
-## MAUI workload errors
+## 12. MAUI workload errors
 
-Inspect installed workloads:
+Inspect:
 
 ```bash
 dotnet workload list
@@ -169,9 +172,7 @@ Repair when appropriate:
 dotnet workload repair
 ```
 
-Install the specific target workload required by the host.
-
-Examples:
+Install only needed supported workloads, for example:
 
 ```bash
 dotnet workload install maui-android
@@ -179,19 +180,11 @@ dotnet workload install maui-ios
 dotnet workload install maui-maccatalyst
 ```
 
-For current Windows CI, the repository installs:
+Windows CI currently uses the MAUI workload supported by its runner/toolchain.
 
-```powershell
-dotnet workload install maui
-```
+## 13. Target-framework propagation errors
 
-Do not require unrelated workloads on a target-limited host.
-
-## Target-framework propagation errors
-
-Use `CareNestTargetFramework` rather than globally overriding target frameworks.
-
-Example Android build:
+Use `CareNestTargetFramework` rather than globally overriding TFMs.
 
 ```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
@@ -199,320 +192,297 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -p:CareNestTargetFramework=net10.0-android
 ```
 
-This avoids leaking the app target framework into referenced `net10.0` libraries.
+## 14. Apple build/Xcode mismatch
 
-## Apple build/Xcode mismatch
+1. capture `dotnet --info`;
+2. capture `dotnet workload list`;
+3. capture `xcodebuild -version`;
+4. verify supported Xcode/workload combination;
+5. select/install compatible Xcode.
 
-If .NET Apple workload reports unsupported Xcode:
+Do not bypass platform compatibility checks as a release solution.
 
-1. run `dotnet --info`;
-2. run `dotnet workload list`;
-3. run `xcodebuild -version`;
-4. verify the selected Xcode path/version is supported by installed workload;
-5. install/select compatible Xcode.
+## 15. Android platform analyzer errors
 
-Do not bypass the compatibility check as a release solution.
+Do not solve legitimate availability/nullability findings with blanket suppression. Use correct API guards/null checks/platform-safe code.
 
-GitHub Apple CI currently uses a macOS 26 runner compatible with the installed .NET 10 Apple workload.
+## 16. XAML build fails with XC0022–XC0025
 
-## Android API/platform analyzer errors
+These warnings are intentionally promoted to errors.
 
-Do not solve Android availability/nullability analyzer failures with a blanket CA1416 suppression.
+Check:
 
-Use explicit API-level guards/null checks/platform-correct code.
+- root page `x:DataType`;
+- DataTemplate item `x:DataType`;
+- picker item display binding type;
+- explicit Source/RelativeSource binding type;
+- ancestor binding-context type;
+- actual ViewModel/item property name.
 
-## Analyzer fails build
+Do not use matching `NoWarn`, `x:Object` or `x:Null` to bypass type safety.
+
+See `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+
+## 17. Analyzer fails build
 
 Treat analyzer output as a real finding until understood.
 
-Historical CI has exposed legitimate issues such as non-generic enum validation, eager logging argument evaluation, transaction-helper cancellation-token ordering, semaphore ownership, and constant-array allocation in test contracts.
-
 Preferred response:
 
-- fix source;
-- add regression test if useful;
-- narrow only truly advisory rule configuration;
-- re-run exact-head verification after runtime/test/workflow/release-script changes.
+- fix source/test;
+- add regression coverage where useful;
+- narrow only genuinely advisory configuration;
+- repeat exact-source verification after verification-relevant changes.
 
-## `dotnet format` fails
-
-Run formatting on the exact failing project:
+## 18. `dotnet format` fails
 
 ```bash
 dotnet format <project.csproj>
 ```
 
-Then verify:
+Then:
 
 ```bash
 dotnet format <project.csproj> --verify-no-changes
 ```
 
-CI checks platform-neutral projects individually.
+CI verifies platform-neutral/test projects independently.
 
-## Unit tests fail around reminder times
+## 19. Unit reminder tests fail around time
 
 Check:
 
-- `DateTime.Kind` is UTC for planner window values;
+- true UTC `DateTime.Kind` at planner boundaries;
 - `toUtc > fromUtc`;
-- explicit schedule time zone exists on the runner;
+- time-zone ID exists on host;
 - ownership IDs match;
-- expected date is within schedule + medicine boundaries;
+- date is inside schedule/medicine boundaries;
 - profile/medicine/schedule state is eligible;
-- DST date corresponds to the intended zone transition.
+- intended DST transition date/zone.
 
-Reminder tests should be deterministic and not depend on current wall clock.
+Reminder tests should be deterministic and not depend on wall-clock timing.
 
-## Integration tests fail on SQLite WAL/backup
+## 20. SQLite WAL/backup integration tests fail
 
-Important implementation facts:
+Review current SQLite provider/native graph and repository PRAGMA/snapshot behavior.
 
-- journal-mode/busy-timeout/full-checkpoint PRAGMAs return results;
-- they must be consumed as result-producing operations;
-- snapshot tests verify committed data and `PRAGMA integrity_check`.
+If a dependency update changed behavior, follow `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` and perform packaged compatibility rather than treating a green restore as sufficient.
 
-If a package/provider update changes behavior, follow `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
+## 21. Dependency Audit reports the former SQLite advisory
 
-## Dependency Audit reports the old SQLite advisory again
-
-The intended current RC1 graph no longer relies on the former `GHSA-2m69-gcr7-jv3q` audit suppression.
-
-Expected source policy includes:
-
-- `SQLitePCLRaw.lib.e_sqlite3` at `3.53.3` or later compatible reviewed floor;
-- Android native/provider leaves and selected providers at `2.1.12` or later compatible reviewed floor;
-- central transitive pinning enabled;
-- no old `NuGetAuditSuppress` entry.
-
-If the advisory reappears:
-
-1. inspect `Directory.Packages.props` and the resolved transitive graph;
-2. run `SqliteDependencySecurityContractTests`;
-3. run unsuppressed `dotnet restore -p:NuGetAudit=true -p:NuGetAuditMode=all`;
-4. audit the Android MAUI graph as well as platform-neutral/test graphs;
-5. compare with `docs/security/DEPENDENCY_RISK_REGISTER.md`;
-6. do **not** restore the old suppression just to make CI green;
-7. if a new compatible remediation changes native/provider behavior, repeat packaged existing-database/encrypted-document/backup/reminder compatibility testing.
-
-Read:
-
-- `docs/security/DEPENDENCY_RISK_REGISTER.md`;
-- `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
-
-## Local quality/preflight audit fails
-
-Both `quality-gate` and `release-preflight` scripts treat dependency audit as blocking.
-
-Do not replace the failure with `|| true`, warning-only output, or a wildcard audit suppression.
-
-For a selected MAUI target, `CARENEST_TARGET` causes release preflight to audit that app graph before the optional Release build.
-
-## Release Evidence workflow fails
-
-The Release Evidence workflow intentionally attempts all core evidence components, uploads available evidence with `if: always()`, and then applies an aggregate failure gate.
-
-A failed run can therefore still have a useful evidence artifact.
+Current source should not rely on the old `GHSA-2m69-gcr7-jv3q` suppression.
 
 Check:
 
-- unit/integration/UI TRX files;
+1. `Directory.Packages.props`;
+2. resolved transitive graph;
+3. `SqliteDependencySecurityContractTests`;
+4. unsuppressed `dotnet restore -p:NuGetAudit=true -p:NuGetAuditMode=all`;
+5. MAUI app graph as well as platform-neutral/test graph;
+6. `docs/security/DEPENDENCY_RISK_REGISTER.md`.
+
+Do not restore the old suppression just to make CI green.
+
+## 22. Quality/release preflight audit fails
+
+Audit is intentionally blocking.
+
+Do not replace failure with `|| true`, warning-only handling or wildcard suppression.
+
+When `CARENEST_TARGET` is supplied, release preflight audits/builds that target as defined by current scripts.
+
+## 23. Store-package preflight confusion
+
+Current store-package wrappers require an explicit supported target and delegate to standard release preflight.
+
+They do **not** use a funding-link toggle. The external BMC destination is absent from application runtime/package source by policy.
+
+They do not configure production signing or publish to a store.
+
+## 24. Store payload scanner fails
+
+The scanner is fail-closed and should not be weakened to make a package pass.
+
+If it finds the forbidden external funding marker:
+
+- inspect actual package/publish payload;
+- identify the source/resource producing it;
+- remove/correct the package source;
+- add regression coverage;
+- rerun inspection.
+
+The 2026-08-15 historical Windows package defect demonstrated why source-only checks are insufficient.
+
+## 25. Store Inspection artifact is unsigned/not installable as production
+
+Expected: internal inspection artifacts are engineering evidence and can be unsigned/unpackaged/simulator-targeted by design.
+
+Do not distribute them as production/store-ready packages.
+
+## 26. Release Evidence workflow fails
+
+The workflow can upload available evidence before final aggregate failure.
+
+Inspect:
+
+- test results;
 - dependency inventories;
-- tracked workspace integrity result;
-- source/ref/run metadata;
+- workspace integrity;
+- source/ref/run identity;
 - SHA-256 manifests;
-- the final aggregate failure message.
+- aggregate outcome.
 
-Artifact existence does not mean release approval. The run itself must be successful for release evidence to be accepted.
+Artifact existence alone is not approval.
 
-Artifact names include commit SHA, GitHub Actions run ID, and run attempt so reruns can be distinguished.
+## 27. Production tag fails a required workflow
 
-## Release tag fails a required workflow
+Production-style `v*` tags are expected to participate in:
 
-Tags matching `v*` run the exact tagged source through CareNest CI, CodeQL, Dependency Audit, Release Gate, and Release Evidence.
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Store Package Configuration;
+- Store Inspection Artifacts;
+- Release Gate;
+- Release Evidence.
 
-If one fails:
+If a required run fails:
 
-- do not publish/promote the failing tag as a successful production release;
-- preserve the failed evidence;
-- fix source/configuration on a new commit;
-- re-run exact-source/manual checks as applicable;
-- use the corrected approved commit/tag.
+- do not publish/promote the failing tag;
+- preserve evidence;
+- fix on a new commit;
+- repeat required automated/manual checks;
+- use a corrected approved tag/version according to release policy.
 
-Do not weaken the tag gate to make an already failing release appear successful.
+Do not move a failed/rejected tag to another commit.
 
-## Restore is rejected
+## 28. Restore is rejected
 
-Restore can be rejected when:
+Possible causes:
 
-- format/magic is unsupported;
-- version is unsupported;
-- password is wrong;
-- authentication/tamper validation fails;
-- package/schema/topology validation fails.
+- unsupported magic/version;
+- wrong password;
+- authentication/tamper failure;
+- truncation/trailing data;
+- invalid package/schema/topology.
 
-CareNest should validate before overwriting current local data.
+Do not post real backups/passwords publicly. Reproduce using synthetic data and record safe version/platform/error category.
 
-If a real backup fails:
+## 29. Backup restores incompletely
 
-- do not post the backup/password publicly;
-- reproduce using synthetic data if possible;
-- record CareNest version/platform/OS and safe error category.
+For release qualification verify:
 
-See `docs/architecture/BACKUP_AND_RESTORE.md`.
+- structured records;
+- encrypted documents/open behavior;
+- document-key portability;
+- reminder rebuild;
+- SQLite committed WAL state;
+- target storage permissions.
 
-## Backup file exists but restore data is incomplete
+Use clean-install restore testing with fictional data.
 
-For release testing verify:
+## 30. Existing data fails after SQLite provider/native update
 
-- structured records restored;
-- encrypted documents restored/open correctly;
-- document key portability worked;
-- reminder rebuild occurred as expected;
-- snapshot contained committed WAL data;
-- target storage permissions were available.
+Treat as production-blocking compatibility defect even if dependency audit is green.
 
-Use a clean installation for meaningful restore qualification.
+With synthetic data verify database integrity, representative records, reminder reconciliation, encrypted document access and current/genuine historical backup compatibility where real prior fixtures exist.
 
-## Existing data fails after SQLite native/provider update
+Do not silently downgrade/reintroduce a vulnerable dependency path without security review.
 
-Treat this as a production-blocking compatibility defect even if NuGet audit is green.
-
-Using synthetic data:
-
-- verify SQLite integrity;
-- verify profiles/medicines/schedules/reminders/logs/appointments/documents/stock/tags/settings;
-- verify reminder rebuild/reconciliation;
-- verify existing encrypted document access through the unchanged key path;
-- verify current and canonical pre-remediation backup restore where available;
-- record exact package/build/source/device evidence.
-
-Do not solve a data-compatibility regression by silently downgrading/restoring a vulnerable dependency path without security review.
-
-## Document cannot open
+## 31. Document cannot open
 
 Check:
 
-- metadata record still exists;
-- encrypted payload still exists in app-owned storage;
-- secure document key material remains available;
-- device has temporary storage for explicit open/export;
-- target file/share operation has permission.
+- metadata record;
+- encrypted payload existence;
+- secure document-key material;
+- temporary storage availability;
+- target file/share capability.
 
-CareNest treats imported files as opaque content and does not medically interpret them.
+Missing/corrupt required key state should fail closed rather than silently replacing the key when existing ciphertext depends on it.
 
-## Document export works but file is now plaintext outside CareNest
+## 32. Exported document is plaintext
 
-This is an expected privacy-boundary transition.
+Expected privacy-boundary transition: explicit export/decrypt creates a copy outside the encrypted CareNest vault.
 
-The exported copy is no longer protected by the CareNest encrypted document vault unless the destination applies its own protection.
+The destination is responsible for its own protection/retention.
 
-See `docs/architecture/DATA_STORAGE_AND_EXPORT.md`.
+## 33. App lock rejects a correct-looking PIN
 
-## App lock rejects a correct-looking PIN
+Check secure-storage availability/material state and whether lock was reset/disabled/migrated.
 
-Check:
+Never inspect/log/store the real plaintext PIN for troubleshooting. Use synthetic PINs.
 
-- same installation/profile context;
-- PIN format policy;
-- secure-storage availability;
-- whether lock was disabled/reset previously;
-- whether device migration/secure-storage behavior changed.
+## 34. App lock does not encrypt SQLite
 
-Do not inspect/log/store the plaintext PIN for debugging.
-
-Use synthetic PINs for reproduction.
-
-## App lock does not encrypt SQLite
-
-Correct: current app lock is a local UI privacy barrier, not whole-database encryption.
+Correct. Current app lock is a local UI privacy barrier, not whole-database encryption.
 
 See `docs/security/SECURITY_MODEL.md`.
 
-## Support link does not open
+## 35. Buy Me a Coffee link is not present in CareNest app
 
-Canonical URL:
+This is **expected current behavior**.
 
-`https://buymeacoffee.com/sanskarIN`
+The distributed application source/package intentionally does not include or expose the external Buy Me a Coffee destination/card/command/artwork.
 
-Check:
+Voluntary project support exists in repository documentation only:
 
-- device/browser can open HTTPS links;
-- app has a usable launcher/browser handler;
-- channel build has not intentionally removed the link due to store-policy requirements.
+- `BUY_ME_A_COFFEE.md`;
+- `docs/SUPPORT_CARENEST.md`.
 
-CareNest does not append health data to the link.
+Do not treat absence of the in-app link as a defect.
 
-## Export/share/calendar action fails
-
-Check:
-
-- destination handler exists;
-- user selected a valid destination;
-- target platform file/share/calendar permission/capability;
-- sufficient storage;
-- no invalid/removed source file.
-
-Once export succeeds, destination privacy rules apply.
-
-## UI clips under large text
-
-This is an accessibility defect, not a user configuration problem.
-
-Record:
-
-- platform/device;
-- text scaling setting;
-- screen/control;
-- screenshot using synthetic data;
-- whether primary action became unreachable.
-
-Fix layout rather than telling users to reduce accessibility settings.
-
-See `docs/design/ACCESSIBILITY.md`.
-
-## Theme/readability issue
-
-Test system/light/dark modes.
+## 36. Export/share/calendar action fails
 
 Check:
 
-- text/background contrast;
-- validation text;
-- focus indicators;
-- state labels;
-- support/legal links;
-- safety warnings.
+- target handler exists;
+- valid user-selected destination;
+- platform permissions/capability;
+- storage availability;
+- source file still exists.
 
-Do not rely on color alone for status.
+After successful external handoff, destination privacy rules apply.
 
-## Public bug reports
+## 37. UI clips under large text
 
-Safe information to include:
+Treat this as an accessibility defect.
 
-- CareNest version;
+Record platform/device, scaling, screen/control and a synthetic-data screenshot. Fix layout rather than telling users to disable accessibility settings.
+
+## 38. Theme/readability problem
+
+Test system/light/dark themes, contrast, focus, disabled states and error/status communication. Do not rely on color alone.
+
+## 39. Support/security report contains sensitive data
+
+Remove/redact sensitive data before posting publicly.
+
+Do not include real health records, documents, encrypted backups/passwords, PINs, keys, tokens or production signing material.
+
+Use `SECURITY.md` for security-sensitive reporting.
+
+## 40. Current source verification
+
+PR #74 source head:
+
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+
+Merged executable source:
+
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+
+Verified 331/331 core tests plus all configured normal target, store-candidate, inspection, CodeQL and unsuppressed dependency gates.
+
+## 41. Still stuck?
+
+Collect only privacy-safe diagnostics:
+
+- CareNest version/source if known;
 - platform/OS;
-- device/emulator model when relevant;
-- time zone when reminder issue depends on it;
-- notification permission/capability state;
-- exact reproduction steps using synthetic data;
-- privacy-safe logs/diagnostics.
+- .NET/toolchain for development failures;
+- target TFM;
+- safe error category/type;
+- reproducible synthetic steps.
 
-Do **not** include:
-
-- health documents;
-- real backups;
-- backup passwords;
-- app-lock PINs;
-- private health notes;
-- encryption/signing keys;
-- screenshots containing unredacted private health data.
-
-## Further references
-
-- `docs/setup/DEVELOPMENT.md`
-- `docs/setup/PLATFORM_SETUP.md`
-- `docs/setup/MAINTAINER_OPERATIONS.md`
-- `docs/testing/TESTING_GUIDE.md`
-- `docs/security/SECURITY_MODEL.md`
-- `docs/releases/RELEASE_PROCESS.md`
+Start with `docs/DOCUMENTATION_CATALOG.md`, `docs/GETTING_STARTED.md`, `docs/DEVELOPER_REFERENCE.md` and `SUPPORT.md`.

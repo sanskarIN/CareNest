@@ -1,267 +1,292 @@
 # CareNest Documentation Completeness Checklist
 
-This checklist inventories the documentation expected for the CareNest `1.0.0-rc.1` repository and defines maintenance expectations for future changes.
+**Current documentation review:** 2026-08-16  
+**Release line:** `1.0.0-rc.1`  
+**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
+**Verified PR #74 head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
 
-A checked documentation item means the document exists and covers its intended area. It does **not** mean the manual/device/store/signing/release operation described by that document has been performed.
+This checklist inventories the documentation expected for the CareNest repository. A checked documentation row means the subject is documented; it does **not** mean a manual/device/signing/store operation has been performed.
 
-## Canonical complete references
+## 1. Canonical navigation and whole-project references
 
-- [x] `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — end-to-end whole-project reference.
-- [x] `docs/CODEBASE_REFERENCE.md` — concrete source/API/project/file responsibility map.
-- [x] `docs/CONFIGURATION_REFERENCE.md` — package/build/audit/platform/workflow/configuration reference.
-- [x] `docs/MAINTENANCE_AND_OPERATIONS.md` — maintenance, verification, release, hotfix and incident manual.
-- [x] `docs/releases/DOCUMENTATION_AUDIT_20260814.md` — repository-wide documentation audit.
+- [x] `README.md` — current product/repository entry point.
+- [x] `docs/README.md` — documentation hub.
+- [x] `docs/DOCUMENTATION_CATALOG.md` — audience/authority/navigation catalog.
+- [x] `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — current end-to-end whole-project reference.
+- [x] `docs/GETTING_STARTED.md` — evaluation/developer quick start.
+- [x] `docs/CODEBASE_REFERENCE.md` — source/API/project/file responsibility map.
+- [x] `docs/CONFIGURATION_REFERENCE.md` — package/build/platform/workflow configuration.
+- [x] `docs/DEVELOPER_REFERENCE.md` — current engineering conventions/baseline.
+- [x] `docs/MAINTENANCE_AND_OPERATIONS.md` — maintenance/hotfix/release/incident operations.
+- [x] `docs/REPOSITORY_GOVERNANCE.md` — source/evidence/documentation governance.
 
-## Project-level documentation
+## 2. Current state and chronological handoff
 
-- [x] Root `README.md` — product overview, build entry point, PR #56 baseline, support and release boundaries.
-- [x] `docs/README.md` — canonical documentation hub.
 - [x] `PROJECT_STATUS.md` — current release state and blockers.
-- [x] `CHANGELOG.md` — chronological change history.
-- [x] `DECISIONS.md` — engineering/architecture decisions.
-- [x] `what_changed.md` — detailed implementation/handoff record.
-- [x] `CONTRIBUTING.md` — contributor workflow/boundaries.
-- [x] `CODE_OF_CONDUCT.md` — participation expectations.
-- [x] `LICENSE` / `NOTICE` — open-source licensing notices.
+- [x] `docs/releases/NEXT_STEPS.md` — remaining production work.
+- [x] `CHANGELOG.md` — chronological changes.
+- [x] `DECISIONS.md` — engineering decisions.
+- [x] `what_changed.md` — detailed continuation handoff.
+- [x] `docs/history/` — preserved prior active snapshots.
+- [x] Historical verification files remain source-boundary-specific instead of being rewritten as current.
 
-## User documentation
+## 3. User documentation
 
-- [x] `docs/USER_GUIDE.md` — complete user workflow/limitations guide.
-- [x] `docs/FEATURE_REFERENCE.md` — feature-by-feature reference.
-- [x] `docs/REPORTS_AND_EXPORTS.md` — report/export behavior and privacy boundary.
+- [x] `docs/USER_GUIDE.md` — complete user workflow guide.
+- [x] `docs/FEATURE_REFERENCE.md` — feature-by-feature behavior/reference.
+- [x] `docs/USER_FAQ.md` — common user/evaluator questions.
+- [x] `docs/KNOWN_LIMITATIONS.md` — intentional/external/RC limitations.
+- [x] `docs/REPORTS_AND_EXPORTS.md` — reports/exports/privacy boundaries.
 - [x] `docs/GLOSSARY.md` — terminology.
-- [x] `SUPPORT.md` / `docs/SUPPORT_CARENEST.md` — support channels.
-- [x] `BUY_ME_A_COFFEE.md` — voluntary project support.
+- [x] `SUPPORT.md` and `docs/SUPPORT_CARENEST.md` — support channels.
+- [x] `BUY_ME_A_COFFEE.md` — repository-only voluntary project support context.
 
-## Legal/privacy/security user-facing documents
+## 4. Legal, privacy and safety-facing documentation
 
 - [x] `PRIVACY.md`.
 - [x] `TERMS.md`.
 - [x] `SECURITY.md`.
-- [x] Medical/reminder limitations represented in user/release docs.
-- [x] External project-support trust boundary documented.
-- [x] CareNest described as organizational rather than diagnostic/treatment/dosage software.
+- [x] Organizational/non-clinical product boundary documented.
+- [x] No dosage calculation/inference claim documented.
+- [x] No treatment recommendation claim documented.
+- [x] No clinical interaction/risk claim documented.
+- [x] No emergency-service replacement claim documented.
+- [x] No notification-delivery guarantee claim documented.
+- [x] Local-first/account-free current v1 boundary documented.
+- [x] External-copy/export boundary documented.
 
-## Architecture documentation
+## 5. Architecture documentation
 
-- [x] `docs/architecture/ARCHITECTURE.md` — full solution architecture.
+- [x] `docs/architecture/ARCHITECTURE.md` — complete solution architecture.
 - [x] `docs/architecture/APPLICATION_FLOWS.md` — end-to-end runtime flows.
-- [x] `docs/architecture/SERVICE_BOUNDARIES.md` — project/service responsibilities.
-- [x] `docs/architecture/DATABASE_SCHEMA.md` — schema/entities/migrations/WAL.
+- [x] `docs/architecture/SERVICE_BOUNDARIES.md` — dependency/service ownership.
+- [x] `docs/architecture/DATABASE_SCHEMA.md` — schema/migrations/indexes/WAL.
 - [x] `docs/architecture/DATA_STORAGE_AND_EXPORT.md` — storage/export/delete boundaries.
-- [x] `docs/architecture/BACKUP_AND_RESTORE.md` — protected backup architecture.
 - [x] `docs/architecture/DOCUMENT_VAULT.md` — encrypted document-vault architecture.
-- [x] `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md` — platform notification model.
-- [x] Local-first ADR.
-- [x] Reminder-occurrence ADR.
-- [x] Encrypted-backup ADR.
-- [x] Concrete project/file responsibilities mapped in `docs/CODEBASE_REFERENCE.md`.
+- [x] `docs/architecture/BACKUP_AND_RESTORE.md` — encrypted backup architecture.
+- [x] `docs/architecture/NOTIFICATIONS_AND_PLATFORM_BEHAVIOR.md` — notification/platform model.
+- [x] `ADR-0001-local-first.md`.
+- [x] `ADR-0002-reminder-occurrences.md`.
+- [x] `ADR-0003-encrypted-backup-format.md`.
+- [x] Project dependency direction `Shared <- Domain <- Application <- Infrastructure <- App` documented.
 
-## Privacy documentation
+## 6. Privacy documentation
 
-- [x] `docs/privacy/PRIVACY_MODEL.md` — complete privacy architecture.
-- [x] `docs/privacy/DATA_LIFECYCLE.md` — lifecycle from entry to deletion/external copies.
-- [x] `docs/privacy/LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md` — local cleanup ownership boundary.
-- [x] Explicit distinction between local CareNest data and external exports/backups/calendar/browser destinations.
-- [x] No automatic CareNest cloud upload claim documented accurately.
-- [x] No hidden telemetry client boundary documented.
-- [x] OS/device backup residual boundary documented.
+- [x] `docs/privacy/PRIVACY_MODEL.md`.
+- [x] `docs/privacy/DATA_LIFECYCLE.md`.
+- [x] `docs/privacy/LOCAL_PRIVACY_CLEANUP_LIFECYCLE.md`.
+- [x] Structured SQLite versus separately encrypted documents versus encrypted backups distinguished.
+- [x] CareNest-owned versus exported/external copies distinguished.
+- [x] No automatic CareNest cloud synchronization/upload documented.
+- [x] No hidden runtime analytics/telemetry client boundary documented.
+- [x] OS/device/external backup residual-copy boundary documented.
 
-## Security documentation
+## 7. Security documentation
 
-- [x] `docs/security/SECURITY_MODEL.md` — technical controls/limitations.
-- [x] `docs/security/THREAT_MODEL.md` — threats/residual risk.
-- [x] `docs/security/LOGGING_PRIVACY.md` — diagnostic data policy.
-- [x] `docs/security/DEPENDENCY_RISK_REGISTER.md` — dependency risk/remediation source of truth.
-- [x] `docs/security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md` — local clear failure-safety model.
-- [x] `docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md` — audit-specific security record.
+- [x] `docs/security/SECURITY_MODEL.md`.
+- [x] `docs/security/THREAT_MODEL.md`.
+- [x] `docs/security/LOGGING_PRIVACY.md`.
+- [x] `docs/security/DEPENDENCY_RISK_REGISTER.md`.
+- [x] `docs/security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md`.
+- [x] `docs/security/BUG_AUDIT_SECURITY_NOTES_20260814.md` retained as dated historical audit evidence.
 - [x] App-lock limitations documented.
-- [x] SQLite database-at-rest limitation documented.
-- [x] Document/backup encryption distinctions documented.
-- [x] Chunked AEAD v2 and retained v1 read compatibility documented.
-- [x] Secret/signing material exclusion documented.
-- [x] Failure-preserving release evidence/provenance security boundary documented.
+- [x] Whole-database encryption is not falsely claimed.
+- [x] Document/backup encryption distinction documented.
+- [x] Authenticated chunked framing v2 plus retained v1 read compatibility documented.
+- [x] Signing/private secret material exclusion documented.
+- [x] Privacy-aware logging policy documented.
 
-## SQLite dependency documentation
+## 8. SQLite dependency/security documentation
 
-- [x] Central package versions documented in `docs/CONFIGURATION_REFERENCE.md`.
-- [x] `SQLitePCLRaw.lib.e_sqlite3` `3.53.3` maintained floor documented.
-- [x] Android/provider `2.1.12` maintained floor documented.
-- [x] Former exact `GHSA-2m69-gcr7-jv3q` suppression removal documented.
-- [x] `SqliteDependencySecurityContractTests` policy documented.
-- [x] Source remediation distinguished from packaged existing-data compatibility.
-- [x] `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` retained for compatibility/release work.
+- [x] Central package versions documented.
+- [x] `sqlite-net-pcl` `1.9.172` documented.
+- [x] `SQLitePCLRaw.bundle_green` `2.1.11` documented.
+- [x] `SQLitePCLRaw.lib.e_sqlite3` `3.53.3` documented.
+- [x] Android/provider `2.1.12` pins documented where applicable.
+- [x] Former exact advisory suppression removal documented.
+- [x] Source dependency security separated from packaged existing-data compatibility.
+- [x] `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md` retained.
 
-## Reminder documentation
+## 9. Reminder documentation
 
 - [x] `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`.
 - [x] Explicit-user-input-only scheduling documented.
-- [x] Ownership validation documented.
-- [x] UTC window contract documented.
-- [x] Half-open planning window documented.
-- [x] Schedule-state/profile-state suppression documented.
+- [x] Entity ownership validation documented.
+- [x] UTC planning window documented.
+- [x] Half-open window behavior documented.
+- [x] profile/medicine/schedule state suppression documented.
 - [x] DST gap/overlap behavior documented.
-- [x] Every-N-hours/cycle/selected-weekday rules documented.
-- [x] As-needed no-automatic-reminder behavior documented.
-- [x] Future-UTC snooze rule documented.
+- [x] Every-N-hours/cycle/weekday rules documented.
+- [x] As-needed/no-automatic-reminder behavior documented.
+- [x] Future UTC snooze rule documented.
 - [x] `SnoozedUntilUtc` effective-due behavior documented.
 - [x] Stale OS-request reconciliation documented.
 - [x] Cancellation-first handled actions documented.
-- [x] Medicine/profile/appointment compensation documented.
-- [x] OS delivery limitations documented separately from planner determinism.
+- [x] Persistence/platform compensation documented.
+- [x] OS-delivery limits documented separately from deterministic planner behavior.
 
-## Design/accessibility/localization documentation
+## 10. Design, accessibility and localization
 
-- [x] `docs/design/DESIGN_SYSTEM.md` — full design system.
-- [x] `docs/design/ACCESSIBILITY.md` — accessibility specification/manual evidence.
-- [x] `docs/design/LOCALIZATION.md` — resource/translation/RTL/safety strategy.
-- [x] `docs/design/STORE_ASSETS.md` — visual/store screenshot/claim guidance.
-- [x] Brand variants/watermark/support-artwork rules documented.
-- [x] Automated semantics testing distinguished from real assistive-technology testing.
+- [x] `docs/design/DESIGN_SYSTEM.md`.
+- [x] `docs/design/ACCESSIBILITY.md`.
+- [x] `docs/design/LOCALIZATION.md`.
+- [x] `docs/design/STORE_ASSETS.md`.
+- [x] `docs/PLATFORM_BEHAVIOR_MATRIX.md` distinguishes automated and manual platform evidence.
+- [x] Automated semantics/source checks explicitly distinguished from real assistive-technology evidence.
+- [x] Theme/contrast/keyboard/large-text/screen-reader release checks documented.
 
-## Developer/maintainer documentation
+## 11. Developer and setup documentation
 
-- [x] `docs/setup/DEVELOPMENT.md` — build/test/setup.
-- [x] `docs/setup/PLATFORM_SETUP.md` — Android/Windows/iOS/Mac Catalyst details.
-- [x] `docs/setup/TROUBLESHOOTING.md` — comprehensive troubleshooting.
-- [x] `docs/setup/MAINTAINER_OPERATIONS.md` — setup-oriented repository/CI/release operations.
-- [x] `docs/MAINTENANCE_AND_OPERATIONS.md` — complete current maintainer manual.
-- [x] `docs/CONFIGURATION_REFERENCE.md` — package/build/workflow reference.
-- [x] Maintainer Git identity documented (`Sanskar`, `sanskarin@outlook.in`).
-- [x] GitHub API/connector commit identity described honestly.
-- [x] `CareNestTargetFramework` build isolation documented.
-- [x] No-secret/real-health-data contribution rule documented.
-- [x] Dependency/schema/crypto/reminder change procedures documented.
-- [x] Hotfix/incident/release rollback considerations documented.
+- [x] `docs/setup/DEVELOPMENT.md`.
+- [x] `docs/setup/PLATFORM_SETUP.md`.
+- [x] `docs/setup/TROUBLESHOOTING.md`.
+- [x] `docs/setup/MAINTAINER_OPERATIONS.md`.
+- [x] `docs/DEVELOPER_REFERENCE.md`.
+- [x] Git identity `Sanskar <sanskarin@outlook.in>` documented for maintainer use.
+- [x] `CareNestTargetFramework` target isolation documented.
+- [x] Synthetic/fictional test-data rule documented.
+- [x] No-secret/no-private-signing-material rule documented.
 
-## Testing documentation
+## 12. Current platform target documentation
 
-- [x] `docs/testing/TESTING_GUIDE.md` — layered automated/manual testing guide.
-- [x] `docs/testing/TEST_PLAN.md` — current plan.
-- [x] Unit/integration/UI-contract roles documented.
-- [x] Current PR #56 test counts documented: 122 unit + 39 integration + 124 UI-contract = 285 total.
-- [x] Exact-head verification protocol linked.
-- [x] Randomized deterministic recurrence testing documented.
-- [x] WAL snapshot integrity/cancellation tests documented.
-- [x] App-lock source/crypto contracts documented.
-- [x] Reminder action/reconciliation recovery contracts documented.
-- [x] Release workflow/preflight/quality-gate/Git/release-gate contracts documented.
-- [x] Manual accessibility/device testing distinction documented.
+- [x] Android `net10.0-android`, minimum API 24.
+- [x] iOS `net10.0-ios`, minimum iOS 15.
+- [x] Mac Catalyst `net10.0-maccatalyst`, minimum 15.
+- [x] Windows `net10.0-windows10.0.19041.0`, minimum 10.0.19041.0.
+- [x] Application ID `com.sanskar.carenest` documented.
+- [x] Display version `1.0.0-rc.1` documented.
 
-## Build/configuration documentation
+## 13. Strict XAML compiled-binding documentation
+
+- [x] `MauiEnableXamlCBindingWithSourceCompilation=true` documented.
+- [x] `MauiStrictXamlCompilation=true` documented.
+- [x] `XC0022`, `XC0023`, `XC0024`, `XC0025` warnings-as-errors documented.
+- [x] Root `x:DataType` requirement documented.
+- [x] DataTemplate item `x:DataType` requirement documented.
+- [x] typed picker display binding requirement documented.
+- [x] typed explicit Source/ancestor binding requirement documented.
+- [x] no `NoWarn`/`x:Object`/`x:Null` escape-hatch policy documented.
+- [x] `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md` retained as exact evidence.
+
+## 14. Testing documentation
+
+- [x] `docs/testing/TESTING_GUIDE.md`.
+- [x] `docs/testing/TEST_PLAN.md`.
+- [x] Unit/integration/UI-source-policy roles documented.
+- [x] Current PR #74 counts documented: 122 + 39 + 170 = 331.
+- [x] Exact-source verification model documented.
+- [x] Reminder/reconciliation tests documented.
+- [x] SQLite/backup/document/report integration testing documented.
+- [x] XAML compiled-binding policy testing documented.
+- [x] Manual device/accessibility evidence distinguished from source tests.
+
+## 15. Build/configuration documentation
 
 - [x] `Directory.Build.props` behavior documented.
 - [x] `Directory.Packages.props` versions documented.
 - [x] `NuGet.config` role documented.
 - [x] `CareNest.sln` project graph documented.
-- [x] Platform target frameworks documented.
-- [x] Core restore/build/test/format commands documented.
+- [x] core restore/build/test commands documented.
+- [x] MAUI target build commands documented.
 - [x] `quality-gate.sh` / `.ps1` documented.
 - [x] `release-preflight.sh` / `.ps1` documented.
 - [x] `setup-git.sh` / `.ps1` documented.
-- [x] CI warnings-as-errors/analyzer behavior documented.
-- [x] Blocking unsuppressed dependency-audit behavior documented.
-- [x] Android/Windows/iOS/Mac Catalyst configuration paths documented.
+- [x] blocking unsuppressed dependency audit documented.
 
-## GitHub automation documentation
+## 16. GitHub automation documentation
 
-- [x] `.github/workflows/ci.yml` documented.
-- [x] `.github/workflows/codeql.yml` documented.
-- [x] `.github/workflows/dependency-review.yml` documented.
-- [x] `.github/workflows/release-gate.yml` documented.
-- [x] `.github/workflows/release-evidence.yml` documented.
-- [x] Exact `v*` production tag behavior documented.
-- [x] Release Evidence source/ref/run/attempt provenance documented.
-- [x] Failure-preserving evidence upload documented.
-- [x] `.github/dependabot.yml`, funding metadata and repository templates documented at the appropriate level.
+- [x] `.github/workflows/ci.yml`.
+- [x] `.github/workflows/codeql.yml`.
+- [x] `.github/workflows/dependency-review.yml`.
+- [x] `.github/workflows/store-package-verification.yml`.
+- [x] `.github/workflows/store-inspection-artifacts.yml`.
+- [x] `.github/workflows/release-gate.yml`.
+- [x] `.github/workflows/release-evidence.yml`.
+- [x] Dependabot/repository templates/funding metadata documented at the appropriate level.
+- [x] Exact production `v*` tag evidence model documented.
 
-## Release documentation
+## 17. Release documentation
 
-- [x] `docs/releases/RELEASE_PROCESS.md` — end-to-end release process.
+- [x] `docs/releases/RELEASE_PROCESS.md`.
 - [x] `docs/releases/RELEASE_CHECKLIST.md`.
 - [x] `docs/releases/QUALITY_GATE.md`.
 - [x] `docs/releases/MANUAL_TEST_MATRIX.md`.
+- [x] `docs/releases/PACKAGED_RELEASE_VALIDATION.md`.
 - [x] `docs/releases/STORE_SUBMISSION_CHECKLIST.md`.
 - [x] `docs/releases/SECURITY_RELEASE_REVIEW.md`.
 - [x] `docs/releases/RELEASE_EVIDENCE.md`.
 - [x] `docs/releases/RELEASE_NOTES_TEMPLATE.md`.
 - [x] `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
 - [x] `docs/releases/NEXT_STEPS.md`.
-- [x] `docs/releases/SQLITE_DEPENDENCY_MIGRATION_PLAN.md`.
-- [x] `docs/releases/RELEASE_ENGINEERING_VERIFICATION_20260814.md` — authoritative PR #56 evidence.
-- [x] `docs/releases/FINAL_BUG_AUDIT_VERIFICATION_20260814.md` — historical PR #54 runtime evidence.
-- [x] `docs/releases/BUG_AUDIT_VERIFICATION_20260814.md` — detailed audit history.
-- [x] `docs/releases/DOCUMENTATION_AUDIT_20260814.md` — complete documentation audit.
-- [x] Phase 8/Phase 9 historical exact-head verification evidence retained.
-- [x] BMC/store-channel release guidance documented.
+- [x] current PR #74 verification record.
+- [x] prior PR #68/#67/#61/#59/#58/#56/#54 evidence retained as historical source-boundary records.
 
-## Documentation governance
+## 18. Funding/package policy documentation
 
-- [x] `docs/DOCUMENTATION_STANDARDS.md` defines accuracy/evidence/maintenance rules.
-- [x] New major docs linked from `docs/README.md`.
-- [x] Root `README.md` links the complete project documentation.
-- [x] Historical runtime PR #54 evidence distinguished from current release-engineering PR #56 evidence.
-- [x] Manual checks are not represented as complete unless performed.
-- [x] Dependency suppression is not represented as remediation.
-- [x] Dependency security is distinguished from packaged data compatibility.
-- [x] Store policies described as time-sensitive and subject to submission-time review.
-- [x] Historical evidence is retained rather than silently rewritten.
+- [x] Current application binary/source is documented as containing no external Buy Me a Coffee destination/card/command/artwork.
+- [x] Repository-only project funding documentation is distinguished from application functionality.
+- [x] No medical/health entitlement from funding is documented.
+- [x] Store payload forbidden-marker scan is documented as defense-in-depth.
+- [x] Obsolete per-package funding build-toggle guidance is not treated as current design.
 
-## Current authoritative automated source baseline
+## 19. Documentation governance
 
-PR #56 verified source/base:
+- [x] `docs/DOCUMENTATION_STANDARDS.md` defines documentation standards.
+- [x] `docs/REPOSITORY_GOVERNANCE.md` defines authority/evidence precedence.
+- [x] `docs/DOCUMENTATION_CATALOG.md` defines audience navigation.
+- [x] Current entry points point to PR #74, not obsolete PR #56/PR #61 authority.
+- [x] Historical files remain historical instead of being silently rewritten.
+- [x] Manual checks are not marked complete merely because a procedure exists.
+- [x] Store policy is treated as submission-time/current-review dependent.
 
-`4f1a0a14abb8f3405a2387317a89e8a2988a3eaa`
+## 20. Current authoritative automated evidence
 
-Marker head:
+PR #74 frozen head:
 
-`e3bc621cea05364a69abee0dadbd71a67c17bddb`
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
 
-Evidence:
+Merged executable source:
 
-- CareNest CI #571 / `31770929379`: success;
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+
+Results:
+
+- CareNest CI #735 / run `31938301209`: success;
 - formatting: success;
-- UnitTests: 122 passed;
-- IntegrationTests: 39 passed;
-- UiTests/source-policy: 124 passed;
-- total core: 285 passed;
+- unit: 122/122;
+- integration: 39/39;
+- UI/source-policy: 170/170;
+- total: 331/331;
 - Android Release: success;
 - Windows Release: success;
 - iOS simulator Release: success;
 - Mac Catalyst Release: success;
-- CodeQL #571 / `31770929382`: success;
-- unsuppressed Dependency Audit #41 / `31770929383`: success.
+- Store Package Configuration #124 / run `31938301146`: success on all four targets;
+- Store Inspection Artifacts #47 / run `31938301275`: success;
+- CodeQL #735 / run `31938301252`: success;
+- Dependency Audit #91 / run `31938301172`: success.
 
-PR #56 was marker-only and closed without merge. Its marker is not part of `main`.
+## 21. Production work not completed by documentation
 
-PR #54 remains the historical authoritative runtime bug-audit baseline for the earlier 261-test source graph.
+The documentation set is complete for the current source scope, but the following release evidence remains open until actually performed:
 
-## Real release work not completed by documentation
+- [ ] representative Android manual matrix;
+- [ ] representative Windows manual matrix;
+- [ ] iPhone/iPad real-device matrix;
+- [ ] Mac Catalyst manual matrix;
+- [ ] real notification permission/delivery/lifecycle testing;
+- [ ] packaged SQLite existing-data upgrade/integrity/readability/editability checks;
+- [ ] packaged encrypted document/backup compatibility;
+- [ ] genuine historical fixtures where real prior bytes exist;
+- [ ] screen-reader/large-text/keyboard/contrast/reduced-motion validation;
+- [ ] production signing outside Git;
+- [ ] final signed package generation and inspection;
+- [ ] current Apple/Google/Microsoft policy review as applicable;
+- [ ] store screenshots/listing/privacy/data-safety metadata;
+- [ ] exact approved production source/tag;
+- [ ] tagged CI/CodeQL/Dependency Audit/Store Package/Store Inspection/Release Gate/Release Evidence success;
+- [ ] final publication evidence.
 
-The documentation package being complete does **not** complete these production blockers:
+## 22. Maintenance rule
 
-- [ ] manual Android device/emulator matrix;
-- [ ] manual Windows matrix;
-- [ ] manual iOS/iPadOS matrix;
-- [ ] manual Mac Catalyst matrix;
-- [ ] real notification permission/delivery checks;
-- [ ] cancellation-first reminder action/restart/reconciliation checks on actual platform scheduling;
-- [ ] Android alarm/battery/reboot/time/time-zone checks;
-- [ ] packaged document/photo/report/backup workflows;
-- [ ] representative packaged SQLite existing-data upgrade/integrity/readability checks;
-- [ ] existing encrypted document compatibility;
-- [ ] current/pre-remediation backup compatibility using canonical synthetic fixtures where available;
-- [ ] clean-install restore checks;
-- [ ] screen-reader/large-text/keyboard/contrast/theme/reduced-motion checks;
-- [ ] current Apple/Google external-support-link/store-policy review;
-- [ ] signing identities/secrets/package configuration outside Git;
-- [ ] signed artifact generation/inspection;
-- [ ] final screenshots/store listings/privacy-data-safety submission data;
-- [ ] final Release Gate/Release Evidence for the exact promoted production tag;
-- [ ] final version/build metadata, release notes, checksums and production publication.
-
-Do not mark these items complete solely because their procedures are fully documented or because PR #56 is green.
-
-## Maintenance rule
-
-When future source changes add/remove/change behavior, update this checklist if the documentation set or required categories change. When runtime/test/project/workflow/package/platform/build-script source changes after PR #56, complete a fresh exact-head verification before treating the newer source as an automated production baseline.
+When behavior, architecture, data categories, dependencies, encryption formats, reminder semantics, platform integrations, release workflows or store packaging change, update the affected documentation in the same work. If verification-relevant source changes, create a new exact-source automated verification before describing the new source as the authoritative automated baseline.
