@@ -1,165 +1,180 @@
-# Store Build Policy — External Project Funding
+# CareNest Store Build Policy
 
-## Purpose
+**Release line:** `1.0.0-rc.1`  
+**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-CareNest repository documentation may contain an optional Buy Me a Coffee link for voluntary project support. The CareNest application runtime/package does **not** contain or expose that external funding destination.
+This document defines the current source/package boundary for store-oriented builds. It is not evidence of production signing or store approval.
 
-This is now a source-level product boundary rather than a per-package visibility switch. It avoids store-package drift and protects all app targets consistently.
+## 1. Current application funding boundary
 
-## Product rule
+The distributed CareNest application runtime/source/package contains **no external Buy Me a Coffee destination/card/command/artwork**.
 
-Project support is voluntary and repository-only.
-
-It must never:
-
-- unlock medical advice;
-- unlock health features;
-- alter reminder priority, timing, reliability, or permissions;
-- expose user health data;
-- alter health-related support priority;
-- create an account or remote health-data relationship;
-- be represented as purchase of clinical, diagnostic, treatment, or emergency functionality.
-
-The repository support URL is:
+Repository-only voluntary support destination:
 
 `https://buymeacoffee.com/sanskarIN`
 
-It may appear in repository support documents and `.github/FUNDING.yml` where permitted. It must not appear under `src/CareNest.App` or in built CareNest application payloads.
+Project support does not unlock health functionality, reminder priority/reliability, medical advice, emergency service or access to local records.
 
-## Final application boundary
+## 2. No current funding build toggle
 
-There is no `CareNestShowFundingLink` build property and no `CARENEST_*FUNDING*` app build switch.
+The old `CareNestShowFundingLink` / store-funding visibility architecture is removed.
 
-The application contains:
+Store builds do not require a special funding-disabled property because the external destination is absent from application source/package by product policy for every target.
 
-- no external funding command;
-- no external funding card in About;
-- no funding-policy source unit;
-- no Buy Me a Coffee destination under the MAUI app source tree;
-- no packaged funding/support promotional artwork carrying the destination.
+Historical release evidence can describe the earlier toggle investigation but must not be treated as current configuration.
 
-CareNest About continues to expose normal product/support surfaces such as the repository, creator profile, business email, application support email, privacy policy, terms, security policy, and bundled third-party notices.
+## 3. Why package scanning remains
 
-Health-organizer behavior is independent of repository funding.
+The 2026-08-15 investigation proved that source/build flags alone can miss payload content: a URL-bearing SVG resource caused the external funding marker to enter Windows application bytes.
 
-## Why the previous build switch was removed
+The current stronger invariant is:
 
-During 2026-08-15 package inspection, Windows store-safe publishing still contained `buymeacoffee.com/sanskarIN` in `CareNest.App.dll` even when the code/build funding switch evaluated false.
+- funding surface absent by source policy;
+- actual built payload scanned for the canonical external marker before inspection artifact upload.
 
-The root cause was `src/CareNest.App/Resources/Images/buy_me_a_coffee_carenest.svg`: the SVG itself contained the full destination in accessibility/text content, and Windows MAUI resource processing embedded that content into the managed application payload.
+The scanner is defense-in-depth and must fail closed.
 
-The final fix removed the runtime funding surface and the URL-bearing artwork instead of depending on compile flags. See `FINAL_STORE_PAYLOAD_AND_BUG_AUDIT_VERIFICATION_20260815.md`.
+## 4. Store-candidate configuration targets
 
-## Store-package preflight
+Current Store Package Configuration verifies Release configurations for:
 
-Store-package preflight requires an explicit supported MAUI target and delegates to the standard release preflight.
+- Android;
+- Windows;
+- iOS simulator;
+- Mac Catalyst.
 
-Supported targets:
+These builds exercise current project configuration and strict XAML compilation. They do not create production-signed store packages.
 
-- `net10.0-android`;
-- `net10.0-ios`;
-- `net10.0-maccatalyst`;
-- `net10.0-windows10.0.19041.0`.
+## 5. Store-package preflight
 
-Bash:
+Store-package wrapper scripts require an explicit supported target and delegate to standard release preflight.
+
+Examples:
 
 ```bash
-CARENEST_TARGET=net10.0-android ./build/scripts/store-package-preflight.sh
+CARENEST_TARGET=net10.0-android \
+./build/scripts/store-package-preflight.sh
 ```
-
-PowerShell:
 
 ```powershell
 $env:CARENEST_TARGET = 'net10.0-windows10.0.19041.0'
 ./build/scripts/store-package-preflight.ps1
 ```
 
-The wrappers preserve formatting, core builds, automated tests, unsuppressed dependency audit, target restore/audit, and selected MAUI Release build coverage.
+The current wrapper does not accept/use a funding-link property.
 
-They do not configure production signing, create store identities, submit an application, or prove installed real-device behavior.
+## 6. Store Inspection Artifacts
 
-## Automated store-candidate build verification
+The inspection workflow generates non-production exact-source evidence:
 
-`.github/workflows/store-package-verification.yml` compiles store-candidate configurations for every supported MAUI target.
+### Android
 
-It covers:
+- unsigned AAB inspection candidate;
+- excludes/rejects signed companion metadata as configured;
+- payload scan before staging;
+- checksum/provenance;
+- artifact upload.
 
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release.
+### Windows
 
-The workflow does not rely on a funding visibility property. The application source itself is funding-surface-free.
+- self-contained unpackaged inspection output;
+- payload scan before staging;
+- checksum/provenance;
+- artifact upload.
 
-The workflow does not inject production signing credentials or publish production releases.
+### Apple
 
-## Automated payload inspection
+- iOS simulator inspection build;
+- unsigned Mac Catalyst inspection publish;
+- payload scan/staging/checksums/provenance;
+- artifact upload.
 
-`.github/workflows/store-inspection-artifacts.yml` creates internal non-production inspection artifacts and runs:
+Production signing secrets are intentionally absent from this workflow.
 
-`build/scripts/verify-store-safe-payload.py`
+## 7. Internal artifact boundary
 
-against built payloads before upload.
+Inspection artifacts are engineering evidence only and can be unsigned, unpackaged or simulator-targeted by design.
 
-The scanner fails if the canonical BMC marker is found as UTF-8, UTF-16 little-endian, or UTF-16 big-endian text. It scans ordinary files/directories and ZIP/AAB entries and fails closed for missing/unreadable payloads.
+They must not be described as:
 
-It scans:
+- production signed;
+- notarized;
+- store submitted;
+- store approved;
+- production installable for every target.
 
-- the unsigned Android AAB candidate;
-- the Windows self-contained publish directory;
-- the iOS simulator `.app` bundle;
-- the unsigned Mac Catalyst `.app` bundle.
+Final production packages require separate signing/provenance/smoke/manual validation.
 
-Successful provenance records include:
+## 8. Current automated evidence
 
-`external_funding_surface=absent_by_source_policy`
+PR #74 frozen source head:
 
-and:
+`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
 
-`funding_url_payload_scan=passed`
+Merged executable source:
 
-The workflow also self-tests the scanner with clean, UTF-8-marker, UTF-16-marker, ZIP/AAB-marker, and missing-path cases.
+`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
 
-## Automated contracts
+Verified:
 
-Current source-policy tests protect the final boundary:
+- CareNest CI #735 / `31938301209`: success;
+- 331/331 core tests;
+- Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
+- Store Package Configuration #124 / `31938301146`: all four targets success;
+- Store Inspection Artifacts #47 / `31938301275`: success;
+- CodeQL #735 / `31938301252`: success;
+- Dependency Audit #91 / `31938301172`: success.
 
-- `StoreFundingPayloadContractTests.cs` recursively guards the MAUI app text/resource tree against the external funding destination and deleted funding surface;
-- `CriticalFlowContractTests.cs` protects the funding-free About runtime while preserving product/support surfaces;
-- `FundingLinkContractTests.cs` keeps voluntary funding repository-only and non-medical;
-- `BrandingAndLocalizationContractTests.cs` and `PackageMetadataContractTests.cs` require core CareNest branding while requiring funding artwork to remain absent;
-- `StorePackageWorkflowContractTests.cs` protects target coverage and the absence of the obsolete funding toggle;
-- `StorePackagePreflightContractTests.cs` protects explicit target selection and release-preflight delegation without the obsolete funding property;
-- `StoreInspectionArtifactWorkflowContractTests.cs` protects exact-source artifact generation, payload scanning, provenance, checksums, scanner self-test, and non-production boundaries.
+Permanent evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
 
-## Store-review decision
+Older PR #68/#67/#61/#59/#58 evidence remains historical for earlier boundaries.
 
-The app binary no longer exposes the external voluntary funding destination, so there is no per-store `true/false` funding build choice.
+## 9. Strict XAML behavior
 
-Before each production submission, still review current Apple/Google/Microsoft storefront rules for the complete app/store listing, metadata, payments, privacy, data-safety declarations, and external links that remain in the product.
+Store-candidate and inspection builds use the current app project policy:
 
-Do not infer future store approval from an earlier review or automated build result.
+- Source binding compilation enabled;
+- strict XAML compilation enabled;
+- `XC0022`–`XC0025` as errors.
 
-## Required packaged verification
+Do not weaken XAML warning policy to make store builds pass.
 
-For every final signed candidate:
+## 10. Store privacy/medical boundary
 
-- verify the About experience contains no Buy Me a Coffee funding destination/card;
-- verify repository, creator, business email, application support email, privacy, terms, security, and third-party notices remain available as intended;
-- verify health-organizer behavior is unchanged;
-- run or equivalently reproduce the forbidden-marker payload scan on the signed package;
-- record package filename, SHA-256, source SHA, target, version/build, signing/notarization provenance, scan result, manual reviewer and date.
+Every candidate/listing must preserve:
 
-A successful internal automated scan proves only that the configured marker was absent from the inspected payload. It does not prove store approval, final signed-package identity, real-device behavior, accessibility, data-upgrade compatibility, or production readiness by itself.
+- organizational/non-clinical positioning;
+- no dosage calculation/inference;
+- no treatment/interaction/risk claims;
+- no guaranteed reminder delivery;
+- no required CareNest account/backend in current v1;
+- no whole-database encryption claim;
+- explicit external export/share boundaries.
 
-## Current evidence
+## 11. Submission-time policy review
 
-The authoritative automated merged-source record is:
+Store policy changes over time. At actual submission:
 
-`docs/releases/FINAL_STORE_PAYLOAD_AND_BUG_AUDIT_VERIFICATION_20260815.md`
+- review current Apple rules for the exact package/listing;
+- review current Google Play rules for the exact package/listing;
+- review Microsoft/Windows requirements where applicable;
+- record date/source/conclusion;
+- adjust listing/package only through an explicit reviewed source change, followed by new verification.
 
-Frozen executable source:
+## 12. Production signing
 
-`9ec7b4e7d2150d9cc50be19f30464080318b16e8`
+Production signing remains outside Git and outside internal inspection workflows.
 
-Marker-only PR #68 verified all normal/store-candidate builds, all Android/Windows/Apple payload scans, 325/325 tests, CodeQL, and unsuppressed Dependency Audit, then closed without merge.
+Final packages must record exact source SHA/tag, identity/version, filename, SHA-256 and signing/notarization/store provenance.
+
+## 13. Final signed-package funding inspection
+
+Even though source policy removes the external funding surface, final signed packages must repeat/equivalently perform the forbidden-marker scan and manually verify About contains no BMC funding destination/card.
+
+This protects against packaging/tooling/regression differences after internal inspection.
+
+## 14. Change policy
+
+Do not reintroduce an application funding link, payment SDK or external support card as a routine store-specific switch.
+
+Any future in-app external funding/payment surface requires fresh product, privacy, security, UX and current store-policy review plus source/package tests and exact-source verification.
