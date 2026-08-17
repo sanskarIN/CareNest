@@ -103,18 +103,18 @@ It checks regular payload files and ZIP-compatible package entries using UTF-8 a
 
 ---
 
-## 5. Latest fully verified pre-Gumroad automated baseline
+## 5. Latest verified Gumroad rollout automated baseline
 
-Exact source:
+Exact verified implementation/source-policy SHA:
 
-`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
 That exact source passed:
 
 - unit tests: **122/122**;
 - integration tests: **39/39**;
-- UI/source-policy tests: **173/173**;
-- total core tests: **334/334**;
+- UI/source-policy tests: **175/175**;
+- total core tests: **336/336**;
 - Android Release build;
 - Windows Release build;
 - iOS simulator Release build;
@@ -125,34 +125,21 @@ That exact source passed:
 - Mac Catalyst store-candidate configuration;
 - CodeQL.
 
-This remains the latest fully verified baseline until the exact final Gumroad/documentation source revision completes its own applicable workflow matrix.
+Authoritative verification record:
 
-Do not automatically apply the 334/334 result to newer source/test revisions.
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+
+The two-test increase from 173 to 175 UI/source-policy tests is the intended Gumroad repository-placement/accessibility/package-isolation expansion.
 
 ---
 
-## 6. Current Gumroad rollout verification state
+## 6. Gumroad verification correction history
 
-The Gumroad continuation modifies repository documentation, test contracts and `build/scripts/verify-store-safe-payload.py`, so it is verification-relevant.
+The first finalization candidate `b5a57186af60e8b42bb917dfa85de24c3c9c1e9a` exposed one wording-contract mismatch in the newly added Gumroad test. Documentation correctly said Gumroad purchases “do not unlock” medical advice, while the test searched for singular `does not unlock`.
 
-The active exact revision and commit-by-commit rollout record are maintained in:
+This false-positive test assertion was corrected without weakening the health-safety rule. The replacement exact source `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` then passed the complete configured matrix listed above.
 
-`what_changed.md`
-
-The final rollout is only promoted to a new verified baseline after the same exact source passes the applicable current matrix:
-
-- formatting;
-- unit tests;
-- integration tests;
-- UI/source-policy tests;
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release;
-- all four store-candidate configurations;
-- CodeQL.
-
-If the exact source changes after a failure/fix or documentation consistency correction, older queued/cancelled runs are not the final authority.
+Documentation-only commits after that verified implementation source do not change the tested runtime/scanner behavior unless explicitly stated. Final repository-head workflow status should still be checked for the exact latest head.
 
 ---
 
@@ -213,6 +200,7 @@ Current documentation entry points:
 - `docs/README.md` — documentation hub;
 - `docs/DOCUMENTATION_CATALOG.md` — authority/ownership map;
 - `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — whole-project reference;
+- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — verified Gumroad rollout evidence;
 - `docs/DEVELOPER_REFERENCE.md` — developer rules;
 - `docs/REPOSITORY_GOVERNANCE.md` — source/evidence/marketing governance;
 - `GUMROAD.md` — canonical storefront guide;
@@ -283,8 +271,8 @@ Use fictional/synthetic data only.
 - The intended RC feature scope remains source-complete.
 - The Gumroad storefront is strongly highlighted across current repository/documentation surfaces.
 - Gumroad and Buy Me a Coffee remain absent from the packaged CareNest health app under the current policy.
-- The latest fully verified pre-Gumroad source remains `7cbe5568b6cffa06c279b29f3cb1b107ea988791` with 334/334 core tests and the configured normal/store build matrix green.
-- The current Gumroad rollout must earn its own exact-source verification before replacing that baseline.
+- The verified Gumroad rollout implementation/source-policy baseline is `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` with **336/336 core tests**, all normal platform builds, all four store-candidate builds, and CodeQL green.
+- Production validation still requires real-device, accessibility, packaged compatibility, signing, current store-policy and publication evidence.
 - CareNest is not yet production-signed, store-approved, production-published, manually proven on every target/device condition, or globally guaranteed bug-free.
 
 Use `what_changed.md` for the exact active Gumroad continuation and commit history.
