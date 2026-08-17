@@ -1,13 +1,23 @@
 # CareNest Complete Project Documentation
 
+<p align="center">
+  <a href="https://ramsandesh.gumroad.com">
+    <img src="assets/gumroad_store_badge.svg" alt="Shop on Gumroad — https://ramsandesh.gumroad.com" width="850" />
+  </a>
+</p>
+
 **Project:** CareNest  
 **Release line:** `1.0.0-rc.1`  
-**Documentation baseline:** 2026-08-16  
+**Documentation baseline:** 2026-08-17  
 **Repository:** `https://github.com/sanskarIN/CareNest`  
-**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
-**Verified PR #74 source head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+**Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`  
+**Latest fully verified pre-Gumroad source:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`
 
-This is the canonical end-to-end documentation for the current CareNest source scope. Specialized documents under `docs/` provide deeper subsystem detail; this document connects them into one coherent project reference.
+The complete project guide that was active before the Gumroad rollout is preserved exactly at:
+
+`docs/history/pre-gumroad-rollout-20260817/COMPLETE_PROJECT_DOCUMENTATION.md`
+
+This file is the current end-to-end project reference. Specialized documents remain authoritative for deeper subsystem detail.
 
 > **Medical boundary:** CareNest is organizational software. It does not diagnose conditions, calculate or infer dosage, recommend treatment, perform clinical medication-interaction checking, calculate clinical risk, replace a clinician/pharmacist, provide emergency services, or guarantee notification delivery.
 
@@ -18,44 +28,102 @@ This is the canonical end-to-end documentation for the current CareNest source s
 - Product name: **CareNest**
 - Application ID: `com.sanskar.carenest`
 - Display version: `1.0.0-rc.1`
-- Application version/build: `1`
+- Application/build version: `1`
 - Primary branch: `main`
 - License: Apache License 2.0
 - Creator/GitHub: `https://github.com/sanskarIN`
 - Business contact: `sanskarin@outlook.in`
 - Support contact: `supportramsandesh@gmail.com`
-- Repository-only voluntary project support: `https://buymeacoffee.com/sanskarIN`
-- Branding watermark used by project documentation/design where applicable: `Made by the Sanskar`
+- Gumroad storefront: `https://ramsandesh.gumroad.com`
+- Buy Me a Coffee: `https://buymeacoffee.com/sanskarIN`
+- Project watermark where applicable: `Made by the Sanskar`
 
-The distributed application package currently does **not** contain an external Buy Me a Coffee destination/card/command/artwork. Repository funding documentation is separate from health functionality.
+CareNest is open source and local-first. Repository marketing/support links are separate from application health functionality.
 
 ---
 
-## 2. Product purpose
+## 2. Gumroad storefront
 
-CareNest helps people organize user-entered health-related information locally on their own device. The current source scope includes:
+The Ram Sandesh Gumroad storefront is prominently documented throughout current repository-owned support, marketing, metadata and documentation surfaces:
 
-- multiple local family/person profiles;
-- medicines and opaque user-entered strength/instruction text;
+**https://ramsandesh.gumroad.com**
+
+Canonical files:
+
+- `GUMROAD.md` — reader-facing storefront guide;
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — placement/package policy;
+- `docs/marketing/GUMROAD_ROLLOUT_CHECKLIST.md` — rollout verification checklist;
+- `docs/assets/gumroad_store_badge.svg` — repository-only visual CTA;
+- `docs/assets/README.md` — asset usage/accessibility rules.
+
+A Gumroad purchase is **not** a CareNest medical/health entitlement. It does not provide or change:
+
+- diagnosis;
+- dosage guidance;
+- treatment recommendations;
+- medication-interaction claims;
+- clinical risk scoring;
+- reminder priority or delivery guarantees;
+- emergency assistance;
+- CareNest health-data access;
+- account/cloud functionality.
+
+CareNest does not automatically transmit local health records to Gumroad.
+
+---
+
+## 3. External-commerce package boundary
+
+The current CareNest application runtime/package intentionally excludes repository-only commercial/funding destinations and promotional artwork.
+
+Forbidden package markers under the current policy include:
+
+- `ramsandesh.gumroad.com`;
+- `buymeacoffee.com/sanskarIN`.
+
+Do not place those destinations in:
+
+- `src/CareNest.App` ViewModels;
+- application XAML;
+- shared runtime URL constants;
+- platform manifests/plists for promotional purposes;
+- packaged image/resources;
+- app commands/buttons under the current product/store policy.
+
+`build/scripts/verify-store-safe-payload.py` defaults to scanning both markers in UTF-8, UTF-16 little-endian and UTF-16 big-endian representations, including ZIP-compatible package entries.
+
+Repository-only support/storefront material remains allowed in documentation, GitHub metadata and repository marketing assets.
+
+---
+
+## 4. Product purpose
+
+CareNest helps people organize user-entered health-related information locally on their own device.
+
+Current source-controlled scope includes:
+
+- multiple person/family profiles;
+- medicines and user-entered strength/instruction text;
 - explicit medicine schedules;
 - deterministic reminder occurrences;
-- reminder history/status states;
+- reminder lifecycle/history states;
 - appointments and optional reminders;
-- medicine stock/refill notes based on user-entered quantities;
-- encrypted imported document storage;
-- profile photos;
+- medicine stock/refill notes;
+- encrypted imported-document storage;
+- profile images;
 - reports and portable exports;
-- manual password-encrypted backups and restore;
+- manual password-encrypted backup and restore;
 - optional local app lock;
 - reminder diagnostics/recovery;
-- theme and accessibility-oriented UI;
-- local privacy cleanup/data-clear workflows.
+- local privacy cleanup/data-clear workflows;
+- light/dark/system themes;
+- accessibility-oriented UI/source contracts.
 
 Use `docs/USER_GUIDE.md` and `docs/FEATURE_REFERENCE.md` for end-user workflows.
 
 ---
 
-## 3. Explicit non-goals
+## 5. Explicit non-goals
 
 CareNest does not currently provide:
 
@@ -70,16 +138,16 @@ CareNest does not currently provide:
 - required CareNest accounts;
 - automatic CareNest cloud synchronization;
 - silent remote caregiver sharing;
-- server-side CareNest health-record storage;
+- CareNest server-side health-record storage;
 - hidden runtime analytics/telemetry networking.
 
-Any future networked or clinical feature requires a separate design, privacy, security, consent, legal/store and safety review.
+Any future networked, commerce-in-app or clinical feature requires a separate product, privacy, security, safety, consent, legal/store and testing review.
 
 ---
 
-## 4. Technology stack
+## 6. Technology stack
 
-### Runtime/application
+### Application
 
 - .NET 10
 - .NET MAUI
@@ -91,31 +159,33 @@ Any future networked or clinical feature requires a separate design, privacy, se
 
 - SQLite
 - `sqlite-net-pcl`
-- centrally managed package versions
-- explicit schema migrations
-- WAL/snapshot/integrity behavior where documented
-- transactional multi-step persistence where consistency requires it
+- central package management/transitive pinning
+- explicit ordered schema migrations
+- transactions where consistency requires them
+- WAL/snapshot/integrity behavior for backup workflows where documented
 
 ### Cryptography
 
-- built-in .NET cryptographic primitives
+- supported .NET cryptographic primitives
 - authenticated AES-GCM-based document/backup protection
-- PBKDF2-HMAC-SHA256 for password/PIN-derived verifier/key workflows where documented
-- authenticated chunked framing v2 for new encrypted document/backup streams
-- retained v1 read compatibility for documented historical formats
+- PBKDF2-HMAC-SHA256 for documented password/PIN-derived workflows
+- authenticated chunked framing v2 for current encrypted streams
+- retained documented legacy-read compatibility
 
 ### Quality/security automation
 
 - xUnit
 - GitHub Actions
 - CodeQL
-- unsuppressed NuGet dependency auditing
+- blocking NuGet dependency auditing
 - source/repository policy tests
-- package payload scanning/provenance workflows
+- package marker scanning
+- release/store configuration gates
+- exact-source evidence workflows
 
 ---
 
-## 5. Solution structure
+## 7. Solution structure
 
 ```text
 CareNest.sln
@@ -130,86 +200,117 @@ tests/
   CareNest.IntegrationTests/
   CareNest.UiTests/
 docs/
+  architecture/
+  assets/
+  design/
+  history/
+  marketing/
+  privacy/
+  releases/
+  security/
+  setup/
+  testing/
 build/scripts/
 .github/workflows/
 ```
 
-Dependency direction:
+Intended dependency direction:
 
 ```text
 CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure <- CareNest.App
 ```
 
+Detailed ownership: `docs/CODEBASE_REFERENCE.md` and `docs/architecture/SERVICE_BOUNDARIES.md`.
+
+---
+
+## 8. Project responsibilities
+
 ### `CareNest.Shared`
 
-Shared primitives/helpers with no MAUI/persistence dependency.
+Small cross-layer primitives/helpers without MAUI or persistence coupling.
+
+External-commerce URLs must not be introduced as application constants under the current package policy.
 
 ### `CareNest.Domain`
 
-Framework-independent entities, enums and structural validation. Domain rules must not become a clinical recommendation engine.
+Framework-independent entities, enums and structural/domain validation. It must not become a clinical decision engine.
 
 ### `CareNest.Application`
 
-Application contracts/use cases, repository/service abstractions, reminder planning/coordinating and compensation/recovery logic.
+Use-case/service contracts, repository abstractions, reminder planning/coordinating, recovery and compensation logic.
 
 ### `CareNest.Infrastructure`
 
-SQLite, migrations, repositories, encrypted document storage, backup/restore, reports/exports and related implementation concerns.
+SQLite, migrations, repositories, encrypted document storage, backup/restore, reports/exports and related implementations.
 
 ### `CareNest.App`
 
-MAUI UI/composition, XAML, ViewModels, navigation, dependency injection, platform services and Android/iOS/Mac Catalyst/Windows adapters.
+MAUI composition, XAML, ViewModels, navigation, dependency injection, themes, platform services and Android/iOS/Mac Catalyst/Windows adapters.
 
-### Tests
-
-- Unit: deterministic domain/application/service behavior.
-- Integration: SQLite/encryption/backup/document/report behavior.
-- UI/source-policy: XAML, architecture, async-safety, privacy/logging, packaging/release/workflow contracts.
-
-Detailed file map: `docs/CODEBASE_REFERENCE.md`.
+Repository-only Gumroad/Buy Me a Coffee promotion must not leak into this project under the current store policy.
 
 ---
 
-## 6. Application targets
+## 9. Platform targets
 
-Current app target frameworks:
+Current targets:
 
-- Android: `net10.0-android` — minimum Android API 24;
-- iOS/iPadOS: `net10.0-ios` — minimum iOS 15;
-- Mac Catalyst: `net10.0-maccatalyst` — minimum 15;
-- Windows: `net10.0-windows10.0.19041.0` — minimum Windows 10.0.19041.0.
+- Android: `net10.0-android`, minimum API 24;
+- iOS/iPadOS: `net10.0-ios`, minimum iOS 15;
+- Mac Catalyst: `net10.0-maccatalyst`, minimum 15;
+- Windows: `net10.0-windows10.0.19041.0`, minimum Windows 10.0.19041.0.
 
-`CareNestTargetFramework` allows a host/CI job to isolate one target instead of evaluating unrelated platform workloads.
+`CareNestTargetFramework` can isolate one target on CI/hosts that do not have every workload.
 
-See `docs/setup/PLATFORM_SETUP.md` and `docs/PLATFORM_BEHAVIOR_MATRIX.md`.
+See:
+
+- `docs/setup/PLATFORM_SETUP.md`;
+- `docs/PLATFORM_BEHAVIOR_MATRIX.md`;
+- `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`.
 
 ---
 
-## 7. Current package baseline
+## 10. Package baseline
 
-Central package management/transitive pinning is enabled in `Directory.Packages.props`.
+Central package management is configured in `Directory.Packages.props`.
 
-Important versions at this documentation baseline:
+Important documented versions include:
 
 - `Microsoft.Maui.Controls` `10.0.20`;
 - `sqlite-net-pcl` `1.9.172`;
 - `SQLitePCLRaw.bundle_green` `2.1.11`;
 - `SQLitePCLRaw.lib.e_sqlite3` `3.53.3`;
-- `SQLitePCLRaw.lib.e_sqlite3.android` `2.1.12`;
-- selected SQLite providers `2.1.12`;
+- Android/provider SQLite leaves `2.1.12` where pinned;
 - `Microsoft.Extensions.Logging.Debug` `10.0.0`;
 - `Microsoft.NET.Test.Sdk` `17.14.1`;
 - `xunit` `2.9.3`;
 - `xunit.runner.visualstudio` `3.1.4`;
 - `coverlet.collector` `6.0.4`.
 
-The former exact SQLite advisory suppression remains removed. Dependency security and packaged existing-data compatibility are separate release concerns.
+The former exact SQLite advisory suppression remains removed. Do not reintroduce it merely to obtain a green dependency audit.
+
+Package security and packaged existing-data compatibility are separate concerns.
 
 ---
 
-## 8. XAML/compiler policy
+## 11. Build/project configuration
 
-Current application project enables:
+Application identity and platform properties live in `src/CareNest.App/CareNest.App.csproj`.
+
+Source build policy includes strict nullable/analyzer/compiler behavior and strict XAML compilation.
+
+Use:
+
+- `docs/CONFIGURATION_REFERENCE.md` for configuration ownership;
+- `docs/setup/DEVELOPMENT.md` for development setup;
+- `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` for publish/package instructions.
+
+---
+
+## 12. XAML/compiler policy
+
+The application project enables:
 
 ```xml
 <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
@@ -217,122 +318,140 @@ Current application project enables:
 <WarningsAsErrors>$(WarningsAsErrors);XC0022;XC0023;XC0024;XC0025</WarningsAsErrors>
 ```
 
-Binding policy:
+Rules include:
 
-- every binding-bearing page has a real root `x:DataType`;
-- binding-bearing DataTemplates have item-specific `x:DataType`;
-- picker display bindings are typed when their context changes to an item;
-- explicit Source/RelativeSource bindings are typed;
-- template parent commands use typed ancestor binding contexts;
-- no matching `NoWarn`, `x:Object` or `x:Null` bypass is part of the intended baseline.
+- accurate root `x:DataType` on binding-bearing pages;
+- item-specific `x:DataType` in binding-bearing DataTemplates;
+- typed picker item display bindings where context changes;
+- typed explicit Source/RelativeSource bindings;
+- typed ancestor ViewModel binding-context patterns from templates;
+- no `NoWarn`, `x:Object` or `x:Null` shortcut around the intended policy.
 
-PR #74 migrated all 15 binding-bearing pages and added permanent contract tests.
-
-See `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+Permanent migration evidence remains in `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
 
 ---
 
-## 9. Core data model
+## 13. Core data model
 
-CareNest stores concepts for:
+CareNest organizes concepts for:
 
 - person/profile;
 - medicine;
-- medicine schedule and schedule-time data;
+- medicine schedules/schedule-time data;
 - reminder occurrence;
 - medication log/history;
 - appointment;
 - document metadata/tags;
 - stock/refill information;
-- settings/contact/audit-style supporting data where applicable.
+- application settings/supporting local data where applicable.
 
-Exact entities, keys, indexes, relationships and migrations are documented in `docs/architecture/DATABASE_SCHEMA.md`.
+Exact entities, keys, relationships, indexes and migrations are documented in `docs/architecture/DATABASE_SCHEMA.md`.
 
 ---
 
-## 10. Reminder architecture
+## 14. Reminder architecture
 
-Reminder scheduling crosses three distinct state surfaces:
+Reminder scheduling crosses three separate state surfaces:
 
 1. explicit user schedule intent;
 2. persisted CareNest reminder-occurrence state;
 3. operating-system scheduled request state.
 
-These cannot be committed atomically as one database transaction. CareNest therefore uses deterministic planning, reconciliation, cancellation-first ordering and compensation/recovery.
+These cannot be committed atomically as one database transaction, so CareNest uses deterministic planning, reconciliation, cancellation-first ordering and compensation/recovery.
 
 Core rules include:
 
-- schedules derive only from explicit user-entered values;
-- ownership/state/date/time-zone validation;
+- schedules come from explicit user-entered values;
+- entity ownership/state/date/time-zone validation;
 - deterministic UTC planning windows;
 - half-open window boundaries;
 - stable occurrence identity;
 - inactive/archive suppression;
 - deterministic DST gap/overlap behavior;
 - no invented reminder time for invalid DST-gap input;
-- valid snooze requires explicit future UTC;
-- `SnoozedUntilUtc` becomes the effective due time while snoozed;
-- stale OS request reconciliation after edits/restarts;
+- future-UTC snooze contract;
+- `SnoozedUntilUtc` as effective due time while snoozed;
+- stale OS-request reconciliation after edits/restarts;
 - cancellation before replacement/suppression/handled-state persistence where required;
-- restoration/rebuild attempts after later failure.
+- compensation/rebuild attempts after later failure.
 
-Detailed contract: `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`.
-
----
-
-## 11. Reminder states
-
-CareNest can organize lifecycle/history states including scheduled, snoozed, taken, skipped, delayed, missed and cancelled.
-
-These are organizational application states. They do not independently prove ingestion, adherence, medical correctness or treatment effectiveness.
+See `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`.
 
 ---
 
-## 12. Appointment architecture
+## 15. Reminder states
 
-Appointments store explicit UTC instants. `StartsUtc` must genuinely be UTC; local/unspecified ticks are not silently relabeled.
+CareNest can organize states such as:
 
-Optional reminder lead time comes from explicit appointment/reminder configuration. Permission denial is not treated as successful platform scheduling.
+- scheduled;
+- snoozed;
+- taken;
+- skipped;
+- delayed;
+- missed;
+- cancelled.
 
-Appointment persistence/scheduling uses compensation logic where database and OS state cannot succeed atomically.
+These are organizational application states and do not independently prove ingestion, adherence, medical correctness or treatment effectiveness.
 
 ---
 
-## 13. SQLite architecture
+## 16. Appointment architecture
 
-Structured application data is local SQLite data protected primarily by sandbox/device security. CareNest does **not** claim transparent whole-database encryption.
+Appointments store explicit instants. UTC fields must contain genuine UTC values rather than relabeled local/unspecified ticks.
 
-Persistence design includes:
+Optional appointment reminders originate from explicit user configuration. Permission denial or OS scheduling failure is not treated as guaranteed delivery.
 
-- ordered schema migrations;
-- transactional consistency where required;
-- WAL/snapshot/integrity support for backup workflows;
-- parameterized repository operations;
-- repository abstractions instead of direct ViewModel SQL;
+Persistence/platform scheduling uses compensation where separate state surfaces can fail independently.
+
+---
+
+## 17. Stock/refill organization
+
+Stock/refill functionality is organizational and based on user-entered quantities/records.
+
+It must not become a clinical prescription, dosage, refill-authorization or treatment recommendation engine.
+
+Any future pharmacy/order integration would require a separate network/privacy/legal/store/security design.
+
+---
+
+## 18. SQLite architecture
+
+Structured data is stored locally in SQLite and protected primarily by the application/device sandbox and device security.
+
+CareNest does **not** claim transparent whole-database encryption.
+
+Persistence rules include:
+
+- explicit ordered migrations;
+- transactions for consistency-sensitive multi-step changes;
+- repository abstractions rather than direct ViewModel SQL;
+- parameterized persistence operations;
+- WAL/snapshot/integrity support for backup where documented;
 - cleanup/compensation across database/filesystem/secure-store/platform surfaces.
 
 ---
 
-## 14. Document vault
+## 19. Encrypted document vault
 
 Imported document payloads use separately encrypted application-owned storage.
 
-Important behaviors:
+Important behaviors include:
 
-- master key held through platform secure storage where applicable;
+- master key ownership via platform secure storage where applicable;
 - authenticated encryption;
 - chunked framing v2 for new payloads;
 - authenticated terminal/truncation/trailing-data protection;
-- retained v1 read compatibility where required;
-- missing/corrupt key with existing encrypted payloads fails closed;
-- export creates plaintext outside the encrypted vault boundary by explicit user action;
-- import/export failure paths attempt cleanup/rollback.
+- retained documented legacy read compatibility;
+- fail-closed behavior when required existing key material is missing/corrupt;
+- explicit plaintext export outside the vault only by user action;
+- cleanup/rollback on import/export failure paths.
 
 See `docs/architecture/DOCUMENT_VAULT.md`.
 
 ---
 
-## 15. Backup and restore
+## 20. Backup and restore
 
 Backups are manually initiated and password-protected.
 
@@ -342,7 +461,7 @@ Design includes:
 - authenticated encryption;
 - versioned format;
 - strict decrypted archive topology validation;
-- database snapshot/integrity checks;
+- SQLite snapshot/integrity checks;
 - recovery material needed for encrypted documents where documented;
 - wrong-password/tamper/truncation/trailing-data rejection;
 - rollback/cleanup after failed restore.
@@ -351,33 +470,42 @@ See `docs/architecture/BACKUP_AND_RESTORE.md`.
 
 ---
 
-## 16. App lock
+## 21. App lock
 
-Optional app lock is a local privacy barrier, not whole-database encryption.
+Optional app lock is a local privacy barrier, not whole-database/device encryption.
 
-The design includes salted password/PIN derivation, fixed-time verifier comparison, secure-store ownership, strict material validation, rollback around multi-key changes and fail-closed corrupt/missing state.
+The design includes:
 
-A rooted/jailbroken/fully compromised device remains outside the security guarantee.
+- no plaintext PIN storage;
+- random salt;
+- PBKDF2-HMAC-SHA256 verifier behavior;
+- fixed-time comparison;
+- strict stored verifier/salt validation;
+- secure-store ownership;
+- rollback around multi-key changes;
+- fail-closed corrupt/missing state.
+
+A rooted/jailbroken/fully compromised device remains outside the guarantee.
 
 ---
 
-## 17. Reports and exports
+## 22. Reports and exports
 
-Exports are explicit user actions and can include portable representations such as CSV/PDF/JSON and platform integrations where supported.
+Exports are explicit user actions and may include CSV/PDF/JSON or platform integrations where supported.
 
-Important behavior includes:
+Rules include:
 
-- formula-like spreadsheet content neutralization;
-- partial-file staging plus atomic final move for generated files where documented;
+- neutralize spreadsheet formula-like user content where needed;
+- use partial staging plus atomic final move for generated outputs where documented;
 - best-effort cleanup of application-owned temporary files;
-- privacy/medical-limit warnings where appropriate;
-- external copies leave CareNest's controlled boundary.
+- maintain medical/privacy limitation messaging;
+- external copies leave CareNest control after handoff.
 
 See `docs/REPORTS_AND_EXPORTS.md`.
 
 ---
 
-## 18. Privacy model
+## 23. Privacy model
 
 Current v1 intentionally has:
 
@@ -390,94 +518,87 @@ Current v1 intentionally has:
 - explicit outbound export/share/calendar/browser actions;
 - privacy-minimized diagnostic logging.
 
-External apps, screenshots, device backups and cloud destinations can retain copies after explicit handoff.
+Repository storefront links do not change these health-data guarantees. CareNest does not automatically upload health records to Gumroad or Buy Me a Coffee.
 
-See `PRIVACY.md`, `docs/privacy/PRIVACY_MODEL.md`, and `docs/privacy/DATA_LIFECYCLE.md`.
+See:
+
+- `PRIVACY.md`;
+- `docs/privacy/PRIVACY_MODEL.md`;
+- `docs/privacy/DATA_LIFECYCLE.md`.
 
 ---
 
-## 19. Logging policy
+## 24. Logging policy
 
-Do not log raw health text, document contents, passwords/PINs, backup secrets, cryptographic keys, signing material or unnecessary full sensitive-path exception contents.
+Do not log:
 
-Use privacy-minimized operation/category information and exception type names where sufficient.
+- raw health text;
+- document contents;
+- passwords/PINs;
+- backup secrets;
+- cryptographic keys;
+- signing credentials;
+- unnecessary full sensitive-path exception contents.
+
+Use privacy-minimized operation/category context and exception types where sufficient.
 
 See `docs/security/LOGGING_PRIVACY.md`.
 
 ---
 
-## 20. Security model
+## 25. Security model
 
 Security controls include:
 
 - OS sandbox/device security;
 - encrypted document payloads;
-- encrypted manual backups;
+- password-encrypted manual backups;
 - platform secure storage for secret material where applicable;
-- app-lock privacy barrier;
+- optional app-lock privacy barrier;
 - strict backup/archive validation;
 - authenticated stream framing;
 - dependency auditing;
 - CodeQL;
 - source-policy/architecture/privacy contracts;
+- repository-commerce runtime-isolation contracts;
 - package forbidden-marker scanning;
 - exact-source release evidence.
 
-Residual risk includes compromised devices, exported copies, weak user-selected secrets, OS notification behavior, external destinations and process termination during cross-surface compensation.
+Residual risk includes compromised devices, external exported copies, weak user-selected secrets, OS notification behavior and process termination during cross-surface compensation.
 
 See `docs/security/SECURITY_MODEL.md` and `docs/security/THREAT_MODEL.md`.
 
 ---
 
-## 21. Platform behavior
+## 26. Accessibility
 
-### Android
+Automated XAML/semantic/source checks do not equal real assistive-technology certification.
 
-Platform delivery depends on notification permission, alarm capability, battery/background policy, reboot, clock/time-zone changes, force-stop state and vendor behavior. Async receiver recovery uses appropriate lifetime handling.
+Manual release evidence still needs representative:
 
-### Windows
-
-Current reminder fallback has in-process limitations. Timer ownership/replacement/cancellation races are tested, but closed-app behavior remains a manual/platform concern.
-
-### iOS/iPadOS
-
-CI verifies simulator compilation. Real-device notification behavior, signing/provisioning and store deployment remain external/manual evidence.
-
-### Mac Catalyst
-
-CI verifies compilation/inspection output. Signed/notarized behavior and desktop accessibility/notification behavior require manual validation.
-
-See `docs/PLATFORM_BEHAVIOR_MATRIX.md`.
-
----
-
-## 22. Accessibility
-
-Accessibility-oriented XAML/design/source contracts do not equal real assistive-technology certification.
-
-Manual release evidence must cover representative:
-
-- screen readers;
-- large text/scaling;
+- screen-reader testing;
+- large-text/scaling;
 - keyboard/focus;
 - light/dark/system contrast;
-- reduced motion;
-- color-independent meaning;
-- privacy-safe actionable errors.
+- reduced-motion behavior;
+- color-independent state meaning;
+- actionable privacy-safe errors.
+
+Repository marketing assets should also include text alternatives and plain-text URL fallbacks.
 
 See `docs/design/ACCESSIBILITY.md`.
 
 ---
 
-## 23. Localization
+## 27. Localization
 
-Localization strategy, resource handling, translation review and RTL considerations are documented in `docs/design/LOCALIZATION.md`.
+Localization strategy, resource ownership, translation review and RTL considerations are documented in `docs/design/LOCALIZATION.md`.
 
-A new locale requires actual translations plus layout/date-time/accessibility/target validation.
+A new locale requires actual translations and layout/date-time/accessibility/platform validation.
 
 ---
 
-## 24. Development setup
+## 28. Development setup
 
 Clone:
 
@@ -486,7 +607,7 @@ git clone https://github.com/sanskarIN/CareNest.git
 cd CareNest
 ```
 
-Inspect:
+Inspect tools:
 
 ```bash
 git --version
@@ -494,296 +615,309 @@ dotnet --info
 dotnet workload list
 ```
 
-Maintainer repository-local identity:
+Maintainer repository-local Git identity:
 
 ```bash
 git config --local user.name "Sanskar"
 git config --local user.email "sanskarin@outlook.in"
 ```
 
-Use `docs/setup/DEVELOPMENT.md` for full setup.
+Use `docs/setup/DEVELOPMENT.md` and `docs/setup/PLATFORM_SETUP.md` for complete setup.
 
 ---
 
-## 25. Core build/test commands
+## 29. Core build/test commands
+
+Platform-neutral build:
 
 ```bash
 dotnet build src/CareNest.Shared/CareNest.Shared.csproj -c Release
 dotnet build src/CareNest.Domain/CareNest.Domain.csproj -c Release
 dotnet build src/CareNest.Application/CareNest.Application.csproj -c Release
 dotnet build src/CareNest.Infrastructure/CareNest.Infrastructure.csproj -c Release
+```
 
+Tests:
+
+```bash
 dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj -c Release
 dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c Release
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
-Quality gate:
+Android example:
+
+```bash
+dotnet build src/CareNest.App/CareNest.App.csproj \
+  -f net10.0-android \
+  -c Release \
+  -p:CareNestTargetFramework=net10.0-android
+```
+
+Complete executable/package commands are documented in `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`.
+
+---
+
+## 30. Source-line and structured-file quality contract
+
+`tests/CareNest.UiTests/SourceLineQualityContractTests.cs` performs deterministic runtime source audits.
+
+The line audit detects known defect patterns such as:
+
+- unresolved merge-conflict markers;
+- `TODO`/`FIXME`/`HACK` placeholders;
+- `NotImplementedException` placeholders;
+- common sync-over-async forms;
+- `Thread.Sleep`/`Task.WaitAll`/`Task.WaitAny` runtime patterns;
+- `throw ex;` stack-trace destruction.
+
+Structured runtime inputs including XAML, project/XML-family files and JSON are parsed for syntactic validity.
+
+The scanner deliberately avoids treating every current-clock read as a generic defect; time correctness belongs to semantic/time-zone contracts.
+
+---
+
+## 31. Gumroad/package regression contracts
+
+`FundingLinkContractTests.cs` protects:
+
+- required repository storefront/support visibility;
+- absence from About/runtime surfaces;
+- no medical/health entitlement language;
+- Gumroad SVG accessibility metadata;
+- repository-only asset placement.
+
+`StoreFundingPayloadContractTests.cs` protects:
+
+- absence of external-commerce destinations from app runtime text-like sources;
+- absence from shared runtime URL constants;
+- absence of obsolete external-commerce build switches;
+- both default payload-scanner markers;
+- UTF-8/UTF-16/ZIP scanning behavior;
+- fail-closed scanner semantics.
+
+---
+
+## 32. Quality gates
+
+Repository gates include:
 
 ```bash
 build/scripts/quality-gate.sh
-```
-
-PowerShell:
-
-```powershell
-./build/scripts/quality-gate.ps1
-```
-
-Release preflight:
-
-```bash
 build/scripts/release-preflight.sh
 ```
 
-or:
+PowerShell equivalents live beside those scripts.
 
-```powershell
-./build/scripts/release-preflight.ps1
-```
+Dependency audit is intentionally blocking.
 
-The dependency audit is intentionally blocking.
+Do not weaken tests/analyzers/audit/payload rules simply to obtain green status.
 
 ---
 
-## 26. Current automated verification
+## 33. GitHub Actions
 
-PR #74 frozen source head:
+Current workflow roles include:
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+- `.github/workflows/ci.yml` — formatting, tests, Android/Windows/Apple builds;
+- `.github/workflows/codeql.yml` — CodeQL;
+- `.github/workflows/dependency-review.yml` — dependency policy/audit;
+- `.github/workflows/store-package-verification.yml` — store-candidate configuration builds;
+- `.github/workflows/store-inspection-artifacts.yml` — internal package inspection artifacts and forbidden-marker scans;
+- `.github/workflows/release-gate.yml` — production-tag aggregate gate;
+- `.github/workflows/release-evidence.yml` — release evidence/provenance.
 
-Merged executable source:
-
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
-
-### CareNest CI #735 / run `31938301209`
-
-- formatting: success;
-- unit tests: 122/122;
-- integration tests: 39/39;
-- UI/source-policy tests: 170/170;
-- total: **331/331**;
-- Android Release: success;
-- Windows Release: success;
-- iOS simulator Release: success;
-- Mac Catalyst Release: success.
-
-### Store Package Configuration #124 / run `31938301146`
-
-All four store-candidate target configurations succeeded.
-
-### Store Inspection Artifacts #47 / run `31938301275`
-
-Scanner self-test and Android/Windows/Apple inspection-artifact workflows succeeded.
-
-### Security/dependency
-
-- CodeQL #735 / `31938301252`: success;
-- Dependency Audit #91 / `31938301172`: success on platform-neutral and MAUI graphs.
-
-This supports: **no known automated defect remains under the configured PR #74 matrix for that exact source**. It does not prove global bug absence.
+Exact-source verification matters. Results from an older SHA must not be presented as proof for a newer verification-relevant source.
 
 ---
 
-## 27. Release workflows
+## 34. Latest fully verified pre-Gumroad baseline
 
-GitHub Actions includes:
+Exact source:
 
-- CareNest CI;
-- CodeQL;
-- Dependency Audit;
-- Store Package Configuration;
-- Store Inspection Artifacts;
-- Release Gate;
-- Release Evidence.
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
 
-Production-style `v*` release flow is designed to verify the exact tagged source. A tag is not by itself production approval.
+Verified on that exact revision:
 
----
+- **122/122** unit tests;
+- **39/39** integration tests;
+- **173/173** UI/source-policy tests;
+- **334/334** total core tests;
+- Android Release build;
+- Windows Release build;
+- iOS simulator Release build;
+- Mac Catalyst Release build;
+- Android store-candidate build;
+- Windows store-candidate build;
+- iOS simulator store-candidate build;
+- Mac Catalyst store-candidate build;
+- CodeQL.
 
-## 28. Application funding/package boundary
-
-The app package no longer uses an in-app external funding surface or per-package funding toggle.
-
-Current invariant:
-
-- no external Buy Me a Coffee destination under application runtime/package source;
-- package payload scanning prevents the canonical marker from silently re-entering distributed artifacts;
-- repository funding metadata/docs remain separate;
-- funding does not unlock health/medical functionality, reminder priority or clinical service.
-
-Historical documents can describe the earlier investigation/toggle architecture but are not current product design.
+This remains the last fully verified baseline until the exact final Gumroad/documentation/test/scanner rollout source completes its own applicable workflow matrix.
 
 ---
 
-## 29. Testing strategy
+## 35. Gumroad rollout verification rule
 
-Use the lowest suitable layer:
+The Gumroad rollout is verification-relevant because it changes:
 
-- unit for deterministic rules;
-- integration for persistence/crypto/filesystem boundaries;
-- UI/source-policy for XAML/architecture/repository/release contracts;
-- manual/device tests for real OS behavior and accessibility.
+- repository/source-policy tests;
+- `build/scripts/verify-store-safe-payload.py`;
+- current support/marketing metadata/documentation.
 
-Source tests are not a substitute for physical-device/store/signing evidence.
+Use `what_changed.md` for the active exact SHA and commit series.
 
-See `docs/testing/TESTING_GUIDE.md`.
+A new authoritative baseline requires the same exact final source to pass:
 
----
+- formatting;
+- unit tests;
+- integration tests;
+- UI/source-policy tests;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release;
+- all four store-candidate configurations;
+- CodeQL.
 
-## 30. Dependency update process
-
-For package changes:
-
-1. review release/security implications;
-2. update central package versions deliberately;
-3. restore/build/test;
-4. run unsuppressed dependency audit;
-5. run affected MAUI targets;
-6. update compatibility/security docs if persistence/crypto/platform behavior can change;
-7. create new exact-source verification before treating the changed source as the current automated baseline.
-
-Do not reintroduce broad audit suppression merely for a green job.
+Store Inspection Artifacts run on their configured PR/release/tag/manual triggers rather than every ordinary `main` push; source contracts ensure the two-marker scanner remains wired correctly between inspection runs.
 
 ---
 
-## 31. Database migration process
+## 36. Release process
 
-For schema changes:
+Production promotion requires an exact approved source/tag and cannot be inferred from source completeness alone.
 
-1. add ordered migration;
-2. transactionally coordinate DDL/version state where required;
-3. preserve supported upgrade paths;
-4. add integration tests;
-5. update `DATABASE_SCHEMA.md`;
-6. review backup/restore compatibility;
-7. update privacy/data lifecycle for new categories;
-8. perform packaged existing-data validation before production promotion.
+Use:
 
----
-
-## 32. Encryption change process
-
-Before changing encrypted document/backup format, derivation, topology or key ownership:
-
-- define compatibility explicitly;
-- update security/threat-model/architecture docs;
-- add tamper/truncation/trailing-data tests;
-- test wrong password/key and clean-install restore;
-- preserve genuine historical fixtures where available;
-- document migration/rollback/recovery behavior.
-
-Do not silently remove legacy read support without an evidenced migration strategy.
+- `docs/releases/NEXT_STEPS.md`;
+- `docs/releases/RELEASE_PROCESS.md`;
+- `docs/releases/RELEASE_CHECKLIST.md`;
+- `docs/releases/QUALITY_GATE.md`;
+- `docs/releases/MANUAL_TEST_MATRIX.md`;
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md`;
+- `docs/releases/SECURITY_RELEASE_REVIEW.md`;
+- `docs/releases/STORE_SUBMISSION_CHECKLIST.md`;
+- `docs/releases/RELEASE_EVIDENCE.md`;
+- `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md`.
 
 ---
 
-## 33. New network/cloud feature process
+## 37. Remaining production blockers
 
-A future networked feature requires explicit design for:
+Even after final Gumroad source automation is green, production evidence still requires external/manual work.
 
-- authentication;
-- authorization;
-- user consent;
-- encryption/key ownership;
-- offline behavior/conflict resolution;
-- privacy/data minimization;
-- export/deletion;
-- audit/logging;
-- threat model;
-- store disclosures/policies.
+### Device/platform validation
 
-It cannot be introduced as an incidental infrastructure dependency.
+- Android representative devices/emulators;
+- notification permission granted/denied behavior;
+- actual reminder delivery/cancellation/snooze;
+- alarm/battery optimization behavior;
+- reboot/restart/clock/time-zone/DST recovery;
+- Windows reminder/lifecycle behavior;
+- real iPhone/iPad notification behavior;
+- Mac Catalyst notification/lifecycle behavior.
+
+### Packaged compatibility
+
+Using fictional/synthetic data only:
+
+- existing-data upgrade/readability/editability;
+- SQLite integrity after packaged upgrade;
+- reminder reconciliation;
+- encrypted document compatibility;
+- encrypted backup create/restore/wrong-password/tamper validation;
+- genuine historical encrypted fixtures when real prior bytes safely exist.
+
+### Accessibility
+
+- screen-reader testing;
+- large text;
+- keyboard/focus;
+- contrast across themes;
+- reduced motion;
+- color-independent states.
+
+### Signing/store/publication
+
+- production Android signing material outside Git;
+- Apple signing/provisioning outside Git;
+- Windows signing material outside Git;
+- final signed packages;
+- SHA-256/provenance;
+- current store metadata/screenshots/privacy/data-safety declarations;
+- submission-time policy review;
+- exact approved immutable `v*` tag;
+- tagged release/security/dependency/package evidence;
+- final publication evidence.
 
 ---
 
-## 34. Contributing
+## 38. Documentation governance
+
+Current documentation authority:
+
+1. `PROJECT_STATUS.md` — current state;
+2. `docs/releases/NEXT_STEPS.md` — remaining operational work;
+3. latest exact-source verification record — automated evidence;
+4. this document — end-to-end project reference;
+5. specialized subsystem docs — technical detail;
+6. `GUMROAD.md` and marketing policy — storefront/package rules;
+7. `what_changed.md` and `docs/history/` — continuation/history.
+
+Historical snapshots are preserved rather than rewritten to look current.
+
+See `docs/REPOSITORY_GOVERNANCE.md` and `docs/DOCUMENTATION_CATALOG.md`.
+
+---
+
+## 39. Contribution rules
 
 Contributors must:
 
-- follow `CONTRIBUTING.md`;
-- preserve architecture direction;
-- preserve local-first/privacy/medical-safety boundaries;
-- use synthetic/fictional data;
-- keep secrets/signing material out of Git;
-- add regression coverage;
-- update related documentation;
-- run applicable quality/platform checks.
+- use synthetic/fictional health data;
+- never commit secrets/signing keys/private backups;
+- preserve medical-safety boundaries;
+- preserve local-first/privacy boundaries;
+- preserve external-commerce package isolation;
+- add/update the lowest appropriate regression tests;
+- update relevant documentation in the same change series;
+- not suppress legitimate failures merely to get green CI.
+
+See `CONTRIBUTING.md`.
 
 ---
 
-## 35. Documentation governance
+## 40. Support and official links
 
-Current documentation precedence and historical-evidence rules are defined in `docs/REPOSITORY_GOVERNANCE.md`.
+- **Gumroad:** https://ramsandesh.gumroad.com
+- **Repository:** https://github.com/sanskarIN/CareNest
+- **Creator:** https://www.github.com/sanskarIN
+- **Buy Me a Coffee:** https://buymeacoffee.com/sanskarIN
+- **Business:** `sanskarin@outlook.in`
+- **Support:** `supportramsandesh@gmail.com`
 
-Use `docs/DOCUMENTATION_CATALOG.md` as the complete navigation map.
-
----
-
-## 36. Known limitations
-
-Use `docs/KNOWN_LIMITATIONS.md` for a consolidated list of intentional/external/RC limitations.
-
-Important examples:
-
-- no clinical decision making;
-- no notification guarantee;
-- no whole-database encryption claim;
-- no automatic CareNest cloud sync;
-- Windows closed-app reminder limitations;
-- simulator build is not real iOS device evidence;
-- accessibility/manual package compatibility remain external release gates.
+CareNest support cannot provide diagnosis, dosage decisions, treatment recommendations or emergency care.
 
 ---
 
-## 37. Current production blockers
+## 41. License
 
-CareNest remains `1.0.0-rc.1` because the following are not completed solely by source/CI documentation:
+CareNest is licensed under Apache License 2.0.
 
-- representative Android/Windows/iPhone/iPad/Mac Catalyst manual matrices;
-- real notification permission/delivery/lifecycle checks;
-- packaged SQLite existing-data compatibility;
-- packaged encrypted document/backup compatibility;
-- real assistive-technology accessibility;
-- production signing outside Git;
-- final signed-package inspection/checksums/provenance;
-- current store-policy/metadata review;
-- exact approved production source and immutable tag;
-- tagged release gates/evidence;
-- final store/publication evidence.
+See:
 
-Use `docs/releases/NEXT_STEPS.md` for the operational checklist.
+- `LICENSE`;
+- `NOTICE`.
 
 ---
 
-## 38. Definitions
+## 42. Current interpretation
 
-### Source-complete
+CareNest remains `1.0.0-rc.1`.
 
-The documented RC source behavior exists, builds under configured target jobs, passes applicable tests/policies and has matching documentation.
+The intended RC source scope is implemented and heavily automated. The Ram Sandesh Gumroad storefront is now prominently integrated across current repository/documentation surfaces while remaining outside the CareNest health-app package under the current policy.
 
-### Automated-verified
+The latest fully verified pre-Gumroad source is `7cbe5568b6cffa06c279b29f3cb1b107ea988791`. The current Gumroad rollout must complete exact-source verification before replacing that baseline.
 
-The named exact source passed the configured automated workflow matrix.
-
-### Production-complete
-
-Applicable manual/device/package/accessibility/signing/store/tag/publication evidence is complete for the exact production candidate.
-
-These terms are not interchangeable.
-
----
-
-## 39. Current truthful status
-
-CareNest is a **source-complete, heavily automated-verified `1.0.0-rc.1` release candidate** under the PR #74 verification matrix.
-
-The current executable source has 331/331 core tests green plus all configured normal platform builds, store-candidate builds, inspection-artifact workflows, CodeQL and unsuppressed Dependency Audit green.
-
-CareNest is **not yet** production-signed, store-approved, production-published or proven globally bug-free.
-
-For current state use:
-
-- `PROJECT_STATUS.md`;
-- `docs/releases/NEXT_STEPS.md`;
-- `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`;
-- `docs/DOCUMENTATION_CATALOG.md`.
+Documentation completeness, source completeness and automated green builds do not imply that production signing, real-device accessibility/notification behavior, store approval or publication has already occurred.
