@@ -1,40 +1,77 @@
 # CareNest Store Build Policy
 
 **Release line:** `1.0.0-rc.1`  
-**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+**Latest fully verified pre-Gumroad source:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`  
+**Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`
 
 This document defines the current source/package boundary for store-oriented builds. It is not evidence of production signing or store approval.
 
-## 1. Current application funding boundary
+## 1. Current external-commerce boundary
 
-The distributed CareNest application runtime/source/package contains **no external Buy Me a Coffee destination/card/command/artwork**.
+The distributed CareNest application runtime/source/package intentionally contains **no external Gumroad or Buy Me a Coffee destination/card/command/promotional artwork**.
 
-Repository-only voluntary support destination:
+Repository-only destinations:
 
-`https://buymeacoffee.com/sanskarIN`
+- Gumroad: `https://ramsandesh.gumroad.com`;
+- Buy Me a Coffee: `https://buymeacoffee.com/sanskarIN`.
 
-Project support does not unlock health functionality, reminder priority/reliability, medical advice, emergency service or access to local records.
+Repository promotion/support does not unlock health functionality, reminder priority/reliability, medical advice, diagnosis, dosage decisions, treatment recommendations, emergency assistance, clinical services, accounts/cloud functionality, or access to local health records.
 
-## 2. No current funding build toggle
+CareNest does not automatically transmit local health records to either external destination.
+
+## 2. No current commerce/funding build toggle
 
 The old `CareNestShowFundingLink` / store-funding visibility architecture is removed.
 
-Store builds do not require a special funding-disabled property because the external destination is absent from application source/package by product policy for every target.
+Store builds do not require a special Gumroad/funding-disabled property because both external destinations are absent from application source/package by product policy for every target.
 
-Historical release evidence can describe the earlier toggle investigation but must not be treated as current configuration.
+Historical release evidence may describe the earlier funding-toggle investigation but must not be treated as current configuration.
 
-## 3. Why package scanning remains
+## 3. Why package scanning remains mandatory
 
-The 2026-08-15 investigation proved that source/build flags alone can miss payload content: a URL-bearing SVG resource caused the external funding marker to enter Windows application bytes.
+The 2026-08-15 investigation proved that source/build flags alone can miss payload content: a URL-bearing SVG resource caused an external funding marker to enter Windows application bytes.
 
-The current stronger invariant is:
+The stronger current invariant is:
 
-- funding surface absent by source policy;
-- actual built payload scanned for the canonical external marker before inspection artifact upload.
+- external-commerce runtime surfaces absent by source policy;
+- actual built payload scanned for repository-only external-commerce markers before inspection artifact upload;
+- final signed packages scanned again/equivalently inspected before production promotion.
 
 The scanner is defense-in-depth and must fail closed.
 
-## 4. Store-candidate configuration targets
+## 4. Default forbidden package markers
+
+`build/scripts/verify-store-safe-payload.py` defaults to:
+
+```text
+buymeacoffee.com/sanskarIN
+ramsandesh.gumroad.com
+```
+
+The scanner checks:
+
+- UTF-8 bytes;
+- UTF-16 little-endian bytes;
+- UTF-16 big-endian bytes;
+- regular files;
+- ZIP-compatible package entries such as Android AABs.
+
+The repeatable `--forbidden` option may be used for explicit marker lists, but normal CareNest package verification should retain both default markers.
+
+## 5. Repository-only Gumroad branding
+
+The repository promotional badge is:
+
+`docs/assets/gumroad_store_badge.svg`
+
+It is documentation/marketing material and must not be copied into `src/CareNest.App/Resources/Images/` or another packaged application resource path under the current policy.
+
+Repository placement rules are documented in:
+
+- `GUMROAD.md`;
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`.
+
+## 6. Store-candidate configuration targets
 
 Current Store Package Configuration verifies Release configurations for:
 
@@ -45,9 +82,9 @@ Current Store Package Configuration verifies Release configurations for:
 
 These builds exercise current project configuration and strict XAML compilation. They do not create production-signed store packages.
 
-## 5. Store-package preflight
+## 7. Store-package preflight
 
-Store-package wrapper scripts require an explicit supported target and delegate to standard release preflight.
+Store-package wrappers require an explicit supported target and delegate to standard release preflight.
 
 Examples:
 
@@ -61,16 +98,15 @@ $env:CARENEST_TARGET = 'net10.0-windows10.0.19041.0'
 ./build/scripts/store-package-preflight.ps1
 ```
 
-The current wrapper does not accept/use a funding-link property.
+The current wrapper does not accept/use a Gumroad or funding-link property.
 
-## 6. Store Inspection Artifacts
+## 8. Store Inspection Artifacts
 
-The inspection workflow generates non-production exact-source evidence:
+The inspection workflow generates non-production exact-source evidence.
 
 ### Android
 
 - unsigned AAB inspection candidate;
-- excludes/rejects signed companion metadata as configured;
 - payload scan before staging;
 - checksum/provenance;
 - artifact upload.
@@ -89,11 +125,11 @@ The inspection workflow generates non-production exact-source evidence:
 - payload scan/staging/checksums/provenance;
 - artifact upload.
 
-Production signing secrets are intentionally absent from this workflow.
+Production signing secrets are intentionally absent.
 
-## 7. Internal artifact boundary
+## 9. Internal artifact boundary
 
-Inspection artifacts are engineering evidence only and can be unsigned, unpackaged or simulator-targeted by design.
+Inspection artifacts are engineering evidence only and may be unsigned, unpackaged or simulator-targeted by design.
 
 They must not be described as:
 
@@ -105,33 +141,29 @@ They must not be described as:
 
 Final production packages require separate signing/provenance/smoke/manual validation.
 
-## 8. Current automated evidence
+## 10. Latest fully verified pre-Gumroad automated evidence
 
-PR #74 frozen source head:
+Exact source:
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
 
-Merged executable source:
+Verified on that exact revision:
 
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+- 122/122 unit tests;
+- 39/39 integration tests;
+- 173/173 UI/source-policy tests;
+- **334/334 total core tests**;
+- Android/Windows/iOS simulator/Mac Catalyst Release builds;
+- all four store-candidate configurations;
+- CodeQL.
 
-Verified:
+The Gumroad rollout changes tests and package-scanner behavior. A newer source becomes authoritative only after the exact final Gumroad revision completes its applicable workflow matrix.
 
-- CareNest CI #735 / `31938301209`: success;
-- 331/331 core tests;
-- Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
-- Store Package Configuration #124 / `31938301146`: all four targets success;
-- Store Inspection Artifacts #47 / `31938301275`: success;
-- CodeQL #735 / `31938301252`: success;
-- Dependency Audit #91 / `31938301172`: success.
+Use `PROJECT_STATUS.md` and `what_changed.md` for current evidence.
 
-Permanent evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+## 11. Strict XAML behavior
 
-Older PR #68/#67/#61/#59/#58 evidence remains historical for earlier boundaries.
-
-## 9. Strict XAML behavior
-
-Store-candidate and inspection builds use the current app project policy:
+Store-candidate and inspection builds use:
 
 - Source binding compilation enabled;
 - strict XAML compilation enabled;
@@ -139,42 +171,53 @@ Store-candidate and inspection builds use the current app project policy:
 
 Do not weaken XAML warning policy to make store builds pass.
 
-## 10. Store privacy/medical boundary
+## 12. Store privacy/medical boundary
 
 Every candidate/listing must preserve:
 
 - organizational/non-clinical positioning;
 - no dosage calculation/inference;
-- no treatment/interaction/risk claims;
+- no diagnosis/treatment/interaction/risk claims;
 - no guaranteed reminder delivery;
 - no required CareNest account/backend in current v1;
 - no whole-database encryption claim;
-- explicit external export/share boundaries.
+- explicit external export/share boundaries;
+- no claim that Gumroad purchase or project funding changes health-app behavior.
 
-## 11. Submission-time policy review
+## 13. Submission-time policy review
 
 Store policy changes over time. At actual submission:
 
 - review current Apple rules for the exact package/listing;
 - review current Google Play rules for the exact package/listing;
 - review Microsoft/Windows requirements where applicable;
+- review current rules applicable to external commerce/support links;
 - record date/source/conclusion;
-- adjust listing/package only through an explicit reviewed source change, followed by new verification.
+- change listing/package only through an explicit reviewed source change followed by new verification.
 
-## 12. Production signing
+The current policy keeps Gumroad and Buy Me a Coffee out of the submitted application package.
+
+## 14. Production signing
 
 Production signing remains outside Git and outside internal inspection workflows.
 
 Final packages must record exact source SHA/tag, identity/version, filename, SHA-256 and signing/notarization/store provenance.
 
-## 13. Final signed-package funding inspection
+## 15. Final signed-package external-commerce inspection
 
-Even though source policy removes the external funding surface, final signed packages must repeat/equivalently perform the forbidden-marker scan and manually verify About contains no BMC funding destination/card.
+Even though source policy removes external-commerce surfaces, final signed packages must repeat/equivalently perform forbidden-marker scans for both:
+
+```text
+buymeacoffee.com/sanskarIN
+ramsandesh.gumroad.com
+```
+
+Also manually verify that the installed app contains no Gumroad/Buy Me a Coffee promotional card/action/artwork and that no health feature changes based on purchase/funding state.
 
 This protects against packaging/tooling/regression differences after internal inspection.
 
-## 14. Change policy
+## 16. Change policy
 
-Do not reintroduce an application funding link, payment SDK or external support card as a routine store-specific switch.
+Do not reintroduce an application Gumroad link, payment SDK, funding link, external support card or promotional storefront asset as a routine store-specific switch.
 
-Any future in-app external funding/payment surface requires fresh product, privacy, security, UX and current store-policy review plus source/package tests and exact-source verification.
+Any future in-app external-commerce surface requires fresh product, privacy, security, medical-safety, UX, current store-policy and release review plus source/package regression tests and exact-source verification.
