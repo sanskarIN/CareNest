@@ -1,10 +1,29 @@
 # CareNest
 
-> **Current authoritative automated source baseline — 2026-08-16:** PR #74 frozen source head `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`, merged executable source `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`. The configured matrix passed **331/331 core tests** (122 unit + 39 integration + 170 UI/source-policy), Android/Windows/iOS-simulator/Mac-Catalyst Release builds, all four store-candidate configurations, Android/Windows/Apple inspection artifacts, CodeQL, and unsuppressed Dependency Audit. See [`docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`](docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md).
+<p align="center">
+  <a href="https://ramsandesh.gumroad.com">
+    <img src="docs/assets/gumroad_store_badge.svg" alt="Shop on Gumroad — https://ramsandesh.gumroad.com" width="900" />
+  </a>
+</p>
+
+> **Latest fully verified pre-storefront-integration source baseline — 2026-08-17:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`. The configured matrix passed **334/334 core tests** (122 unit + 39 integration + 173 UI/source-policy), Android/Windows/iOS-simulator/Mac-Catalyst Release builds, all four store-candidate configurations, and CodeQL. The current repository may contain newer repository-only Gumroad/documentation commits; those do not become a new verified baseline until their exact final workflow set is green.
 
 CareNest is an open-source, local-first family health organizer built with .NET MAUI and C#. It helps users organize medicine reminders, appointments, encrypted health documents, stock/refill notes, reports, backups and multiple local profiles without requiring a CareNest account or CareNest-owned cloud service.
 
 > **Medical limitation:** CareNest is organizational software. It does not diagnose conditions, calculate or infer dosage, recommend treatment, perform clinical medication-interaction checking, calculate clinical risk, verify adherence, replace a clinician/pharmacist, provide emergency services, or guarantee operating-system notification delivery.
+
+## 🛍️ Ram Sandesh Gumroad Store
+
+**[SHOP ON GUMROAD → https://ramsandesh.gumroad.com](https://ramsandesh.gumroad.com)**
+
+The Ram Sandesh Gumroad storefront may contain separate digital products, books, learning resources, templates, project material, and documentation bundles.
+
+The storefront is separate from CareNest health functionality. A purchase does not unlock diagnosis, treatment recommendations, dosage decisions, reminder priority/reliability, emergency assistance, or user health data.
+
+Full storefront and placement policy:
+
+- [`GUMROAD.md`](GUMROAD.md)
+- [`docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`](docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md)
 
 ## Release status
 
@@ -76,6 +95,8 @@ tests/
   CareNest.IntegrationTests/
   CareNest.UiTests/
 docs/
+  assets/
+  marketing/
 build/scripts/
 .github/workflows/
 ```
@@ -141,40 +162,37 @@ Because database and OS scheduling are not one atomic transaction, the implement
 
 CareNest uses separate controls for structured data, encrypted documents, backups, secure-store secrets and optional app lock. Exported copies and compromised devices remain outside some protections. See [`SECURITY.md`](SECURITY.md), [`docs/security/SECURITY_MODEL.md`](docs/security/SECURITY_MODEL.md) and [`docs/security/THREAT_MODEL.md`](docs/security/THREAT_MODEL.md).
 
-## Current automated verification
+## Latest fully verified automated baseline
 
-PR #74 frozen source head:
+Source:
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
 
-Merged executable source:
-
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
-
-Verified:
+Verified on that exact revision:
 
 - 122/122 unit tests;
 - 39/39 integration tests;
-- 170/170 UI/source-policy tests;
-- 331/331 total;
+- 173/173 UI/source-policy tests;
+- **334/334 total core tests**;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
 - Mac Catalyst Release;
 - all four store-candidate configurations;
-- Store Inspection Artifacts;
-- CodeQL;
-- unsuppressed Dependency Audit.
+- CodeQL.
 
-This means no known automated defect remains under that configured matrix for the exact verified source. It does **not** mean the product is guaranteed globally bug-free or that manual production testing is complete.
+This means no known automated defect remained under that configured matrix for that exact verified source. It does **not** mean the product is guaranteed globally bug-free or that manual production testing is complete.
 
-## Application-package funding boundary
+## External storefront/funding package boundary
 
-The distributed CareNest application source/package intentionally contains no external Buy Me a Coffee destination/card/command/artwork. Voluntary project support remains repository documentation/metadata only and does not unlock health functionality, reminder priority/reliability, medical advice or clinical services.
+The distributed CareNest application source/package intentionally contains no external Buy Me a Coffee or Gumroad destination/card/command/promotional artwork. Repository support and storefront promotion remain separate from the health-application package and do not unlock health functionality, reminder priority/reliability, medical advice, clinical services, or access to user health data.
 
-You can voluntarily support CareNest development at https://buymeacoffee.com/sanskarIN. This is repository-only project support and is not an application health feature or entitlement.
+Repository links:
 
-Repository support information: [`BUY_ME_A_COFFEE.md`](BUY_ME_A_COFFEE.md).
+- **Gumroad:** https://ramsandesh.gumroad.com
+- **Buy Me a Coffee:** https://buymeacoffee.com/sanskarIN
+- [`GUMROAD.md`](GUMROAD.md)
+- [`BUY_ME_A_COFFEE.md`](BUY_ME_A_COFFEE.md)
 
 ## Complete documentation
 
@@ -187,6 +205,8 @@ Start with:
 - [`docs/DEVELOPER_REFERENCE.md`](docs/DEVELOPER_REFERENCE.md) — developer reference.
 - [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md) — limitations.
 - [`docs/PLATFORM_BEHAVIOR_MATRIX.md`](docs/PLATFORM_BEHAVIOR_MATRIX.md) — automated/manual platform evidence.
+- [`GUMROAD.md`](GUMROAD.md) — storefront guide.
+- [`docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`](docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md) — storefront placement/package policy.
 - [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — current status.
 - [`what_changed.md`](what_changed.md) — detailed continuation handoff.
 
@@ -203,8 +223,10 @@ git config --local user.name "Sanskar"
 git config --local user.email "sanskarin@outlook.in"
 ```
 
-## Support
+## Support and links
 
+- **Gumroad storefront:** https://ramsandesh.gumroad.com
+- **Buy Me a Coffee:** https://buymeacoffee.com/sanskarIN
 - Support guide: [`SUPPORT.md`](SUPPORT.md)
 - Security reports: [`SECURITY.md`](SECURITY.md)
 - Privacy: [`PRIVACY.md`](PRIVACY.md)
