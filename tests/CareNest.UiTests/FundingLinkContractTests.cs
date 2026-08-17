@@ -56,7 +56,7 @@ public sealed class FundingLinkContractTests
         Assert.Contains(GumroadUrl, readme, StringComparison.Ordinal);
         Assert.Contains("Financial support is optional", support, StringComparison.Ordinal);
         Assert.Contains("does not unlock medical advice", support, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("does not unlock", gumroad, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("do not unlock medical advice", gumroad, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("diagnosis", gumroad, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("dosage", gumroad, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("user health data", gumroad, StringComparison.OrdinalIgnoreCase);
