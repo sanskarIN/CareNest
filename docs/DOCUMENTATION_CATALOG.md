@@ -2,7 +2,7 @@
 
 **Release line:** `1.0.0-rc.1`  
 **Documentation baseline date:** 2026-08-17  
-**Latest fully verified pre-storefront source:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`  
+**Latest verified Gumroad rollout source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
 **Compiled-binding verification source head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9` (PR #74)
 
 This catalog is the navigation and ownership map for the complete CareNest documentation set. It does not replace the detailed documents; it tells readers which document is authoritative for each question.
@@ -61,6 +61,7 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/releases/MANUAL_TEST_MATRIX.md` — manual platform validation.
 - `docs/releases/PACKAGED_RELEASE_VALIDATION.md` — packaged compatibility validation.
 - `docs/releases/NEXT_STEPS.md` — current remaining work.
+- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — current Gumroad rollout automated evidence.
 - `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md` — permanent compiled-binding automated verification record.
 - `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — external-commerce package-boundary rules.
 
@@ -84,6 +85,7 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/testing/SETTINGS_LIFECYCLE_CONTRACT.md` — settings lifecycle contract.
 - `docs/PLATFORM_BEHAVIOR_MATRIX.md` — automated versus manual platform evidence.
 - `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md` — executable/package validation checklist.
+- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — exact source/test/build/security result for the Gumroad rollout.
 - `tests/CareNest.UiTests/FundingLinkContractTests.cs` — repository/storefront placement contracts.
 - `tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs` — store-payload external-commerce exclusion contracts.
 - dated verification documents under `docs/releases/` — exact workflow evidence.
@@ -165,16 +167,16 @@ Current central package versions include:
 
 ## 6. Current automated evidence
 
-Latest fully verified pre-storefront source:
+Latest verified Gumroad rollout implementation/source-policy source:
 
-`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
 Verified results on that exact revision:
 
 - 122 unit tests passed;
 - 39 integration tests passed;
-- 173 UI/source-policy tests passed;
-- 334/334 total core tests passed;
+- 175 UI/source-policy tests passed;
+- **336/336 total core tests passed**;
 - Android Release build passed;
 - Windows Release build passed;
 - iOS simulator Release build passed;
@@ -182,7 +184,9 @@ Verified results on that exact revision:
 - all four store-candidate configurations passed;
 - CodeQL passed.
 
-The PR #74 compiled-binding evidence remains at `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+Verification record: `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`.
+
+The PR #74 compiled-binding evidence remains at `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md` for the exact source it verified.
 
 ## 7. Gumroad storefront documentation ownership
 
@@ -196,6 +200,7 @@ Authority map:
 - `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — maintainer placement/package policy;
 - `docs/assets/gumroad_store_badge.svg` — repository-only promotional graphic;
 - `README.md`, `SUPPORT.md`, `.github/FUNDING.yml` — highlighted repository entry points;
+- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — exact rollout automated evidence;
 - `tests/CareNest.UiTests/FundingLinkContractTests.cs` — repository-placement regression contract;
 - `tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs` — application/package exclusion regression contract;
 - `build/scripts/verify-store-safe-payload.py` — byte-level package scanner.
@@ -210,6 +215,6 @@ The Gumroad storefront is not a CareNest health entitlement and must not be repr
 
 Documentation completeness does not mean production release completeness.
 
-CareNest remains `1.0.0-rc.1`. The remaining production gates include real-device behavior, accessibility validation, packaged existing-data/encrypted-data compatibility, production signing, final signed-package inspection, current store-policy review, production metadata, exact approved production source/tag, tagged release gates and publication evidence.
+CareNest remains `1.0.0-rc.1`. The Gumroad rollout is automated-verified at the named implementation/source-policy baseline, while remaining production gates include real-device behavior, accessibility validation, packaged existing-data/encrypted-data compatibility, production signing, final signed-package inspection, current store-policy review, production metadata, exact approved production source/tag, tagged release gates and publication evidence.
 
 Use `docs/releases/NEXT_STEPS.md` as the authoritative operational checklist.
