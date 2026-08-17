@@ -1,29 +1,33 @@
 # CareNest Testing Guide
 
-**Current verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
-**PR #74 frozen test/source head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+**Release line:** `1.0.0-rc.1`  
+**Latest fully verified pre-Gumroad source:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`  
+**Current Gumroad rollout:** exact latest source and workflow state are tracked in `what_changed.md`
 
 CareNest uses layered automated testing plus mandatory manual release validation. Automated success is necessary but does not prove real-device notification delivery, accessibility, signing, store approval or packaged existing-data compatibility.
 
-## 1. Current verified test totals
+## 1. Latest fully verified pre-Gumroad totals
 
-PR #74 CareNest CI #735 / run `31938301209` passed:
+Exact source:
 
-- unit: **122 passed, 0 failed, 0 skipped**;
-- integration: **39 passed, 0 failed, 0 skipped**;
-- UI/source-policy: **170 passed, 0 failed, 0 skipped**;
-- total: **331/331**.
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
 
-The same source also passed Android, Windows, iOS simulator and Mac Catalyst Release builds.
+That exact source passed:
 
-Additional gates:
+- unit: **122/122**;
+- integration: **39/39**;
+- UI/source-policy: **173/173**;
+- total: **334/334**;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success;
+- all four store-candidate configurations: success;
+- CodeQL: success.
 
-- Store Package Configuration #124 / `31938301146`: success;
-- Store Inspection Artifacts #47 / `31938301275`: success;
-- CodeQL #735 / `31938301252`: success;
-- Dependency Audit #91 / `31938301172`: success.
+These counts belong only to that exact source boundary.
 
-These counts belong to that exact source boundary. Future test additions can legitimately increase them.
+The Gumroad rollout adds independent repository-placement/accessibility source-policy coverage and modifies the store-payload scanner contract. A new count becomes authoritative only after the exact final Gumroad revision completes CI.
 
 ## 2. Unit tests
 
@@ -42,7 +46,7 @@ Primary responsibilities:
 - application-service orchestration with test doubles;
 - profile/medicine/appointment/document/backup-reminder behavior without MAUI or SQLite.
 
-Current verified count: **122**.
+Latest fully verified count: **122**.
 
 ## 3. Integration tests
 
@@ -62,7 +66,7 @@ Primary responsibilities:
 - reports/exports;
 - persistence/crypto cleanup and compensation.
 
-Current verified count: **39**.
+Latest fully verified count: **39**.
 
 ## 4. UI/source-policy tests
 
@@ -81,6 +85,8 @@ Coverage includes:
 - ViewModel boundaries;
 - data-model/source completeness;
 - async non-blocking policies;
+- runtime line-level defect-pattern scanning;
+- structured runtime file syntax parsing;
 - logging/privacy contracts;
 - app-lock source/crypto contracts;
 - reminder UTC/snooze/reconciliation/compensation contracts;
@@ -92,15 +98,17 @@ Coverage includes:
 - release-preflight/quality-gate fail-closed behavior;
 - Git identity setup contracts;
 - production Release Gate contracts;
-- funding-free application package/source boundary.
+- repository-only external-commerce placement;
+- Gumroad badge accessibility and package isolation;
+- store-payload Gumroad/Buy Me a Coffee marker enforcement.
 
-Current verified count: **170**.
+Latest fully verified pre-Gumroad count: **173**.
+
+The current branch contains additional Gumroad source-policy coverage, so do not hard-code 173 as the expected latest count after the rollout.
 
 ## 5. Compiled XAML binding tests
 
-PR #74 added six dynamic compiled-binding contract tests.
-
-The policy requires:
+The compiled-binding contract suite requires:
 
 - root `x:DataType` on binding-bearing views;
 - item-specific `x:DataType` on binding-bearing DataTemplates;
@@ -114,7 +122,70 @@ The policy requires:
 
 See `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
 
-## 6. Running tests locally
+## 6. Runtime source-line quality tests
+
+`SourceLineQualityContractTests.cs` deterministically scans every runtime C# file under `src/` and reports repository-relative file/line failures.
+
+The current broad line audit rejects known defect patterns including:
+
+- unresolved merge-conflict markers;
+- `TODO`;
+- `FIXME`;
+- `HACK`;
+- `NotImplementedException`;
+- `.GetAwaiter().GetResult()`;
+- common `Task.Result` access forms;
+- `Thread.Sleep(`;
+- `Task.WaitAll(`;
+- `Task.WaitAny(`;
+- `throw ex;`.
+
+The line audit does not blindly classify all current-clock reads as defects. Time correctness is protected by more specific date/time/reminder contracts.
+
+## 7. Structured runtime file syntax tests
+
+The source quality contract also parses structured runtime files under `src/`, including:
+
+- `.xaml`;
+- `.csproj`;
+- `.props`;
+- `.targets`;
+- `.xml`;
+- `.plist`;
+- `.resx`;
+- `.json`.
+
+XML-family inputs use `XDocument`; JSON uses `JsonDocument`. This produces focused repository-policy failures in addition to compiler/platform build checks.
+
+## 8. Gumroad/repository commerce tests
+
+### `FundingLinkContractTests.cs`
+
+Protects:
+
+- Buy Me a Coffee visibility in repository support material;
+- Gumroad visibility in README/support/funding metadata/canonical guide;
+- canonical Gumroad URL `https://ramsandesh.gumroad.com`;
+- no Gumroad/Buy Me a Coffee About runtime surface;
+- no medical/health entitlement wording;
+- repository Gumroad SVG existence and accessible `<title>`/`<desc>`;
+- no Gumroad badge under app resources.
+
+### `StoreFundingPayloadContractTests.cs`
+
+Protects:
+
+- no external-commerce destinations in text-like `src/CareNest.App` files;
+- no runtime shared URL constants;
+- no obsolete external-commerce build switches;
+- default scanner markers for Buy Me a Coffee and Gumroad;
+- UTF-8/UTF-16 marker scanning;
+- ZIP/AAB inspection behavior;
+- fail-closed scanner handling.
+
+The repository can promote Gumroad strongly while the health-app package remains external-commerce-free under the current policy.
+
+## 9. Running tests locally
 
 ```bash
 dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj -c Release
@@ -124,7 +195,7 @@ dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 
 Use a clean checkout when validating release behavior.
 
-## 7. Formatting gate
+## 10. Formatting gate
 
 ```bash
 dotnet format src/CareNest.Shared/CareNest.Shared.csproj --verify-no-changes
@@ -138,7 +209,7 @@ dotnet format tests/CareNest.UiTests/CareNest.UiTests.csproj --verify-no-changes
 
 Fix legitimate analyzer/formatter failures instead of weakening policy.
 
-## 8. Reminder planner test strategy
+## 11. Reminder planner test strategy
 
 Reminder tests protect a deterministic organizational contract, not a medical recommendation engine.
 
@@ -169,7 +240,7 @@ Covered concepts include:
 
 See `REMINDER_SCHEDULING_CONTRACT.md`.
 
-## 9. Reminder coordinator/reconciliation tests
+## 12. Reminder coordinator/reconciliation tests
 
 Tests protect:
 
@@ -185,7 +256,7 @@ Tests protect:
 
 The database and platform scheduler are separate state surfaces and must not be treated as one atomic transaction.
 
-## 10. Appointment tests
+## 13. Appointment tests
 
 Assertions include:
 
@@ -196,7 +267,7 @@ Assertions include:
 - background rebuild does not repeatedly prompt;
 - persistence/platform scheduling compensation.
 
-## 11. Document-vault tests
+## 14. Document-vault tests
 
 Coverage includes:
 
@@ -210,7 +281,7 @@ Coverage includes:
 - safe filenames;
 - application-owned temporary-file cleanup.
 
-## 12. Authenticated stream tests
+## 15. Authenticated stream tests
 
 Chunked AEAD testing includes:
 
@@ -222,7 +293,7 @@ Chunked AEAD testing includes:
 - key length enforcement;
 - buffer clearing where managed-memory control permits.
 
-## 13. Backup/restore tests
+## 16. Backup/restore tests
 
 Coverage includes:
 
@@ -236,7 +307,7 @@ Coverage includes:
 - invalid metadata rejection;
 - clean failure/rollback behavior.
 
-## 14. SQLite/persistence tests
+## 17. SQLite/persistence tests
 
 Coverage includes:
 
@@ -249,7 +320,7 @@ Coverage includes:
 
 A green integration suite does not replace a realistic packaged upgrade with representative prior data.
 
-## 15. App-lock tests
+## 18. App-lock tests
 
 Source/behavior contracts cover:
 
@@ -262,7 +333,7 @@ Source/behavior contracts cover:
 - verifier-buffer clearing where possible;
 - fail-closed corrupt/missing material.
 
-## 16. Report/export tests
+## 19. Report/export tests
 
 Coverage includes:
 
@@ -272,7 +343,7 @@ Coverage includes:
 - cleanup of app-owned temporary report files;
 - JSON/PDF/CSV integration behavior.
 
-## 17. Architecture/source-policy tests
+## 20. Architecture/source-policy tests
 
 Repository policies protect against:
 
@@ -283,37 +354,40 @@ Repository policies protect against:
 - common signing/private-key artifacts;
 - sensitive logging regressions;
 - incomplete release workflow/preflight behavior;
-- reintroduction of removed external funding application surfaces.
+- reintroduction of external-commerce application surfaces;
+- unresolved runtime source placeholders/merge defects;
+- malformed structured runtime files.
 
-## 18. Dependency security tests
+## 21. Dependency security tests
 
-`SqliteDependencySecurityContractTests` protects:
-
-- maintained package/native/provider floor;
-- removal of the former exact audit suppression;
-- source dependency policy.
+SQLite dependency-security contracts protect maintained package/native/provider floors and removal of the former exact audit suppression.
 
 Dependency Audit remains separate and blocking.
 
-## 19. GitHub Actions matrix
+## 22. GitHub Actions matrix
 
-PR/source verification can include:
+Current exact-source verification can include:
 
 - CareNest CI;
 - CodeQL;
 - Dependency Audit;
 - Store Package Configuration;
-- Store Inspection Artifacts.
+- Store Inspection Artifacts on their configured triggers.
 
 Production-style tags additionally use Release Gate and Release Evidence as configured.
 
-## 20. Store inspection tests/evidence
+## 23. Store inspection tests/evidence
 
 The inspection workflow self-tests the forbidden-marker scanner and generates internal Android/Windows/Apple artifacts with checksums/provenance.
 
-These artifacts are engineering evidence, not production-signed/store-approved packages.
+Default forbidden repository-only markers include:
 
-## 21. Manual Android matrix
+- `buymeacoffee.com/sanskarIN`;
+- `ramsandesh.gumroad.com`.
+
+Inspection artifacts are engineering evidence, not production-signed/store-approved packages.
+
+## 24. Manual Android matrix
 
 Production validation still requires representative testing for:
 
@@ -330,7 +404,7 @@ Production validation still requires representative testing for:
 - app lock;
 - accessibility.
 
-## 22. Manual Windows matrix
+## 25. Manual Windows matrix
 
 Still requires:
 
@@ -345,17 +419,19 @@ Still requires:
 - keyboard/focus;
 - themes/accessibility.
 
-## 23. Manual Apple matrix
+## 26. Manual Apple matrix
 
 Simulator compilation does not replace real-device/manual evidence.
 
 Still requires appropriate iPhone/iPad/Mac Catalyst testing for permission/delivery, lifecycle, time zone, backup, documents, app lock, Dynamic Type/VoiceOver/keyboard/focus/themes and signed/notarized behavior.
 
-## 24. Accessibility testing
+## 27. Accessibility testing
 
 Automated XAML semantics are necessary but insufficient. Manual validation should cover representative screen readers, large text/scaling, keyboard focus, contrast/theme, reduced motion and color-independent meaning.
 
-## 25. Packaged compatibility testing
+Repository promotional assets also require meaningful text alternatives and plain-text link fallbacks.
+
+## 28. Packaged compatibility testing
 
 Before production release test representative fictional prior data through realistic package/update paths:
 
@@ -369,28 +445,35 @@ Before production release test representative fictional prior data through reali
 
 Do not manufacture a new artifact and label it historical evidence.
 
-## 26. Test data policy
+## 29. Test data policy
 
 Use fictional/synthetic data only in automated tests, screenshots, public issues and packaged migration fixtures.
 
 Never commit real health data, real backups, PINs/passwords, keys, tokens or signing material.
 
-## 27. Exact-source evidence rule
+Do not place private health information in external storefront/payment notes or test examples.
 
-A test count is meaningful only with the source it verified.
+## 30. Exact-source evidence rule
 
-Current PR #74 evidence belongs to:
+A test count is meaningful only with the exact source it verified.
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+Latest fully verified pre-Gumroad source:
 
-Merged executable source:
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
 
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+Older PR #74/#68/etc. counts remain historical evidence for their named source boundaries.
 
-Older PR #56/#54/etc. test counts remain historical evidence for older source boundaries, not current totals.
+The Gumroad rollout changes source-policy tests and package scanning, so it requires a new exact-source result before its new count is promoted.
 
-## 28. Release interpretation
+## 31. Release interpretation
 
-CareNest remains `1.0.0-rc.1`. The configured automated matrix is green for the PR #74 source, but manual/device/package/accessibility/signing/store/tag/publication evidence remains open.
+CareNest remains `1.0.0-rc.1`.
 
-Use `docs/releases/NEXT_STEPS.md` for current release work.
+The latest fully verified pre-Gumroad automated matrix is green, but manual/device/package/accessibility/signing/store/tag/publication evidence remains open. The current rollout must earn its own exact-source green result before replacing the prior baseline.
+
+Use:
+
+- `PROJECT_STATUS.md`;
+- `what_changed.md`;
+- `docs/releases/NEXT_STEPS.md`;
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`.
