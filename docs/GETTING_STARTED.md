@@ -1,5 +1,11 @@
 # Getting Started with CareNest
 
+<p align="center">
+  <a href="https://ramsandesh.gumroad.com">
+    <img src="assets/gumroad_store_badge.svg" alt="Shop on Gumroad — https://ramsandesh.gumroad.com" width="780" />
+  </a>
+</p>
+
 This guide is the shortest safe path into CareNest for users, evaluators, contributors, and maintainers. It points to deeper references when a task becomes specialized.
 
 ## Product boundary first
@@ -8,13 +14,35 @@ CareNest is a local-first health organizer. It can organize user-entered profile
 
 CareNest does **not** diagnose conditions, calculate or infer dosage, recommend treatment, perform clinical medication-interaction checking, create clinical risk scores, replace a clinician/pharmacist, provide emergency services, or guarantee operating-system notification delivery.
 
+## Ram Sandesh Gumroad Store
+
+**[Shop on Gumroad → https://ramsandesh.gumroad.com](https://ramsandesh.gumroad.com)**
+
+The Gumroad storefront contains separate publisher/project resources and is not a CareNest health feature. A Gumroad purchase does not unlock diagnosis, dosage guidance, treatment recommendations, reminder priority/reliability, emergency assistance, accounts/cloud services, or access to user health data.
+
+CareNest does not automatically send local health records to Gumroad, and the current application package intentionally excludes the Gumroad destination and repository promotional badge.
+
+See `GUMROAD.md` and `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`.
+
 ## Current release state
 
 Current release line: `1.0.0-rc.1`.
 
-Current verified executable source: `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`.
+Latest fully verified pre-Gumroad source:
 
-PR #74 verified 331/331 core tests plus Android, Windows, iOS simulator and Mac Catalyst builds, store-candidate builds, inspection artifacts, CodeQL and unsuppressed dependency audit.
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+
+That exact source verified:
+
+- 122 unit tests;
+- 39 integration tests;
+- 173 UI/source-policy tests;
+- **334/334 total core tests**;
+- Android, Windows, iOS simulator and Mac Catalyst Release builds;
+- all four store-candidate configurations;
+- CodeQL.
+
+The current Gumroad rollout changes repository/source-policy tests and the package scanner, so it must complete its own exact-source workflow matrix before replacing that baseline. Use `PROJECT_STATUS.md` and `what_changed.md` for the active source boundary.
 
 This is a release candidate, not a claim of completed production signing/store publication.
 
@@ -22,12 +50,13 @@ This is a release candidate, not a claim of completed production signing/store p
 
 Read in this order:
 
-1. `README.md` — purpose, scope and current status.
-2. `docs/FEATURE_REFERENCE.md` — feature behavior.
-3. `docs/USER_GUIDE.md` — complete workflows.
-4. `docs/KNOWN_LIMITATIONS.md` — external and intentional limitations.
-5. `PRIVACY.md` and `docs/privacy/PRIVACY_MODEL.md` — data handling.
-6. `SECURITY.md` and `docs/security/SECURITY_MODEL.md` — security design.
+1. `README.md` — purpose, scope, current status and highlighted Gumroad storefront.
+2. `GUMROAD.md` — storefront and health-functionality separation.
+3. `docs/FEATURE_REFERENCE.md` — feature behavior.
+4. `docs/USER_GUIDE.md` — complete workflows.
+5. `docs/KNOWN_LIMITATIONS.md` — external and intentional limitations.
+6. `PRIVACY.md` and `docs/privacy/PRIVACY_MODEL.md` — data handling.
+7. `SECURITY.md` and `docs/security/SECURITY_MODEL.md` — security design.
 
 ## For a developer cloning the repository
 
@@ -86,14 +115,14 @@ dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c 
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
-At the PR #74 verified source boundary the expected totals were:
+At the latest fully verified pre-Gumroad source boundary the totals were:
 
 - 122 unit;
 - 39 integration;
-- 170 UI/source-policy;
-- 331 total.
+- 173 UI/source-policy;
+- 334 total.
 
-Counts can legitimately increase after new tests are added; treat a lower count than the current branch expects as something to investigate.
+The Gumroad rollout adds additional independent source-policy coverage, so current-branch test totals can legitimately be higher. Treat an unexpected decrease as something to investigate.
 
 ### 6. Run the repository quality gate
 
@@ -147,6 +176,22 @@ When adding a binding-bearing page/template:
 
 See `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
 
+## External-commerce package rule for developers
+
+The following are repository-only under the current release/store policy:
+
+- `https://ramsandesh.gumroad.com`;
+- `https://buymeacoffee.com/sanskarIN`;
+- `docs/assets/gumroad_store_badge.svg`.
+
+Do not copy these into `src/CareNest.App`, runtime ViewModels/XAML, shared URL constants or packaged app resources unless a future explicitly reviewed product/store-policy redesign changes the boundary.
+
+Relevant contracts:
+
+- `tests/CareNest.UiTests/FundingLinkContractTests.cs`;
+- `tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs`;
+- `build/scripts/verify-store-safe-payload.py`.
+
 ## Data safety during development
 
 Use fictional/synthetic data only.
@@ -159,6 +204,8 @@ Never commit:
 - cryptographic keys;
 - production signing certificates/keystores/private keys;
 - access tokens or service secrets.
+
+Do not put private health information in Gumroad/Buy Me a Coffee notes or other third-party fields.
 
 ## Where data lives conceptually
 
@@ -180,7 +227,7 @@ A reminder crosses three state surfaces:
 2. persisted CareNest occurrence state;
 3. operating-system notification/alarm state.
 
-Because database and OS scheduling cannot be committed atomically, CareNest uses reconciliation and compensation logic. Do not simplify this into a single “scheduled=true” flag model.
+Because database and OS scheduling cannot be committed atomically, CareNest uses reconciliation and compensation logic. Do not simplify this into a single `scheduled=true` flag model.
 
 See `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`.
 
@@ -188,6 +235,7 @@ See `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`.
 
 - follow `CONTRIBUTING.md`;
 - preserve the local-first and medical-safety boundaries;
+- preserve the repository-storefront versus app-package boundary;
 - add tests for behavior changes;
 - update documentation in the same change;
 - run the quality gate;
@@ -200,6 +248,7 @@ See `docs/testing/REMINDER_SCHEDULING_CONTRACT.md`.
 Start with:
 
 - `PROJECT_STATUS.md`;
+- `what_changed.md`;
 - `docs/releases/NEXT_STEPS.md`;
 - `docs/releases/RELEASE_PROCESS.md`;
 - `docs/releases/RELEASE_CHECKLIST.md`;
