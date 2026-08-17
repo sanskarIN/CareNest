@@ -1,222 +1,204 @@
 # CareNest Next Steps
 
-This document tracks only the work that remains after the 2026-08-16 compiled-binding hardening continuation and full PR #74 verification.
+**Date:** 2026-08-17  
+**Release line:** `1.0.0-rc.1`  
+**Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`
 
-The exact active version immediately before this continuation is preserved at:
+The complete active checklist from before the Gumroad rollout is preserved exactly at:
 
-`docs/history/pre-xaml-compiled-bindings-20260816/NEXT_STEPS.md`
+`docs/history/pre-gumroad-rollout-20260817/NEXT_STEPS.md`
 
-Earlier final-bug-audit history remains at:
-
-`docs/history/pre-final-bug-audit-20260815/NEXT_STEPS.md`
-
-Historical PR #54/#56/#58/#59/#61/#67/#68 evidence remains available in dated release records and Git history.
-
-CareNest remains `1.0.0-rc.1` until the external/manual production gates below are completed.
+This file tracks only the work that remains after the source-line quality hardening, complete documentation refresh, and repository-first Gumroad rollout.
 
 ---
 
-## Current exact automated baseline
+## 1. Current automated boundary
 
-Merged executable source:
+Latest fully verified pre-Gumroad source:
 
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
 
-Verified PR #74 source head:
+That exact revision passed:
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+- 122/122 unit tests;
+- 39/39 integration tests;
+- 173/173 UI/source-policy tests;
+- **334/334 total core tests**;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release;
+- Android/Windows/iOS-simulator/Mac-Catalyst store-candidate configurations;
+- CodeQL.
 
-PR:
+The Gumroad continuation changes repository/source-policy tests and `build/scripts/verify-store-safe-payload.py`, so a newer source becomes authoritative only after its exact final workflow matrix completes successfully.
 
-`https://github.com/sanskarIN/CareNest/pull/74`
-
-Permanent evidence:
-
-`docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`
-
-Automated results on the frozen PR head:
-
-- CareNest CI #735 / run `31938301209`: success;
-- formatting: success;
-- unit tests: **122/122**;
-- integration tests: **39/39**;
-- UI/source-policy tests: **170/170**;
-- total: **331/331**;
-- Android Release: success;
-- Windows Release: success;
-- iOS simulator Release: success;
-- Mac Catalyst Release: success;
-- Store Package Configuration #124 / run `31938301146`: all four target configurations success;
-- Store Inspection Artifacts #47 / run `31938301275`: scanner self-test plus Android/Windows/Apple inspection artifact workflows success;
-- CodeQL #735 / run `31938301252`: success;
-- unsuppressed Dependency Audit #91 / run `31938301172`: success on both dependency graphs;
-- strict XAML binding compilation: success on all configured target builds;
-- `XC0022`, `XC0023`, `XC0024`, `XC0025`: warnings-as-errors, no suppression.
+Use `what_changed.md` for the current exact Gumroad continuation SHA and workflow status.
 
 ---
 
-## Completed source-side work
+## 2. Source-side work now complete
 
-The following items are complete in source and do not need another implementation pass unless a new real defect is found:
+Do not repeat these implementation passes unless a real defect or changed requirement is discovered:
 
-- [x] local-first/account-free RC1 feature implementation;
-- [x] profile/medicine/schedule/medication-log/appointment/document/report/settings/app-lock source scope;
-- [x] reminder reconciliation and cancellation-first action recovery hardening;
-- [x] Android/Windows/iOS/Mac Catalyst source builds;
-- [x] encrypted document and encrypted manual backup framing/tamper/truncation protections;
-- [x] SQLite multi-step transactional consistency hardening;
-- [x] SQLite dependency advisory remediation and removal of the old audit suppression;
-- [x] package identity/privacy/platform metadata regression contracts;
-- [x] Release Gate / Release Evidence / exact-tag workflow coverage;
-- [x] unsuppressed dependency audit in CI/release paths;
-- [x] exact-source internal Android/Windows/Apple inspection artifacts with checksums/provenance;
-- [x] fail-closed forbidden-marker payload scanner and scanner self-test;
-- [x] discovery and removal of the Windows packaged external-funding marker defect;
-- [x] removal of the external project-funding destination/card/command/artwork from the application runtime/package;
-- [x] removal of obsolete per-package funding build switches;
-- [x] repository-only voluntary funding documentation with no health/medical entitlement;
-- [x] recursive source-policy regression guard preventing the funding destination from re-entering `src/CareNest.App`;
-- [x] final 2026-08-15 merged-source package verification;
-- [x] automated bug/error repository sweep with no known automated functional defect under that matrix;
-- [x] accurate root `x:DataType` on every binding-bearing page;
-- [x] accurate item `x:DataType` on every binding-bearing DataTemplate;
-- [x] typed picker `ItemDisplayBinding` contexts;
-- [x] typed explicit Source/RelativeSource ViewModel command bindings;
-- [x] `MauiEnableXamlCBindingWithSourceCompilation=true`;
-- [x] `MauiStrictXamlCompilation=true`;
-- [x] `XC0022` / `XC0023` / `XC0024` / `XC0025` promoted to errors;
-- [x] six dynamic compiled-binding source-policy tests;
-- [x] PR #74 full CI/store-package/store-inspection/CodeQL/dependency-audit verification;
-- [x] PR #74 merged to `main` while preserving all 17 focused commits.
-
-The previous Priority 1 item to incrementally reduce `XC0022` / `XC0025` warnings is now **closed**, not deferred.
-
-The application package remains funding-surface-free by source policy for every target.
+- [x] local-first/account-free RC1 product scope;
+- [x] profile/medicine/schedule/log/appointment/document/report/settings/app-lock source scope;
+- [x] deterministic reminder planning/reconciliation/compensation hardening;
+- [x] encrypted document and password-encrypted backup protections;
+- [x] SQLite transactional/migration/dependency-security hardening;
+- [x] strict compiled XAML binding enforcement;
+- [x] `XC0022`–`XC0025` promoted to errors;
+- [x] repository-wide runtime C# line-level defect-pattern audit;
+- [x] structured XAML/XML/project/JSON syntax validation contract;
+- [x] CodeQL/dependency/release/store workflow policies;
+- [x] external Buy Me a Coffee application-package removal;
+- [x] repository-first Gumroad storefront documentation and branding;
+- [x] canonical Gumroad URL surfaced across current repository support/documentation/marketing surfaces;
+- [x] repository-only Gumroad SVG badge with accessibility metadata;
+- [x] Gumroad/BMC no-medical-entitlement documentation;
+- [x] Gumroad/BMC absence from CareNest runtime/application resources;
+- [x] store-payload scanner upgraded to reject both external-commerce markers;
+- [x] Gumroad repository-placement/package-isolation regression contracts;
+- [x] current documentation catalog/status/governance/developer/testing/configuration/FAQ/limitations/changelog refresh;
+- [x] superseded major active documents preserved exactly in `docs/history/pre-gumroad-rollout-20260817/`.
 
 ---
 
-# Priority 0 — required before a public production release
+# Priority 0 — required before public production release
 
-These are the actual remaining blockers. Do not replace them with broad source refactoring unless validation exposes a real defect.
+These are the real remaining blockers. They require actual evidence, not more speculative source refactoring.
 
-## 1. Packaged existing-data and SQLite compatibility
+## 3. Complete exact-source Gumroad rollout verification
+
+Before promoting the Gumroad rollout to the new automated baseline:
+
+- [ ] freeze the exact final `main` SHA after this documentation/contract pass;
+- [ ] formatting passes;
+- [ ] unit tests pass;
+- [ ] integration tests pass;
+- [ ] UI/source-policy tests pass, including Gumroad contracts;
+- [ ] Android Release build passes;
+- [ ] Windows Release build passes;
+- [ ] iOS simulator Release build passes;
+- [ ] Mac Catalyst Release build passes;
+- [ ] Android store-candidate configuration passes;
+- [ ] Windows store-candidate configuration passes;
+- [ ] iOS simulator store-candidate configuration passes;
+- [ ] Mac Catalyst store-candidate configuration passes;
+- [ ] CodeQL passes;
+- [ ] record the exact final test totals/run IDs/source SHA in current evidence.
+
+Do not carry the older 334-test result forward to a newer source without a green exact-source run.
+
+---
+
+## 4. Packaged existing-data and SQLite compatibility
 
 Use fictional/synthetic data only.
 
-- [ ] Create/install a representative earlier RC candidate data set containing profiles, medicines, schedules, reminder occurrences, medication logs, appointments, stock adjustments, documents/tags and settings.
-- [ ] Upgrade/install the intended production candidate through the target platform's realistic package/update path.
-- [ ] Confirm the SQLite database opens.
-- [ ] Run and record integrity validation.
-- [ ] Confirm all representative records remain readable.
-- [ ] Confirm all representative editable records remain editable.
-- [ ] Confirm schema version is correct.
-- [ ] Confirm reminder rebuild/reconciliation succeeds after upgrade.
-- [ ] Confirm no duplicate/stale platform reminder is silently stranded.
-- [ ] Record package/source/checksum/result evidence.
+- [ ] prepare a representative earlier candidate data set containing profiles, medicines, schedules, occurrences, logs, appointments, stock notes, documents/tags and settings;
+- [ ] install/upgrade through each realistic target package/update path used for production;
+- [ ] confirm SQLite opens successfully;
+- [ ] run and record integrity validation;
+- [ ] verify representative records remain readable and editable;
+- [ ] verify expected schema version/migrations;
+- [ ] verify reminder rebuild/reconciliation after upgrade;
+- [ ] verify no duplicate/stale platform request is stranded;
+- [ ] record package, source SHA, checksum and results.
 
-Source dependency remediation is already complete. Do not restore the former audit suppression because this manual compatibility evidence is pending.
-
-Runbook:
-
-`docs/releases/PACKAGED_RELEASE_VALIDATION.md`
+Runbook: `docs/releases/PACKAGED_RELEASE_VALIDATION.md`.
 
 ---
 
-## 2. Encrypted document and backup compatibility
+## 5. Encrypted document and backup compatibility
 
 With fictional data:
 
-- [ ] Verify a current packaged encrypted document import/open/export/delete lifecycle.
-- [ ] Verify failed document export does not leave an unintended CareNest-owned partial plaintext file.
-- [ ] Verify missing/corrupt document-key behavior fails closed.
-- [ ] Verify current packaged encrypted backup create/inspect/restore.
-- [ ] Verify wrong backup password is rejected.
-- [ ] Verify tampered backup is rejected.
-- [ ] Verify truncated backup is rejected.
-- [ ] Verify trailing-data backup is rejected.
-- [ ] Verify restored encrypted documents remain usable.
-- [ ] Verify clean-install restore.
-- [ ] Verify canonical historical v1 document/backup bytes if genuine historical fixtures exist.
-- [ ] Do not manufacture a new test artifact and label it as historical evidence.
+- [ ] packaged encrypted-document import/open/export/delete;
+- [ ] failed export cleanup;
+- [ ] missing/corrupt document-key fail-closed behavior;
+- [ ] packaged encrypted backup creation;
+- [ ] backup inspection/restore;
+- [ ] wrong-password rejection;
+- [ ] tamper rejection;
+- [ ] truncation rejection;
+- [ ] trailing-data rejection;
+- [ ] restored encrypted-document usability;
+- [ ] clean-install restore;
+- [ ] genuine historical v1 fixture validation if genuine historical bytes safely exist.
+
+Never manufacture a current artifact and label it historical evidence.
 
 ---
 
-## 3. Android manual matrix
+## 6. Android real-device/emulator validation
 
-On representative supported Android hardware/emulators:
+On representative supported Android versions/vendors:
 
-- [ ] fresh install and onboarding;
-- [ ] notification permission denied;
-- [ ] notification permission granted;
+- [ ] fresh install/onboarding;
+- [ ] notification permission denied and granted;
 - [ ] medicine reminder create/edit/delete;
 - [ ] appointment reminder create/edit/delete;
-- [ ] Taken cancellation-first behavior;
-- [ ] Skipped cancellation-first behavior;
-- [ ] Delayed cancellation-first behavior;
-- [ ] Missed cancellation-first behavior;
-- [ ] Snooze cancellation + replacement;
-- [ ] future snooze crossing original due time;
-- [ ] overdue snooze evaluated from snooze due time;
-- [ ] schedule-edit stale-request cleanup;
-- [ ] medicine delete cleanup;
-- [ ] profile delete cleanup;
-- [ ] restart/reopen recovery;
+- [ ] actual reminder delivery;
+- [ ] Taken/Skipped/Delayed/Missed cancellation-first behavior;
+- [ ] Snooze cancellation/replacement and future-snooze edge cases;
+- [ ] stale-request cleanup after schedule edits;
+- [ ] medicine/profile deletion cleanup;
+- [ ] app restart/reopen recovery;
 - [ ] reboot rebuild;
-- [ ] exact/inexact alarm diagnostics;
-- [ ] battery-optimization disclosure/behavior;
+- [ ] exact/inexact alarm behavior;
+- [ ] battery-optimization/vendor restrictions;
 - [ ] clock/time-zone/DST recovery;
-- [ ] force-stop/vendor limitation messaging;
+- [ ] force-stop limitation messaging;
 - [ ] document picker/share;
 - [ ] backup/restore;
-- [ ] app lock.
+- [ ] app lock;
+- [ ] accessibility.
 
 ---
 
-## 4. Windows manual matrix
+## 7. Windows validation
 
 On representative Windows 11 targets:
 
-- [ ] fresh install/package execution;
-- [ ] navigation and core CRUD;
-- [ ] running-app notification behavior;
-- [ ] closed-app limitation messaging;
+- [ ] fresh execution/install path;
+- [ ] core CRUD/navigation;
+- [ ] running-app reminder behavior;
+- [ ] closed-app limitation behavior/messaging;
 - [ ] same-ID timer replacement/cancellation;
-- [ ] reminder actions and snooze;
+- [ ] reminder actions/snooze;
 - [ ] restart/recovery;
 - [ ] document picker/share;
 - [ ] backup/restore;
 - [ ] app lock;
-- [ ] keyboard navigation/focus;
-- [ ] light theme;
-- [ ] dark theme;
-- [ ] system theme.
+- [ ] keyboard/focus;
+- [ ] light/dark/system themes.
 
 ---
 
-## 5. iPhone/iPad real-device matrix
+## 8. iPhone/iPad real-device validation
 
-Simulator compilation is automated evidence, not a substitute for real-device notification behavior.
+Simulator compilation is not real-device notification evidence.
 
 - [ ] fresh install;
-- [ ] notification permission denied;
-- [ ] notification permission granted;
+- [ ] permission denied/granted;
 - [ ] medicine reminders;
 - [ ] appointment reminders;
 - [ ] reminder actions/snooze;
-- [ ] restart behavior;
+- [ ] restart/recovery;
 - [ ] time-zone/DST behavior;
 - [ ] backup/restore;
 - [ ] document picker/share;
 - [ ] app lock;
 - [ ] Dynamic Type;
 - [ ] VoiceOver;
-- [ ] notification preview privacy.
+- [ ] notification-preview privacy.
 
 ---
 
-## 6. Mac Catalyst manual matrix
+## 9. Mac Catalyst validation
 
-- [ ] fresh install/package execution;
+- [ ] fresh execution/install path;
 - [ ] notification permission/delivery;
 - [ ] reminder actions/snooze/reconciliation;
 - [ ] restart behavior;
@@ -229,524 +211,154 @@ Simulator compilation is automated evidence, not a substitute for real-device no
 
 ---
 
-## 7. Accessibility validation
+## 10. Accessibility validation
 
-Use representative assistive technologies, not source inspection alone.
+Automated source checks do not replace real assistive-technology testing.
 
-- [ ] screen-reader names and reading order;
-- [ ] large text / 200% or representative scaling;
+- [ ] representative screen readers;
+- [ ] reading order/names/hints;
+- [ ] large text/approximately 200% representative scaling;
 - [ ] destructive confirmation readability;
-- [ ] desktop keyboard focus/navigation;
-- [ ] contrast in light theme;
-- [ ] contrast in dark theme;
-- [ ] contrast in system theme;
-- [ ] color-independent status meaning;
+- [ ] desktop keyboard/focus;
+- [ ] light/dark/system contrast;
+- [ ] color-independent meaning;
 - [ ] reduced-motion behavior;
 - [ ] privacy-safe actionable errors.
 
-Compiled XAML binding warnings are no longer a pending accessibility/quality item. They are closed and enforced by build/test policy. Real accessibility behavior still requires this manual matrix.
+Repository promotional graphics should also retain meaningful alt text/plain-text URL fallback.
 
 ---
 
-## 8. Production signing outside Git
+## 11. Production signing outside Git
 
 Never commit private signing material.
 
-Required:
-
 - [ ] Android production keystore/signing service configured outside Git;
-- [ ] Apple certificates/provisioning/store signing configured outside Git;
+- [ ] Apple certificate/provisioning/store signing configured outside Git;
 - [ ] Windows production signing identity configured outside Git;
 - [ ] safe public signing fingerprints/identifiers recorded where appropriate;
-- [ ] signing timestamp recorded;
-- [ ] exact source SHA recorded;
-- [ ] package checksum recorded.
+- [ ] signing timestamp/source SHA/package checksum recorded.
 
 ---
 
-## 9. Final signed-package inspection
+## 12. Final signed-package inspection
 
 For every intended production package:
 
-- [ ] record exact source SHA;
-- [ ] record version/build number;
-- [ ] record application/package identity;
-- [ ] record package filename;
-- [ ] record SHA-256;
+- [ ] record exact source SHA/version/build/application identity;
+- [ ] record package filename and SHA-256;
 - [ ] record signing/notarization/store-managed provenance;
-- [ ] repeat/equivalently run the forbidden funding-marker payload scan on the final signed package;
-- [ ] manually verify About contains no Buy Me a Coffee funding destination/card;
-- [ ] verify repository link remains available;
-- [ ] verify creator profile link remains available;
-- [ ] verify business email remains available;
-- [ ] verify application support email remains available;
-- [ ] verify privacy/terms/security/notices remain available;
-- [ ] verify no health feature changes based on project funding;
-- [ ] verify installed package starts;
-- [ ] execute platform smoke tests.
+- [ ] scan the final payload for `buymeacoffee.com/sanskarIN`;
+- [ ] scan the final payload for `ramsandesh.gumroad.com`;
+- [ ] verify no Gumroad/Buy Me a Coffee promotional artwork/card/command exists in the app;
+- [ ] verify repository/support links that are intentionally part of the app remain available as documented;
+- [ ] verify privacy/terms/security/notices;
+- [ ] verify no health feature changes according to Gumroad purchase/funding state;
+- [ ] install/start the package and run platform smoke tests.
+
+The official repository storefront remains:
+
+**https://ramsandesh.gumroad.com**
+
+It is intentionally promoted outside the app package under the current policy.
 
 ---
 
-## 10. Store metadata and policy review
+## 13. Store metadata and policy review
 
-At actual submission time, review current rules rather than relying on older snapshots.
+At submission time, use current platform policies rather than old snapshots.
 
-- [ ] review current Apple rules applicable to the app/listing;
-- [ ] review current Google Play rules applicable to the app/listing;
-- [ ] review current Microsoft/Windows distribution requirements if used;
-- [ ] validate health-organizer claims/disclaimers;
-- [ ] validate notification/reminder wording;
-- [ ] validate privacy/data-safety declarations;
-- [ ] validate screenshots with fictional data;
-- [ ] validate support link;
-- [ ] validate privacy link;
-- [ ] validate terms link;
-- [ ] validate security link;
+- [ ] Apple policy/listing review;
+- [ ] Google Play policy/listing review;
+- [ ] Microsoft/Windows distribution review if used;
+- [ ] health-organizer claims/disclaimers;
+- [ ] reminder/notification wording;
+- [ ] privacy/data-safety declarations;
+- [ ] fictional-data screenshots;
+- [ ] support/privacy/terms/security links;
+- [ ] external-commerce/storefront policy review;
+- [ ] confirm repository Gumroad promotion remains separate from the submitted app package unless an explicitly reviewed policy change is approved;
 - [ ] record review date/source/conclusion.
 
-The app binary itself has no external project-funding destination. Repository funding metadata remains separate.
+Store policies are time-sensitive.
 
 ---
 
-## 11. Select the exact production source
+## 14. Freeze exact production source
 
-Only after all applicable manual/package/signing/store findings are resolved:
+Only after applicable manual/package/signing/store findings are resolved:
 
-- [ ] freeze the exact approved production commit;
-- [ ] ensure no verification-relevant source changed after the last accepted exact-head verification, or repeat exact-source verification if it did;
+- [ ] select the exact approved production commit;
+- [ ] repeat exact-source automated verification if any verification-relevant source changed;
 - [ ] verify release version/build metadata;
-- [ ] verify final release notes;
-- [ ] verify final package checksums/provenance.
+- [ ] verify release notes;
+- [ ] verify signed-package hashes/provenance;
+- [ ] ensure no unresolved production blocker remains.
 
-Do not move a failed/rejected production tag to a different commit.
-
----
-
-## 12. Create the production `v*` tag and require all tagged gates
-
-For the exact approved tag require:
-
-- [ ] tagged CareNest CI success;
-- [ ] tagged CodeQL success;
-- [ ] tagged unsuppressed Dependency Audit success;
-- [ ] tagged CareNest Store Package Configuration success;
-- [ ] tagged CareNest Store Inspection Artifacts success;
-- [ ] tagged Release Gate success;
-- [ ] tagged Release Evidence success;
-- [ ] release-evidence artifact/checksums recorded;
-- [ ] final signed-package provenance recorded.
-
-Only then proceed to public publication.
+Do not move a failed/rejected production tag to a different source just to reuse its version identity.
 
 ---
 
-# Priority 1 — post-RC quality improvements
+## 15. Production `v*` tag and final gates
 
-These are not current RC1 functional blockers unless later testing proves otherwise.
+For the exact approved production tag require all applicable configured gates:
 
-- [ ] Continue accessibility polish based on actual assistive-technology findings.
-- [ ] Add canonical packaged upgrade fixtures as genuine released-build artifacts become available.
-- [ ] Expand non-production package inspection to signed test candidates when safe signing infrastructure exists.
-- [ ] Improve release-evidence automation only if it preserves the exact-source/fail-closed model.
-- [ ] Consider performance measurements for compiled versus runtime XAML bindings only if measurement has a concrete product/release purpose; do not weaken strict compilation to perform the comparison.
+- [ ] tagged CareNest CI;
+- [ ] tagged CodeQL;
+- [ ] tagged unsuppressed dependency audit;
+- [ ] tagged Store Package Configuration;
+- [ ] tagged Store Inspection Artifacts;
+- [ ] tagged Release Gate;
+- [ ] tagged Release Evidence;
+- [ ] artifact/checksum/provenance evidence;
+- [ ] final signed-package provenance;
+- [ ] final publication/submission evidence.
 
-Removed from this section because it is complete:
+Only then describe the product as production-published/store-approved for the relevant platform.
 
-- [x] add compiled XAML binding metadata and eliminate `XC0022` / `XC0025` warning debt;
-- [x] compile explicit Source bindings;
-- [x] enforce `XC0022`–`XC0025` against regression.
+---
+
+# Priority 1 — after RC1 production validation
+
+- [ ] accessibility improvements driven by real assistive-technology findings;
+- [ ] canonical packaged upgrade fixtures from genuine released artifacts;
+- [ ] expanded signed-test package inspection when safe signing infrastructure exists;
+- [ ] release-evidence automation improvements that retain exact-source/fail-closed semantics;
+- [ ] performance measurement only where it has a concrete product purpose;
+- [ ] evaluate future store-policy changes separately if in-app commerce is ever proposed.
 
 ---
 
 # Deferred future scope
 
-Still intentionally outside RC1 unless separately designed/reviewed:
+Still outside RC1 without a separate design/review:
 
 - cloud synchronization;
 - remote caregiver collaboration;
-- required accounts or phone-number authentication;
+- required accounts/phone authentication;
 - server-side health-record storage;
 - silent remote sharing;
 - hidden analytics/telemetry;
 - diagnosis;
 - dosage calculation/inference;
 - treatment recommendations;
-- clinical interaction claims;
-- clinical risk scoring.
+- clinical interaction/risk claims;
+- in-app Gumroad/Buy Me a Coffee commerce under the current store policy.
 
-Any future networked/remote-data feature requires a new consent, authentication, key-management, privacy, threat-model, export/deletion and store-policy review.
+Any future networked, remote-data, commerce-in-app or clinical feature needs a new consent/authentication/privacy/key-management/threat-model/safety/store/legal/testing design.
 
 ---
 
 ## Continuation rule
 
-Do not perform more broad source refactoring merely to keep development active.
+After the final exact Gumroad source is green, do not keep making broad source changes merely to remain busy.
 
-The current executable source is verified under the configured automated matrix and the previously pending compiled-binding cleanup is complete.
+The next meaningful work is real production validation. If a manual/package/security/accessibility defect is found:
 
-The next work is production validation.
-
-If a real manual/package/security/accessibility defect is found:
-
-1. reproduce it safely;
+1. reproduce it safely with synthetic data;
 2. fix the smallest correct source boundary;
-3. add regression coverage;
-4. run the full exact-head automated matrix again;
-5. update factual evidence only after the run completes.
-
-Current status:
-
-**Source-complete CareNest `1.0.0-rc.1` with strict compiled XAML binding enforcement and no known automated defect under the configured PR #74 matrix; production validation remains open.**
-
----
-
-# Complete previous active next steps — preserved verbatim
-
-> **Historical snapshot notice:** Everything below this notice is the complete previous active `docs/releases/NEXT_STEPS.md` preserved verbatim. It describes the 2026-08-15 source boundary and is superseded for current instructions by the sections above. It is retained so no previous checklist item, runbook detail, or continuation rule is shortened or skipped.
-
-# CareNest Next Steps
-
-This document tracks only the work that remains after the final 2026-08-15 automated bug-audit/store-payload continuation.
-
-The exact pre-final version of this file is preserved at:
-
-`docs/history/pre-final-bug-audit-20260815/NEXT_STEPS.md`
-
-Historical PR #54/#56/#58/#59/#61 source evidence remains available in the dated release records and Git history.
-
-CareNest remains `1.0.0-rc.1` until the external/manual production gates below are completed.
-
----
-
-## Current exact automated baseline
-
-Authoritative executable source:
-
-`9ec7b4e7d2150d9cc50be19f30464080318b16e8`
-
-Final exact marker PR:
-
-`https://github.com/sanskarIN/CareNest/pull/68`
-
-Marker SHA:
-
-`c752815c311e7e443f1d71df8a9197cf706a14b6`
-
-PR #68 was one marker file only and was closed without merge.
-
-Final automated results:
-
-- CareNest CI #719 / run `31880955724`: success;
-- formatting: success;
-- unit tests: **122/122**;
-- integration tests: **39/39**;
-- UI/source-policy tests: **164/164**;
-- total: **325/325**;
-- Android Release: success;
-- Windows Release: success;
-- iOS simulator Release: success;
-- Mac Catalyst Release: success;
-- Store Package Configuration #108 / run `31880955723`: all four target configurations success;
-- Store Inspection Artifacts #41 / run `31880955734`: scanner self-test and Android/Windows/Apple payload scans success;
-- CodeQL #719 / run `31880955720`: success;
-- unsuppressed Dependency Audit #85 / run `31880955731`: success on both dependency graphs.
-
-Permanent evidence:
-
-`docs/releases/FINAL_STORE_PAYLOAD_AND_BUG_AUDIT_VERIFICATION_20260815.md`
-
----
-
-## Completed final source-side work
-
-The following items are complete in source and do not need another implementation pass unless a new real defect is found:
-
-- [x] local-first/account-free RC1 feature implementation;
-- [x] profile/medicine/schedule/medication-log/appointment/document/report/settings/app-lock source scope;
-- [x] reminder reconciliation and cancellation-first action recovery hardening;
-- [x] Android/Windows/iOS/Mac Catalyst source builds;
-- [x] encrypted document and encrypted manual backup framing/tamper/truncation protections;
-- [x] SQLite multi-step transactional consistency hardening;
-- [x] SQLite dependency advisory remediation and removal of the old audit suppression;
-- [x] package identity/privacy/platform metadata regression contracts;
-- [x] Release Gate / Release Evidence / exact-tag workflow coverage;
-- [x] unsuppressed dependency audit in local/CI release paths;
-- [x] exact-source internal Android/Windows/Apple inspection artifacts with checksums/provenance;
-- [x] fail-closed forbidden-marker payload scanner and scanner self-test;
-- [x] discovery and removal of the Windows packaged external-funding marker defect;
-- [x] removal of the external project-funding destination/card/command/artwork from the application runtime/package;
-- [x] removal of obsolete per-package funding build switches;
-- [x] repository-only voluntary funding documentation with no health/medical entitlement;
-- [x] recursive source-policy regression guard preventing the funding destination from re-entering `src/CareNest.App`;
-- [x] final exact merged-source PR #68 verification;
-- [x] final automated bug/error repository sweep with no open issues or unfinished implementation markers found.
-
-The previous requirement to build separate `CareNestShowFundingLink=false` packages is obsolete. The application package is funding-surface-free by source policy for every target.
-
----
-
-# Priority 0 — required before a public production release
-
-These are the actual remaining blockers. Do not replace them with more source refactoring unless testing exposes a real defect.
-
-## 1. Packaged existing-data and SQLite compatibility
-
-Use fictional/synthetic data only.
-
-- [ ] Create/install a representative earlier RC candidate data set containing profiles, medicines, schedules, reminder occurrences, medication logs, appointments, stock adjustments, documents/tags and settings.
-- [ ] Upgrade/install the intended production candidate through the target platform's realistic package/update path.
-- [ ] Confirm the SQLite database opens.
-- [ ] Run/record integrity validation.
-- [ ] Confirm all representative records remain readable and editable.
-- [ ] Confirm schema version is correct.
-- [ ] Confirm reminder rebuild/reconciliation succeeds after upgrade.
-- [ ] Confirm no duplicate/stale platform reminder is silently stranded.
-- [ ] Record package/source/checksum/result evidence.
-
-Source dependency remediation is already complete. Do not restore the former audit suppression because this manual compatibility evidence is pending.
-
-Runbook:
-
-`docs/releases/PACKAGED_RELEASE_VALIDATION.md`
-
----
-
-## 2. Encrypted document and backup compatibility
-
-With fictional data:
-
-- [ ] Verify a current packaged encrypted document import/open/export/delete lifecycle.
-- [ ] Verify failed document export does not leave an unintended CareNest-owned partial plaintext file.
-- [ ] Verify missing/corrupt key behavior fails closed.
-- [ ] Verify current packaged encrypted backup create/inspect/restore.
-- [ ] Verify wrong backup password is rejected.
-- [ ] Verify tampered/truncated/trailing-data backup is rejected.
-- [ ] Verify restored encrypted documents remain usable.
-- [ ] Verify clean-install restore.
-- [ ] Verify canonical historical v1 document/backup bytes if genuine historical fixtures exist.
-- [ ] Do not manufacture a new test artifact and label it as historical evidence.
-
----
-
-## 3. Android manual matrix
-
-On representative supported Android hardware/emulators:
-
-- [ ] fresh install and onboarding;
-- [ ] notification permission denied;
-- [ ] notification permission granted;
-- [ ] medicine reminder create/edit/delete;
-- [ ] appointment reminder create/edit/delete;
-- [ ] Taken/Skipped/Delayed/Missed cancellation-first behavior;
-- [ ] Snooze cancellation + replacement;
-- [ ] future snooze crossing original due time;
-- [ ] overdue snooze evaluated from snooze due time;
-- [ ] schedule-edit stale-request cleanup;
-- [ ] medicine/profile delete cleanup;
-- [ ] restart/reopen recovery;
-- [ ] reboot rebuild;
-- [ ] exact/inexact alarm diagnostics;
-- [ ] battery-optimization disclosure/behavior;
-- [ ] clock/time-zone/DST recovery;
-- [ ] force-stop/vendor limitation messaging;
-- [ ] document picker/share;
-- [ ] backup/restore;
-- [ ] app lock.
-
----
-
-## 4. Windows manual matrix
-
-On representative Windows 11 targets:
-
-- [ ] fresh install/package execution;
-- [ ] navigation and core CRUD;
-- [ ] running-app notification behavior;
-- [ ] closed-app limitation messaging;
-- [ ] same-ID timer replacement/cancellation;
-- [ ] reminder actions and snooze;
-- [ ] restart/recovery;
-- [ ] document picker/share;
-- [ ] backup/restore;
-- [ ] keyboard navigation/focus;
-- [ ] light/dark/system theme.
-
----
-
-## 5. iPhone/iPad real-device matrix
-
-- [ ] fresh install;
-- [ ] notification permission denied/granted;
-- [ ] medicine reminders;
-- [ ] appointment reminders;
-- [ ] reminder actions/snooze;
-- [ ] restart/time-zone behavior;
-- [ ] backup/restore;
-- [ ] document picker/share;
-- [ ] app lock;
-- [ ] Dynamic Type;
-- [ ] VoiceOver;
-- [ ] notification preview privacy.
-
-Simulator compilation is automated evidence, not a substitute for real-device notification behavior.
-
----
-
-## 6. Mac Catalyst manual matrix
-
-- [ ] fresh install/package execution;
-- [ ] notification permission/delivery;
-- [ ] reminder actions/snooze/reconciliation;
-- [ ] restart behavior;
-- [ ] file picker/share;
-- [ ] backup/restore;
-- [ ] keyboard/focus;
-- [ ] theme/contrast;
-- [ ] signed/notarized candidate behavior when available.
-
----
-
-## 7. Accessibility validation
-
-Use representative assistive technologies, not source inspection alone.
-
-- [ ] screen-reader names and reading order;
-- [ ] large text / 200% or representative scaling;
-- [ ] destructive confirmation readability;
-- [ ] desktop keyboard focus/navigation;
-- [ ] contrast in light/dark/system themes;
-- [ ] color-independent status meaning;
-- [ ] reduced-motion behavior;
-- [ ] privacy-safe actionable errors.
-
-Existing XamlC `XC0022` / `XC0025` compiled-binding warnings are non-blocking optimization warnings in the current automated baseline. They may be improved later without weakening correctness, but they are not a substitute for this accessibility matrix.
-
----
-
-## 8. Production signing outside Git
-
-Never commit private signing material.
-
-Required:
-
-- [ ] Android production keystore/signing service configured outside Git;
-- [ ] Apple certificates/provisioning/store signing configured outside Git;
-- [ ] Windows production signing identity configured outside Git;
-- [ ] safe public signing fingerprints/identifiers recorded where appropriate;
-- [ ] signing timestamps/source SHA/package checksum recorded.
-
----
-
-## 9. Final signed-package inspection
-
-For every intended production package:
-
-- [ ] record exact source SHA;
-- [ ] record version/build number;
-- [ ] record application/package identity;
-- [ ] record package filename;
-- [ ] record SHA-256;
-- [ ] record signing/notarization/store-managed provenance;
-- [ ] repeat/equivalently run the forbidden funding-marker payload scan on the final signed package;
-- [ ] manually verify About contains no Buy Me a Coffee funding destination/card;
-- [ ] verify repository/creator/business/support/privacy/terms/security/notices remain available;
-- [ ] verify no health feature changes based on project funding;
-- [ ] verify installed package starts and passes platform smoke tests.
-
----
-
-## 10. Store metadata and policy review
-
-At actual submission time:
-
-- [ ] review current Apple rules applicable to the app/listing;
-- [ ] review current Google Play rules applicable to the app/listing;
-- [ ] review current Microsoft/Windows distribution requirements if used;
-- [ ] validate health-organizer claims/disclaimers;
-- [ ] validate notification/reminder wording;
-- [ ] validate privacy/data-safety declarations;
-- [ ] validate screenshots with fictional data;
-- [ ] validate support/privacy/terms/security links;
-- [ ] record review date/source/conclusion.
-
-The app binary itself has no external project-funding destination. Repository funding metadata remains separate.
-
----
-
-## 11. Select the exact production source
-
-Only after all applicable manual/package/signing/store findings are resolved:
-
-- [ ] freeze the exact approved production commit;
-- [ ] ensure no verification-relevant source changed after the last accepted exact-head verification, or repeat marker-only verification if it did;
-- [ ] verify release version/build metadata;
-- [ ] verify final release notes;
-- [ ] verify final package checksums/provenance.
-
-Do not move a failed/rejected production tag to a different commit.
-
----
-
-## 12. Create the production `v*` tag and require all tagged gates
-
-For the exact approved tag require:
-
-- [ ] tagged CareNest CI success;
-- [ ] tagged CodeQL success;
-- [ ] tagged unsuppressed Dependency Audit success;
-- [ ] tagged CareNest Store Package Configuration success;
-- [ ] tagged CareNest Store Inspection Artifacts success;
-- [ ] tagged Release Gate success;
-- [ ] tagged Release Evidence success;
-- [ ] release-evidence artifact/checksums recorded;
-- [ ] final signed-package provenance recorded.
-
-Only then proceed to public publication.
-
----
-
-# Priority 1 — post-RC quality improvements
-
-These are not current RC1 functional blockers unless later testing proves otherwise.
-
-- [ ] Incrementally add compiled XAML binding metadata to reduce `XC0022` / `XC0025` optimization warnings, with platform builds kept green.
-- [ ] Continue accessibility polish based on actual assistive-technology findings.
-- [ ] Add more canonical packaged upgrade fixtures after genuine released builds exist.
-- [ ] Expand non-production package inspection to signed test candidates when safe signing infrastructure exists.
-- [ ] Improve release-evidence automation only if it preserves the exact-source/fail-closed model.
-
----
-
-# Deferred future scope
-
-Still intentionally outside RC1 unless separately designed/reviewed:
-
-- cloud synchronization;
-- remote caregiver collaboration;
-- required accounts or phone-number authentication;
-- server-side health-record storage;
-- silent remote sharing;
-- hidden analytics/telemetry;
-- diagnosis;
-- dosage calculation/inference;
-- treatment recommendations;
-- clinical interaction claims;
-- clinical risk scoring.
-
-Any future networked/remote-data feature requires a new consent, authentication, key-management, privacy, threat-model, export/deletion and store-policy review.
-
----
-
-## Final continuation rule
-
-Do not perform more broad source refactoring merely to keep development active. The current executable source is exact-head verified. The next work is production validation.
-
-If a real manual/package/security defect is found:
-
-1. reproduce it;
-2. fix the smallest correct source boundary;
-3. add regression coverage;
-4. run the full exact-head marker protocol again;
-5. update factual evidence only after the run completes.
-
-Current status: **source-complete RC1 with no known automated defect under the configured PR #68 matrix; production validation remains open.**
+3. add the lowest appropriate regression coverage;
+4. run the full applicable exact-source matrix again;
+5. update current evidence only after the new run completes.
+
+Current state: **CareNest `1.0.0-rc.1` is source-complete for its intended RC scope, with highlighted repository-only Gumroad promotion and package-level external-commerce exclusion; exact final rollout verification and real production evidence remain the next gates.**
