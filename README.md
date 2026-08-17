@@ -172,6 +172,8 @@ This means no known automated defect remains under that configured matrix for th
 
 The distributed CareNest application source/package intentionally contains no external Buy Me a Coffee destination/card/command/artwork. Voluntary project support remains repository documentation/metadata only and does not unlock health functionality, reminder priority/reliability, medical advice or clinical services.
 
+You can voluntarily support CareNest development at https://buymeacoffee.com/sanskarIN. This is repository-only project support and is not an application health feature or entitlement.
+
 Repository support information: [`BUY_ME_A_COFFEE.md`](BUY_ME_A_COFFEE.md).
 
 ## Complete documentation
