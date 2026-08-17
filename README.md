@@ -6,7 +6,7 @@
   </a>
 </p>
 
-> **Latest fully verified pre-storefront-integration source baseline — 2026-08-17:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`. The configured matrix passed **334/334 core tests** (122 unit + 39 integration + 173 UI/source-policy), Android/Windows/iOS-simulator/Mac-Catalyst Release builds, all four store-candidate configurations, and CodeQL. The current repository may contain newer repository-only Gumroad/documentation commits; those do not become a new verified baseline until their exact final workflow set is green.
+> **Latest verified Gumroad-rollout implementation baseline — 2026-08-17:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`. The configured matrix passed **336/336 core tests** (122 unit + 39 integration + 175 UI/source-policy), Android/Windows/iOS-simulator/Mac-Catalyst Release builds, all four store-candidate configurations, and CodeQL. See [`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`](docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md).
 
 CareNest is an open-source, local-first family health organizer built with .NET MAUI and C#. It helps users organize medicine reminders, appointments, encrypted health documents, stock/refill notes, reports, backups and multiple local profiles without requiring a CareNest account or CareNest-owned cloud service.
 
@@ -162,24 +162,26 @@ Because database and OS scheduling are not one atomic transaction, the implement
 
 CareNest uses separate controls for structured data, encrypted documents, backups, secure-store secrets and optional app lock. Exported copies and compromised devices remain outside some protections. See [`SECURITY.md`](SECURITY.md), [`docs/security/SECURITY_MODEL.md`](docs/security/SECURITY_MODEL.md) and [`docs/security/THREAT_MODEL.md`](docs/security/THREAT_MODEL.md).
 
-## Latest fully verified automated baseline
+## Latest verified automated baseline
 
 Source:
 
-`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
 Verified on that exact revision:
 
 - 122/122 unit tests;
 - 39/39 integration tests;
-- 173/173 UI/source-policy tests;
-- **334/334 total core tests**;
+- 175/175 UI/source-policy tests;
+- **336/336 total core tests**;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
 - Mac Catalyst Release;
 - all four store-candidate configurations;
 - CodeQL.
+
+Verification record: [`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`](docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md).
 
 This means no known automated defect remained under that configured matrix for that exact verified source. It does **not** mean the product is guaranteed globally bug-free or that manual production testing is complete.
 
@@ -205,6 +207,7 @@ Start with:
 - [`docs/DEVELOPER_REFERENCE.md`](docs/DEVELOPER_REFERENCE.md) — developer reference.
 - [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md) — limitations.
 - [`docs/PLATFORM_BEHAVIOR_MATRIX.md`](docs/PLATFORM_BEHAVIOR_MATRIX.md) — automated/manual platform evidence.
+- [`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`](docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md) — exact Gumroad-rollout automated evidence.
 - [`GUMROAD.md`](GUMROAD.md) — storefront guide.
 - [`docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`](docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md) — storefront placement/package policy.
 - [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — current status.
