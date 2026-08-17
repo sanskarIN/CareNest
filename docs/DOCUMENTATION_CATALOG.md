@@ -1,9 +1,9 @@
 # CareNest Documentation Catalog
 
 **Release line:** `1.0.0-rc.1`  
-**Documentation baseline date:** 2026-08-16  
-**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
-**Verified source head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9` (PR #74)
+**Documentation baseline date:** 2026-08-17  
+**Latest fully verified pre-storefront source:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`  
+**Compiled-binding verification source head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9` (PR #74)
 
 This catalog is the navigation and ownership map for the complete CareNest documentation set. It does not replace the detailed documents; it tells readers which document is authoritative for each question.
 
@@ -16,7 +16,8 @@ When documents appear to disagree, use this order:
 3. latest dated verification record under `docs/releases/` for automated evidence.
 4. `docs/COMPLETE_PROJECT_DOCUMENTATION.md` for the current end-to-end product/engineering reference.
 5. specialized architecture/security/testing/setup documents for implementation details.
-6. `what_changed.md` and `docs/history/` for chronological and historical context.
+6. `GUMROAD.md` and `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` for the current external storefront placement/package boundary.
+7. `what_changed.md` and `docs/history/` for chronological and historical context.
 
 Historical evidence is intentionally retained and may describe older source boundaries. A dated historical file must not be interpreted as the current product state merely because it contains a detailed test count or source SHA.
 
@@ -24,7 +25,7 @@ Historical evidence is intentionally retained and may describe older source boun
 
 ### End users and evaluators
 
-- `README.md` — product overview, scope, limitations, current release status.
+- `README.md` — product overview, scope, limitations, current release status and highlighted Gumroad storefront link.
 - `docs/GETTING_STARTED.md` — first-use and first-build orientation.
 - `docs/USER_GUIDE.md` — complete use workflows.
 - `docs/FEATURE_REFERENCE.md` — feature-by-feature behavior.
@@ -32,6 +33,7 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/KNOWN_LIMITATIONS.md` — intentionally unsupported or externally constrained behavior.
 - `docs/REPORTS_AND_EXPORTS.md` — exports, reports, privacy boundaries.
 - `docs/GLOSSARY.md` — terminology.
+- `GUMROAD.md` — official Ram Sandesh storefront guide and CareNest separation boundary.
 
 ### Contributors and developers
 
@@ -45,6 +47,7 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/CONFIGURATION_REFERENCE.md` — package/build/configuration reference.
 - `docs/architecture/ARCHITECTURE.md` — solution architecture.
 - `docs/architecture/SERVICE_BOUNDARIES.md` — dependency/service boundaries.
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — storefront placement and runtime-package exclusion rules.
 
 ### Maintainers and release operators
 
@@ -58,7 +61,8 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/releases/MANUAL_TEST_MATRIX.md` — manual platform validation.
 - `docs/releases/PACKAGED_RELEASE_VALIDATION.md` — packaged compatibility validation.
 - `docs/releases/NEXT_STEPS.md` — current remaining work.
-- `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md` — current automated source verification record.
+- `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md` — permanent compiled-binding automated verification record.
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — external-commerce package-boundary rules.
 
 ### Security/privacy reviewers
 
@@ -70,6 +74,7 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/security/THREAT_MODEL.md` — threat model and residual risk.
 - `docs/security/LOGGING_PRIVACY.md` — diagnostic/logging policy.
 - `docs/security/DEPENDENCY_RISK_REGISTER.md` — dependency security status.
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — no-health-entitlement and no-runtime-storefront policy.
 
 ### QA and verification
 
@@ -79,6 +84,8 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/testing/SETTINGS_LIFECYCLE_CONTRACT.md` — settings lifecycle contract.
 - `docs/PLATFORM_BEHAVIOR_MATRIX.md` — automated versus manual platform evidence.
 - `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md` — executable/package validation checklist.
+- `tests/CareNest.UiTests/FundingLinkContractTests.cs` — repository/storefront placement contracts.
+- `tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs` — store-payload external-commerce exclusion contracts.
 - dated verification documents under `docs/releases/` — exact workflow evidence.
 
 ### Design, accessibility and localization
@@ -87,6 +94,7 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/design/ACCESSIBILITY.md` — accessibility requirements and manual evidence needs.
 - `docs/design/LOCALIZATION.md` — localization/RTL strategy.
 - `docs/design/STORE_ASSETS.md` — screenshots and store-asset guidance.
+- `docs/assets/gumroad_store_badge.svg` — repository-only storefront badge with accessible title/description text.
 
 ## 3. Architecture set
 
@@ -119,6 +127,8 @@ The architecture documentation is intentionally layered:
 - artifact hashing, evidence and secret-handling requirements.
 
 `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md` is the concise operator companion. It does not replace the full guide or the release/store/security documents.
+
+Repository-only Gumroad promotional files are documentation inputs, not CareNest application package inputs. Store-safe payload scanning rejects `ramsandesh.gumroad.com` if it appears in built application output.
 
 ## 5. Current source facts that documentation must preserve
 
@@ -155,36 +165,48 @@ Current central package versions include:
 
 ## 6. Current automated evidence
 
-PR #74 frozen source head:
+Latest fully verified pre-storefront source:
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
 
-Merged executable source:
-
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
-
-Verified results:
+Verified results on that exact revision:
 
 - 122 unit tests passed;
 - 39 integration tests passed;
-- 170 UI/source-policy tests passed;
-- 331/331 total core tests passed;
+- 173 UI/source-policy tests passed;
+- 334/334 total core tests passed;
 - Android Release build passed;
 - Windows Release build passed;
 - iOS simulator Release build passed;
 - Mac Catalyst Release build passed;
 - all four store-candidate configurations passed;
-- Android/Windows/Apple inspection-artifact workflows passed;
-- CodeQL passed;
-- unsuppressed Dependency Audit passed.
+- CodeQL passed.
 
-Source: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+The PR #74 compiled-binding evidence remains at `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
 
-## 7. Historical documentation
+## 7. Gumroad storefront documentation ownership
 
-`docs/history/` contains exact snapshots of previously active handoff/status/documentation files. Dated release documents intentionally retain older verification boundaries. Do not rewrite historical evidence merely to make old files look current.
+Canonical storefront URL:
 
-## 8. Production status boundary
+`https://ramsandesh.gumroad.com`
+
+Authority map:
+
+- `GUMROAD.md` — canonical reader-facing storefront guide and CareNest separation statement;
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — maintainer placement/package policy;
+- `docs/assets/gumroad_store_badge.svg` — repository-only promotional graphic;
+- `README.md`, `SUPPORT.md`, `.github/FUNDING.yml` — highlighted repository entry points;
+- `tests/CareNest.UiTests/FundingLinkContractTests.cs` — repository-placement regression contract;
+- `tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs` — application/package exclusion regression contract;
+- `build/scripts/verify-store-safe-payload.py` — byte-level package scanner.
+
+The Gumroad storefront is not a CareNest health entitlement and must not be represented as medical advice, diagnosis, treatment, dosage guidance, reminder reliability, emergency service, or health-data access.
+
+## 8. Historical documentation
+
+`docs/history/` contains exact snapshots of previously active handoff/status/documentation files. Dated release documents intentionally retain older verification boundaries. Do not rewrite historical evidence merely to make old files look current or to retroactively insert Gumroad promotion.
+
+## 9. Production status boundary
 
 Documentation completeness does not mean production release completeness.
 
