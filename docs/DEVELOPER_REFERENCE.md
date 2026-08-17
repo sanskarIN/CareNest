@@ -1,8 +1,8 @@
 # CareNest Developer Reference
 
 **Current release line:** `1.0.0-rc.1`  
-**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
-**Verified PR head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+**Latest fully verified pre-Gumroad source:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`  
+**Current Gumroad rollout source:** see `what_changed.md` and exact latest `main` SHA
 
 This document is a practical current-state reference for engineers making source changes. Detailed subsystem documents remain authoritative for their specialties.
 
@@ -36,9 +36,11 @@ MAUI composition, XAML, ViewModels, navigation, dependency injection, themes, pl
 
 - `CareNest.UnitTests` — domain/application/service behavior.
 - `CareNest.IntegrationTests` — persistence/encryption/backup/document/report integration.
-- `CareNest.UiTests` — source-policy, XAML, architecture, async-safety, logging/privacy, release/build/workflow contracts.
+- `CareNest.UiTests` — source-policy, XAML, architecture, async-safety, logging/privacy, release/build/workflow, repository-marketing and store-payload contracts.
 
-At the PR #74 frozen source head the verified counts were 122 + 39 + 170 = 331 tests.
+The latest fully verified pre-Gumroad source `7cbe5568b6cffa06c279b29f3cb1b107ea988791` passed 122 unit + 39 integration + 173 UI/source-policy = **334 tests**.
+
+The Gumroad rollout adds independent repository-placement/accessibility/package-isolation coverage. Do not publish a new total as authoritative until the exact final Gumroad revision completes CI.
 
 ## 3. Current MAUI target configuration
 
@@ -256,6 +258,8 @@ Existing contracts protect ViewModels from patterns such as:
 - direct `SQLiteAsyncConnection`/repository implementation access;
 - direct network-client creation.
 
+The source-line quality contract also checks runtime C# line-by-line for unresolved merge markers, unfinished placeholders, common sync-over-async patterns, `throw ex;`, and related defect patterns, and parses structured runtime files such as XAML/JSON/XML-family files.
+
 Follow the existing async/cancellation/service abstraction patterns instead of weakening contracts.
 
 ## 17. Quality gates
@@ -296,11 +300,36 @@ The dependency audit is intended to be blocking.
 - `release-gate.yml` — production-tag aggregate gating.
 - `release-evidence.yml` — exact-source release evidence/provenance.
 
-## 19. Funding/package boundary
+## 19. Repository storefront/funding and package boundary
 
-The distributed application source/package intentionally contains no external Buy Me a Coffee destination/card/command/artwork. Repository funding metadata/documentation is separate.
+Current repository-only destinations:
 
-Do not reintroduce the removed destination under `src/CareNest.App` without an explicit product/store-policy review. Existing source-policy and payload scanning are designed to catch regression.
+- Gumroad: `https://ramsandesh.gumroad.com`;
+- Buy Me a Coffee: `https://buymeacoffee.com/sanskarIN`.
+
+The distributed application source/package intentionally contains no external Gumroad or Buy Me a Coffee destination/card/command/promotional artwork. Repository marketing/funding metadata and documentation are separate.
+
+Do not place either destination under `src/CareNest.App`, shared runtime URL constants, runtime ViewModels/XAML, platform manifests for promotion, or packaged application resources without an explicit product/store-policy redesign.
+
+`build/scripts/verify-store-safe-payload.py` defaults to scanning both markers in UTF-8 and UTF-16 encodings, including ZIP/AAB entries. Source-policy tests additionally verify Gumroad repository visibility and runtime absence.
+
+A Gumroad purchase or contribution must not unlock or imply:
+
+- medical advice;
+- diagnosis;
+- dosage decisions;
+- treatment recommendations;
+- reminder priority or delivery guarantees;
+- emergency assistance;
+- health-data access.
+
+Use:
+
+- `GUMROAD.md`;
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`;
+- `docs/assets/gumroad_store_badge.svg`;
+- `tests/CareNest.UiTests/FundingLinkContractTests.cs`;
+- `tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs`.
 
 ## 20. Definition of done for a source change
 
@@ -309,6 +338,7 @@ A normal change is not done until applicable items are complete:
 - implementation;
 - lowest-suitable-layer regression tests;
 - architecture/privacy/security review if boundaries changed;
+- storefront/package-boundary review if repository commerce changed;
 - documentation update;
 - formatting/quality gate;
 - affected platform builds;
@@ -326,4 +356,7 @@ Use:
 - `docs/architecture/` for subsystem architecture;
 - `docs/testing/TESTING_GUIDE.md` for test details;
 - `docs/MAINTENANCE_AND_OPERATIONS.md` for operational workflows;
-- `docs/REPOSITORY_GOVERNANCE.md` for evidence/documentation precedence.
+- `docs/REPOSITORY_GOVERNANCE.md` for evidence/documentation precedence;
+- `GUMROAD.md` for the canonical storefront guide;
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` for storefront/package policy;
+- `what_changed.md` for the active continuation handoff.
