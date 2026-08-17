@@ -4,7 +4,8 @@
 **Release line:** `1.0.0-rc.1`  
 **Repository:** `sanskarIN/CareNest`  
 **Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`  
-**Continuation focus:** complete Gumroad rollout, repository branding, package isolation, current-documentation refresh, and exact-source verification preparation
+**Verified Gumroad implementation/source-policy SHA:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Continuation focus:** complete Gumroad rollout, repository branding, package isolation, complete current documentation, error correction, and verified exact-source evidence
 
 The complete active handoff from before the Gumroad rollout is preserved exactly at:
 
@@ -22,7 +23,7 @@ Canonical URL:
 
 **https://ramsandesh.gumroad.com**
 
-The continuation completed:
+Completed work includes:
 
 - repository Gumroad branding;
 - prominent Gumroad links across current support/documentation/marketing entry points;
@@ -40,7 +41,11 @@ The continuation completed:
 - getting-started/FAQ/limitations/support modernization;
 - release next-steps/store-policy/package-validation/executable-checklist modernization;
 - canonical executable-build guide modernization;
-- exact preservation of superseded major active documentation.
+- exact preservation of superseded major active documentation;
+- Gumroad test-contract false-positive correction;
+- complete exact-source test/build/security verification;
+- dedicated dated verification record;
+- promotion of the 336-test Gumroad rollout into current README/status/catalog/changelog/checklist surfaces.
 
 ---
 
@@ -74,7 +79,8 @@ Added:
 - `GUMROAD.md`;
 - `docs/marketing/README.md`;
 - `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`;
-- `docs/marketing/GUMROAD_ROLLOUT_CHECKLIST.md`.
+- `docs/marketing/GUMROAD_ROLLOUT_CHECKLIST.md`;
+- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`.
 
 These documents define:
 
@@ -85,7 +91,8 @@ These documents define:
 - health-feature separation;
 - no health-data transfer to Gumroad by CareNest;
 - package/runtime exclusion;
-- maintainer review/checklist rules.
+- maintainer review/checklist rules;
+- exact automated verification evidence.
 
 ---
 
@@ -185,7 +192,7 @@ Updated:
 
 `tests/CareNest.UiTests/FundingLinkContractTests.cs`
 
-It now protects:
+It protects:
 
 - repository Buy Me a Coffee visibility;
 - repository Gumroad visibility;
@@ -199,7 +206,7 @@ Updated:
 
 `tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs`
 
-It now protects:
+It protects:
 
 - Gumroad/BMC absence from text-like application runtime source;
 - external-commerce URL absence from shared runtime constants;
@@ -209,7 +216,7 @@ It now protects:
 - ZIP/AAB scan behavior;
 - scanner fail-closed behavior.
 
-The Gumroad rollout adds independent UI/source-policy test coverage. Do not assume the old 173 UI-test total remains the final current total until CI reports the exact final revision.
+The verified rollout contains **175 UI/source-policy tests**, two more than the 173-test pre-Gumroad baseline.
 
 ---
 
@@ -231,30 +238,78 @@ The generic audit intentionally does not ban every clock read; date/time correct
 
 ---
 
-## 9. Latest fully verified baseline before this rollout
+## 9. Verified Gumroad rollout baseline
 
-Exact source:
+Exact verified implementation/source-policy source:
 
-`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
-That exact revision passed:
+CareNest CI run:
 
-- 122/122 unit tests;
-- 39/39 integration tests;
-- 173/173 UI/source-policy tests;
-- **334/334 total core tests**;
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release;
-- all four store-candidate configurations;
-- CodeQL.
+`32032436061`
 
-This remains the authoritative automated baseline until the exact final Gumroad rollout source completes its own workflow matrix.
+Results:
+
+- formatting: **success**;
+- unit tests: **122/122 passed**;
+- integration tests: **39/39 passed**;
+- UI/source-policy tests: **175/175 passed**;
+- total core tests: **336/336 passed**;
+- Android Release: **success**;
+- Windows Release: **success**;
+- iOS simulator Release: **success**;
+- Mac Catalyst Release: **success**.
+
+Store Package Configuration run:
+
+`32032436093`
+
+Results:
+
+- Android store-candidate configuration: **success**;
+- Windows store-candidate configuration: **success**;
+- iOS simulator store-candidate configuration: **success**;
+- Mac Catalyst store-candidate configuration: **success**.
+
+CodeQL run:
+
+`32032436037`
+
+Result:
+
+- C# CodeQL analysis: **success**.
+
+Authoritative record:
+
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
 
 ---
 
-## 10. Major documentation preserved exactly before replacement
+## 10. Candidate failure and exact correction
+
+The first final documentation candidate was:
+
+`b5a57186af60e8b42bb917dfa85de24c3c9c1e9a`
+
+Formatting, unit and integration tests passed, but the expanded UI/source-policy suite found one new assertion mismatch.
+
+`GUMROAD.md` correctly states that “Gumroad purchases **do not unlock** medical advice...”. The new test incorrectly searched for singular `does not unlock`.
+
+This was a false-positive wording-contract bug, not an application runtime defect and not a reason to weaken the health-safety requirement.
+
+Fix commit:
+
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+
+Commit message:
+
+`test: align Gumroad entitlement wording contract`
+
+The replacement exact source then passed all 336 core tests, all normal platform builds, all store-candidate configurations and CodeQL.
+
+---
+
+## 11. Major documentation preserved exactly before replacement
 
 Exact pre-Gumroad versions were preserved under:
 
@@ -274,13 +329,13 @@ Earlier dated release/history evidence remains untouched.
 
 ---
 
-## 11. Current documentation authority map
+## 12. Current documentation authority map
 
 Use:
 
 1. `PROJECT_STATUS.md` — active product/release state;
 2. `docs/releases/NEXT_STEPS.md` — remaining operational work;
-3. latest exact-source verification record — automated evidence;
+3. `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — current Gumroad rollout automated evidence;
 4. `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — complete current project reference;
 5. `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` — executable/package build guide;
 6. `docs/releases/STORE_BUILD_POLICY.md` — current store/package external-commerce boundary;
@@ -292,7 +347,7 @@ Use:
 
 ---
 
-## 12. Focused commits created in this continuation
+## 13. Focused commits created in this continuation
 
 ### Initial Gumroad rollout
 
@@ -339,37 +394,37 @@ Use:
 38. `61435805eeb0cedc0c98ff241496f224e5cbe90e` — `docs: add Gumroad checks to executable checklist`
 39. `74fe8da904c4f929d9b3077725c54ed5e106ebf4` — `docs: preserve pre-Gumroad executable guide`
 40. `b80c902f1a2ca178c168ec747c654d5b775ec583` — `docs: rebuild executable guide for Gumroad-safe packages`
+41. `b5a57186af60e8b42bb917dfa85de24c3c9c1e9a` — `docs: finalize Gumroad rollout and documentation handoff`
+42. `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` — `test: align Gumroad entitlement wording contract`
 
-This handoff update is the final planned content change before exact-source workflow verification. Use the actual resulting `main` SHA from Git/GitHub Actions as the verification target rather than assuming the handoff can know its own commit SHA before creation.
+### Verification promotion and final documentation
 
----
+43. `9c0f23e4f3b6f1a2a7749bd044e15c4e3bd14b4d` — `docs: record verified Gumroad rollout baseline`
+44. `71da0cf4943bd74a058186604fc4a45bf18e0b00` — `docs: promote verified Gumroad rollout baseline`
+45. `3a4c5f1d016f385dd04286c0ce887875c5ae8e98` — `docs: promote Gumroad rollout in project status`
+46. `66d80c1daf3d956f34879bfc59a6282b030ed4b2` — `docs: promote Gumroad verification in documentation hub`
+47. `9b69755bef4cab245bd159cca79ddd8e61258010` — `docs: promote Gumroad evidence in documentation catalog`
+48. `8dc7fa9b1cea2e29dc109b5e6dd02efd8536eedf` — `docs: close automated Gumroad rollout gate`
+49. `c18cbb26750fb65c54f0eb2a78aa2a0f3c13f141` — `docs: complete Gumroad rollout checklist`
+50. `28b184ab1109a8388f014b6fc2154fe21842d736` — `docs: record verified Gumroad rollout result`
 
-## 13. Exact-source verification required now
-
-Only the workflows associated with the exact final handoff revision are authoritative for this continuation.
-
-Required current gates:
-
-- formatting;
-- 122-unit-test suite;
-- 39-integration-test suite;
-- current UI/source-policy suite including new Gumroad contracts;
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release;
-- all four store-candidate configurations;
-- CodeQL.
-
-Store Inspection Artifacts runs on its configured triggers rather than every ordinary `main` push. Its source wiring/scanner behavior remains protected by source-policy tests, and production/tag/inspection runs must exercise both default external-commerce markers.
-
-If any exact-final-source gate fails, fix the real issue in the smallest correct commit and rerun the resulting new exact source. Do not suppress legitimate failures.
+This `what_changed.md` update is the final planned documentation commit in this continuation. Its resulting repository head must complete the applicable exact-head workflows before the repository-head status is described as fully green.
 
 ---
 
-## 14. Real production work still remaining after automation
+## 14. Documentation-only final-head verification
 
-Even a completely green final workflow set does not finish production release evidence.
+The tested implementation/source-policy baseline is already verified at `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` with 336/336 core tests, all four normal platform builds, all four store-candidate builds and CodeQL.
+
+The subsequent commits only promote/document that verified result. Because CareNest governance prefers exact-head evidence, this final handoff commit will trigger the applicable `main` workflows one more time.
+
+No further content change should be made unless that exact final head exposes a real failure.
+
+---
+
+## 15. Real production work still remaining after automation
+
+Automated rollout verification does not finish production release evidence.
 
 Still open:
 
@@ -395,9 +450,9 @@ Still open:
 
 ---
 
-## 15. Continuation rule after this pass
+## 16. Continuation rule after this pass
 
-After the exact final Gumroad/documentation source is green, the next meaningful CareNest work is **production validation**, not another broad speculative source refactor.
+The Gumroad implementation/source-policy rollout is verified. After the final documentation-only head is green, the next meaningful CareNest work is **production validation**, not another broad speculative source refactor.
 
 If real manual/package/security/accessibility testing finds a defect:
 
@@ -408,4 +463,4 @@ If real manual/package/security/accessibility testing finds a defect:
 5. rebuild/retest the affected final package;
 6. update current evidence only after results are known.
 
-Current project interpretation: **CareNest `1.0.0-rc.1` remains source-complete for its intended RC scope, now with strongly highlighted repository-only Gumroad promotion, explicit Gumroad/BMC package exclusion, refreshed complete current documentation, and final exact-source automation pending before production validation.**
+Current project interpretation: **CareNest `1.0.0-rc.1` remains source-complete for its intended RC scope, now with strongly highlighted repository-only Gumroad promotion, explicit Gumroad/BMC package exclusion, refreshed complete current documentation, and a verified Gumroad implementation baseline of 336/336 core tests; real production evidence is the next major gate after the final documentation-head workflows are green.**
