@@ -8,22 +8,22 @@ The complete active checklist from before the Gumroad rollout is preserved exact
 
 `docs/history/pre-gumroad-rollout-20260817/NEXT_STEPS.md`
 
-This file tracks only the work that remains after the source-line quality hardening, complete documentation refresh, and repository-first Gumroad rollout.
+This file tracks only the work that remains after the source-line quality hardening, complete documentation refresh, repository-first Gumroad rollout, and successful exact-source rollout verification.
 
 ---
 
 ## 1. Current automated boundary
 
-Latest fully verified pre-Gumroad source:
+Latest verified Gumroad rollout implementation/source-policy source:
 
-`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
 That exact revision passed:
 
 - 122/122 unit tests;
 - 39/39 integration tests;
-- 173/173 UI/source-policy tests;
-- **334/334 total core tests**;
+- 175/175 UI/source-policy tests;
+- **336/336 total core tests**;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
@@ -31,9 +31,11 @@ That exact revision passed:
 - Android/Windows/iOS-simulator/Mac-Catalyst store-candidate configurations;
 - CodeQL.
 
-The Gumroad continuation changes repository/source-policy tests and `build/scripts/verify-store-safe-payload.py`, so a newer source becomes authoritative only after its exact final workflow matrix completes successfully.
+Authoritative evidence:
 
-Use `what_changed.md` for the current exact Gumroad continuation SHA and workflow status.
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+
+Documentation-only promotion commits follow that verified implementation/source-policy SHA. Any claim about the exact latest repository head should still use the workflows attached to that exact head.
 
 ---
 
@@ -60,7 +62,8 @@ Do not repeat these implementation passes unless a real defect or changed requir
 - [x] store-payload scanner upgraded to reject both external-commerce markers;
 - [x] Gumroad repository-placement/package-isolation regression contracts;
 - [x] current documentation catalog/status/governance/developer/testing/configuration/FAQ/limitations/changelog refresh;
-- [x] superseded major active documents preserved exactly in `docs/history/pre-gumroad-rollout-20260817/`.
+- [x] superseded major active documents preserved exactly in `docs/history/pre-gumroad-rollout-20260817/`;
+- [x] exact-source Gumroad rollout verification completed and recorded.
 
 ---
 
@@ -68,27 +71,30 @@ Do not repeat these implementation passes unless a real defect or changed requir
 
 These are the real remaining blockers. They require actual evidence, not more speculative source refactoring.
 
-## 3. Complete exact-source Gumroad rollout verification
+## 3. Exact-source Gumroad rollout verification — complete
 
-Before promoting the Gumroad rollout to the new automated baseline:
+Verified implementation/source-policy SHA:
 
-- [ ] freeze the exact final `main` SHA after this documentation/contract pass;
-- [ ] formatting passes;
-- [ ] unit tests pass;
-- [ ] integration tests pass;
-- [ ] UI/source-policy tests pass, including Gumroad contracts;
-- [ ] Android Release build passes;
-- [ ] Windows Release build passes;
-- [ ] iOS simulator Release build passes;
-- [ ] Mac Catalyst Release build passes;
-- [ ] Android store-candidate configuration passes;
-- [ ] Windows store-candidate configuration passes;
-- [ ] iOS simulator store-candidate configuration passes;
-- [ ] Mac Catalyst store-candidate configuration passes;
-- [ ] CodeQL passes;
-- [ ] record the exact final test totals/run IDs/source SHA in current evidence.
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
-Do not carry the older 334-test result forward to a newer source without a green exact-source run.
+- [x] exact verification source frozen;
+- [x] formatting passed;
+- [x] 122/122 unit tests passed;
+- [x] 39/39 integration tests passed;
+- [x] 175/175 UI/source-policy tests passed, including Gumroad contracts;
+- [x] 336/336 total core tests passed;
+- [x] Android Release build passed;
+- [x] Windows Release build passed;
+- [x] iOS simulator Release build passed;
+- [x] Mac Catalyst Release build passed;
+- [x] Android store-candidate configuration passed;
+- [x] Windows store-candidate configuration passed;
+- [x] iOS simulator store-candidate configuration passed;
+- [x] Mac Catalyst store-candidate configuration passed;
+- [x] CodeQL passed;
+- [x] exact totals/run IDs/source SHA recorded in `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`.
+
+The earlier 334-test pre-Gumroad baseline is historical; the verified Gumroad rollout implementation/source-policy total is now 336.
 
 ---
 
@@ -351,7 +357,7 @@ Any future networked, remote-data, commerce-in-app or clinical feature needs a n
 
 ## Continuation rule
 
-After the final exact Gumroad source is green, do not keep making broad source changes merely to remain busy.
+The Gumroad implementation/source-policy rollout is now verified. Do not keep making broad source changes merely to remain busy.
 
 The next meaningful work is real production validation. If a manual/package/security/accessibility defect is found:
 
@@ -361,4 +367,4 @@ The next meaningful work is real production validation. If a manual/package/secu
 4. run the full applicable exact-source matrix again;
 5. update current evidence only after the new run completes.
 
-Current state: **CareNest `1.0.0-rc.1` is source-complete for its intended RC scope, with highlighted repository-only Gumroad promotion and package-level external-commerce exclusion; exact final rollout verification and real production evidence remain the next gates.**
+Current state: **CareNest `1.0.0-rc.1` is source-complete for its intended RC scope, with highlighted repository-only Gumroad promotion, package-level external-commerce exclusion, and a verified 336/336 Gumroad rollout implementation baseline; real production evidence is now the next gate.**
