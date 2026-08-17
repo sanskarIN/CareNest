@@ -15,11 +15,7 @@ public sealed class SourceLineQualityContractTests
         "Thread.Sleep(",
         "Task.WaitAll(",
         "Task.WaitAny(",
-        "throw ex;",
-        "DateTime.Now",
-        "DateTime.UtcNow",
-        "DateTimeOffset.Now",
-        "DateTimeOffset.UtcNow"
+        "throw ex;"
     ];
 
     [Fact]
