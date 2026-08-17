@@ -26,6 +26,7 @@ Added:
 - `docs/marketing/README.md` marketing documentation hub;
 - `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`;
 - `docs/marketing/GUMROAD_ROLLOUT_CHECKLIST.md`;
+- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`;
 - Gumroad custom repository link in `.github/FUNDING.yml`.
 
 ### Changed — highlighted repository documentation
@@ -120,18 +121,18 @@ The previous active `what_changed.md` was also preserved in that history directo
 
 Historical dated verification files are not rewritten merely to backfill newer storefront links.
 
-### Previous automated baseline before Gumroad rollout
+### Verified — Gumroad rollout automated baseline
 
-Latest fully verified pre-Gumroad source:
+Exact verified implementation/source-policy SHA:
 
-`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
 That exact source passed:
 
 - 122/122 unit tests;
 - 39/39 integration tests;
-- 173/173 UI/source-policy tests;
-- **334/334 total core tests**;
+- 175/175 UI/source-policy tests;
+- **336/336 total core tests**;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
@@ -139,30 +140,23 @@ That exact source passed:
 - Android/Windows/iOS/Mac Catalyst store-candidate configurations;
 - CodeQL.
 
-### Verification rule for this continuation
+Authoritative evidence:
 
-The Gumroad rollout changes verification-relevant tests and the package scanner, so the earlier 334-test baseline is not automatically applied to newer source.
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
 
-The exact final Gumroad source must pass the applicable current matrix before a new authoritative baseline is declared:
+The UI/source-policy count increased from 173 to 175 because the rollout adds independent Gumroad repository-placement/accessibility/package-isolation coverage.
 
-- formatting;
-- unit tests;
-- integration tests;
-- UI/source-policy tests;
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release;
-- all four store-candidate configurations;
-- CodeQL.
+### Fixed — Gumroad entitlement wording contract false positive
 
-The final exact source and workflow results are recorded in `what_changed.md` and, after successful completion, in a dated release verification record.
+The first documentation-finalization candidate `b5a57186af60e8b42bb917dfa85de24c3c9c1e9a` exposed one newly added test assertion that searched for singular `does not unlock` even though `GUMROAD.md` correctly stated “Gumroad purchases do not unlock medical advice...”.
+
+The assertion was corrected without weakening the health-safety requirement. The replacement source `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` then passed the full configured matrix above.
 
 ### Production status
 
 CareNest remains `1.0.0-rc.1`.
 
-The intended RC source scope is implemented and heavily automated, but production promotion still requires real-device notification/lifecycle validation, accessibility evidence, packaged existing-data/encrypted-data compatibility, production signing, signed-package inspection, current store metadata/policy review, an exact approved immutable production tag and publication evidence.
+The intended RC source scope and Gumroad repository/package-isolation rollout are automated-verified, but production promotion still requires real-device notification/lifecycle validation, accessibility evidence, packaged existing-data/encrypted-data compatibility, production signing, signed-package inspection, current store metadata/policy review, an exact approved immutable production tag and publication evidence.
 
 Do not describe CareNest as globally bug-free, production-signed, store-approved or production-published until those external gates are actually completed.
 
