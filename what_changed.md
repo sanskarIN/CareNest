@@ -3,277 +3,359 @@
 **Date:** 2026-08-17  
 **Release candidate:** `1.0.0-rc.1`  
 **Repository:** `sanskarIN/CareNest`  
-**Continuation focus:** repository-wide source-line error prevention, defect discovery and verification
+**Continuation focus:** Gumroad storefront rollout, repository branding, documentation completeness, and store-payload isolation
 
-The complete previous active handoff was preserved byte-for-byte before this continuation replaced the active file:
+The complete previous active handoff is preserved at:
 
-`docs/history/pre-source-line-audit-20260817/what_changed.md`
+`docs/history/pre-gumroad-rollout-20260817/what_changed.md`
 
-Nothing from the 2026-08-16 documentation/executable-build handoff was discarded. Git history and the dated history path above remain the exact prior record.
-
----
-
-## 1. Continuation goal
-
-This continuation begins from the source-complete CareNest RC1 state after the compiled-XAML verification and documentation/build-guide passes.
-
-The requested focus is to continue engineering work and check source lines for errors rather than only adding more narrative documentation.
-
-The continuation therefore adds a permanent executable-source quality contract that reports failures with exact repository-relative file and line information, then uses the resulting CI failures to correct real regressions and false-positive audit assumptions.
+The older source-line-audit handoff and all earlier historical evidence remain preserved under `docs/history/` and Git history.
 
 ---
 
-## 2. Permanent line-level source audit
+## 1. Requested continuation
+
+This continuation implements the requested highlighted Gumroad destination:
+
+`https://ramsandesh.gumroad.com`
+
+The rollout intentionally distinguishes two concerns:
+
+1. **high repository/documentation visibility** for the Gumroad storefront;
+2. **continued absence from the packaged CareNest health application** unless a future explicit store-policy redesign approves external commerce in the runtime.
+
+This preserves CareNest's local-first health-organizer scope while making the storefront prominent across current repository-owned support, documentation, marketing and metadata surfaces.
+
+---
+
+## 2. Repository-only Gumroad branding asset
 
 Added:
 
-`tests/CareNest.UiTests/SourceLineQualityContractTests.cs`
+`docs/assets/gumroad_store_badge.svg`
 
-The suite deterministically scans every runtime C# file under `src/`, line by line.
+The SVG:
 
-The final audit rejects:
+- displays the exact canonical storefront URL;
+- includes an accessible `<title>` and `<desc>`;
+- uses a custom storefront/shopping visual treatment;
+- is suitable for GitHub/documentation embedding;
+- is explicitly repository-only;
+- is not copied into `src/CareNest.App`.
 
-- unresolved Git merge-conflict markers;
-- `TODO` placeholders;
-- `FIXME` placeholders;
-- `HACK` placeholders;
-- `NotImplementedException` placeholders;
-- `.GetAwaiter().GetResult()` sync-over-async;
-- `Thread.Sleep(` in runtime source;
-- `Task.WaitAll(`;
-- `Task.WaitAny(`;
-- `throw ex;` stack-trace destruction;
-- common synchronous `Task.Result` access forms.
+Asset documentation:
 
-Failures include the exact repository-relative path and line number so a regression can be located directly from CI output.
-
-Clock reads are intentionally not classified as generic syntax/quality defects by this broad scanner. The first version incorrectly prohibited all `DateTime`/`DateTimeOffset` current-time reads, but CareNest legitimately uses UTC timestamps for persistence/scheduling/export metadata and a local display timestamp in report generation. Those uses need semantic/time-zone tests, not a blanket token ban.
+`docs/assets/README.md`
 
 ---
 
-## 3. Structured runtime file validation
+## 3. Canonical storefront documentation
 
-The same contract parses structured runtime files instead of assuming their text is valid.
+Added root guide:
 
-Validated under `src/`:
+`GUMROAD.md`
 
-- `.xaml`;
-- `.csproj`;
-- `.props`;
-- `.targets`;
-- `.xml`;
-- `.plist`;
-- `.resx`;
-- `.json`.
+It documents:
 
-XML-family files are parsed with `XDocument`; JSON files are parsed with `JsonDocument`.
+- canonical storefront URL;
+- supported repository placement;
+- plain-text and image-link embed formats;
+- health-feature separation;
+- no health-data transfer to Gumroad by CareNest;
+- no medical/clinical entitlement from a Gumroad purchase;
+- application-package exclusion rule;
+- maintainer consistency rules.
 
-This complements MAUI/XamlC/platform compilation by producing a focused repository-policy failure when a structured runtime input becomes syntactically malformed.
+Added maintainer/compliance guide:
 
----
+`docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`
 
-## 4. First CI result exposed three failures
+Added marketing documentation hub:
 
-The first complete core-test execution after adding the audit used revision:
+`docs/marketing/README.md`
 
-`3551dfe367b47c79b8f9793d3137948a4978d864`
+Added rollout checklist:
 
-CareNest CI run:
-
-`32023986990`
-
-Results before the UI/source-policy stage:
-
-- formatting: success;
-- unit tests: **122/122 passed**;
-- integration tests: **39/39 passed**.
-
-UI/source-policy tests ran **173 total** and reported:
-
-- **170 passed**;
-- **3 failed**.
-
-The failures were actionable rather than ignored.
-
-### Failure A — repository funding-link documentation regression
-
-Two pre-existing `FundingLinkContractTests` failed because the root `README.md` no longer contained the repository-only Buy Me a Coffee destination expected by the project policy.
-
-The application-package boundary itself remained correct: the URL is still forbidden from the application runtime/package. The regression was specifically in repository documentation.
-
-Fix committed separately by restoring the repository-only voluntary-support text and direct URL while explicitly stating that it is not an application health feature or entitlement.
-
-### Failure B — over-broad clock-token rule in the new audit
-
-The first audit version flagged valid current-time usage in platform notification services, ViewModels, domain defaults, persistence and reports.
-
-Examples included UTC timestamps used for scheduling/persistence/export metadata and the local generated-at display time in `ReportService`.
-
-Those usages were not evidence of a generic line-level defect. The audit rule was therefore corrected rather than forcing a large, unjustified clock refactor merely to satisfy a false-positive token scan.
-
-The remaining scanner still blocks the actual placeholder, merge-conflict, stack-trace-destruction and sync-over-async patterns listed above.
+`docs/marketing/GUMROAD_ROLLOUT_CHECKLIST.md`
 
 ---
 
-## 5. Important audit lesson
+## 4. Highlighted repository surfaces
 
-Initial GitHub code-search queries did not surface every direct clock occurrence that the deterministic repository test later found.
+Updated the current repository surfaces so the storefront is prominent to readers:
 
-Therefore code-search results are treated only as supporting hints, not as proof that every source line was inspected.
+- `README.md` — top-level linked Gumroad badge, dedicated storefront section, support-links section, complete-documentation links, package-boundary statement;
+- `SUPPORT.md` — linked Gumroad badge, dedicated storefront section and plain-text URL;
+- `BUY_ME_A_COFFEE.md` — cross-link to the Gumroad storefront and repository badge;
+- `.github/FUNDING.yml` — Gumroad added as a second repository custom link;
+- `docs/README.md` — storefront badge, storefront navigation, current package-boundary documentation;
+- `docs/DOCUMENTATION_CATALOG.md` — Gumroad documentation ownership, QA contract mapping, branding asset and package-policy navigation.
 
-The committed test is stronger for this purpose because it enumerates the checked-out `src/` tree directly and reads every runtime C# line during CI.
+Canonical URL everywhere in the new/current surfaces:
 
-The repository had no open GitHub issues at the beginning of this continuation, but that also is not treated as proof that no source defect can exist.
+`https://ramsandesh.gumroad.com`
+
+Historical snapshots and dated verification evidence are not rewritten merely to backfill modern marketing links.
 
 ---
 
-## 6. Existing protections retained
+## 5. Store-safe runtime/package boundary
 
-The new line-level test does not replace the existing CareNest quality layers.
+CareNest remains a local-first organizational health application.
 
-Existing checks remain in place for:
+The packaged application intentionally does not contain:
+
+- the Gumroad destination;
+- the repository Gumroad badge;
+- Gumroad promotional ViewModel commands;
+- Gumroad promotional XAML;
+- Gumroad URL constants in shared runtime assemblies.
+
+The same package boundary remains in effect for the repository-only Buy Me a Coffee destination.
+
+This means repository visibility is high without silently converting CareNest into an in-app external-commerce surface.
+
+---
+
+## 6. Store-safe payload scanner upgraded
+
+Updated:
+
+`build/scripts/verify-store-safe-payload.py`
+
+The scanner now defaults to both repository-only markers:
+
+- `buymeacoffee.com/sanskarIN`;
+- `ramsandesh.gumroad.com`.
+
+The scanner continues to:
+
+- inspect UTF-8;
+- inspect UTF-16 little-endian;
+- inspect UTF-16 big-endian;
+- scan regular payload files;
+- inspect ZIP-compatible package entries such as AABs;
+- fail closed for inspection errors;
+- return failure when a forbidden marker is found.
+
+The `--forbidden` option is now repeatable so maintainers can supply one or more explicit markers when needed.
+
+Existing store-inspection workflows invoke the scanner without overriding defaults, so their package scans inherit both default external-commerce markers.
+
+---
+
+## 7. Regression coverage upgraded
+
+Updated:
+
+`tests/CareNest.UiTests/FundingLinkContractTests.cs`
+
+The contract now verifies:
+
+- Buy Me a Coffee remains present in repository support material;
+- Gumroad is present in required repository support/material/metadata;
+- Gumroad is absent from About ViewModel/XAML runtime surfaces;
+- external commercial links are not health entitlements;
+- the Gumroad repository badge exists and has accessible SVG metadata;
+- the Gumroad badge is absent from packaged app resources.
+
+Updated:
+
+`tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs`
+
+The contract now verifies:
+
+- both Buy Me a Coffee and Gumroad are absent from all text-like application runtime files;
+- shared runtime constants do not carry external-commerce URLs;
+- obsolete external-commerce build switches remain absent;
+- the store payload scanner contains both markers;
+- the scanner retains UTF-8/UTF-16 and ZIP inspection behavior;
+- the scanner retains fail-closed semantics.
+
+The test-count increase is expected because `FundingLinkContractTests` now contains additional independent Gumroad placement/accessibility checks.
+
+---
+
+## 8. Latest fully verified baseline before this rollout
+
+The last fully verified source before the Gumroad rollout was:
+
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+
+That exact revision passed:
+
+- 122/122 unit tests;
+- 39/39 integration tests;
+- 173/173 UI/source-policy tests;
+- 334/334 total core tests;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release;
+- all four store-candidate configurations;
+- CodeQL.
+
+The Gumroad rollout creates a newer source/documentation/test boundary and therefore must not inherit that verification claim automatically.
+
+---
+
+## 9. Commits created in this Gumroad continuation
+
+1. `b9a9c2b8849e17fd32914b23290113314ea91586`  
+   `assets: add Gumroad storefront badge`
+
+2. `87da5df5be4d3a9885812747fbd85be083b63e68`  
+   `docs: add Gumroad storefront guide`
+
+3. `6139d5a8a6531817fc9b6305d1f912d570ba8340`  
+   `docs: define Gumroad placement policy`
+
+4. `3e682fe11b110dd0daeb8a8bd71a0613d229f460`  
+   `meta: add Gumroad to repository links`
+
+5. `b4af3f78dfb340502d49ca1933531dd0e9ec0a15`  
+   `docs: highlight Gumroad in support guide`
+
+6. `55a1e782fda4ddda1cc0bf91190ce8b126ea18ec`  
+   `docs: feature Gumroad across main README`
+
+7. `d5de414f28222b45bbd995f263f9f71588aa46a7`  
+   `docs: cross-link Gumroad from support page`
+
+8. `549b5a569732a7cce42e3fd270b61744bc4c36fc`  
+   `build: scan Gumroad from store payloads`
+
+9. `dfdcad96a1f1e498a692a342cf9fd2f0d11f4db6`  
+   `test: enforce repository-only Gumroad placement`
+
+10. `30623f4c81e45a483a8f40d05f5abb4dece75af6`  
+    `test: protect store payload from Gumroad marker`
+
+11. `ae908dc94c4ee5c63d48f9eb3d915db626f51bf6`  
+    `docs: highlight Gumroad in documentation hub`
+
+12. `5738a09ffb299d12b25d1e52c75d581827ebea55`  
+    `docs: catalog Gumroad branding and package policy`
+
+13. `a12e23361595d1427c6ae160bc56636bd1e56f1d`  
+    `docs: document repository branding assets`
+
+14. `489a424de434ddda0e203746dd58ddd035ef581c`  
+    `docs: add marketing documentation hub`
+
+15. `6508cdb39d24cb7aa5c5ffb944089b40aff9e6f4`  
+    `docs: add Gumroad rollout checklist`
+
+16. `fdf744db7bfe71b56d6b1b84f1308d1b44981dd1`  
+    `docs: preserve pre-Gumroad handoff`
+
+This active handoff update is intentionally the final content commit of the rollout so its exact resulting revision becomes the single workflow target to evaluate.
+
+---
+
+## 10. Verification rule for the final Gumroad revision
+
+Because repeated pushes to `main` supersede earlier workflow runs, only the workflow set associated with the final handoff commit should be treated as current Gumroad-rollout verification.
+
+Required automated checks include:
 
 - formatting;
-- nullable/analyzer/compiler diagnostics;
 - unit tests;
 - integration tests;
-- UI/source-policy tests;
-- architecture boundaries;
-- async safety;
-- database migrations;
-- reminder scheduling and cancellation behavior;
-- encrypted document handling;
-- encrypted backup/restore behavior;
-- privacy-aware diagnostics;
-- compiled XAML binding enforcement;
-- Android build;
-- Windows build;
-- iOS simulator build;
-- Mac Catalyst build;
-- CodeQL;
-- dependency auditing;
-- store-package configuration;
-- package payload inspection;
-- release-gate/release-evidence mechanisms.
+- UI/source-policy tests including the Gumroad contracts;
+- Android Release build;
+- Windows Release build;
+- iOS simulator Release build;
+- Mac Catalyst Release build;
+- Android store-candidate build;
+- Windows store-candidate build;
+- iOS simulator store-candidate build;
+- Mac Catalyst store-candidate build;
+- CodeQL.
+
+Do not mark the final Gumroad rollout as a new verified baseline until those workflows complete successfully for the exact final revision.
+
+Store Inspection Artifacts does not run on ordinary `main` pushes; its source contract remains protected by UI tests and it will exercise the two-marker scanner on pull-request/release/tag runs.
 
 ---
 
-## 7. Commits created in this continuation
+## 11. Documentation completeness boundary
 
-### Add source quality contract
+The Gumroad integration is documented at multiple levels:
 
-`593dbd246b322db809bc660697d7604f14646953`
+- reader-facing storefront guide;
+- highlighted repository entry points;
+- documentation hub/catalog;
+- marketing-maintainer policy;
+- asset usage/accessibility guide;
+- rollout checklist;
+- automated source/package contract tests;
+- active continuation handoff;
+- preserved pre-rollout history.
 
-Commit message:
-
-`test: add file-line source quality audit`
-
-### Preserve exact previous handoff
-
-`d06e567b7a2b25d3e7d902065ccf32cd18a7079b`
-
-Commit message:
-
-`docs: preserve pre-line-audit handoff`
-
-The preservation commit reuses the exact previous `what_changed.md` blob under the dated history path rather than rewriting or shortening it.
-
-### Create first active line-audit handoff
-
-`3551dfe367b47c79b8f9793d3137948a4978d864`
-
-Commit message:
-
-`docs: update active handoff for line audit`
-
-### Correct false-positive clock bans
-
-`66b4877582aaa729e7e40a2ad4f7144cbd0114b4`
-
-Commit message:
-
-`test: remove false-positive clock bans from line audit`
-
-### Restore repository-only support link
-
-`30824d694094a32acbef444d398ab61d3810217e`
-
-Commit message:
-
-`docs: restore repository-only support link`
-
-The restored README text keeps the external support destination in repository documentation only; it does not add the destination to the distributed CareNest runtime/package.
+The repository promotional image generated during the chat is represented in source control by the maintainable SVG badge. The generated raster artwork is not required by the CareNest application and is intentionally not copied into the packaged runtime.
 
 ---
 
-## 8. Verification rule for this continuation
+## 12. Health, privacy and commerce boundary
 
-Every push to `main` triggers the applicable GitHub Actions workflows.
+A Gumroad purchase does not provide or change:
 
-Because CareNest CI uses concurrency cancellation for superseded pushes on the same ref, only the workflow set associated with the latest continuation commit should be treated as the current result.
+- diagnosis;
+- dosage calculation or inference;
+- treatment recommendations;
+- clinical medication-interaction checking;
+- clinical risk scoring;
+- reminder priority or delivery guarantees;
+- emergency services;
+- CareNest health-data access;
+- a CareNest cloud account or cloud synchronization.
 
-Do not claim a new authoritative verified executable baseline until the latest workflow set completes successfully.
-
-If a gate reports a defect, the correct continuation is to fix the defect, commit the smallest correct change, and rerun the affected/full gates rather than suppressing a legitimate failure.
-
-If a newly written test itself encodes an invalid assumption, correct the test and document why; do not distort valid application behavior merely to satisfy a false positive.
-
----
-
-## 9. Release boundary unchanged
-
-CareNest remains an organizational health application only.
-
-This continuation does not add diagnosis, dosage calculation/inference, treatment recommendation, medication-interaction claims, clinical risk scoring, emergency-service behavior, accounts, cloud sync, analytics, telemetry or hidden data sharing.
-
-The application remains local-first for the current release.
-
-The distributed CareNest runtime/package still contains no external Buy Me a Coffee destination/card/command/artwork. Repository-only voluntary project support remains separate from the application package and does not unlock health functionality, reminder priority/reliability, medical advice or clinical services.
+CareNest does not automatically transmit local health records to Gumroad.
 
 ---
 
-## 10. Production work still requiring external/manual evidence
+## 13. Production work still remaining
 
-Automated line/source checks cannot replace real platform and release evidence.
+The Gumroad repository rollout does not complete the external/manual RC1 production gates.
 
-The following remain external/manual release gates until actually completed:
+Still required before production promotion:
 
-- representative Android device/emulator behavior;
-- notification permission granted/denied behavior;
-- actual reminder delivery and cancellation/snooze behavior;
-- Android exact/inexact alarm and battery-optimization behavior;
-- reboot/restart/time/time-zone/DST recovery on representative devices;
-- Windows lifecycle/reminder behavior;
-- iPhone/iPad real-device notification behavior;
-- Mac Catalyst manual notification/lifecycle behavior;
+- representative Android real-device/emulator validation;
+- notification permission and real reminder-delivery testing;
+- exact/inexact alarm and battery-optimization validation;
+- reboot/restart/time/time-zone/DST recovery validation;
+- Windows reminder/lifecycle validation;
+- real iPhone/iPad notification validation;
+- Mac Catalyst notification/lifecycle validation;
 - packaged existing-data upgrade/readability/editability;
 - packaged encrypted-document compatibility;
-- packaged encrypted-backup create/restore/wrong-password/tamper validation;
-- representative screen-reader testing;
+- packaged encrypted-backup create/restore/wrong-password/tamper tests;
+- screen-reader testing;
 - large-text testing;
 - keyboard/focus testing;
 - light/dark/system contrast validation;
 - reduced-motion validation;
-- production signing identities outside Git;
+- production Android/Apple/Windows signing identities outside Git;
 - final signed packages and checksums/provenance;
-- store metadata/screenshots/privacy/data-safety declarations;
-- submission-time Apple/Google/Microsoft policy review as applicable;
-- approved immutable production tag and final publication evidence.
+- current store listing/privacy/data-safety metadata;
+- submission-time store-policy review;
+- approved immutable production tag;
+- final publication evidence.
 
 ---
 
-## 11. Continuation rule
+## 14. Future continuation rule
 
-For every future CareNest source change:
+For future CareNest work:
 
-1. keep the change small and reviewable;
-2. preserve privacy/medical/reminder safety boundaries;
-3. add or extend regression coverage when a real defect class is identified;
-4. keep source-line audit failures actionable with file/line information;
-5. distinguish a product defect from a false-positive test assumption;
-6. do not suppress build/test/security failures merely to make CI green;
-7. update affected current documentation in the same continuation;
-8. keep historical evidence immutable;
-9. run the full relevant GitHub Actions matrix;
-10. only promote a new authoritative verified source after the exact latest source is green;
-11. keep real-device, signing, package-upgrade and store evidence explicitly separate from source automation.
+1. keep Gumroad canonical as `https://ramsandesh.gumroad.com`;
+2. keep the storefront highly visible in current repository documentation/support/marketing surfaces where appropriate;
+3. keep plain-text fallback links beside visual CTAs;
+4. preserve the package/runtime exclusion unless an explicit store-policy redesign is performed;
+5. keep both external-commerce markers in package scanning;
+6. preserve health-data and medical-scope boundaries;
+7. preserve historical evidence instead of rewriting it;
+8. make small reviewable commits;
+9. update regression contracts with behavior changes;
+10. run the final exact-revision workflow matrix before promoting a new automated baseline.
