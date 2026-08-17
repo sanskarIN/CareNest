@@ -94,15 +94,38 @@ Medicine names, strength and instructions are organizational user input. The app
 
 Taken, Skipped, Delayed, Missed, Snoozed and related states are workflow/history states. They do not prove ingestion, adherence, clinical correctness or treatment effectiveness.
 
-## 14. Historical encrypted-format compatibility needs packaged evidence
+## 14. Gumroad is a repository storefront, not an in-app CareNest health service
+
+Official storefront:
+
+**https://ramsandesh.gumroad.com**
+
+Under the current release/store policy:
+
+- Gumroad is highlighted in repository documentation and repository metadata;
+- the CareNest application package intentionally excludes the Gumroad destination and repository promotional badge;
+- a Gumroad purchase does not unlock CareNest health features, diagnosis, dosage guidance, treatment recommendations, reminder priority/reliability, emergency assistance, accounts/cloud functionality or health-data access;
+- CareNest does not automatically transmit local health records to Gumroad.
+
+This separation is intentional. Adding in-app external commerce would require an explicit future product/store/privacy/safety review rather than being treated as a documentation-only change.
+
+See `GUMROAD.md` and `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`.
+
+## 15. Buy Me a Coffee is repository-only under the current package policy
+
+The current application package intentionally excludes the external Buy Me a Coffee destination/card/command/artwork.
+
+Voluntary project support does not unlock health functionality, better reminder behavior, medical advice, clinical services, emergency assistance or access to health data.
+
+## 16. Historical encrypted-format compatibility needs packaged evidence
 
 Source includes retained read compatibility for legacy encrypted framing where documented. Final production promotion still requires compatibility checks using genuine/canonical prior artifacts when they exist. A newly manufactured artifact must not be labeled historical evidence.
 
-## 15. Existing SQLite data requires packaged upgrade validation
+## 17. Existing SQLite data requires packaged upgrade validation
 
 The source dependency graph and automated integration tests are green, but final production release still requires a realistic packaged upgrade test with representative fictional existing data, database integrity/readability/editability checks and reminder reconciliation.
 
-## 16. Accessibility is not certified by source tests alone
+## 18. Accessibility is not certified by source tests alone
 
 CareNest includes accessibility-oriented design and source contracts, but real assistive-technology evidence remains required for:
 
@@ -113,28 +136,43 @@ CareNest includes accessibility-oriented design and source contracts, but real a
 - reduced motion;
 - color-independent meaning.
 
-## 17. Localization is an architecture/strategy, not proof of every locale
+## 19. Localization is an architecture/strategy, not proof of every locale
 
 Localization guidance exists, but adding a language requires actual translated resources, layout review, date/time review, accessibility checks and target-specific validation.
 
-## 18. Store policy can change
+## 20. Store policy can change
 
 Apple, Google and Microsoft distribution requirements are time-sensitive. Repository documentation can describe the current release strategy, but submission-time policy review is required.
 
-## 19. Production signing material is intentionally absent from Git
+That future review also determines whether any external-commerce surface could ever be appropriate inside a store-distributed CareNest build; the current policy keeps Gumroad and Buy Me a Coffee outside the app package.
+
+## 21. Production signing material is intentionally absent from Git
 
 Private signing keys, certificates, keystores and secrets must remain outside the repository. Therefore an unsigned/internal artifact in CI is not automatically a store-ready production package.
 
-## 20. Internal inspection artifacts are not production packages
+## 22. Internal inspection artifacts are not production packages
 
 The Store Inspection workflow creates internal evidence artifacts for payload scanning/provenance. Those artifacts can be unsigned, simulator-targeted or unpackaged by design and must not be presented as production-store deliverables.
 
-## 21. “No known automated defect” has a precise meaning
+The current payload scanner is designed to reject both repository-only external-commerce markers from inspected packages:
 
-At the PR #74 verified source boundary, the configured automated matrix is green. This means no known defect is exposed by that matrix. It does **not** mean every possible bug is mathematically impossible or that all manual/platform conditions have been tested.
+- `buymeacoffee.com/sanskarIN`;
+- `ramsandesh.gumroad.com`.
 
-## 22. Release candidate status
+## 23. “No known automated defect” has a precise meaning
+
+The latest fully verified pre-Gumroad exact source is:
+
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+
+That source passed 122 unit + 39 integration + 173 UI/source-policy = **334/334 core tests**, Android/Windows/iOS simulator/Mac Catalyst Release builds, all four store-candidate configurations and CodeQL.
+
+This means no known defect was exposed by that configured matrix for that exact source. It does **not** mean every possible bug is mathematically impossible or that all manual/platform conditions have been tested.
+
+The Gumroad rollout changes verification-relevant tests and the package scanner, so a newer source requires its own exact-source workflow completion before replacing that baseline.
+
+## 24. Release candidate status
 
 CareNest remains `1.0.0-rc.1` until applicable manual/device/package/accessibility/signing/store/tag/publication evidence is complete.
 
-See `PROJECT_STATUS.md` and `docs/releases/NEXT_STEPS.md` for the current authoritative status.
+See `PROJECT_STATUS.md`, `what_changed.md` and `docs/releases/NEXT_STEPS.md` for the current authoritative status.
