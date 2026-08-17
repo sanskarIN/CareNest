@@ -1,21 +1,21 @@
 # CareNest Configuration, Build, and Automation Reference
 
 **Release line:** `1.0.0-rc.1`  
-**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
-**Verified PR #74 head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+**Documentation baseline:** 2026-08-17  
+**Latest fully verified pre-Gumroad source:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`  
+**Gumroad:** `https://ramsandesh.gumroad.com`
 
-This document is the current canonical reference for repository configuration affecting restore, build, testing, dependency security, MAUI targets, XAML compilation, local preflight, CI, store-candidate verification, inspection artifacts and release evidence.
+The complete configuration reference that was active before the Gumroad rollout is preserved exactly at:
+
+`docs/history/pre-gumroad-rollout-20260817/CONFIGURATION_REFERENCE.md`
+
+This document is the current canonical reference for repository configuration affecting restore, build, testing, dependency security, MAUI targets, XAML compilation, local preflight, external-commerce package isolation, CI, store-candidate verification, inspection artifacts and release evidence.
 
 ## 1. Central package management
 
-`Directory.Packages.props` enables:
+`Directory.Packages.props` enables central package management and central transitive pinning.
 
-```xml
-<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-<CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-```
-
-Current centrally managed versions:
+Important documented versions include:
 
 | Package | Version | Purpose |
 |---|---:|---|
@@ -35,23 +35,23 @@ Current centrally managed versions:
 | `xunit.runner.visualstudio` | `3.1.4` | runner adapter |
 | `coverlet.collector` | `6.0.4` | coverage collector |
 
-Package updates are verification-relevant. Review release/security implications, run restore/build/test, unsuppressed audit, affected platform builds and compatibility validation when persistence/crypto/platform behavior can change.
+Package changes are verification-relevant. Run restore/build/test, blocking dependency audit and affected platform builds, then review packaged compatibility when persistence/crypto/native behavior can change.
 
 ## 2. Shared build properties
 
-`Directory.Build.props` centralizes repository-wide compiler/analyzer/build behavior.
+`Directory.Build.props` centralizes compiler/analyzer/repository-wide build behavior.
 
-The intended model includes:
+Intended rules include:
 
-- current C# language version configured centrally;
 - nullable reference types;
 - implicit usings;
+- current configured C# language version;
 - .NET analyzers;
-- deterministic build behavior;
+- deterministic builds;
 - stricter CI warning handling;
 - repository/author metadata.
 
-Legitimate analyzer findings should be fixed rather than hidden with broad suppressions.
+Legitimate analyzer findings should be fixed instead of broadly suppressed.
 
 ## 3. NuGet audit policy
 
@@ -60,22 +60,20 @@ The former exact `GHSA-2m69-gcr7-jv3q` suppression remains removed.
 Current rules:
 
 - dependency audit is blocking in configured quality/release paths;
-- platform-neutral and MAUI graphs are audited in GitHub Actions;
-- `SqliteDependencySecurityContractTests` protects maintained package floors and suppression absence;
-- wildcard/severity-wide audit suppression is not an acceptable shortcut;
-- packaged existing-database compatibility is a separate release gate from dependency-graph security.
+- platform-neutral and MAUI graphs are audited in Actions;
+- SQLite security contracts protect maintained package floors and suppression absence;
+- wildcard/severity-wide suppression is not an acceptable shortcut;
+- dependency security does not replace packaged existing-data compatibility testing.
 
-PR #74 Dependency Audit #91 / run `31938301172` passed both configured graphs.
+## 4. NuGet configuration
 
-## 4. `NuGet.config`
+`NuGet.config` controls repository package-source/restore behavior.
 
-`NuGet.config` controls repository package sources/restore behavior. Package-source, credential or signature-policy changes are security-sensitive.
-
-Never commit package-feed credentials.
+Package-source, credential or signature-policy changes are security-sensitive. Never commit feed credentials or private access tokens.
 
 ## 5. Solution graph
 
-`CareNest.sln` contains:
+`CareNest.sln` includes:
 
 ```text
 src/CareNest.Shared/CareNest.Shared.csproj
@@ -97,7 +95,7 @@ CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastru
 
 ## 6. MAUI target selection
 
-The application is multi-targeted. `CareNestTargetFramework` narrows evaluation to one target on a host/CI job:
+The application is multi-targeted. `CareNestTargetFramework` narrows evaluation to one target:
 
 ```bash
 dotnet build src/CareNest.App/CareNest.App.csproj \
@@ -105,32 +103,32 @@ dotnet build src/CareNest.App/CareNest.App.csproj \
   -p:CareNestTargetFramework=<tfm>
 ```
 
-This avoids requiring unrelated workloads on a target-specific runner and prevents app TFMs from leaking into platform-neutral references.
+This avoids requiring unrelated workloads on target-specific hosts/runners.
 
-## 7. Current application project metadata
+## 7. Application metadata
 
-`src/CareNest.App/CareNest.App.csproj` declares:
+`src/CareNest.App/CareNest.App.csproj` currently declares:
 
 - `UseMaui=true`;
 - `SingleProject=true`;
-- application title `CareNest`;
+- title `CareNest`;
 - application ID `com.sanskar.carenest`;
 - display version `1.0.0-rc.1`;
 - application version `1`;
-- Windows package type `None` in the project baseline.
+- Windows package type `None` in the source baseline.
 
-## 8. Target frameworks and minimum platforms
+## 8. Target frameworks and minimums
 
 - Android: `net10.0-android`; minimum Android API 24.
 - iOS: `net10.0-ios`; minimum iOS 15.
 - Mac Catalyst: `net10.0-maccatalyst`; minimum 15.
-- Windows: `net10.0-windows10.0.19041.0`; minimum/target platform 10.0.19041.0.
+- Windows: `net10.0-windows10.0.19041.0`; minimum/target 10.0.19041.0.
 
-The project file is the source of truth if these values change.
+The project file remains the source of truth if these values change.
 
 ## 9. Strict XAML compiled-binding policy
 
-The application project enables:
+The app project enables:
 
 ```xml
 <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
@@ -140,29 +138,80 @@ The application project enables:
 
 Required conventions:
 
-- binding-bearing pages have accurate root `x:DataType`;
-- binding-bearing DataTemplates have item-specific `x:DataType`;
-- picker display bindings are typed when context changes to an item;
-- explicit Source/RelativeSource bindings include source type information;
-- template-to-parent commands use typed ancestor binding contexts;
-- no matching `NoWarn`, `x:Object` or `x:Null` bypass is part of the intended policy.
-
-`CompiledBindingContractTests` protects this dynamically.
+- accurate root `x:DataType` on binding-bearing pages;
+- item-specific `x:DataType` on binding-bearing templates;
+- typed picker display bindings when context changes;
+- typed Source/RelativeSource bindings;
+- typed ancestor binding-context patterns for template parent commands;
+- no intended matching `NoWarn`, `x:Object` or `x:Null` bypass.
 
 ## 10. Application resources
 
-The MAUI project includes:
+The MAUI app owns runtime resources under `src/CareNest.App/Resources/`, including app icon, splash, images and raw assets.
 
-- app icon resources under `Resources/AppIcon/`;
-- splash resources under `Resources/Splash/`;
-- images under `Resources/Images/`;
-- raw assets under `Resources/Raw/`.
+Repository marketing assets are **not** application resources under the current policy.
 
-The distributed application source/package intentionally contains no external Buy Me a Coffee destination/card/command/artwork.
+Do not copy:
 
-Repository funding documentation/metadata remains separate.
+`docs/assets/gumroad_store_badge.svg`
 
-## 11. Core development commands
+into `src/CareNest.App/Resources/Images/`.
+
+## 11. Repository-only external-commerce configuration
+
+Current canonical repository destinations:
+
+- Gumroad: `https://ramsandesh.gumroad.com`;
+- Buy Me a Coffee: `https://buymeacoffee.com/sanskarIN`.
+
+They may appear in:
+
+- `README.md`;
+- `SUPPORT.md`;
+- `.github/FUNDING.yml`;
+- `GUMROAD.md`;
+- documentation/marketing files;
+- repository-only promotional artwork.
+
+They must not appear in the CareNest runtime/package under the current product/store boundary.
+
+There is no intended application funding/storefront build toggle. Runtime absence is source policy, not a per-store boolean.
+
+## 12. Store-safe payload scanner
+
+Script:
+
+`build/scripts/verify-store-safe-payload.py`
+
+Default forbidden markers:
+
+```text
+buymeacoffee.com/sanskarIN
+ramsandesh.gumroad.com
+```
+
+The scanner:
+
+- accepts a file, directory or ZIP-compatible package;
+- scans UTF-8 marker bytes;
+- scans UTF-16 LE marker bytes;
+- scans UTF-16 BE marker bytes;
+- inspects ZIP/AAB entries;
+- supports repeatable `--forbidden` markers;
+- fails when a marker is found;
+- fails closed when inspection cannot be performed.
+
+This scanner is a package-boundary control; it does not replace source-policy tests or store submission review.
+
+## 13. Commercial-link source contracts
+
+`tests/CareNest.UiTests/FundingLinkContractTests.cs` protects repository placement, no-health-entitlement language, About/runtime absence and Gumroad badge accessibility/package placement.
+
+`tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs` protects application-runtime absence, shared-constant absence, scanner marker/encoding/ZIP behavior and fail-closed semantics.
+
+Do not weaken these tests merely to put repository marketing into the application.
+
+## 14. Core development commands
 
 ```bash
 dotnet restore CareNest.sln
@@ -177,23 +226,13 @@ dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c 
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
-## 12. Formatting
+## 15. Formatting
 
-Representative verification commands:
+CI uses project-specific `dotnet format ... --verify-no-changes` checks for platform-neutral projects and test projects.
 
-```bash
-dotnet format src/CareNest.Shared/CareNest.Shared.csproj --verify-no-changes
-dotnet format src/CareNest.Domain/CareNest.Domain.csproj --verify-no-changes
-dotnet format src/CareNest.Application/CareNest.Application.csproj --verify-no-changes
-dotnet format src/CareNest.Infrastructure/CareNest.Infrastructure.csproj --verify-no-changes
-dotnet format tests/CareNest.UnitTests/CareNest.UnitTests.csproj --verify-no-changes
-dotnet format tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj --verify-no-changes
-dotnet format tests/CareNest.UiTests/CareNest.UiTests.csproj --verify-no-changes
-```
+Do not weaken formatter/analyzer rules to bypass deterministic failures.
 
-Do not weaken formatter/analyzer policy to bypass a deterministic failure.
-
-## 13. Local quality gate
+## 16. Local quality gate
 
 Bash:
 
@@ -207,9 +246,9 @@ PowerShell:
 ./build/scripts/quality-gate.ps1
 ```
 
-The quality gate is intended to validate formatting, platform-neutral builds/tests and blocking dependency audit from a clean checkout.
+The quality gate is intended to validate formatting, platform-neutral build/tests and blocking dependency audit from a clean checkout.
 
-## 14. Release preflight
+## 17. Release preflight
 
 Bash:
 
@@ -223,33 +262,31 @@ PowerShell:
 ./build/scripts/release-preflight.ps1
 ```
 
-When `CARENEST_TARGET` is supplied, it selects an explicit supported MAUI target for audit/build work.
+When `CARENEST_TARGET` is supplied, it selects an explicit supported target.
 
-The current release preflight no longer carries an application funding-link build toggle. The external funding destination is absent from application runtime/package source by product policy.
+The preflight does not carry an application Gumroad/funding build toggle because external-commerce destinations are absent from app source by current product policy.
 
-## 15. Store-package preflight
+## 18. Store-package preflight
 
-Store-package wrappers require an explicit supported target and delegate to the normal release preflight.
+Store wrappers require an explicit supported target and delegate to the normal release preflight.
 
-Bash example:
+Android example:
 
 ```bash
 CARENEST_TARGET=net10.0-android \
 ./build/scripts/store-package-preflight.sh
 ```
 
-PowerShell example:
+Windows PowerShell example:
 
 ```powershell
 $env:CARENEST_TARGET = 'net10.0-windows10.0.19041.0'
 ./build/scripts/store-package-preflight.ps1
 ```
 
-Supported target families are Android, iOS, Mac Catalyst and Windows as declared by the app project.
+The wrapper does not create a production-signed store package by itself.
 
-The wrapper does not sign/publish a production store package.
-
-## 16. Repository-local Git identity
+## 19. Repository-local Git identity
 
 Maintainer convention:
 
@@ -260,37 +297,33 @@ git config --local user.email "sanskarin@outlook.in"
 
 Helpers:
 
-```bash
-build/scripts/setup-git.sh
-```
+- `build/scripts/setup-git.sh`;
+- `build/scripts/setup-git.ps1`.
 
-```powershell
-./build/scripts/setup-git.ps1
-```
+Always rely on actual Git commit metadata when connector/API commits are used.
 
-GitHub API/connector commits can use authenticated account/connector identity; always rely on actual commit metadata.
+## 20. Android configuration
 
-## 17. Android configuration
+Primary platform files live under `src/CareNest.App/Platforms/Android/`.
 
-Primary platform files live under `src/CareNest.App/Platforms/Android/`, including manifest/application/activity/notification integration.
-
-Build:
+Example:
 
 ```bash
 dotnet workload install maui-android
 
 dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f net10.0-android -c Release \
+  -f net10.0-android \
+  -c Release \
   -p:CareNestTargetFramework=net10.0-android
 ```
 
-Manual release evidence must cover notification permission, alarm/battery/background behavior, reboot/time-zone recovery, installed identity, reminder actions, files/backups/app lock and accessibility.
+Manual evidence still needs notification permission, alarm/battery/background behavior, reboot/time-zone recovery, reminder actions, app-lock/files/backups and accessibility.
 
-## 18. Windows configuration
+## 21. Windows configuration
 
 Primary files live under `src/CareNest.App/Platforms/Windows/`.
 
-Build:
+Example:
 
 ```powershell
 dotnet workload install maui
@@ -300,13 +333,9 @@ dotnet build src/CareNest.App/CareNest.App.csproj `
   -p:CareNestTargetFramework=net10.0-windows10.0.19041.0
 ```
 
-Internal self-contained inspection publishing can additionally use `RuntimeIdentifierOverride=win-x64`, `WindowsPackageType=None` and `WindowsAppSDKSelfContained=true` as configured by repository workflows.
+Internal self-contained inspection output is not automatically a Microsoft Store package.
 
-The resulting internal inspection output is not automatically a signed Microsoft Store package.
-
-## 19. iOS configuration
-
-iOS code lives under `src/CareNest.App/Platforms/iOS/`.
+## 22. iOS configuration
 
 Simulator example:
 
@@ -314,166 +343,169 @@ Simulator example:
 dotnet workload install maui-ios
 
 dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f net10.0-ios -c Release \
+  -f net10.0-ios \
+  -c Release \
   -p:CareNestTargetFramework=net10.0-ios \
   -p:RuntimeIdentifier=iossimulator-arm64
 ```
 
 Production device signing/provisioning belongs outside Git.
 
-## 20. Mac Catalyst configuration
+## 23. Mac Catalyst configuration
 
-Mac Catalyst code lives under `src/CareNest.App/Platforms/MacCatalyst/`.
+Example:
 
 ```bash
 dotnet workload install maui-maccatalyst
 
 dotnet build src/CareNest.App/CareNest.App.csproj \
-  -f net10.0-maccatalyst -c Release \
+  -f net10.0-maccatalyst \
+  -c Release \
   -p:CareNestTargetFramework=net10.0-maccatalyst
 ```
 
 Internal unsigned inspection output is not signed/notarized production evidence.
 
-## 21. GitHub workflow roles
+## 24. CareNest CI
 
-### CareNest CI
+`.github/workflows/ci.yml` verifies configured platform-neutral formatting/tests plus Android, Windows, iOS simulator and Mac Catalyst Release builds.
 
-`.github/workflows/ci.yml` verifies:
+The final exact workflow result must match the source SHA being claimed as verified.
 
-- platform-neutral formatting;
-- all three core test projects;
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release.
-
-### CodeQL
+## 25. CodeQL
 
 `.github/workflows/codeql.yml` performs C# security analysis for configured events.
 
-### Dependency Audit
+A green CodeQL run applies to its exact source, not to later changes automatically.
 
-`.github/workflows/dependency-review.yml` audits platform-neutral and MAUI dependency graphs with event-safe behavior.
+## 26. Dependency audit
 
-### Store Package Configuration
+`.github/workflows/dependency-review.yml` protects dependency policy/audit behavior.
 
-`.github/workflows/store-package-verification.yml` builds store-candidate configurations for all four targets.
+Do not turn blocking audit failures into warning-only behavior without an explicit security decision.
 
-The current workflow does not use a funding-link build-property fork because the application package is funding-surface-free by source policy.
+## 27. Store Package Configuration
 
-### Store Inspection Artifacts
+`.github/workflows/store-package-verification.yml` builds store-candidate configurations for:
 
-`.github/workflows/store-inspection-artifacts.yml`:
+- Android;
+- Windows;
+- iOS simulator;
+- Mac Catalyst.
 
-- records exact source SHA/ref;
-- runs a fail-closed forbidden-marker scanner self-test;
-- creates an unsigned/internal Android AAB inspection artifact;
-- creates a self-contained Windows inspection artifact;
-- creates iOS simulator and unsigned Mac Catalyst inspection output;
-- scans/stages payloads;
-- records checksums/provenance;
-- uploads internal evidence artifacts;
-- does not inject production signing secrets.
+The workflow does not rely on a funding/storefront build-property fork.
 
-Inspection artifacts are not store-ready production packages.
+## 28. Store Inspection Artifacts
 
-### Release Gate
+`.github/workflows/store-inspection-artifacts.yml` provides internal package inspection/provenance work on its configured triggers.
 
-`.github/workflows/release-gate.yml` is a fail-closed production release gate.
+It can:
 
-### Release Evidence
+- record exact source SHA/ref;
+- self-test the forbidden-marker scanner;
+- create unsigned/internal platform outputs;
+- scan payloads;
+- record checksums/provenance;
+- upload evidence artifacts.
 
-`.github/workflows/release-evidence.yml` records exact candidate provenance, test/evidence manifests, dependency information and checksums.
+These are not automatically production packages.
 
-## 22. Production tag behavior
+## 29. Release Gate and Release Evidence
 
-Production-style tags matching `v*` are configured to participate in:
+- `.github/workflows/release-gate.yml` — fail-closed production-tag aggregate gate.
+- `.github/workflows/release-evidence.yml` — exact-source test/evidence/checksum/provenance record.
 
-- CareNest CI;
-- CodeQL;
-- Dependency Audit;
-- Store Package Configuration;
-- Store Inspection Artifacts;
-- Release Gate;
-- Release Evidence.
+Production tags must refer to the exact approved source and must not be moved to hide a failed release attempt.
 
-A tag is not automatically production approval. Manual/package/accessibility/signing/store evidence must also be complete.
+## 30. Production tag behavior
 
-## 23. Repository support files
+Production-style `v*` tags participate in applicable CI/security/dependency/store/release workflows.
 
-`.github/` includes:
+A tag does not replace real-device, signing, accessibility, package compatibility or store-policy evidence.
 
-- funding metadata for voluntary repository support;
-- Dependabot configuration;
-- issue templates;
-- pull request templates;
-- Actions workflows.
+## 31. Repository support metadata
 
-Funding metadata is repository-level and must not be interpreted as an in-app health entitlement.
+`.github/FUNDING.yml` currently exposes repository-only custom links for:
 
-## 24. Environment/secrets policy
+- Buy Me a Coffee;
+- Ram Sandesh Gumroad.
+
+This GitHub metadata is not application runtime functionality.
+
+## 32. Secrets policy
 
 Never commit:
 
-- Android production keystores/private keys;
-- Apple signing private keys/certificates/provisioning secrets;
-- Windows signing private keys;
-- CI/service credentials;
+- Android signing private material;
+- Apple private signing/provisioning secrets;
+- Windows private signing keys;
+- feed/CI/service credentials;
 - production `.env` secrets;
 - app-lock PINs;
 - backup passwords;
 - encryption keys;
-- real CareNest databases/backups/documents.
+- real health databases/backups/documents.
 
-Use synthetic/fictional data in public artifacts and documentation examples.
+Use synthetic/fictional data for public artifacts and examples.
 
-## 25. Build reproducibility/provenance
+## 33. Build reproducibility and provenance
 
 Production evidence should resolve every signed artifact to the exact approved source SHA/tag and record package checksum/signing provenance.
 
-Internal inspection artifacts record exact source identity separately from event/PR merge identity where relevant.
+Repository-only Gumroad/Buy Me a Coffee documents/assets should remain distinguishable from app package contents in release evidence.
 
-## 26. Configuration change checklist
+## 34. Source-line/structured-file quality configuration
 
-When changing project/workflow/package/build configuration:
+The UI/source-policy suite deterministically scans runtime C# lines for known defect patterns and parses structured runtime files such as XAML/project/XML-family/JSON files.
+
+This complements compiler/analyzer/platform build checks with actionable file/line regression reporting.
+
+## 35. Configuration-change checklist
+
+When changing project/workflow/package/build/marketing configuration:
 
 1. identify affected source/platform/test/release surfaces;
-2. update documentation in the same change;
-3. run formatting and all core tests;
-4. run unsuppressed dependency audit when restore/dependencies can change;
-5. run all affected normal platform builds;
-6. run store-candidate and inspection workflows when packaging policy can change;
-7. run CodeQL when relevant;
-8. perform packaged compatibility checks for persistence/crypto changes;
-9. create fresh exact-source verification before calling a changed executable source authoritative.
+2. preserve medical/local-first/privacy boundaries;
+3. review external-commerce package isolation when storefront/funding changes;
+4. update documentation in the same change series;
+5. update the lowest appropriate regression tests;
+6. run formatting/core tests;
+7. run dependency audit when restore/dependencies can change;
+8. run affected normal platform builds;
+9. run store-candidate/inspection workflows when packaging policy can change;
+10. run CodeQL where applicable;
+11. perform packaged compatibility checks for persistence/crypto changes;
+12. create fresh exact-source verification before promoting a changed baseline.
 
-Do not weaken a workflow/contract simply to obtain green status.
+## 36. Latest fully verified pre-Gumroad baseline
 
-## 27. Current verified baseline
+Exact source:
 
-PR #74 frozen source head:
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+Verified:
 
-Merged executable source:
+- 122/122 unit tests;
+- 39/39 integration tests;
+- 173/173 UI/source-policy tests;
+- **334/334 total core tests**;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release;
+- all four store-candidate configurations;
+- CodeQL.
 
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+The Gumroad rollout changes tests and the package scanner, so a newer source is authoritative only after its exact workflow matrix is green.
 
-Evidence:
+## 37. Current references
 
-- CareNest CI #735 / run `31938301209`: success;
-- formatting: success;
-- unit: 122/122;
-- integration: 39/39;
-- UI/source-policy: 170/170;
-- total: 331/331;
-- Android/Windows/iOS simulator/Mac Catalyst Release builds: success;
-- Store Package Configuration #124 / `31938301146`: success;
-- Store Inspection Artifacts #47 / `31938301275`: success;
-- CodeQL #735 / `31938301252`: success;
-- Dependency Audit #91 / `31938301172`: success.
+Use:
 
-Permanent evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
-
-Older PR #61/#59/#58/#56/#54 records remain historical evidence for their own frozen source boundaries.
+- `PROJECT_STATUS.md` — active project/release status;
+- `what_changed.md` — exact current continuation/commit series;
+- `GUMROAD.md` — storefront guide;
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — storefront/package policy;
+- `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` — complete package creation guide;
+- `docs/releases/NEXT_STEPS.md` — remaining production work;
+- `docs/DOCUMENTATION_CATALOG.md` — complete documentation map.
