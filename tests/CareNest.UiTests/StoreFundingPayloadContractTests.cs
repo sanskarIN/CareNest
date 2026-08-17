@@ -3,7 +3,7 @@ namespace CareNest.UiTests;
 public sealed class StoreFundingPayloadContractTests
 {
     [Fact]
-    public void AppRuntime_DoesNotContainExternalFundingDestinationOrSurface()
+    public void AppRuntime_DoesNotContainExternalFundingOrStorefrontDestinationOrSurface()
     {
         var appRoot = RepositoryLocator.PathOf("src", "CareNest.App");
         var textExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -16,6 +16,7 @@ public sealed class StoreFundingPayloadContractTests
         {
             var source = File.ReadAllText(path);
             Assert.DoesNotContain("buymeacoffee.com/sanskarIN", source, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("ramsandesh.gumroad.com", source, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("SupportProjectCommand", source, StringComparison.Ordinal);
             Assert.DoesNotContain("IsProjectSupportVisible", source, StringComparison.Ordinal);
             Assert.DoesNotContain("FundingLinkPolicy", source, StringComparison.Ordinal);
@@ -29,19 +30,23 @@ public sealed class StoreFundingPayloadContractTests
             "src", "CareNest.App", "Resources", "Images", "buy_me_a_coffee_carenest.svg")));
         Assert.False(File.Exists(RepositoryLocator.PathOf(
             "src", "CareNest.App", "Resources", "Images", "carenest_support.svg")));
+        Assert.False(File.Exists(RepositoryLocator.PathOf(
+            "src", "CareNest.App", "Resources", "Images", "gumroad_store_badge.svg")));
     }
 
     [Fact]
-    public void SharedAssembly_DoesNotCarryFundingUrlConstant()
+    public void SharedAssembly_DoesNotCarryExternalCommerceUrlConstants()
     {
         var sharedConstants = RepositoryLocator.Read("src", "CareNest.Shared", "AppConstants.cs");
 
         Assert.DoesNotContain("FundingUrl", sharedConstants, StringComparison.Ordinal);
+        Assert.DoesNotContain("Gumroad", sharedConstants, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("buymeacoffee.com", sharedConstants, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("gumroad.com", sharedConstants, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void MauiProject_DoesNotContainObsoleteFundingBuildConfiguration()
+    public void MauiProject_DoesNotContainObsoleteExternalCommerceBuildConfiguration()
     {
         var project = RepositoryLocator.Read("src", "CareNest.App", "CareNest.App.csproj");
 
@@ -49,22 +54,25 @@ public sealed class StoreFundingPayloadContractTests
         Assert.DoesNotContain("CareNestEffectiveFundingLink", project, StringComparison.Ordinal);
         Assert.DoesNotContain("CARENEST_STORE_FUNDING_LINK", project, StringComparison.Ordinal);
         Assert.DoesNotContain("CARENEST_FUNDING_LINK", project, StringComparison.Ordinal);
+        Assert.DoesNotContain("CARENEST_GUMROAD", project, StringComparison.Ordinal);
         Assert.DoesNotContain("FundingLinkPolicy", project, StringComparison.Ordinal);
         Assert.DoesNotContain("DefineConstants", project, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void PayloadScanner_SearchesCommonManagedStringEncodingsAndZipEntries()
+    public void PayloadScanner_SearchesRepositoryOnlyFundingAndStorefrontMarkers()
     {
         var scanner = RepositoryLocator.Read("build", "scripts", "verify-store-safe-payload.py");
 
         Assert.Contains("buymeacoffee.com/sanskarIN", scanner, StringComparison.Ordinal);
+        Assert.Contains("ramsandesh.gumroad.com", scanner, StringComparison.Ordinal);
         Assert.Contains("value.encode(\"utf-8\")", scanner, StringComparison.Ordinal);
         Assert.Contains("value.encode(\"utf-16-le\")", scanner, StringComparison.Ordinal);
         Assert.Contains("value.encode(\"utf-16-be\")", scanner, StringComparison.Ordinal);
         Assert.Contains("zipfile.is_zipfile(path)", scanner, StringComparison.Ordinal);
         Assert.Contains("zipfile.ZipFile(path, \"r\")", scanner, StringComparison.Ordinal);
         Assert.Contains("stream_contains(stream, needles)", scanner, StringComparison.Ordinal);
+        Assert.Contains("action=\"append\"", scanner, StringComparison.Ordinal);
     }
 
     [Fact]
