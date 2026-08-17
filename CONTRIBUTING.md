@@ -2,7 +2,7 @@
 
 Thank you for improving CareNest.
 
-CareNest is a local-first .NET MAUI health-organization project. Contributions must preserve the project's medical-safety, privacy, security, reminder-consistency, and release-evidence boundaries.
+CareNest is a local-first .NET MAUI health-organization project. Contributions must preserve the project's medical-safety, privacy, security, reminder-consistency, external-commerce package boundary, and release-evidence boundaries.
 
 ## Read first
 
@@ -10,6 +10,8 @@ Before changing source, read:
 
 - `README.md`;
 - `docs/README.md`;
+- `GUMROAD.md`;
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`;
 - `docs/architecture/ARCHITECTURE.md`;
 - `docs/setup/DEVELOPMENT.md`;
 - `docs/setup/MAINTAINER_OPERATIONS.md`;
@@ -52,6 +54,19 @@ Do not add, without a separate reviewed architecture/privacy/security proposal:
 - server-side health processing.
 
 A future network feature must define consent, authentication, authorization, key ownership, deletion/export, retention, breach response, and store disclosures before merge.
+
+## Repository storefront and funding boundary
+
+Current repository-only external destinations are:
+
+- Gumroad: `https://ramsandesh.gumroad.com`;
+- Buy Me a Coffee: `https://buymeacoffee.com/sanskarIN`.
+
+These links may be highlighted in repository documentation, GitHub metadata, and repository-only marketing assets. They must not be silently embedded into `src/CareNest.App`, runtime constants, packaged images, ViewModels, XAML, or store-distributed CareNest payloads.
+
+A Gumroad purchase or financial contribution must never be represented as unlocking diagnosis, dosage guidance, treatment recommendations, reminder priority/reliability, emergency assistance, medical support entitlement, or access to user health data.
+
+The store-safe payload scanner protects this separation by rejecting both repository-only destination markers from inspected application packages. If a contribution intentionally redesigns this boundary, it requires explicit store-policy, privacy, safety, and release review plus updated tests/documentation before merge.
 
 ## Secrets and real data
 
@@ -263,6 +278,13 @@ Use:
 - UI/source contract tests for XAML, architecture, ViewModel, security/privacy/repository/release workflow and script policies;
 - manual test matrix for real target-device behavior.
 
+For repository storefront/funding changes, update or review:
+
+- `tests/CareNest.UiTests/FundingLinkContractTests.cs`;
+- `tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs`;
+- `build/scripts/verify-store-safe-payload.py`;
+- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`.
+
 See `docs/testing/TESTING_GUIDE.md`.
 
 ## Pull requests
@@ -278,6 +300,7 @@ A PR description should include:
 - platform impact;
 - dependency impact;
 - workflow/release impact;
+- external-commerce/storefront impact when applicable;
 - tests run;
 - manual checks run;
 - known limitations;
@@ -353,9 +376,12 @@ Update:
 - security/privacy docs;
 - test guide/contract;
 - release checklists/status where required;
+- Gumroad/storefront documentation when repository commerce/marketing changes;
 - `what_changed.md` when a detailed handoff is requested.
 
 Do not leave old dependency/verification facts in active setup/security/architecture documents after a new authoritative source baseline supersedes them.
+
+Do not rewrite dated historical evidence merely to add a current storefront link.
 
 ## Accessibility
 
@@ -372,9 +398,13 @@ Preserve:
 
 Automated XAML contracts do not replace real screen-reader testing.
 
+Repository promotional graphics should also include meaningful text alternatives and plain-text link fallbacks.
+
 ## Store/distribution changes
 
-Any change affecting external support links, permissions, privacy disclosure, capabilities, or signing/package identity must update the store/release documentation.
+Any change affecting external support/storefront links, permissions, privacy disclosure, capabilities, or signing/package identity must update the store/release documentation.
+
+The current repository Gumroad URL is `https://ramsandesh.gumroad.com`. It remains repository-only under the present product/store boundary. Keep `build/scripts/verify-store-safe-payload.py` and the source-policy tests aligned with this rule.
 
 Current store-policy rules are time-sensitive and must be verified at submission time.
 
