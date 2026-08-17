@@ -1,40 +1,41 @@
 # CareNest Packaged Release Validation
 
-**Release line:** `1.0.0-rc.1`
+**Release line:** `1.0.0-rc.1`  
+**Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`
 
-This runbook covers release-candidate behavior that hosted source tests cannot fully prove: real package/install paths, existing SQLite data, encrypted documents/backups, real notification delivery, accessibility, signing and final package provenance.
+This runbook covers release-candidate behavior that hosted source tests cannot fully prove: real package/install paths, existing SQLite data, encrypted documents/backups, real notification delivery, accessibility, external-commerce payload isolation, signing and final package provenance.
 
 Use fictional/synthetic data only.
 
-## 1. Current source baseline
+## 1. Automated source boundary
 
-Verified executable source:
+Latest fully verified pre-Gumroad source:
 
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
 
-PR #74 head:
+That exact source passed:
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+- 122/122 unit tests;
+- 39/39 integration tests;
+- 173/173 UI/source-policy tests;
+- **334/334 core tests**;
+- Android/Windows/iOS simulator/Mac Catalyst Release builds;
+- all four store-candidate configurations;
+- CodeQL.
 
-Current source evidence:
+The Gumroad rollout changes source-policy tests and the package scanner, so its exact final revision must pass its own applicable matrix before becoming the new source baseline.
 
-- 331/331 core tests;
-- Android/Windows/iOS simulator/Mac Catalyst Release builds green;
-- all four store-candidate configurations green;
-- Store Inspection Artifacts green;
-- CodeQL green;
-- unsuppressed Dependency Audit green.
-
-This is not packaged production evidence.
+This source automation is still not packaged production evidence.
 
 ## 2. Validation principles
 
-- never use real health records in public/shared validation evidence;
+- never use real health records in public/shared evidence;
 - record exact source SHA/tag and package checksum;
 - distinguish source/build success from installed-package behavior;
 - distinguish dependency security from data compatibility;
 - distinguish simulator builds from real-device notification behavior;
 - keep production signing secrets outside Git;
+- verify repository marketing does not leak into the app package;
 - do not mark a row complete without actual evidence.
 
 ## 3. Representative prior data set
@@ -86,7 +87,7 @@ With synthetic documents verify:
 - failed export does not leave unintended CareNest-owned partial plaintext output;
 - delete removes intended metadata/encrypted payload;
 - missing/corrupt required key fails closed;
-- application does not silently generate unrelated replacement key for existing ciphertext.
+- application does not silently generate an unrelated replacement key for existing ciphertext.
 
 ## 6. Current backup lifecycle
 
@@ -113,7 +114,7 @@ Where genuine previous CareNest encrypted document/backup fixtures exist:
 - verify current candidate reads/restores according to documented compatibility;
 - record result/checksum.
 
-Do not generate a current fixture and label it as historical.
+Do not generate a current fixture and label it historical.
 
 ## 8. Android package/device validation
 
@@ -202,27 +203,52 @@ On representative final candidate packages verify:
 - destructive confirmation readability;
 - medical/privacy/reminder limitation accessibility.
 
-## 13. Application funding/package validation
+## 13. Repository storefront versus application-package validation
 
-Current invariant: no external Buy Me a Coffee destination/card/command/artwork in distributed application source/package.
+Official repository storefront:
 
-For internal/final candidates:
+**https://ramsandesh.gumroad.com**
 
-- run/equivalently apply the forbidden-marker payload scan;
-- inspect About UI for absence of BMC funding card/action;
-- verify repository/creator/business/support/privacy/terms/security links remain available;
-- verify no health feature changes based on repository funding;
-- verify store screenshots/listing do not imply removed in-app funding behavior.
+Current invariant: the distributed CareNest application source/package contains no external Gumroad or Buy Me a Coffee destination/card/command/promotional artwork.
 
-There is no current per-package funding-link build toggle.
+For internal and final candidates:
 
-## 14. Final production signing
+- run/equivalently apply the forbidden-marker payload scanner;
+- confirm `buymeacoffee.com/sanskarIN` is absent;
+- confirm `ramsandesh.gumroad.com` is absent;
+- inspect About/runtime UI for absence of Gumroad/BMC promotion;
+- verify the repository-only Gumroad badge is not packaged;
+- verify intentional repository/creator/business/support/privacy/terms/security application links remain available as documented;
+- verify no health feature changes according to Gumroad purchase/funding state;
+- verify store screenshots/listing do not imply in-app Gumroad/BMC behavior.
+
+There is no current per-package external-commerce build toggle.
+
+## 14. Payload scanner behavior to preserve
+
+`build/scripts/verify-store-safe-payload.py` defaults to:
+
+```text
+buymeacoffee.com/sanskarIN
+ramsandesh.gumroad.com
+```
+
+Candidate-package validation must preserve:
+
+- UTF-8 scanning;
+- UTF-16 LE scanning;
+- UTF-16 BE scanning;
+- regular-file inspection;
+- ZIP/AAB entry inspection;
+- fail-closed errors for unreadable/missing payloads.
+
+## 15. Final production signing
 
 Outside Git configure actual production signing for intended channels.
 
 Record only safe public provenance/fingerprints/identifiers in repository evidence; never commit private keys, keystores, certificate passwords or provisioning secrets.
 
-## 15. Final signed-package inspection
+## 16. Final signed-package inspection
 
 For every signed/notarized/store candidate record:
 
@@ -232,12 +258,15 @@ For every signed/notarized/store candidate record:
 - filename;
 - SHA-256;
 - signing/notarization/store provenance;
-- forbidden-marker scan result;
+- Buy Me a Coffee forbidden-marker result;
+- Gumroad forbidden-marker result;
 - install/launch smoke result;
 - About/legal/support-contact check;
 - relevant platform manual matrix result.
 
-## 16. Store-policy/metadata validation
+The final signed package—not only an unsigned internal candidate—must be checked.
+
+## 17. Store-policy/metadata validation
 
 At submission time review current store rules for the exact candidate.
 
@@ -250,47 +279,58 @@ Validate:
 - screenshots with fictional data;
 - support/privacy/terms/security URLs;
 - application ID/version/build;
-- no removed in-app funding surface in screenshots/listing.
+- external-commerce policy applicable at submission time;
+- no repository-only Gumroad/BMC surface in the submitted app unless a future explicitly reviewed policy change approves it.
 
-## 17. Exact production tag
+## 18. Exact production tag
 
-Only after applicable package/manual/accessibility/signing/store preparation is complete, create the approved immutable production `v*` tag and require:
+Only after applicable package/manual/accessibility/signing/store preparation is complete, create the approved immutable production `v*` tag and require all configured tagged gates, including:
 
 - CareNest CI;
 - CodeQL;
-- Dependency Audit;
+- unsuppressed Dependency Audit;
 - Store Package Configuration;
 - Store Inspection Artifacts;
 - Release Gate;
 - Release Evidence.
 
-Do not move a failed/rejected production tag to different source.
+Do not move a failed production tag to a different source revision.
 
-## 18. Evidence template
+## 19. Evidence record template
 
-For each manual/package run capture:
+For every validated package record:
 
 ```text
-Date/time:
-Tester:
 Source SHA/tag:
-Version/build:
-Package filename:
-Package SHA-256:
+CareNest version/build:
+Platform:
+OS/device:
+Artifact filename:
+SHA-256:
 Signing/notarization provenance:
-Platform/device/OS:
-Install/upgrade path:
-Test scenario:
-Expected:
-Actual:
-Result: PASS / FAIL / N/A
-Notes/issue:
+SQLite upgrade result:
+Encrypted document result:
+Backup result:
+Reminder/notification result:
+Accessibility result:
+Buy Me a Coffee marker scan:
+Gumroad marker scan:
+Installed app Gumroad/BMC surface check:
+Store-policy review date/source:
+Overall result:
+Notes:
 ```
 
-Use `N/A` only with a defensible reason.
+## 20. Failure handling
 
-## 19. Current remaining status
+If validation exposes a defect:
 
-The source-controlled RC1 scope is heavily automated-verified, but the packaged/manual rows above remain open until actual evidence exists.
+1. retain the failing evidence safely;
+2. fix the smallest correct source boundary;
+3. add/update regression coverage;
+4. run the full applicable exact-source automated matrix;
+5. rebuild the package from that exact source;
+6. repeat the affected package/manual checks;
+7. update current evidence only after the replacement result is known.
 
-Use `docs/releases/NEXT_STEPS.md` as the authoritative remaining-work checklist.
+Do not suppress a valid package/test/security failure merely to complete a checklist.
