@@ -7,6 +7,7 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     private const string BuyMeACoffeeMarker = "buymeacoffee.com/sanskarIN";
     private const string GumroadMarker = "ramsandesh.gumroad.com";
     private const string StorePolicyReview = "docs/releases/STORE_POLICY_REVIEW_20260818.md";
+    private const string PackageEvidenceGuide = "docs/releases/PACKAGE_EVIDENCE_TOOLING.md";
 
     [Fact]
     public void Current_release_documents_reference_the_verified_gumroad_baseline()
@@ -21,16 +22,16 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     }
 
     [Fact]
-    public void Current_release_process_does_not_promote_the_superseded_331_test_baseline()
+    public void Current_release_documents_do_not_promote_the_superseded_331_test_baseline()
     {
         var root = FindRepositoryRoot();
-        var releaseProcess = Read(root, "docs/releases/RELEASE_PROCESS.md");
-        var storeSubmission = Read(root, "docs/releases/STORE_SUBMISSION_CHECKLIST.md");
-
-        Assert.DoesNotContain("Current verified executable source: `e8f4aa0a", releaseProcess, StringComparison.Ordinal);
-        Assert.DoesNotContain("Current accepted PR #74 source evidence", storeSubmission, StringComparison.Ordinal);
-        Assert.DoesNotContain("**331/331**", releaseProcess, StringComparison.Ordinal);
-        Assert.DoesNotContain("**331/331**", storeSubmission, StringComparison.Ordinal);
+        foreach (var relativePath in CurrentBaselineDocuments)
+        {
+            var text = Read(root, relativePath);
+            Assert.DoesNotContain("Current verified executable source: `e8f4aa0a", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("Current accepted PR #74 source evidence", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("**331/331**", text, StringComparison.Ordinal);
+        }
     }
 
     [Fact]
@@ -80,6 +81,34 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         Assert.Contains("- [ ] Re-open current Microsoft Store policy sources", submission, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Package_evidence_guide_is_part_of_current_release_governance()
+    {
+        var root = FindRepositoryRoot();
+        Assert.True(File.Exists(Path.Combine(root, "docs", "releases", "PACKAGE_EVIDENCE_TOOLING.md")));
+
+        foreach (var relativePath in PackageEvidenceLinkDocuments)
+        {
+            var text = Read(root, relativePath);
+            Assert.Contains(PackageEvidenceGuide, text, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void Production_release_gate_requires_current_evidence_documents_and_package_tooling()
+    {
+        var root = FindRepositoryRoot();
+        var workflow = Read(root, ".github/workflows/release-gate.yml");
+
+        foreach (var requiredPath in ReleaseGateRequiredPaths)
+        {
+            Assert.Contains(requiredPath, workflow, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("python3 -m py_compile", workflow, StringComparison.Ordinal);
+        Assert.Contains("python3 build/scripts/test-create-package-evidence.py", workflow, StringComparison.Ordinal);
+    }
+
     private static readonly string[] CurrentBaselineDocuments =
     [
         "PROJECT_STATUS.md",
@@ -89,6 +118,11 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         "docs/releases/RELEASE_PROCESS.md",
         "docs/releases/STORE_SUBMISSION_CHECKLIST.md",
         "docs/releases/NEXT_STEPS.md",
+        "docs/releases/QUALITY_GATE.md",
+        "docs/releases/SECURITY_RELEASE_REVIEW.md",
+        "docs/releases/MANUAL_TEST_MATRIX.md",
+        "docs/releases/PACKAGED_RELEASE_VALIDATION.md",
+        "docs/releases/VERIFICATION_BRANCH_PROTOCOL.md",
         "docs/DOCUMENTATION_CATALOG.md",
         "docs/README.md",
         "CHANGELOG.md",
@@ -103,6 +137,10 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         "docs/releases/RELEASE_PROCESS.md",
         "docs/releases/STORE_SUBMISSION_CHECKLIST.md",
         "docs/releases/NEXT_STEPS.md",
+        "docs/releases/QUALITY_GATE.md",
+        "docs/releases/SECURITY_RELEASE_REVIEW.md",
+        "docs/releases/MANUAL_TEST_MATRIX.md",
+        "docs/releases/PACKAGED_RELEASE_VALIDATION.md",
     ];
 
     private static readonly string[] PolicyReviewLinkDocuments =
@@ -114,8 +152,31 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         "docs/releases/RELEASE_PROCESS.md",
         "docs/releases/STORE_SUBMISSION_CHECKLIST.md",
         "docs/releases/NEXT_STEPS.md",
+        "docs/releases/QUALITY_GATE.md",
+        "docs/releases/SECURITY_RELEASE_REVIEW.md",
+        "docs/releases/MANUAL_TEST_MATRIX.md",
+        "docs/releases/PACKAGED_RELEASE_VALIDATION.md",
         "docs/DOCUMENTATION_CATALOG.md",
         "docs/README.md",
+    ];
+
+    private static readonly string[] PackageEvidenceLinkDocuments =
+    [
+        "docs/releases/RELEASE_EVIDENCE.md",
+        "docs/releases/EXECUTABLE_BUILD_CHECKLIST.md",
+        "docs/releases/QUALITY_GATE.md",
+        "docs/releases/SECURITY_RELEASE_REVIEW.md",
+        "docs/releases/MANUAL_TEST_MATRIX.md",
+        "docs/releases/PACKAGED_RELEASE_VALIDATION.md",
+    ];
+
+    private static readonly string[] ReleaseGateRequiredPaths =
+    [
+        "docs/releases/STORE_SUBMISSION_CHECKLIST.md",
+        "docs/releases/STORE_POLICY_REVIEW_20260818.md",
+        "docs/releases/PACKAGE_EVIDENCE_TOOLING.md",
+        "build/scripts/create-package-evidence.py",
+        "build/scripts/test-create-package-evidence.py",
     ];
 
     private static string Read(string root, string relativePath) =>
