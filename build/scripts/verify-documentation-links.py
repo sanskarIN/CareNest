@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Validate repository-local links in stable active CareNest documentation.
 
-The checker is intentionally offline. It verifies local file/directory targets and
-repository containment, while leaving network URL availability to release/manual
+The checker is intentionally offline. It verifies live local file/directory targets
+and repository containment, while leaving network URL availability to release/manual
 review so CI does not depend on external sites.
+
+Fenced code, inline code, and HTML comments are excluded from link extraction because
+they are examples/non-rendered content rather than live documentation navigation.
 
 Dynamic post-verification evidence/status files are excluded by default so recording
 successful workflow IDs, counts, and source SHAs does not invalidate the executable
@@ -23,6 +26,9 @@ from urllib.parse import unquote, urlsplit
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 HTML_LINK_RE = re.compile(r"(?:href|src)\s*=\s*[\"']([^\"']+)[\"']", re.IGNORECASE)
 REFERENCE_LINK_RE = re.compile(r"^\s*\[[^\]]+\]:\s*(\S+)", re.MULTILINE)
+HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
+FENCE_START_RE = re.compile(r"^[ \t]*(?P<fence>`{3,}|~{3,})")
 SKIPPED_SCHEMES = {
     "data",
     "ftp",
@@ -50,7 +56,7 @@ DYNAMIC_EVIDENCE_PATHS = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Verify local links in stable active CareNest Markdown documentation."
+        description="Verify live local links in stable active CareNest Markdown documentation."
     )
     parser.add_argument(
         "--root",
@@ -102,7 +108,42 @@ def is_dynamic_evidence_path(root: Path, source: Path) -> bool:
     return relative_posix(root, source) in DYNAMIC_EVIDENCE_PATHS
 
 
+def strip_fenced_code_blocks(text: str) -> str:
+    output: list[str] = []
+    fence_char: str | None = None
+    fence_length = 0
+
+    for line in text.splitlines(keepends=True):
+        stripped = line.lstrip(" \t")
+        if fence_char is None:
+            match = FENCE_START_RE.match(line)
+            if match is None:
+                output.append(line)
+                continue
+
+            fence = match.group("fence")
+            fence_char = fence[0]
+            fence_length = len(fence)
+            output.append("\n" if line.endswith("\n") else "")
+            continue
+
+        closing = stripped.startswith(fence_char * fence_length)
+        output.append("\n" if line.endswith("\n") else "")
+        if closing:
+            fence_char = None
+            fence_length = 0
+
+    return "".join(output)
+
+
+def visible_document_text(text: str) -> str:
+    without_fences = strip_fenced_code_blocks(text)
+    without_comments = HTML_COMMENT_RE.sub("", without_fences)
+    return INLINE_CODE_RE.sub("", without_comments)
+
+
 def extract_targets(text: str) -> list[str]:
+    text = visible_document_text(text)
     targets: list[str] = []
 
     for match in MARKDOWN_LINK_RE.finditer(text):
@@ -201,14 +242,14 @@ def main() -> int:
         for failure in failures:
             print(f"- {failure}", file=sys.stderr)
         print(
-            f"Checked {checked_links} local links across {checked_files} {scope}; "
+            f"Checked {checked_links} live local links across {checked_files} {scope}; "
             f"found {len(failures)} problem(s).",
             file=sys.stderr,
         )
         return 1
 
     print(
-        f"Documentation link integrity check passed: {checked_links} local links across "
+        f"Documentation link integrity check passed: {checked_links} live local links across "
         f"{checked_files} {scope}."
     )
     return 0
