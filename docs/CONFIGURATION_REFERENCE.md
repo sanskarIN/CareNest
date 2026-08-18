@@ -1,25 +1,30 @@
 # CareNest Configuration, Build, and Automation Reference
 
 **Release line:** `1.0.0-rc.1`  
-**Documentation baseline:** 2026-08-17  
-**Latest fully verified pre-Gumroad source:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`  
+**Documentation baseline:** 2026-08-18  
+**Current automated baseline record:** `docs/releases/AUTOMATED_BASELINE.md`  
+**Current dependency/toolchain baseline:** `docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`  
 **Gumroad:** `https://ramsandesh.gumroad.com`
 
 The complete configuration reference that was active before the Gumroad rollout is preserved exactly at:
 
 `docs/history/pre-gumroad-rollout-20260817/CONFIGURATION_REFERENCE.md`
 
-This document is the current canonical reference for repository configuration affecting restore, build, testing, dependency security, MAUI targets, XAML compilation, local preflight, external-commerce package isolation, CI, store-candidate verification, inspection artifacts and release evidence.
+This document is the current canonical reference for repository configuration affecting restore, build, testing, dependency security, MAUI targets, XAML compilation, local preflight, external-commerce package isolation, CI, store-candidate verification, inspection artifacts, documentation integrity and release evidence.
 
 ## 1. Central package management
 
 `Directory.Packages.props` enables central package management and central transitive pinning.
 
-Important documented versions include:
+Current package versions are maintained in one human-readable companion reference:
+
+`docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`
+
+Current source configuration includes:
 
 | Package | Version | Purpose |
 |---|---:|---|
-| `Microsoft.Maui.Controls` | `10.0.20` | MAUI application/UI runtime |
+| `Microsoft.Maui.Controls` | `10.0.90` | MAUI application/UI runtime |
 | `sqlite-net-pcl` | `1.9.172` | SQLite application API |
 | `SQLitePCLRaw.bundle_green` | `2.1.11` | SQLite bundle path |
 | `SQLitePCLRaw.lib.e_sqlite3` | `3.53.3` | maintained native SQLite leaf |
@@ -30,12 +35,14 @@ Important documented versions include:
 | `Microsoft.Extensions.Logging.Debug` | `10.0.0` | debug logging provider |
 | `Microsoft.Extensions.Logging.Abstractions` | `10.0.0` | logging abstractions |
 | `Microsoft.Extensions.DependencyInjection.Abstractions` | `10.0.0` | DI abstractions |
-| `Microsoft.NET.Test.Sdk` | `17.14.1` | test host |
+| `Microsoft.NET.Test.Sdk` | `18.9.0` | test host/SDK |
 | `xunit` | `2.9.3` | test framework |
-| `xunit.runner.visualstudio` | `3.1.4` | runner adapter |
-| `coverlet.collector` | `6.0.4` | coverage collector |
+| `xunit.runner.visualstudio` | `4.0.0` | runner adapter |
+| `coverlet.collector` | `10.0.1` | coverage collector |
 
 Package changes are verification-relevant. Run restore/build/test, blocking dependency audit and affected platform builds, then review packaged compatibility when persistence/crypto/native behavior can change.
+
+`Directory.Packages.props` remains the executable source of truth if a documentation value ever differs.
 
 ## 2. Shared build properties
 
@@ -368,7 +375,17 @@ Internal unsigned inspection output is not signed/notarized production evidence.
 
 ## 24. CareNest CI
 
-`.github/workflows/ci.yml` verifies configured platform-neutral formatting/tests plus Android, Windows, iOS simulator and Mac Catalyst Release builds.
+`.github/workflows/ci.yml` verifies:
+
+- Python syntax for repository release/documentation tooling;
+- package-evidence synthetic self-test;
+- documentation-integrity synthetic self-test;
+- stable active documentation local-link integrity;
+- configured platform-neutral formatting/tests;
+- Android Release build;
+- Windows Release build;
+- iOS simulator Release build;
+- Mac Catalyst Release build.
 
 The final exact workflow result must match the source SHA being claimed as verified.
 
@@ -376,11 +393,15 @@ The final exact workflow result must match the source SHA being claimed as verif
 
 `.github/workflows/codeql.yml` performs C# security analysis for configured events.
 
+Current workflow action baseline uses `actions/checkout@v7` and `github/codeql-action@v4` components.
+
 A green CodeQL run applies to its exact source, not to later changes automatically.
 
 ## 26. Dependency audit
 
-`.github/workflows/dependency-review.yml` protects dependency policy/audit behavior.
+`.github/workflows/dependency-review.yml` protects dependency policy/audit behavior with unsuppressed NuGet audit across platform-neutral tests and the Android MAUI application graph.
+
+Current workflow action baseline uses `actions/checkout@v7` and `actions/setup-dotnet@v6`.
 
 Do not turn blocking audit failures into warning-only behavior without an explicit security decision.
 
@@ -408,22 +429,45 @@ It can:
 - record checksums/provenance;
 - upload evidence artifacts.
 
+Current maintained action majors include `actions/checkout@v7`, `actions/setup-dotnet@v6`, and `actions/upload-artifact@v7`.
+
 These are not automatically production packages.
 
 ## 29. Release Gate and Release Evidence
 
-- `.github/workflows/release-gate.yml` — fail-closed production-tag aggregate gate.
-- `.github/workflows/release-evidence.yml` — exact-source test/evidence/checksum/provenance record.
+- `.github/workflows/release-gate.yml` — fail-closed production-tag aggregate gate, including package evidence and stable documentation-integrity tooling.
+- `.github/workflows/release-evidence.yml` — exact-source test/evidence/checksum/provenance record, including retained package-tooling and documentation-integrity output.
 
 Production tags must refer to the exact approved source and must not be moved to hide a failed release attempt.
 
-## 30. Production tag behavior
+## 30. Documentation-integrity tooling
+
+Stable active Markdown local-link integrity is validated by:
+
+```bash
+python3 build/scripts/verify-documentation-links.py
+python3 build/scripts/test-verify-documentation-links.py
+```
+
+The checker is offline, fails on missing/repository-escaping local targets, and excludes immutable `docs/history/` snapshots plus the post-verification dynamic evidence/status records by default.
+
+Use:
+
+```bash
+python3 build/scripts/verify-documentation-links.py --include-dynamic
+```
+
+to explicitly audit dynamic evidence/status links without making their mutable workflow IDs/source SHAs an exact-source test input.
+
+See `docs/testing/DOCUMENTATION_INTEGRITY.md`.
+
+## 31. Production tag behavior
 
 Production-style `v*` tags participate in applicable CI/security/dependency/store/release workflows.
 
 A tag does not replace real-device, signing, accessibility, package compatibility or store-policy evidence.
 
-## 31. Repository support metadata
+## 32. Repository support metadata
 
 `.github/FUNDING.yml` currently exposes repository-only custom links for:
 
@@ -432,7 +476,23 @@ A tag does not replace real-device, signing, accessibility, package compatibilit
 
 This GitHub metadata is not application runtime functionality.
 
-## 32. Secrets policy
+## 33. Open-source repository maintenance metadata
+
+Current community-maintenance surfaces include:
+
+- `.github/ISSUE_TEMPLATE/bug_report.yml`;
+- `.github/ISSUE_TEMPLATE/feature_request.yml`;
+- `.github/ISSUE_TEMPLATE/config.yml` for safe support/security/privacy routing;
+- `.github/PULL_REQUEST_TEMPLATE.md` for safety/privacy/migration/testing/release checks;
+- `.github/CODEOWNERS` for default ownership;
+- `CONTRIBUTING.md`;
+- `CODE_OF_CONDUCT.md`;
+- `SECURITY.md`;
+- `SUPPORT.md`.
+
+Security reports and sensitive data must not be routed through public bug reports.
+
+## 34. Secrets policy
 
 Never commit:
 
@@ -448,64 +508,67 @@ Never commit:
 
 Use synthetic/fictional data for public artifacts and examples.
 
-## 33. Build reproducibility and provenance
+## 35. Build reproducibility and provenance
 
 Production evidence should resolve every signed artifact to the exact approved source SHA/tag and record package checksum/signing provenance.
 
 Repository-only Gumroad/Buy Me a Coffee documents/assets should remain distinguishable from app package contents in release evidence.
 
-## 34. Source-line/structured-file quality configuration
+Structured package evidence is produced with `build/scripts/create-package-evidence.py` and its shell/PowerShell wrappers according to `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`.
+
+## 36. Source-line/structured-file quality configuration
 
 The UI/source-policy suite deterministically scans runtime C# lines for known defect patterns and parses structured runtime files such as XAML/project/XML-family/JSON files.
 
+It also protects release-documentation policy, package-evidence tooling and documentation-integrity tooling through source-controlled contracts.
+
 This complements compiler/analyzer/platform build checks with actionable file/line regression reporting.
 
-## 35. Configuration-change checklist
+## 37. Configuration-change checklist
 
-When changing project/workflow/package/build/marketing configuration:
+When changing project/workflow/package/build/marketing/documentation configuration:
 
 1. identify affected source/platform/test/release surfaces;
 2. preserve medical/local-first/privacy boundaries;
 3. review external-commerce package isolation when storefront/funding changes;
 4. update documentation in the same change series;
 5. update the lowest appropriate regression tests;
-6. run formatting/core tests;
-7. run dependency audit when restore/dependencies can change;
-8. run affected normal platform builds;
-9. run store-candidate/inspection workflows when packaging policy can change;
-10. run CodeQL where applicable;
-11. perform packaged compatibility checks for persistence/crypto changes;
-12. create fresh exact-source verification before promoting a changed baseline.
+6. run repository Python tooling syntax/self-tests where affected;
+7. run stable documentation local-link integrity where affected;
+8. run formatting/core tests;
+9. run dependency audit when restore/dependencies can change;
+10. run affected normal platform builds;
+11. run store-candidate/inspection workflows when packaging policy can change;
+12. run CodeQL where applicable;
+13. perform packaged compatibility checks for persistence/crypto changes;
+14. create fresh exact-source verification before promoting a changed baseline.
 
-## 36. Latest fully verified pre-Gumroad baseline
+## 38. Automated verification authority
 
-Exact source:
+The current mutable automated verification record is:
 
-`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+`docs/releases/AUTOMATED_BASELINE.md`
 
-Verified:
+Use that document for the latest actually observed exact-source SHA, PR/run IDs, test counts and workflow outcomes.
 
-- 122/122 unit tests;
-- 39/39 integration tests;
-- 173/173 UI/source-policy tests;
-- **334/334 total core tests**;
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release;
-- all four store-candidate configurations;
-- CodeQL.
+Historical exact evidence remains preserved, including:
 
-The Gumroad rollout changes tests and the package scanner, so a newer source is authoritative only after its exact workflow matrix is green.
+- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`;
+- `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
 
-## 37. Current references
+Do not copy a historical test count onto a newer verification-relevant source. The current package/action/tooling combination must pass the exact-head matrix before it is promoted.
+
+## 39. Current references
 
 Use:
 
 - `PROJECT_STATUS.md` — active project/release status;
 - `what_changed.md` — exact current continuation/commit series;
 - `GUMROAD.md` — storefront guide;
+- `docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md` — current package/action baseline;
+- `docs/testing/DOCUMENTATION_INTEGRITY.md` — offline stable documentation-link gate;
 - `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — storefront/package policy;
 - `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` — complete package creation guide;
+- `docs/releases/AUTOMATED_BASELINE.md` — current automated verification authority;
 - `docs/releases/NEXT_STEPS.md` — remaining production work;
 - `docs/DOCUMENTATION_CATALOG.md` — complete documentation map.
