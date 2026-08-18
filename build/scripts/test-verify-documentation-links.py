@@ -11,9 +11,9 @@ from pathlib import Path
 CHECKER = Path(__file__).with_name("verify-documentation-links.py")
 
 
-def run(root: Path) -> subprocess.CompletedProcess[str]:
+def run(root: Path, *extra_args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [sys.executable, str(CHECKER), "--root", str(root)],
+        [sys.executable, str(CHECKER), "--root", str(root), *extra_args],
         capture_output=True,
         text=True,
         check=False,
@@ -74,6 +74,19 @@ def main() -> int:
         history = run(root)
         if history.returncode != 0:
             raise AssertionError("docs/history must be excluded by default.")
+
+        write(root / "PROJECT_STATUS.md", "[Dynamic missing](docs/dynamic-missing.md)\n")
+        dynamic_default = run(root)
+        if dynamic_default.returncode != 0:
+            raise AssertionError("Dynamic evidence/status files must be excluded by default.")
+
+        dynamic_explicit = run(root, "--include-dynamic")
+        if dynamic_explicit.returncode == 0 or "docs/dynamic-missing.md" not in dynamic_explicit.stderr:
+            raise AssertionError("--include-dynamic must audit dynamic evidence/status links.")
+
+        history_explicit = run(root, "--include-history")
+        if history_explicit.returncode == 0 or "old.md" not in history_explicit.stderr:
+            raise AssertionError("--include-history must audit historical snapshots when requested.")
 
     print("Documentation link checker self-test passed.")
     return 0
