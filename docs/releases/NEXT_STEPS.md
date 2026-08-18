@@ -1,6 +1,6 @@
 # CareNest Next Steps
 
-**Date:** 2026-08-17  
+**Date:** 2026-08-18  
 **Release line:** `1.0.0-rc.1`  
 **Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`
 
@@ -8,7 +8,7 @@ The complete active checklist from before the Gumroad rollout is preserved exact
 
 `docs/history/pre-gumroad-rollout-20260817/NEXT_STEPS.md`
 
-This file tracks only the work that remains after the source-line quality hardening, complete documentation refresh, repository-first Gumroad rollout, and successful exact-source rollout verification.
+This file tracks only the work that remains after the source-line quality hardening, complete documentation refresh, repository-first Gumroad rollout, successful exact-source rollout verification, and the dated 2026-08-18 preliminary store-policy review.
 
 ---
 
@@ -35,7 +35,7 @@ Authoritative evidence:
 
 `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
 
-Documentation-only promotion commits follow that verified implementation/source-policy SHA. Any claim about the exact latest repository head should still use the workflows attached to that exact head.
+Documentation-only promotion/policy commits follow that verified implementation/source-policy SHA. Any claim about the exact latest repository head must still use workflows attached to that exact head.
 
 ---
 
@@ -63,7 +63,9 @@ Do not repeat these implementation passes unless a real defect or changed requir
 - [x] Gumroad repository-placement/package-isolation regression contracts;
 - [x] current documentation catalog/status/governance/developer/testing/configuration/FAQ/limitations/changelog refresh;
 - [x] superseded major active documents preserved exactly in `docs/history/pre-gumroad-rollout-20260817/`;
-- [x] exact-source Gumroad rollout verification completed and recorded.
+- [x] exact-source Gumroad rollout verification completed and recorded;
+- [x] dated preliminary Apple/Google/Microsoft store-policy review completed on 2026-08-18;
+- [x] stale release-policy/checklist/evidence references corrected to the verified 336-test Gumroad baseline.
 
 ---
 
@@ -98,7 +100,39 @@ The earlier 334-test pre-Gumroad baseline is historical; the verified Gumroad ro
 
 ---
 
-## 4. Packaged existing-data and SQLite compatibility
+## 4. Preliminary store-policy review — complete; final submission review remains
+
+Dated record:
+
+`docs/releases/STORE_POLICY_REVIEW_20260818.md`
+
+Completed on 2026-08-18:
+
+- [x] current Apple App Review Guidelines reviewed against the current non-clinical CareNest product/package boundary;
+- [x] current Google Play Health Content and Services guidance reviewed;
+- [x] current Google Play Health apps declaration guidance reviewed;
+- [x] current Google Play Data safety guidance reviewed;
+- [x] current Microsoft Store sensitive-personal-information/privacy requirements reviewed;
+- [x] current repository-only Gumroad/Buy Me a Coffee package-exclusion policy retained;
+- [x] current listing wording boundary documented: no diagnosis, dosage inference/calculation, treatment recommendation, clinical interaction/risk claim, guaranteed reminder delivery, emergency-service claim, or unapproved medical-device claim.
+
+Still required against the exact production package/listing:
+
+- [ ] re-open the official Apple policies on the actual submission date;
+- [ ] re-open the official Google Play policies on the actual submission date;
+- [ ] re-open the official Microsoft/Windows policies on the actual submission date where applicable;
+- [ ] complete the live Google Play Health apps declaration;
+- [ ] complete the live Google Play Data safety answers;
+- [ ] complete Apple privacy/store metadata against the exact production capabilities/binary;
+- [ ] complete Microsoft/Partner Center privacy/store metadata where applicable;
+- [ ] record final review date, official sources, conclusions and any required changes;
+- [ ] repeat affected exact-source verification if final policy review requires a product/package change.
+
+A dated pre-submission review is useful release evidence but is not store approval.
+
+---
+
+## 5. Packaged existing-data and SQLite compatibility
 
 Use fictional/synthetic data only.
 
@@ -116,7 +150,7 @@ Runbook: `docs/releases/PACKAGED_RELEASE_VALIDATION.md`.
 
 ---
 
-## 5. Encrypted document and backup compatibility
+## 6. Encrypted document and backup compatibility
 
 With fictional data:
 
@@ -137,7 +171,7 @@ Never manufacture a current artifact and label it historical evidence.
 
 ---
 
-## 6. Android real-device/emulator validation
+## 7. Android real-device/emulator validation
 
 On representative supported Android versions/vendors:
 
@@ -163,7 +197,7 @@ On representative supported Android versions/vendors:
 
 ---
 
-## 7. Windows validation
+## 8. Windows validation
 
 On representative Windows 11 targets:
 
@@ -182,7 +216,7 @@ On representative Windows 11 targets:
 
 ---
 
-## 8. iPhone/iPad real-device validation
+## 9. iPhone/iPad real-device validation
 
 Simulator compilation is not real-device notification evidence.
 
@@ -202,7 +236,7 @@ Simulator compilation is not real-device notification evidence.
 
 ---
 
-## 9. Mac Catalyst validation
+## 10. Mac Catalyst validation
 
 - [ ] fresh execution/install path;
 - [ ] notification permission/delivery;
@@ -217,7 +251,7 @@ Simulator compilation is not real-device notification evidence.
 
 ---
 
-## 10. Accessibility validation
+## 11. Accessibility validation
 
 Automated source checks do not replace real assistive-technology testing.
 
@@ -235,7 +269,7 @@ Repository promotional graphics should also retain meaningful alt text/plain-tex
 
 ---
 
-## 11. Production signing outside Git
+## 12. Production signing outside Git
 
 Never commit private signing material.
 
@@ -247,7 +281,7 @@ Never commit private signing material.
 
 ---
 
-## 12. Final signed-package inspection
+## 13. Final signed-package inspection
 
 For every intended production package:
 
@@ -270,13 +304,17 @@ It is intentionally promoted outside the app package under the current policy.
 
 ---
 
-## 13. Store metadata and policy review
+## 14. Store metadata and policy review at submission
 
-At submission time, use current platform policies rather than old snapshots.
+The preliminary 2026-08-18 policy review is complete. At actual submission, use the live platform policies and exact production binary/listing rather than this dated snapshot alone.
 
-- [ ] Apple policy/listing review;
-- [ ] Google Play policy/listing review;
-- [ ] Microsoft/Windows distribution review if used;
+- [ ] Apple submission-date policy/listing review;
+- [ ] Google Play submission-date policy/listing review;
+- [ ] Microsoft/Windows submission-date review if used;
+- [ ] live Google Play Health apps declaration;
+- [ ] live Google Play Data safety declaration;
+- [ ] Apple privacy/store metadata;
+- [ ] Microsoft/Partner Center privacy/store metadata where applicable;
 - [ ] health-organizer claims/disclaimers;
 - [ ] reminder/notification wording;
 - [ ] privacy/data-safety declarations;
@@ -284,13 +322,13 @@ At submission time, use current platform policies rather than old snapshots.
 - [ ] support/privacy/terms/security links;
 - [ ] external-commerce/storefront policy review;
 - [ ] confirm repository Gumroad promotion remains separate from the submitted app package unless an explicitly reviewed policy change is approved;
-- [ ] record review date/source/conclusion.
+- [ ] record final review date/source/conclusion.
 
 Store policies are time-sensitive.
 
 ---
 
-## 14. Freeze exact production source
+## 15. Freeze exact production source
 
 Only after applicable manual/package/signing/store findings are resolved:
 
@@ -305,7 +343,7 @@ Do not move a failed/rejected production tag to a different source just to reuse
 
 ---
 
-## 15. Production `v*` tag and final gates
+## 16. Production `v*` tag and final gates
 
 For the exact approved production tag require all applicable configured gates:
 
@@ -357,7 +395,7 @@ Any future networked, remote-data, commerce-in-app or clinical feature needs a n
 
 ## Continuation rule
 
-The Gumroad implementation/source-policy rollout is now verified. Do not keep making broad source changes merely to remain busy.
+The Gumroad implementation/source-policy rollout is verified and the preliminary 2026-08-18 store-policy review is recorded. Do not keep making broad source changes merely to remain busy.
 
 The next meaningful work is real production validation. If a manual/package/security/accessibility defect is found:
 
@@ -367,4 +405,4 @@ The next meaningful work is real production validation. If a manual/package/secu
 4. run the full applicable exact-source matrix again;
 5. update current evidence only after the new run completes.
 
-Current state: **CareNest `1.0.0-rc.1` is source-complete for its intended RC scope, with highlighted repository-only Gumroad promotion, package-level external-commerce exclusion, and a verified 336/336 Gumroad rollout implementation baseline; real production evidence is now the next gate.**
+Current state: **CareNest `1.0.0-rc.1` is source-complete for its intended RC scope, with highlighted repository-only Gumroad promotion, package-level external-commerce exclusion, a verified 336/336 Gumroad rollout implementation baseline, and a dated preliminary Apple/Google/Microsoft store-policy review; real production device/package/accessibility/signing/live-store/publication evidence is now the next gate.**
