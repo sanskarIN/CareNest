@@ -54,6 +54,20 @@ jobs:
           python3 build/scripts/test-create-package-evidence.py \
             | tee artifacts/tooling/package-evidence-self-test.txt
 
+      - name: Verify documentation integrity tooling
+        id: documentation
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            build/scripts/verify-documentation-links.py \
+            build/scripts/test-verify-documentation-links.py
+          python3 build/scripts/test-verify-documentation-links.py \
+            | tee artifacts/tooling/documentation-link-self-test.txt
+          python3 build/scripts/verify-documentation-links.py \
+            | tee artifacts/tooling/documentation-link-check.txt
+
       - name: Run unit tests with TRX evidence
         id: unit
         continue-on-error: true
@@ -131,6 +145,7 @@ jobs:
           failures=0
           for result in \
             "package_tooling=${{ steps.package_tooling.outcome }}" \
+            "documentation=${{ steps.documentation.outcome }}" \
             "unit=${{ steps.unit.outcome }}" \
             "integration=${{ steps.integration.outcome }}" \
             "ui=${{ steps.ui.outcome }}" \
