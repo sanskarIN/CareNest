@@ -25,16 +25,22 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
-      - name: Verify package evidence Python syntax
+      - name: Verify repository Python tooling syntax
         shell: bash
         run: |
           set -euo pipefail
           python3 -m py_compile \
             build/scripts/verify-store-safe-payload.py \
             build/scripts/create-package-evidence.py \
-            build/scripts/test-create-package-evidence.py
+            build/scripts/test-create-package-evidence.py \
+            build/scripts/verify-documentation-links.py \
+            build/scripts/test-verify-documentation-links.py
       - name: Self-test package evidence tooling
         run: python3 build/scripts/test-create-package-evidence.py
+      - name: Self-test documentation link tooling
+        run: python3 build/scripts/test-verify-documentation-links.py
+      - name: Verify active documentation local links
+        run: python3 build/scripts/verify-documentation-links.py
       - name: Verify platform-neutral formatting
         shell: bash
         run: |
