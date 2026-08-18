@@ -4,7 +4,8 @@
 The tool does not sign packages or claim store approval. It records exact source,
 package hashes and store-safe payload scan output for inspection or production
 artifacts. Production mode additionally requires an immutable v* tag that
-resolves to the recorded source SHA and rejects an unclean tracked workspace.
+resolves to the recorded source SHA, a matching checked-out HEAD, a clean tracked
+workspace, and non-secret signing/notarization provenance.
 """
 
 from __future__ import annotations
@@ -53,7 +54,11 @@ def normalize_sha(value: str) -> str:
 
 def resolve_source_sha(root: Path, supplied: str | None) -> str:
     if supplied:
-        return normalize_sha(supplied)
+        candidate = normalize_sha(supplied)
+        resolved = normalize_sha(run_git(root, "rev-parse", "--verify", f"{candidate}^{{commit}}"))
+        if resolved != candidate:
+            raise RuntimeError(f"Supplied source SHA resolved unexpectedly: {candidate} -> {resolved}")
+        return candidate
     return normalize_sha(run_git(root, "rev-parse", "HEAD"))
 
 
@@ -86,7 +91,7 @@ def iter_payload_files(payload: Path) -> Iterable[tuple[str, Path]]:
     if not payload.is_dir():
         raise RuntimeError(f"Payload does not exist or is not a file/directory: {payload}")
 
-    for path in sorted((candidate for candidate in payload.rglob("*") if candidate.is_file())):
+    for path in sorted(candidate for candidate in payload.rglob("*") if candidate.is_file()):
         yield path.relative_to(payload).as_posix(), path
 
 
@@ -113,12 +118,16 @@ def collect_payload_evidence(payload: Path) -> tuple[list[dict[str, object]], st
     if not files:
         raise RuntimeError(f"Payload contains no files: {payload}")
 
-    if payload.is_file():
-        payload_digest = str(files[0]["sha256"])
-    else:
-        payload_digest = aggregate.hexdigest()
-
+    payload_digest = str(files[0]["sha256"]) if payload.is_file() else aggregate.hexdigest()
     return files, payload_digest, total_bytes
+
+
+def display_scanner_path(scanner: Path) -> str:
+    resolved = scanner.resolve()
+    try:
+        return resolved.relative_to(repository_root()).as_posix()
+    except ValueError:
+        return str(resolved)
 
 
 def run_store_safe_scan(scanner: Path, payload: Path) -> dict[str, object]:
@@ -140,7 +149,7 @@ def run_store_safe_scan(scanner: Path, payload: Path) -> dict[str, object]:
 
     return {
         "status": "passed",
-        "scanner": scanner.relative_to(repository_root()).as_posix(),
+        "scanner": display_scanner_path(scanner),
         "stdout": stdout,
     }
 
@@ -164,6 +173,7 @@ def ensure_output_outside_payload(payload: Path, output: Path) -> None:
 def write_json_atomic(output: Path, data: dict[str, object]) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     serialized = json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    temp_name: str | None = None
     try:
         with tempfile.NamedTemporaryFile(
             mode="w",
@@ -179,6 +189,11 @@ def write_json_atomic(output: Path, data: dict[str, object]) -> None:
             os.fsync(stream.fileno())
         os.replace(temp_name, output)
     except OSError as exc:
+        if temp_name:
+            try:
+                Path(temp_name).unlink(missing_ok=True)
+            except OSError:
+                pass
         raise RuntimeError(f"Could not write evidence file {output}: {exc}") from exc
 
 
@@ -223,6 +238,12 @@ def validate_release_identity(args: argparse.Namespace, root: Path, source_sha: 
     if tag_sha != source_sha:
         raise RuntimeError(
             f"Production source tag {args.source_tag!r} resolves to {tag_sha}, not recorded source {source_sha}."
+        )
+
+    head_sha = normalize_sha(run_git(root, "rev-parse", "HEAD"))
+    if head_sha != source_sha:
+        raise RuntimeError(
+            f"Production evidence requires checked-out HEAD {head_sha} to equal recorded source {source_sha}."
         )
 
     if tracked_status:
