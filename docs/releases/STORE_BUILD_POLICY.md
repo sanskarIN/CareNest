@@ -1,8 +1,9 @@
 # CareNest Store Build Policy
 
 **Release line:** `1.0.0-rc.1`  
-**Latest verified Gumroad implementation/source-policy baseline:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Latest fully verified Gumroad implementation/source-policy baseline:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
 **Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`  
+**Package evidence guide:** `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`  
 **Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`
 
 This document defines the current source/package boundary for store-oriented builds. It is not evidence of production signing or store approval.
@@ -36,9 +37,10 @@ The stronger current invariant is:
 
 - external-commerce runtime surfaces absent by source policy;
 - actual built payload scanned for repository-only external-commerce markers before inspection artifact upload;
-- final signed packages scanned again/equivalently inspected before production promotion.
+- final signed packages scanned again/equivalently inspected before production promotion;
+- final production package scan/hash/provenance results captured in structured package evidence JSON.
 
-The scanner is defense-in-depth and must fail closed.
+The scanner and production evidence path are defense-in-depth and must fail closed.
 
 ## 4. Default forbidden package markers
 
@@ -140,9 +142,9 @@ They must not be described as:
 - store approved;
 - production installable for every target.
 
-Final production packages require separate signing/provenance/smoke/manual validation.
+Final production packages require separate signing/provenance/smoke/manual validation and structured final-package evidence.
 
-## 10. Latest verified Gumroad rollout automated evidence
+## 10. Latest fully verified Gumroad rollout automated evidence
 
 Exact verified implementation/source-policy source:
 
@@ -168,7 +170,9 @@ Authoritative automated verification record:
 
 `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
 
-Documentation-only commits after that exact implementation/source-policy source do not change the tested runtime or package-scanner behavior unless explicitly stated. The exact final repository head must still complete the applicable workflows before it is described as fully green.
+Current `main` now contains later verification-relevant release contracts, package-evidence tooling and workflow changes. Those newer changes require fresh exact-source automation before they can replace the verified baseline above.
+
+Do not assign the 336-test result to the newer source or predict a replacement total before the exact run is recorded.
 
 ## 11. Strict XAML behavior
 
@@ -219,7 +223,35 @@ Production signing remains outside Git and outside internal inspection workflows
 
 Final packages must record exact source SHA/tag, identity/version, filename, SHA-256 and signing/notarization/store provenance.
 
-## 15. Final signed-package external-commerce inspection
+Never put private signing material, passwords, service credentials or account tokens into repository evidence or package-evidence notes.
+
+## 15. Structured final-package evidence
+
+Source-controlled package evidence tooling:
+
+- `build/scripts/create-package-evidence.py`;
+- `build/scripts/create-package-evidence.sh`;
+- `build/scripts/create-package-evidence.ps1`.
+
+For a final production artifact use `--stage production` according to:
+
+`docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
+
+Production mode requires:
+
+- immutable `v*` source tag;
+- tag SHA equals recorded source SHA;
+- checked-out HEAD equals recorded source SHA;
+- clean tracked workspace;
+- non-secret real signing/notarization/store-managed provenance text;
+- successful default store-safe scan;
+- output outside the payload.
+
+The resulting JSON records per-file SHA-256, top-level package/directory payload SHA-256 and the store-safe scanner result.
+
+The tool does not sign the package or prove store approval; independent signing/notarization/store provenance and manual validation remain required.
+
+## 16. Final signed-package external-commerce inspection
 
 Even though source policy removes external-commerce surfaces, final signed packages must repeat/equivalently perform forbidden-marker scans for both:
 
@@ -230,9 +262,16 @@ ramsandesh.gumroad.com
 
 Also manually verify that the installed app contains no Gumroad/Buy Me a Coffee promotional card/action/artwork and that no health feature changes based on purchase/funding state.
 
+For each final package retain:
+
+- structured package evidence JSON;
+- independently checked package SHA-256;
+- signing/notarization/store provenance;
+- installed-package smoke/manual evidence.
+
 This protects against packaging/tooling/regression differences after internal inspection.
 
-## 16. Change policy
+## 17. Change policy
 
 Do not reintroduce an application Gumroad link, payment SDK, funding link, external support card or promotional storefront asset as a routine store-specific switch.
 
