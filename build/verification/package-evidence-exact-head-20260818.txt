@@ -1,0 +1,23 @@
+CareNest exact-head verification marker
+
+Frozen source SHA: 0e894ef57d3b9bfb9297cd5d3cda37ac7abccc3d
+Purpose: verify the package-evidence and release-governance continuation on the exact frozen CareNest source.
+
+Verification-only marker. Do not merge this marker into main.
+
+Required PR evidence:
+- CareNest CI including package-evidence Python syntax/self-test
+- platform-neutral formatting
+- unit tests with actual reported count
+- integration tests with actual reported count
+- UI/source-policy tests with actual reported count
+- Android Release build
+- Windows Release build
+- iOS simulator Release build
+- Mac Catalyst Release build
+- Store Package Configuration
+- Store Inspection Artifacts
+- CodeQL
+- unsuppressed Dependency Audit
+
+After evidence is recorded, close the verification PR without merge.
