@@ -1,7 +1,8 @@
 # CareNest Production Quality Gate
 
 **Release line:** `1.0.0-rc.1`  
-**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+**Latest verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`
 
 CareNest must not be described as globally bug-free. Production promotion is acceptable only when the applicable automated, manual, package, accessibility, signing and store evidence below is complete for the exact candidate.
 
@@ -16,7 +17,9 @@ Required:
 - prohibited sync-over-async/async misuse remains guarded by source-policy tests;
 - new behavior has appropriate lowest-layer regression tests;
 - analyzer/compiler failures are fixed rather than broadly suppressed;
-- strict XAML compiled-binding policy remains enabled.
+- strict XAML compiled-binding policy remains enabled;
+- release-documentation consistency contracts remain green;
+- package-evidence tooling contracts remain green.
 
 ## 2. Strict XAML quality
 
@@ -129,34 +132,48 @@ Required:
 - former SQLite exact suppression remains absent;
 - dependency floors remain protected by source-policy tests.
 
-## 10. Application funding/package quality
+## 10. External-commerce application-package quality
 
 Required:
 
 - no external Buy Me a Coffee destination/card/command/artwork under distributed application runtime/package source;
-- repository-only voluntary support remains separate;
-- funding never creates health/reminder/medical entitlement;
-- forbidden-marker package scanner remains fail closed;
-- no obsolete application funding-link toggle is required for store builds.
+- no external Gumroad destination/card/command/artwork under distributed application runtime/package source;
+- repository-only voluntary support/storefront surfaces remain separate;
+- purchase/funding never creates health/reminder/medical entitlement or local-health-data access;
+- forbidden-marker package scanner remains fail closed for both repository-only markers;
+- no obsolete application external-commerce toggle is required for store builds.
+
+Repository-only markers:
+
+```text
+buymeacoffee.com/sanskarIN
+ramsandesh.gumroad.com
+```
 
 ## 11. Automated test/build quality
 
-Current accepted PR #74 evidence:
+Latest accepted exact verified Gumroad implementation/source-policy evidence:
+
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+
+Verified on that exact source:
 
 - 122/122 unit;
 - 39/39 integration;
-- 170/170 UI/source-policy;
-- **331/331 total**;
+- 175/175 UI/source-policy;
+- **336/336 total**;
 - Android Release: success;
 - Windows Release: success;
 - iOS simulator Release: success;
 - Mac Catalyst Release: success;
 - Store Package Configuration: success on all four targets;
-- Store Inspection Artifacts: success;
-- CodeQL: success;
-- Dependency Audit: success.
+- CodeQL: success.
 
-This evidence belongs to the exact PR #74 source head `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9` and merged executable source `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`.
+Authoritative record:
+
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+
+The repository now also contains additional release-documentation and package-evidence-tooling tests/scripts after that verified source. Those later verification-relevant changes require their own exact-source CI evidence before they can replace the verified baseline above.
 
 ## 12. Release-engineering quality
 
@@ -167,9 +184,10 @@ Required configuration includes:
 - Store Inspection Artifacts;
 - fail-closed Release Gate;
 - Release Evidence with exact source/ref/run identity and checksums;
+- fail-closed package evidence tooling with synthetic self-test coverage;
 - quality/release preflight that treats required dependency audit failures as blocking;
 - repository-local Git identity helpers that fail closed;
-- production-style `v*` tag coverage for all seven applicable workflows.
+- production-style `v*` tag coverage for all applicable workflows.
 
 ## 13. Manual platform evidence
 
@@ -214,10 +232,22 @@ Required:
 - exact source/package identity recorded;
 - final signed package SHA-256 recorded;
 - signing/notarization/store provenance recorded;
-- forbidden-marker scan on final signed package;
+- final signed package scan for `buymeacoffee.com/sanskarIN`;
+- final signed package scan for `ramsandesh.gumroad.com`;
+- structured package evidence JSON generated with `build/scripts/create-package-evidence.py --stage production`;
+- production package evidence source tag, checked-out HEAD and source SHA all match;
+- production package evidence tracked workspace is clean;
 - install/smoke test of final candidate.
 
+Package evidence guide:
+
+`docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
+
 ## 17. Store/policy evidence
+
+Preliminary policy review:
+
+`docs/releases/STORE_POLICY_REVIEW_20260818.md`
 
 At submission time verify current channel rules and actual candidate behavior for:
 
@@ -228,7 +258,12 @@ At submission time verify current channel rules and actual candidate behavior fo
 - screenshots with fictional data;
 - support/privacy/terms/security links;
 - final package identity;
-- absence of removed in-app BMC funding surface from listing/screenshots.
+- absence of in-app Gumroad/Buy Me a Coffee surface from listing/screenshots under the current package policy;
+- live Google Play Health apps declaration and Data safety where applicable;
+- current Apple privacy/store metadata where applicable;
+- current Microsoft/Partner Center privacy/store metadata where applicable.
+
+The dated preliminary review does not replace this final submission-date gate.
 
 ## 18. Exact production tag evidence
 
