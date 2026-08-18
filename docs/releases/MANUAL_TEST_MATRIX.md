@@ -1,5 +1,8 @@
 # CareNest Manual Release Test Matrix
 
+**Release line:** `1.0.0-rc.1`  
+**Latest verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+
 Use fictional/synthetic data only. This matrix covers behavior that source compilation/tests cannot prove on real packages/devices.
 
 ## Evidence for every completed row
@@ -9,6 +12,7 @@ Record:
 - app version/build;
 - exact source SHA/tag;
 - package filename/checksum when applicable;
+- structured package evidence JSON when applicable;
 - device/emulator/simulator model;
 - OS version;
 - date/time zone;
@@ -18,7 +22,7 @@ Record:
 - short non-sensitive observation;
 - issue/fix reference for failures.
 
-Never put real prescriptions, health documents, backups, PINs/passwords/keys or private health information in public evidence.
+Never put real prescriptions, health documents, backups, PINs/passwords/keys, signing secrets or private health information in public evidence.
 
 ## Cross-platform functional matrix
 
@@ -59,6 +63,7 @@ Never put real prescriptions, health documents, backups, PINs/passwords/keys or 
 | Offline core use | ☐ | ☐ | ☐ | ☐ | Core local-first flows work without CareNest backend. |
 | About/legal/support contacts | ☐ | ☐ | ☐ | ☐ | Repository/creator/business/support/privacy/terms/security available. |
 | No in-app BMC funding surface | ☐ | ☐ | ☐ | ☐ | Distributed app contains no BMC destination/card/action/artwork. |
+| No in-app Gumroad storefront surface | ☐ | ☐ | ☐ | ☐ | Distributed app contains no Gumroad destination/card/action/artwork. |
 
 ## Packaged SQLite/data compatibility
 
@@ -125,6 +130,8 @@ Mandatory before production promotion with representative fictional prior data.
 - [ ] No CareNest account/network requirement appears in normal local-first flows.
 - [ ] Repository/browser/legal external actions are explicit.
 - [ ] Application package/source exposes no external BMC funding destination.
+- [ ] Application package/source exposes no external Gumroad storefront destination.
+- [ ] Purchase/funding state does not change health/reminder behavior or local-health-data access.
 
 ## Accessibility/manual UX
 
@@ -145,13 +152,37 @@ For each signed production candidate:
 - [ ] Package filename/version/identity recorded.
 - [ ] SHA-256 recorded.
 - [ ] Signing/notarization/store provenance recorded.
-- [ ] Forbidden external-funding marker scan passed.
-- [ ] Installed About has no BMC funding action/card.
+- [ ] `buymeacoffee.com/sanskarIN` marker scan passed.
+- [ ] `ramsandesh.gumroad.com` marker scan passed.
+- [ ] Structured package evidence JSON generated with `build/scripts/create-package-evidence.py --stage production`.
+- [ ] Package evidence payload SHA-256 matches independently recorded package SHA-256/equivalent directory evidence.
+- [ ] Installed About/runtime has no BMC funding action/card.
+- [ ] Installed About/runtime has no Gumroad storefront/purchase action/card.
 - [ ] Support/legal links work as intended.
 - [ ] Smoke test passed.
+
+Package evidence guide:
+
+`docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
+
+## Store submission manual evidence
+
+Preliminary policy review:
+
+`docs/releases/STORE_POLICY_REVIEW_20260818.md`
+
+- [ ] Submission-date Apple policy/privacy/store review complete where applicable.
+- [ ] Submission-date Google Play health/privacy/permissions/payments review complete where applicable.
+- [ ] Submission-date Microsoft Store privacy/sensitive-data review complete where applicable.
+- [ ] Live Google Play Health apps declaration complete where applicable.
+- [ ] Live Google Play Data safety complete where applicable.
+- [ ] Apple privacy/store metadata complete where applicable.
+- [ ] Microsoft/Partner Center privacy/store metadata complete where applicable.
+- [ ] Final listing/screenshots use fictional data and match the exact production package.
+- [ ] Final support/privacy/terms/security links verified.
 
 ## Sign-off rule
 
 A row is complete only when actually tested/evidenced. `N/A` requires a defensible reason. Do not use `N/A` merely to unblock a release.
 
-Current automated PR #74 evidence is separate from this manual matrix. CareNest remains `1.0.0-rc.1` until applicable rows and the rest of `docs/releases/NEXT_STEPS.md` are complete.
+The latest verified automated Gumroad implementation/source-policy evidence at `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` is separate from this manual matrix. Later release-documentation/package-evidence tooling changes require their own exact-source automation before replacing that verified baseline. CareNest remains `1.0.0-rc.1` until applicable rows and the rest of `docs/releases/NEXT_STEPS.md` are complete.
