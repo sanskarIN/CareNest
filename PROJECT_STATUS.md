@@ -1,6 +1,6 @@
 # CareNest — Current Project Status
 
-**Date:** 2026-08-17  
+**Date:** 2026-08-18  
 **Release line:** `1.0.0-rc.1`  
 **Repository:** `https://github.com/sanskarIN/CareNest`  
 **Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`
@@ -192,7 +192,25 @@ A green source dependency graph does not prove packaged existing-data/encrypted-
 
 ---
 
-## 10. Documentation state
+## 10. Current store-policy review
+
+A dated pre-submission store-policy review was completed on **2026-08-18** and recorded at:
+
+`docs/releases/STORE_POLICY_REVIEW_20260818.md`
+
+The review checked the current CareNest product/package boundary against:
+
+- Apple App Review Guidelines relevant to medical/health functionality, privacy, completeness and external purchase links;
+- Google Play Health Content and Services, Health apps declaration and Data safety requirements;
+- Microsoft Store rules for personal and highly sensitive information.
+
+The review preserves the current conservative release choice: Gumroad and Buy Me a Coffee remain repository/documentation surfaces and stay outside the distributed CareNest health-app package.
+
+This dated review is not store approval. The official policy pages and live store-console declarations must be re-checked against the exact production binary/listing immediately before submission.
+
+---
+
+## 11. Documentation state
 
 Current documentation entry points:
 
@@ -201,6 +219,7 @@ Current documentation entry points:
 - `docs/DOCUMENTATION_CATALOG.md` — authority/ownership map;
 - `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — whole-project reference;
 - `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — verified Gumroad rollout evidence;
+- `docs/releases/STORE_POLICY_REVIEW_20260818.md` — current dated pre-submission store-policy review;
 - `docs/DEVELOPER_REFERENCE.md` — developer rules;
 - `docs/REPOSITORY_GOVERNANCE.md` — source/evidence/marketing governance;
 - `GUMROAD.md` — canonical storefront guide;
@@ -214,9 +233,9 @@ Dated historical evidence is not rewritten to retroactively insert current Gumro
 
 ---
 
-## 11. Production blockers still open
+## 12. Production blockers still open
 
-Automated source/build verification does not complete production release evidence.
+Automated source/build verification and the 2026-08-18 pre-submission policy review do not complete production release evidence.
 
 ### Real-device/platform behavior
 
@@ -257,7 +276,8 @@ Use fictional/synthetic data only.
 - [ ] final production-signed packages;
 - [ ] signed-package checksums/provenance;
 - [ ] current store screenshots/listing/privacy/data-safety metadata;
-- [ ] submission-time Apple/Google/Microsoft policy review as applicable;
+- [ ] live Google Play Health apps declaration for the exact production feature set;
+- [ ] submission-day Apple/Google/Microsoft policy re-check as applicable;
 - [ ] exact approved production source commit;
 - [ ] immutable approved `v*` tag;
 - [ ] tagged CI/CodeQL/dependency/store/release-gate evidence;
@@ -265,14 +285,15 @@ Use fictional/synthetic data only.
 
 ---
 
-## 12. Current interpretation
+## 13. Current interpretation
 
 - CareNest remains `1.0.0-rc.1`.
 - The intended RC feature scope remains source-complete.
 - The Gumroad storefront is strongly highlighted across current repository/documentation surfaces.
 - Gumroad and Buy Me a Coffee remain absent from the packaged CareNest health app under the current policy.
 - The verified Gumroad rollout implementation/source-policy baseline is `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` with **336/336 core tests**, all normal platform builds, all four store-candidate builds, and CodeQL green.
-- Production validation still requires real-device, accessibility, packaged compatibility, signing, current store-policy and publication evidence.
+- A dated pre-submission Apple/Google/Microsoft policy review is recorded for 2026-08-18.
+- Production validation still requires real-device, accessibility, packaged compatibility, signing, exact live store-console metadata/policy re-check and publication evidence.
 - CareNest is not yet production-signed, store-approved, production-published, manually proven on every target/device condition, or globally guaranteed bug-free.
 
-Use `what_changed.md` for the exact active Gumroad continuation and commit history.
+Use `what_changed.md` for the exact active continuation and commit history.
