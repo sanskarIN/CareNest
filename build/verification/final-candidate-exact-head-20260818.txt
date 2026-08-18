@@ -1,0 +1,15 @@
+CareNest verification-only marker
+
+Frozen source/base SHA: fed99a4bc6a2d8b232907ea7a9cdd08604c46f83
+Purpose: final exact-head verification after source bug hardening, dependency/toolchain maintenance, release/package evidence tooling, documentation integrity, open-source maintenance, and complete documentation refresh.
+
+This marker must not be merged into main.
+
+Required PR-triggered evidence:
+- CareNest CI, including Python tooling syntax, package-evidence self-test, documentation-integrity self-test, stable documentation link integrity, formatting, unit/integration/UI source-policy tests, Android/Windows/iOS simulator/Mac Catalyst Release builds
+- Store Package Configuration on Android/Windows/iOS simulator/Mac Catalyst
+- Store Inspection Artifacts
+- CodeQL
+- unsuppressed Dependency Audit
+
+If a genuine source/workflow/tooling/documentation contract failure occurs, close this PR without merge, fix the smallest correct source boundary on main, and create a replacement verification marker from the corrected exact SHA.
