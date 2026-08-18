@@ -7,8 +7,9 @@
 </p>
 
 **Release line:** `1.0.0-rc.1`  
-**Documentation baseline:** 2026-08-17  
+**Documentation baseline:** 2026-08-18  
 **Latest verified Gumroad rollout source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Current store-policy review:** `releases/STORE_POLICY_REVIEW_20260818.md`  
 **Compiled-binding verification head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9` (PR #74)
 
 CareNest is a local-first .NET MAUI family health organizer. It is organizational software, not a diagnostic, treatment, dosage-calculation, clinical-interaction, clinical-risk or emergency-service system.
@@ -48,6 +49,12 @@ Authoritative Gumroad verification: [`releases/GUMROAD_ROLLOUT_VERIFICATION_2026
 
 The earlier PR #74 compiled-binding verification remains permanent evidence for strict XAML compilation: [`releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`](releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md).
 
+## Current store-policy evidence
+
+Dated pre-submission review: [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md).
+
+The 2026-08-18 record reviews the current CareNest product/package boundary against relevant Apple, Google Play and Microsoft Store policy areas. It does **not** mean CareNest is store-approved and does not replace the final policy/store-console review against the exact production binary and listing on the actual submission date.
+
 Current status: [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md).  
 Remaining production work: [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md).
 
@@ -70,6 +77,7 @@ Remaining production work: [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md).
 - [`REPOSITORY_GOVERNANCE.md`](REPOSITORY_GOVERNANCE.md) — evidence/documentation governance.
 - [`DOCUMENTATION_STANDARDS.md`](DOCUMENTATION_STANDARDS.md) — writing/maintenance standards.
 - [`releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`](releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md) — exact rollout verification evidence.
+- [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md) — current dated pre-submission store-policy review.
 - [`../GUMROAD.md`](../GUMROAD.md) — canonical Gumroad storefront documentation.
 - [`marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`](marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md) — repository/storefront placement and package-compliance guide.
 - [`../what_changed.md`](../what_changed.md) — detailed active continuation handoff.
@@ -228,10 +236,12 @@ Current operational documents:
 - [`releases/RELEASE_NOTES_TEMPLATE.md`](releases/RELEASE_NOTES_TEMPLATE.md)
 - [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md)
 - [`releases/STORE_BUILD_POLICY.md`](releases/STORE_BUILD_POLICY.md)
+- [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md)
 
 Current verification references:
 
 - [`releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`](releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md) — current Gumroad rollout evidence for `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`;
+- [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md) — current dated pre-submission store-policy review;
 - [`releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`](releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md) — permanent compiled-binding verification;
 - [`releases/FINAL_STORE_PAYLOAD_AND_BUG_AUDIT_VERIFICATION_20260815.md`](releases/FINAL_STORE_PAYLOAD_AND_BUG_AUDIT_VERIFICATION_20260815.md) — earlier package-boundary verification.
 
@@ -264,6 +274,6 @@ Historical files may document the earlier funding-toggle investigation, but that
 
 CareNest remains `1.0.0-rc.1`.
 
-The source-controlled feature scope and Gumroad rollout are automated-verified at the named implementation/source-policy baseline, but production publication still requires real-device/accessibility/package-compatibility/signing/store/tag evidence.
+The source-controlled feature scope and Gumroad rollout are automated-verified at the named implementation/source-policy baseline. A dated pre-submission store-policy review is now recorded for 2026-08-18, but production publication still requires real-device/accessibility/package-compatibility/signing/final-package/live-store-console/submission-day-policy/tag/publication evidence.
 
 Do not describe CareNest as globally bug-free, production-signed, store-approved or production-published until those external gates are actually completed.
