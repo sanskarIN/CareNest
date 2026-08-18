@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/sanskarIN/CareNest/security/advisories/new
+    about: Report security vulnerabilities privately. Never include real health records, backups, passwords, PINs, keys, or signing secrets in a public issue.
+  - name: CareNest support guide
+    url: https://github.com/sanskarIN/CareNest/blob/main/SUPPORT.md
+    about: Read support boundaries and contact options before opening an issue.
+  - name: Privacy and data handling
+    url: https://github.com/sanskarIN/CareNest/blob/main/PRIVACY.md
+    about: Review the local-first privacy model and data-handling limitations.
