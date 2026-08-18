@@ -43,6 +43,14 @@ def main() -> int:
                     "[External](https://example.com)",
                     "[Mail](mailto:test@example.com)",
                     "[Anchor](#synthetic-docs)",
+                    "",
+                    "```html",
+                    '<img src="docs/example-only-missing.svg" />',
+                    "[Example only](docs/example-only-missing.md)",
+                    "```",
+                    "",
+                    "Inline example: `[Inline missing](docs/inline-example-missing.md)`",
+                    "<!-- [Comment missing](docs/comment-example-missing.md) -->",
                 ]
             ),
         )
@@ -51,12 +59,14 @@ def main() -> int:
         if good.returncode != 0:
             print(good.stdout, end="")
             print(good.stderr, end="", file=sys.stderr)
-            raise AssertionError("Clean synthetic documentation should pass.")
+            raise AssertionError(
+                "Clean synthetic documentation and example-only links should pass."
+            )
 
         write(root / "BROKEN.md", "[Missing](docs/missing.md)\n")
         missing = run(root)
         if missing.returncode == 0 or "docs/missing.md" not in missing.stderr:
-            raise AssertionError("Missing local targets must fail closed.")
+            raise AssertionError("Missing live local targets must fail closed.")
 
         (root / "BROKEN.md").unlink()
         outside = root.parent / "outside-doc-link-test.txt"
