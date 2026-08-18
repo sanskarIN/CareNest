@@ -2,9 +2,10 @@
 
 **Release line:** `1.0.0-rc.1`  
 **Latest verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
-**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`
+**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`  
+**Package evidence guide:** `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
 
-This checklist separates source completeness from platform/store work requiring current policy review, developer accounts, signing credentials, package identity, packaged-data compatibility and real-device evidence.
+This checklist separates source completeness from platform/store work requiring current policy review, developer accounts, signing credentials, package identity, packaged-data compatibility, structured package provenance and real-device evidence.
 
 ## 1. Before packaging
 
@@ -41,6 +42,8 @@ Authoritative evidence:
 
 `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
 
+The repository now contains later verification-relevant release-documentation/package-evidence tests/scripts/workflow changes. Those require fresh exact-source automation before replacing the verified baseline above.
+
 This does not replace the store/manual/package rows below. Store Inspection Artifacts, dependency audit, exact production tag and final signed-package evidence remain separate required gates where applicable.
 
 ## 3. Packaged SQLite/data compatibility
@@ -58,7 +61,7 @@ With fictional prior data:
 - [ ] Verify existing/current encrypted documents.
 - [ ] Verify current encrypted backup/restore.
 - [ ] Verify genuine historical fixture compatibility when real prior bytes exist.
-- [ ] Record platform/package/source/checksum/result evidence.
+- [ ] Record platform/package/source/checksum/device/result evidence.
 
 ## 4. Store listing claims
 
@@ -215,7 +218,35 @@ Require:
 
 If a tag fails, preserve evidence, fix source/config on a new commit, repeat required checks and use a corrected approved version/tag. Do not move the failed tag.
 
-## 14. Final signed artifact evidence
+## 14. Structured final package evidence
+
+For every final production artifact, follow:
+
+`docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
+
+Generate evidence with `build/scripts/create-package-evidence.py --stage production` or the shell/PowerShell wrapper.
+
+The production evidence tool must enforce:
+
+- immutable `v*` source tag;
+- source tag resolves to recorded source SHA;
+- checked-out HEAD equals recorded source SHA;
+- tracked workspace is clean;
+- real non-secret signing/notarization/store provenance text;
+- successful scan for the default BMC/Gumroad forbidden markers;
+- SHA-256 manifest for package contents;
+- evidence output outside the package payload.
+
+- [ ] Package evidence JSON created for Android production artifact where applicable.
+- [ ] Package evidence JSON created for Windows production artifact where applicable.
+- [ ] Package evidence JSON created for iOS production artifact where applicable.
+- [ ] Package evidence JSON created for Mac Catalyst production artifact where applicable.
+- [ ] Package evidence JSON retained with the release record.
+- [ ] Package evidence payload SHA-256 independently cross-checked.
+
+The tool does not sign packages or prove store approval; platform signing/notarization/store evidence remains separate.
+
+## 15. Final signed artifact evidence
 
 For every release artifact:
 
@@ -224,6 +255,8 @@ For every release artifact:
 - [ ] Filename recorded.
 - [ ] SHA-256 recorded.
 - [ ] Signing/notarization/store provenance recorded.
+- [ ] Package evidence JSON recorded.
+- [ ] Package evidence payload SHA-256 recorded.
 - [ ] Buy Me a Coffee forbidden-marker scan passed.
 - [ ] Gumroad forbidden-marker scan passed.
 - [ ] Installed package smoke test passed.
@@ -231,12 +264,13 @@ For every release artifact:
 - [ ] About/runtime contains no Gumroad storefront/purchase card/action.
 - [ ] Repository/creator/business/support/privacy/terms/security/notices verified.
 
-## 15. Release metadata/evidence
+## 16. Release metadata/evidence
 
 - [ ] Release notes/changelog finalized.
 - [ ] CI/CodeQL/Dependency Audit/Store Package/Store Inspection/Release Gate/Release Evidence run IDs recorded.
 - [ ] Release Evidence artifact/checksums recorded.
 - [ ] Final signed-package provenance/checksums recorded.
+- [ ] Structured package evidence JSON paths/checksums recorded.
 - [ ] Store-policy review date/sources recorded.
 - [ ] Live store declaration completion recorded.
 - [ ] Rollback/hotfix instructions retained.
@@ -244,6 +278,6 @@ For every release artifact:
 
 ## Final publication rule
 
-Do not describe a store build as final production merely because source compilation/CI is green. Publication requires applicable automated exact-tag gates, manual device/accessibility/privacy/security/signing/store checks, packaged compatibility, signed-package provenance, live store declarations and current submission-date policy review.
+Do not describe a store build as final production merely because source compilation/CI is green. Publication requires applicable automated exact-tag gates, manual device/accessibility/privacy/security/signing/store checks, packaged compatibility, structured signed-package provenance, live store declarations and current submission-date policy review.
 
 CareNest remains `1.0.0-rc.1` until those rows are actually evidenced.
