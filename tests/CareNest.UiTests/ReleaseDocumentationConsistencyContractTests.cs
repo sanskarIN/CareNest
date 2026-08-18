@@ -112,6 +112,7 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     private static readonly string[] CurrentBaselineDocuments =
     [
         "PROJECT_STATUS.md",
+        "docs/COMPLETE_PROJECT_DOCUMENTATION.md",
         "docs/releases/STORE_BUILD_POLICY.md",
         "docs/releases/RELEASE_CHECKLIST.md",
         "docs/releases/RELEASE_EVIDENCE.md",
@@ -131,6 +132,7 @@ public sealed class ReleaseDocumentationConsistencyContractTests
 
     private static readonly string[] ExternalCommerceEvidenceDocuments =
     [
+        "docs/COMPLETE_PROJECT_DOCUMENTATION.md",
         "docs/releases/STORE_BUILD_POLICY.md",
         "docs/releases/RELEASE_CHECKLIST.md",
         "docs/releases/RELEASE_EVIDENCE.md",
@@ -146,6 +148,7 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     private static readonly string[] PolicyReviewLinkDocuments =
     [
         "PROJECT_STATUS.md",
+        "docs/COMPLETE_PROJECT_DOCUMENTATION.md",
         "docs/releases/STORE_BUILD_POLICY.md",
         "docs/releases/RELEASE_CHECKLIST.md",
         "docs/releases/RELEASE_EVIDENCE.md",
@@ -162,6 +165,7 @@ public sealed class ReleaseDocumentationConsistencyContractTests
 
     private static readonly string[] PackageEvidenceLinkDocuments =
     [
+        "docs/COMPLETE_PROJECT_DOCUMENTATION.md",
         "docs/releases/RELEASE_EVIDENCE.md",
         "docs/releases/EXECUTABLE_BUILD_CHECKLIST.md",
         "docs/releases/QUALITY_GATE.md",
