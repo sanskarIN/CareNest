@@ -8,8 +8,9 @@
 
 **Release line:** `1.0.0-rc.1`  
 **Documentation baseline:** 2026-08-18  
-**Latest verified Gumroad rollout source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Latest fully verified Gumroad rollout source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
 **Current store-policy review:** `releases/STORE_POLICY_REVIEW_20260818.md`  
+**Package evidence guide:** `releases/PACKAGE_EVIDENCE_TOOLING.md`  
 **Compiled-binding verification head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9` (PR #74)
 
 CareNest is a local-first .NET MAUI family health organizer. It is organizational software, not a diagnostic, treatment, dosage-calculation, clinical-interaction, clinical-risk or emergency-service system.
@@ -26,7 +27,7 @@ The storefront is promoted throughout current repository/documentation support a
 - [`marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`](marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md) — placement, safety, package-boundary and maintenance rules.
 - [`assets/gumroad_store_badge.svg`](assets/gumroad_store_badge.svg) — repository-only promotional badge.
 
-## Current authoritative automated evidence
+## Latest fully verified automated evidence
 
 Exact verified implementation/source-policy SHA:
 
@@ -49,14 +50,39 @@ Authoritative Gumroad verification: [`releases/GUMROAD_ROLLOUT_VERIFICATION_2026
 
 The earlier PR #74 compiled-binding verification remains permanent evidence for strict XAML compilation: [`releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`](releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md).
 
+## Current newer-source verification boundary
+
+Current `main` now contains later verification-relevant release-documentation contracts, package-evidence tooling and CI/Release Gate/Release Evidence changes.
+
+Therefore:
+
+- the `94e867...` source above remains the latest fully verified baseline until a newer exact-source matrix is actually successful;
+- 336/336 is not claimed as the result of the newer current head;
+- no replacement test total should be predicted from source inspection;
+- the immediate automated next step is the exact-head verification procedure in [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) and [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md).
+
+Current status: [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md).
+
 ## Current store-policy evidence
 
 Dated pre-submission review: [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md).
 
 The 2026-08-18 record reviews the current CareNest product/package boundary against relevant Apple, Google Play and Microsoft Store policy areas. It does **not** mean CareNest is store-approved and does not replace the final policy/store-console review against the exact production binary and listing on the actual submission date.
 
-Current status: [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md).  
-Remaining production work: [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md).
+## Structured final-package evidence
+
+Guide: [`releases/PACKAGE_EVIDENCE_TOOLING.md`](releases/PACKAGE_EVIDENCE_TOOLING.md).
+
+Source-controlled tooling:
+
+- `../build/scripts/create-package-evidence.py`;
+- `../build/scripts/create-package-evidence.sh`;
+- `../build/scripts/create-package-evidence.ps1`;
+- `../build/scripts/test-create-package-evidence.py`.
+
+The production evidence path requires an immutable `v*` source tag, tag/source/checked-out-HEAD agreement, a clean tracked workspace, non-secret signing/notarization provenance, successful store-safe payload scanning, SHA-256 evidence and JSON output outside the package payload.
+
+The tool does not sign artifacts, prove store approval, replace real-device/accessibility testing or replace packaged SQLite/encrypted-data compatibility evidence.
 
 ## Primary documentation
 
@@ -64,6 +90,8 @@ Remaining production work: [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md).
 - [`COMPLETE_PROJECT_DOCUMENTATION.md`](COMPLETE_PROJECT_DOCUMENTATION.md) — end-to-end whole-project reference.
 - [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md) — complete Windows/Android/iOS/Mac Catalyst executable, package, signing, validation and repository-file coverage guide.
 - [`releases/EXECUTABLE_BUILD_CHECKLIST.md`](releases/EXECUTABLE_BUILD_CHECKLIST.md) — concise release-operator checklist and copy/paste build commands.
+- [`releases/PACKAGE_EVIDENCE_TOOLING.md`](releases/PACKAGE_EVIDENCE_TOOLING.md) — final-package checksum/provenance evidence tooling.
+- [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) — exact-head verification procedure.
 - [`GETTING_STARTED.md`](GETTING_STARTED.md) — quickest safe entry point for users/developers.
 - [`USER_GUIDE.md`](USER_GUIDE.md) — complete user workflows.
 - [`FEATURE_REFERENCE.md`](FEATURE_REFERENCE.md) — feature-by-feature reference.
@@ -76,7 +104,7 @@ Remaining production work: [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md).
 - [`MAINTENANCE_AND_OPERATIONS.md`](MAINTENANCE_AND_OPERATIONS.md) — maintainer operations.
 - [`REPOSITORY_GOVERNANCE.md`](REPOSITORY_GOVERNANCE.md) — evidence/documentation governance.
 - [`DOCUMENTATION_STANDARDS.md`](DOCUMENTATION_STANDARDS.md) — writing/maintenance standards.
-- [`releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`](releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md) — exact rollout verification evidence.
+- [`releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`](releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md) — exact latest fully verified rollout evidence.
 - [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md) — current dated pre-submission store-policy review.
 - [`../GUMROAD.md`](../GUMROAD.md) — canonical Gumroad storefront documentation.
 - [`marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`](marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md) — repository/storefront placement and package-compliance guide.
@@ -215,8 +243,12 @@ Automated source/semantics checks do not replace real assistive-technology evide
 - [`testing/REMINDER_SCHEDULING_CONTRACT.md`](testing/REMINDER_SCHEDULING_CONTRACT.md)
 - [`testing/SETTINGS_LIFECYCLE_CONTRACT.md`](testing/SETTINGS_LIFECYCLE_CONTRACT.md)
 - [`testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md`](testing/BUG_AUDIT_REGRESSION_MATRIX_20260814.md) — historical defect/test mapping.
+- [`../tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs`](../tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs) — current release-documentation consistency protection.
+- [`../tests/CareNest.UiTests/PackageEvidenceToolContractTests.cs`](../tests/CareNest.UiTests/PackageEvidenceToolContractTests.cs) — package-evidence source/workflow contract protection.
 
-Latest verified Gumroad rollout baseline: 122 unit + 39 integration + 175 UI/source-policy = **336 tests**.
+Latest fully verified Gumroad rollout baseline: 122 unit + 39 integration + 175 UI/source-policy = **336 tests** on exact source `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`.
+
+Current newer source contains additional tests and requires fresh exact-source verification before any replacement count is recorded.
 
 ## Release and production validation
 
@@ -224,6 +256,7 @@ Current operational documents:
 
 - [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md)
 - [`releases/EXECUTABLE_BUILD_CHECKLIST.md`](releases/EXECUTABLE_BUILD_CHECKLIST.md)
+- [`releases/PACKAGE_EVIDENCE_TOOLING.md`](releases/PACKAGE_EVIDENCE_TOOLING.md)
 - [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md)
 - [`releases/RELEASE_PROCESS.md`](releases/RELEASE_PROCESS.md)
 - [`releases/RELEASE_CHECKLIST.md`](releases/RELEASE_CHECKLIST.md)
@@ -240,7 +273,8 @@ Current operational documents:
 
 Current verification references:
 
-- [`releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`](releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md) — current Gumroad rollout evidence for `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`;
+- [`releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`](releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md) — latest fully verified Gumroad rollout evidence for `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`;
+- [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) — immediate fresh exact-head verification procedure for newer verification-relevant source;
 - [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md) — current dated pre-submission store-policy review;
 - [`releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`](releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md) — permanent compiled-binding verification;
 - [`releases/FINAL_STORE_PAYLOAD_AND_BUG_AUDIT_VERIFICATION_20260815.md`](releases/FINAL_STORE_PAYLOAD_AND_BUG_AUDIT_VERIFICATION_20260815.md) — earlier package-boundary verification.
@@ -255,6 +289,8 @@ The store-safe payload scanner is required to reject both repository-only marker
 
 - `buymeacoffee.com/sanskarIN`;
 - `ramsandesh.gumroad.com`.
+
+Final production packages additionally require structured package evidence JSON plus independently retained signing/notarization/store provenance and real installed-package validation.
 
 Historical files may document the earlier funding-toggle investigation, but that architecture is not the current product boundary.
 
@@ -274,6 +310,6 @@ Historical files may document the earlier funding-toggle investigation, but that
 
 CareNest remains `1.0.0-rc.1`.
 
-The source-controlled feature scope and Gumroad rollout are automated-verified at the named implementation/source-policy baseline. A dated pre-submission store-policy review is now recorded for 2026-08-18, but production publication still requires real-device/accessibility/package-compatibility/signing/final-package/live-store-console/submission-day-policy/tag/publication evidence.
+The intended runtime feature scope remains source-complete. The latest fully verified automated baseline remains the named Gumroad source with 336/336 core tests, while current `main` now contains additional verification-relevant tests/scripts/workflows and therefore requires fresh exact-head automation. A dated pre-submission store-policy review is recorded for 2026-08-18, but production publication still requires real-device/accessibility/package-compatibility/signing/structured-final-package/live-store-console/submission-day-policy/tag/publication evidence.
 
 Do not describe CareNest as globally bug-free, production-signed, store-approved or production-published until those external gates are actually completed.
