@@ -2,10 +2,11 @@
 
 **Release line:** `1.0.0-rc.1`  
 **Companion guide:** [`../EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](../EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md)  
+**Package evidence guide:** [`PACKAGE_EVIDENCE_TOOLING.md`](PACKAGE_EVIDENCE_TOOLING.md)  
 **Application project:** `src/CareNest.App/CareNest.App.csproj`  
 **Repository Gumroad:** `https://ramsandesh.gumroad.com`
 
-Use this checklist when producing a CareNest executable or distributable package. The companion guide is authoritative for detailed commands and signing boundaries; `STORE_BUILD_POLICY.md` and `PACKAGED_RELEASE_VALIDATION.md` are authoritative for the current external-commerce/package boundary and production validation.
+Use this checklist when producing a CareNest executable or distributable package. The companion guide is authoritative for detailed commands and signing boundaries; `STORE_BUILD_POLICY.md`, `PACKAGED_RELEASE_VALIDATION.md`, and `PACKAGE_EVIDENCE_TOOLING.md` are authoritative for the current external-commerce/package boundary, production validation, and checksum/provenance evidence generation.
 
 ## 1. Source and environment
 
@@ -46,6 +47,9 @@ Then confirm:
 - [ ] Integration tests pass.
 - [ ] UI/source-policy tests pass.
 - [ ] Gumroad repository-placement/package-isolation contracts pass.
+- [ ] Release-documentation consistency contracts pass.
+- [ ] Package-evidence tooling contracts pass.
+- [ ] Package-evidence synthetic self-test passes.
 - [ ] NuGet dependency audit passes.
 - [ ] Strict XAML compiled-binding checks pass.
 
@@ -237,6 +241,8 @@ On every production target:
 
 ## 12. Artifact evidence
 
+Manual checksum commands remain useful for independent inspection.
+
 Windows:
 
 ```powershell
@@ -265,12 +271,51 @@ Record:
 - [ ] Validation evidence.
 - [ ] Store submission/publication evidence when complete.
 
-## 13. Final release gate
+## 13. Structured package evidence manifest
+
+Use:
+
+`docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
+
+Inspection example:
+
+```bash
+./build/scripts/create-package-evidence.sh \
+  <payload> \
+  --platform android \
+  --version 1.0.0-rc.1 \
+  --build 1 \
+  --package-id com.sanskar.carenest \
+  --stage inspection \
+  --signing-provenance "unsigned inspection artifact" \
+  --output <evidence.json>
+```
+
+PowerShell uses the same arguments through:
+
+```powershell
+./build/scripts/create-package-evidence.ps1 ...
+```
+
+For production evidence:
+
+- [ ] use `--stage production`;
+- [ ] supply the immutable approved `--source-tag v*`;
+- [ ] ensure checked-out HEAD equals the tagged source;
+- [ ] ensure tracked workspace is clean;
+- [ ] provide only non-secret real signing/notarization/store provenance text;
+- [ ] keep the evidence output outside the package payload;
+- [ ] retain the generated JSON with the final release record.
+
+The tool fails closed if the payload contains either repository-only external-commerce marker. It does not sign the package or prove store approval.
+
+## 14. Final release gate
 
 - [ ] `docs/releases/RELEASE_CHECKLIST.md` completed.
 - [ ] `docs/releases/PACKAGED_RELEASE_VALIDATION.md` completed.
 - [ ] `docs/releases/STORE_SUBMISSION_CHECKLIST.md` completed where applicable.
 - [ ] `docs/releases/SECURITY_RELEASE_REVIEW.md` completed.
+- [ ] Package evidence JSON generated/retained for each final production artifact.
 - [ ] Required production-tag workflows pass for the exact approved source.
 - [ ] Final signed packages are scanned for both repository-only external-commerce markers.
 - [ ] No unsigned/internal artifact is mislabeled as production release.
