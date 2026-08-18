@@ -2,30 +2,17 @@ namespace CareNest.UiTests;
 
 public sealed class ReleaseDocumentationConsistencyContractTests
 {
-    private const string VerifiedGumroadSource = "94e867dce9519a8c1c71f1c4f1e5f833d6a3211f";
-    private const string VerifiedCoreTotal = "336/336";
     private const string BuyMeACoffeeMarker = "buymeacoffee.com/sanskarIN";
     private const string GumroadMarker = "ramsandesh.gumroad.com";
     private const string StorePolicyReview = "docs/releases/STORE_POLICY_REVIEW_20260818.md";
     private const string PackageEvidenceGuide = "docs/releases/PACKAGE_EVIDENCE_TOOLING.md";
+    private const string AutomatedBaselineRecord = "docs/releases/AUTOMATED_BASELINE.md";
 
     [Fact]
-    public void Current_release_documents_reference_the_verified_gumroad_baseline()
+    public void Stable_release_policy_documents_do_not_promote_superseded_intermediate_baselines()
     {
         var root = FindRepositoryRoot();
-        foreach (var relativePath in CurrentBaselineDocuments)
-        {
-            var text = Read(root, relativePath);
-            Assert.Contains(VerifiedGumroadSource, text, StringComparison.Ordinal);
-            Assert.Contains(VerifiedCoreTotal, text, StringComparison.Ordinal);
-        }
-    }
-
-    [Fact]
-    public void Current_release_documents_do_not_promote_the_superseded_331_test_baseline()
-    {
-        var root = FindRepositoryRoot();
-        foreach (var relativePath in CurrentBaselineDocuments)
+        foreach (var relativePath in StableReleasePolicyDocuments)
         {
             var text = Read(root, relativePath);
             Assert.DoesNotContain("Current verified executable source: `e8f4aa0a", text, StringComparison.Ordinal);
@@ -35,10 +22,19 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     }
 
     [Fact]
-    public void Final_package_evidence_requires_both_repository_only_external_commerce_markers()
+    public void Dynamic_automated_baseline_record_exists_without_becoming_a_content_assertion_input()
     {
         var root = FindRepositoryRoot();
-        foreach (var relativePath in ExternalCommerceEvidenceDocuments)
+        Assert.True(File.Exists(Path.Combine(
+            root,
+            AutomatedBaselineRecord.Replace('/', Path.DirectorySeparatorChar))));
+    }
+
+    [Fact]
+    public void Stable_final_package_policy_requires_both_repository_only_external_commerce_markers()
+    {
+        var root = FindRepositoryRoot();
+        foreach (var relativePath in ExternalCommercePolicyDocuments)
         {
             var text = Read(root, relativePath);
             Assert.Contains(BuyMeACoffeeMarker, text, StringComparison.Ordinal);
@@ -66,23 +62,20 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     }
 
     [Fact]
-    public void Live_store_declarations_and_submission_day_review_remain_open_production_gates()
+    public void Stable_store_submission_policy_keeps_live_declarations_and_submission_day_review_open()
     {
         var root = FindRepositoryRoot();
-        var checklist = Read(root, "docs/releases/RELEASE_CHECKLIST.md");
         var submission = Read(root, "docs/releases/STORE_SUBMISSION_CHECKLIST.md");
-        var nextSteps = Read(root, "docs/releases/NEXT_STEPS.md");
 
-        Assert.Contains("- [ ] Complete live Google Play Health apps declaration", checklist, StringComparison.Ordinal);
-        Assert.Contains("- [ ] Complete live Google Play Data safety", checklist, StringComparison.Ordinal);
-        Assert.Contains("- [ ] Live Google Play Health apps declaration", nextSteps, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("- [ ] Live Google Play Health apps declaration", submission, StringComparison.Ordinal);
+        Assert.Contains("- [ ] Live Google Play Data safety", submission, StringComparison.Ordinal);
         Assert.Contains("- [ ] Re-open current Apple policy sources", submission, StringComparison.Ordinal);
         Assert.Contains("- [ ] Re-open current Google Play policy sources", submission, StringComparison.Ordinal);
         Assert.Contains("- [ ] Re-open current Microsoft Store policy sources", submission, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Package_evidence_guide_is_part_of_current_release_governance()
+    public void Package_evidence_guide_is_part_of_stable_release_governance()
     {
         var root = FindRepositoryRoot();
         Assert.True(File.Exists(Path.Combine(root, "docs", "releases", "PACKAGE_EVIDENCE_TOOLING.md")));
@@ -109,36 +102,25 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         Assert.Contains("python3 build/scripts/test-create-package-evidence.py", workflow, StringComparison.Ordinal);
     }
 
-    private static readonly string[] CurrentBaselineDocuments =
+    private static readonly string[] StableReleasePolicyDocuments =
     [
-        "PROJECT_STATUS.md",
-        "docs/COMPLETE_PROJECT_DOCUMENTATION.md",
         "docs/releases/STORE_BUILD_POLICY.md",
-        "docs/releases/RELEASE_CHECKLIST.md",
         "docs/releases/RELEASE_EVIDENCE.md",
         "docs/releases/RELEASE_PROCESS.md",
         "docs/releases/STORE_SUBMISSION_CHECKLIST.md",
-        "docs/releases/NEXT_STEPS.md",
         "docs/releases/QUALITY_GATE.md",
         "docs/releases/SECURITY_RELEASE_REVIEW.md",
         "docs/releases/MANUAL_TEST_MATRIX.md",
         "docs/releases/PACKAGED_RELEASE_VALIDATION.md",
         "docs/releases/VERIFICATION_BRANCH_PROTOCOL.md",
-        "docs/DOCUMENTATION_CATALOG.md",
-        "docs/README.md",
-        "CHANGELOG.md",
-        "what_changed.md",
     ];
 
-    private static readonly string[] ExternalCommerceEvidenceDocuments =
+    private static readonly string[] ExternalCommercePolicyDocuments =
     [
-        "docs/COMPLETE_PROJECT_DOCUMENTATION.md",
         "docs/releases/STORE_BUILD_POLICY.md",
-        "docs/releases/RELEASE_CHECKLIST.md",
         "docs/releases/RELEASE_EVIDENCE.md",
         "docs/releases/RELEASE_PROCESS.md",
         "docs/releases/STORE_SUBMISSION_CHECKLIST.md",
-        "docs/releases/NEXT_STEPS.md",
         "docs/releases/QUALITY_GATE.md",
         "docs/releases/SECURITY_RELEASE_REVIEW.md",
         "docs/releases/MANUAL_TEST_MATRIX.md",
@@ -147,25 +129,18 @@ public sealed class ReleaseDocumentationConsistencyContractTests
 
     private static readonly string[] PolicyReviewLinkDocuments =
     [
-        "PROJECT_STATUS.md",
-        "docs/COMPLETE_PROJECT_DOCUMENTATION.md",
         "docs/releases/STORE_BUILD_POLICY.md",
-        "docs/releases/RELEASE_CHECKLIST.md",
         "docs/releases/RELEASE_EVIDENCE.md",
         "docs/releases/RELEASE_PROCESS.md",
         "docs/releases/STORE_SUBMISSION_CHECKLIST.md",
-        "docs/releases/NEXT_STEPS.md",
         "docs/releases/QUALITY_GATE.md",
         "docs/releases/SECURITY_RELEASE_REVIEW.md",
         "docs/releases/MANUAL_TEST_MATRIX.md",
         "docs/releases/PACKAGED_RELEASE_VALIDATION.md",
-        "docs/DOCUMENTATION_CATALOG.md",
-        "docs/README.md",
     ];
 
     private static readonly string[] PackageEvidenceLinkDocuments =
     [
-        "docs/COMPLETE_PROJECT_DOCUMENTATION.md",
         "docs/releases/RELEASE_EVIDENCE.md",
         "docs/releases/EXECUTABLE_BUILD_CHECKLIST.md",
         "docs/releases/QUALITY_GATE.md",
@@ -178,6 +153,7 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     [
         "docs/releases/STORE_SUBMISSION_CHECKLIST.md",
         "docs/releases/STORE_POLICY_REVIEW_20260818.md",
+        "docs/releases/AUTOMATED_BASELINE.md",
         "docs/releases/PACKAGE_EVIDENCE_TOOLING.md",
         "build/scripts/create-package-evidence.py",
         "build/scripts/test-create-package-evidence.py",
