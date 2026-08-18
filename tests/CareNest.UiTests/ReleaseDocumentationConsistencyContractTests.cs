@@ -47,8 +47,9 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     {
         var root = FindRepositoryRoot();
         var review = Read(root, StorePolicyReview);
+        var reviewWithoutMarkdownEmphasis = review.Replace("**", string.Empty, StringComparison.Ordinal);
 
-        Assert.Contains("not store approval", review, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("not store approval", reviewWithoutMarkdownEmphasis, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("submission", review, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Google Play", review, StringComparison.Ordinal);
         Assert.Contains("Apple", review, StringComparison.Ordinal);
