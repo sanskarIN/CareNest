@@ -1,10 +1,10 @@
 # CareNest Release Process
 
 **Release line:** `1.0.0-rc.1`  
-**Current verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
-**Verified PR #74 head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+**Latest verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`
 
-This document defines the end-to-end path from a source-complete release candidate to a public production release. Automated evidence, real-device evidence, package compatibility, accessibility, signing and store approval are separate gates.
+This document defines the end-to-end path from a source-complete release candidate to a public production release. Automated evidence, real-device evidence, package compatibility, accessibility, signing, store-console declarations, current policy review and store approval are separate gates.
 
 ## 1. Release principle
 
@@ -23,39 +23,41 @@ Public promotion requires the exact candidate source to satisfy applicable:
 - security/privacy review;
 - production signing;
 - final signed-package inspection;
-- current store-policy/metadata review;
+- current store-policy/metadata/declaration review;
 - exact immutable release tag;
 - tagged Release Gate/Release Evidence;
 - publication evidence.
 
 ## 2. Current automated baseline
 
-PR #74 frozen source head:
+Latest exact verified Gumroad implementation/source-policy source:
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
-Merged executable source:
-
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
-
-Verified:
+Verified on that exact source:
 
 - 122/122 unit tests;
 - 39/39 integration tests;
-- 170/170 UI/source-policy tests;
-- **331/331 total core tests**;
+- 175/175 UI/source-policy tests;
+- **336/336 total core tests**;
 - Android Release;
 - Windows Release;
 - iOS simulator Release;
 - Mac Catalyst Release;
 - Store Package Configuration on all four targets;
-- Store Inspection Artifacts;
-- CodeQL;
-- unsuppressed Dependency Audit.
+- CodeQL.
 
-Permanent evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+Authoritative current automated evidence:
 
-Older PR #68/#67/#61/#59/#58/#56/#54 records remain historical evidence for their own source boundaries.
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+
+Permanent compiled-binding evidence remains:
+
+`docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`
+
+Older PR/source records remain historical evidence for their own exact boundaries and must not replace the current verified Gumroad baseline.
+
+Documentation-only commits after the verified implementation/source-policy SHA must not be described as automatically inheriting exact-head automated evidence.
 
 ## 3. Freeze intended scope
 
@@ -66,9 +68,10 @@ Before production work:
 3. stop unrelated feature work;
 4. review `PROJECT_STATUS.md`;
 5. review `docs/releases/NEXT_STEPS.md`;
-6. identify every applicable manual/package/accessibility/signing/store blocker;
-7. confirm the funding-free application-package boundary remains intact;
-8. confirm the former SQLite audit suppression remains absent.
+6. review `docs/releases/STORE_POLICY_REVIEW_20260818.md`;
+7. identify every applicable manual/package/accessibility/signing/store blocker;
+8. confirm the Gumroad/Buy Me a Coffee-free application-package boundary remains intact;
+9. confirm the former SQLite audit suppression remains absent.
 
 ## 4. Development preflight
 
@@ -88,7 +91,7 @@ The current preflight is intended to fail closed for required source hygiene, fo
 
 For an explicit MAUI target, use the current `CARENEST_TARGET` mechanism documented in `docs/CONFIGURATION_REFERENCE.md`.
 
-There is no current application funding-link build toggle.
+There is no current application funding/storefront build toggle. Gumroad and Buy Me a Coffee are repository/documentation-only under the current RC1 policy.
 
 ## 5. Exact-source automated verification
 
@@ -96,13 +99,13 @@ If verification-relevant runtime/test/project/package/workflow/build-script/plat
 
 1. finish the intended source;
 2. freeze exact candidate SHA;
-3. follow `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`;
-4. require all configured PR-head gates;
+3. follow `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` where applicable;
+4. require all configured exact-source gates;
 5. fix actual failures instead of weakening policies;
 6. record exact source/run/test evidence;
-7. keep verification markers out of `main` when the protocol requires marker-only closure.
+7. preserve failed evidence rather than re-labelling an unverified source as approved.
 
-Documentation-only commits can sit above a verified executable source if comparison proves no verification-relevant executable delta.
+Documentation-only commits can sit above a verified executable source only when the documentation clearly distinguishes that verified source from later documentation-only heads.
 
 ## 6. Required automated gates
 
@@ -118,6 +121,8 @@ Production-style `v*` tags additionally require:
 
 - Release Gate;
 - Release Evidence.
+
+No single workflow substitutes for the other required release gates.
 
 ## 7. Manual platform matrix
 
@@ -198,20 +203,30 @@ Review:
 - `docs/security/THREAT_MODEL.md`;
 - `docs/security/LOGGING_PRIVACY.md`;
 - `docs/security/DEPENDENCY_RISK_REGISTER.md`;
-- `docs/releases/SECURITY_RELEASE_REVIEW.md`.
+- `docs/releases/SECURITY_RELEASE_REVIEW.md`;
+- `docs/releases/STORE_POLICY_REVIEW_20260818.md`.
 
 Confirm no required account/cloud/telemetry was introduced without design review and no medical/clinical claims crossed the product boundary.
 
-## 12. Application funding/package boundary
+## 12. External-commerce application-package boundary
 
 Current product invariant:
 
 - no external Buy Me a Coffee destination/card/command/artwork in distributed application source/package;
-- repository-only voluntary project support may remain;
-- project funding never creates health/medical/reminder entitlement;
-- Store Inspection payload scanning remains defense-in-depth.
+- no external Gumroad destination/card/command/artwork in distributed application source/package;
+- repository-only voluntary support/storefront surfaces may remain in repository documentation/metadata;
+- purchase/funding never creates health/medical/reminder entitlement or local-health-data access;
+- Store Inspection payload scanning remains defense-in-depth;
+- final signed packages must be scanned again/equivalently inspected for both repository-only markers.
 
-Do not resurrect obsolete `CareNestShowFundingLink`/funding-disabled build instructions in the release process.
+Current repository-only markers:
+
+```text
+buymeacoffee.com/sanskarIN
+ramsandesh.gumroad.com
+```
+
+Do not resurrect obsolete `CareNestShowFundingLink` or per-target external-commerce switches in the release process.
 
 ## 13. Production signing
 
@@ -229,7 +244,7 @@ Configure certificates/provisioning securely, verify bundle/entitlements, archiv
 
 Configure production signing identity outside Git, produce intended signed package and record provenance.
 
-Never commit private keys/certificates containing private material/keystores/passwords.
+Never commit private keys, certificates containing private material, keystores, passwords or signing-service credentials.
 
 ## 14. Final signed-package inspection
 
@@ -241,7 +256,9 @@ For every production candidate record:
 - filename;
 - SHA-256;
 - signing/notarization/store provenance;
-- forbidden external-funding marker scan;
+- final scan for `buymeacoffee.com/sanskarIN`;
+- final scan for `ramsandesh.gumroad.com`;
+- confirmation that no Gumroad/Buy Me a Coffee card/button/command/artwork exists in the installed app;
 - About/legal/support-contact inspection;
 - install/launch smoke test;
 - platform-specific smoke/manual result.
@@ -250,18 +267,32 @@ Internal CI inspection artifacts are not automatically production packages.
 
 ## 15. Store metadata/policy review
 
-At actual submission time review current Apple/Google/Microsoft rules as applicable.
+A dated preliminary review is recorded at:
+
+`docs/releases/STORE_POLICY_REVIEW_20260818.md`
+
+At actual submission time re-open the official current Apple/Google/Microsoft rules as applicable and complete the live store-console forms against the exact production binary/listing.
 
 Validate:
 
 - organizer/non-clinical claims;
+- no diagnosis/treatment/dosage/clinical-risk claim;
+- no unapproved medical-device claim;
 - reminder limitation wording;
 - privacy/data-safety declarations;
 - screenshots with fictional data;
 - permission/capability descriptions;
 - support/privacy/terms/security links;
 - final package identity/version;
-- no listing screenshot/copy implies removed in-app funding surface.
+- no listing screenshot/copy implies in-app Gumroad/Buy Me a Coffee functionality under the current package policy.
+
+For Google Play specifically, complete the live Health apps declaration and Data safety form for the exact production feature/binary set.
+
+For Apple, complete the current App Store privacy/store metadata for the exact production capabilities and package.
+
+For Microsoft distribution, complete the current privacy/store metadata where applicable.
+
+Record the submission-date policy sources, conclusions and required changes.
 
 ## 16. Release notes/version metadata
 
@@ -293,9 +324,11 @@ Do not move/reuse a failed/rejected production tag to point at different source.
 
 ## 18. Release Evidence
 
-Release Evidence should record exact source/ref/run/attempt identity, source manifests/checksums, test/dependency evidence, workspace integrity and evidence checksums according to the current workflow.
+Release Evidence must follow `docs/releases/RELEASE_EVIDENCE.md` and should record exact source/ref/run/attempt identity, source manifests/checksums, test/dependency evidence, workspace integrity and evidence checksums according to the current workflow.
 
 Artifact existence alone is not approval; the workflow conclusion and provenance must be accepted.
+
+Final signed-package provenance belongs in the release record in addition to CI evidence.
 
 ## 19. Publication
 
@@ -305,7 +338,7 @@ After all required tag/manual/package/accessibility/signing/store gates pass:
 - confirm checksums/provenance;
 - publish GitHub release as appropriate;
 - submit/promote store packages;
-- record final publication evidence;
+- record final publication/store-approval evidence;
 - update `PROJECT_STATUS.md`, `NEXT_STEPS.md`, `CHANGELOG.md` and handoff documentation.
 
 ## 20. Post-release monitoring
@@ -335,4 +368,4 @@ For a production defect:
 
 Any required gate that is failed, unknown, stale or not actually performed blocks production promotion unless explicitly documented as non-applicable with a defensible reason.
 
-CareNest must never be described as globally bug-free, medically authoritative, production-signed or store-approved merely because CI is green.
+CareNest must never be described as globally bug-free, medically authoritative, production-signed, store-approved or production-published merely because CI is green.
