@@ -10,32 +10,56 @@ It is intentionally kept separate from stable release-policy/documentation contr
 
 ## Current accepted baseline
 
-**Exact source SHA:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+**Exact source SHA:** `b6eecae66f74bd72bcb20d93508355542f9f3442`
 
-Verified results on that exact source:
+Verified results on that exact source through marker-only PR #80:
 
+- repository Python tooling syntax: **success**;
+- package-evidence self-test: **success**;
+- documentation-link checker self-test: **success**;
+- stable active documentation local-link check: **success** — 182 live local links across 109 stable active Markdown files;
+- platform-neutral formatting: **success**;
 - unit tests: **122/122**;
 - integration tests: **39/39**;
-- UI/source-policy tests: **175/175**;
-- total core tests: **336/336**;
+- UI/source-policy tests: **194/194**;
+- total core tests: **355/355**;
 - Android Release: **success**;
 - Windows Release: **success**;
 - iOS simulator Release: **success**;
 - Mac Catalyst Release: **success**;
-- Store Package Configuration: all four configured targets **success**;
-- CodeQL: **success**.
+- Store Package Configuration: Android, Windows, iOS simulator and Mac Catalyst **success**;
+- Store Inspection Artifacts: scanner self-test and Android/Windows/Apple inspection artifacts **success**;
+- CodeQL: **success**;
+- Dependency Audit: **success**.
 
 Authoritative dated evidence:
 
-`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+`docs/releases/FINAL_CANDIDATE_VERIFICATION_20260818.md`
 
-## Newer source state
+Observed workflow runs:
 
-Current `main` contains verification-relevant release-governance, package-evidence, dependency/toolchain, workflow, documentation-integrity and bug-hardening changes after the accepted baseline above.
+- CareNest CI: `32141539179`;
+- Store Package Configuration: `32141539246`;
+- Store Inspection Artifacts: `32141539169`;
+- CodeQL: `32141539253`;
+- Dependency Audit: `32141539349`.
 
-Those changes do **not** become the accepted baseline until the applicable exact-source verification matrix succeeds and a replacement dated verification record is created.
+Verification marker/head SHA:
 
-Do not predict a replacement test count from source inspection.
+`ef1e8cea30108f1f3a4dca3158d9b862121e33fe`
+
+PR #80 was closed without merge after success. The marker file is not part of `main`.
+
+## Verification history immediately before the accepted baseline
+
+The final source was reached through fail-closed verification rather than by suppressing failures:
+
+- PR #78 exposed a documentation-link checker false positive on fenced example code;
+- PR #79 exposed two stale UI/source-policy assertions after intentional workflow/Markdown maintenance;
+- both defects were corrected on `main`;
+- PR #80 then passed the complete required automated matrix.
+
+The failed/superseded checkpoints remain historical evidence and are not promoted as successful baselines.
 
 ## Post-verification dynamic evidence files
 
@@ -48,7 +72,7 @@ Only these active files are designated for normal post-verification evidence/sta
 
 They are excluded from mutable-value executable release-documentation assertions, and the default stable documentation-link checker excludes them as documented in `docs/testing/DOCUMENTATION_INTEGRITY.md`.
 
-Stable documents such as `README.md`, `CHANGELOG.md`, `docs/README.md`, `docs/DOCUMENTATION_CATALOG.md`, `docs/COMPLETE_PROJECT_DOCUMENTATION.md`, `docs/CONFIGURATION_REFERENCE.md`, testing guides and stable release-policy documents must be finalized **before** freezing the exact source candidate. Do not routinely rewrite those stable inputs after verification merely to insert new run IDs/test counts.
+Stable documents such as `README.md`, `CHANGELOG.md`, `docs/README.md`, `docs/DOCUMENTATION_CATALOG.md`, `docs/COMPLETE_PROJECT_DOCUMENTATION.md`, `docs/CONFIGURATION_REFERENCE.md`, testing guides and stable release-policy documents were finalized before freezing the exact source candidate and are not routinely rewritten merely to insert new dynamic run IDs/test counts.
 
 ## Update rule
 
@@ -69,10 +93,10 @@ This avoids an evidence loop where recording a successful verification would its
 
 ## Production boundary
 
-An accepted automated baseline still does not prove:
+The accepted automated baseline still does not prove:
 
 - real-device notification/lifecycle behavior;
-- accessibility validation;
+- accessibility validation with real assistive technology;
 - packaged SQLite/encrypted-document/backup compatibility;
 - production signing/notarization;
 - final signed-package structured evidence;
