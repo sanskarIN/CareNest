@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
-"""Validate repository-local links in active CareNest Markdown documentation.
+"""Validate repository-local links in stable active CareNest documentation.
 
 The checker is intentionally offline. It verifies local file/directory targets and
 repository containment, while leaving network URL availability to release/manual
 review so CI does not depend on external sites.
+
+Dynamic post-verification evidence/status files are excluded by default so recording
+successful workflow IDs, counts, and source SHAs does not invalidate the executable
+exact-source verification that produced those results. Use --include-dynamic for an
+explicit documentation-only audit of those records.
 """
 
 from __future__ import annotations
@@ -35,11 +40,17 @@ SKIPPED_DIRECTORY_NAMES = {
     "node_modules",
     "obj",
 }
+DYNAMIC_EVIDENCE_PATHS = {
+    "PROJECT_STATUS.md",
+    "what_changed.md",
+    "docs/releases/AUTOMATED_BASELINE.md",
+    "docs/releases/NEXT_STEPS.md",
+}
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Verify local links in active CareNest Markdown documentation."
+        description="Verify local links in stable active CareNest Markdown documentation."
     )
     parser.add_argument(
         "--root",
@@ -51,6 +62,11 @@ def parse_args() -> argparse.Namespace:
         "--include-history",
         action="store_true",
         help="Also validate immutable docs/history snapshots.",
+    )
+    parser.add_argument(
+        "--include-dynamic",
+        action="store_true",
+        help="Also validate post-verification dynamic evidence/status Markdown files.",
     )
     return parser.parse_args()
 
@@ -73,9 +89,17 @@ def tracked_markdown_files(root: Path) -> list[Path]:
     return sorted(root / line for line in result.stdout.splitlines() if line.strip())
 
 
+def relative_posix(root: Path, source: Path) -> str:
+    return source.resolve().relative_to(root.resolve()).as_posix()
+
+
 def is_history_path(root: Path, source: Path) -> bool:
-    parts = source.relative_to(root).parts
+    parts = source.resolve().relative_to(root.resolve()).parts
     return len(parts) >= 2 and parts[0] == "docs" and parts[1] == "history"
+
+
+def is_dynamic_evidence_path(root: Path, source: Path) -> bool:
+    return relative_posix(root, source) in DYNAMIC_EVIDENCE_PATHS
 
 
 def extract_targets(text: str) -> list[str]:
@@ -147,6 +171,8 @@ def main() -> int:
             continue
         if not args.include_history and is_history_path(root, source):
             continue
+        if not args.include_dynamic and is_dynamic_evidence_path(root, source):
+            continue
 
         checked_files += 1
         text = source.read_text(encoding="utf-8")
@@ -156,7 +182,7 @@ def main() -> int:
                 continue
 
             checked_links += 1
-            relative_source = source.relative_to(root).as_posix()
+            relative_source = relative_posix(root, source)
             if error is not None:
                 failures.append(f"{relative_source}: {raw_target!r} {error}")
                 continue
@@ -166,12 +192,16 @@ def main() -> int:
                     f"{candidate.relative_to(root).as_posix()}"
                 )
 
+    scope = "active Markdown files"
+    if not args.include_dynamic:
+        scope = "stable active Markdown files"
+
     if failures:
         print("Documentation link integrity check failed:", file=sys.stderr)
         for failure in failures:
             print(f"- {failure}", file=sys.stderr)
         print(
-            f"Checked {checked_links} local links across {checked_files} active Markdown files; "
+            f"Checked {checked_links} local links across {checked_files} {scope}; "
             f"found {len(failures)} problem(s).",
             file=sys.stderr,
         )
@@ -179,7 +209,7 @@ def main() -> int:
 
     print(
         f"Documentation link integrity check passed: {checked_links} local links across "
-        f"{checked_files} active Markdown files."
+        f"{checked_files} {scope}."
     )
     return 0
 
