@@ -33,17 +33,36 @@ jobs:
             echo 'Production release blocked: release checklist still contains incomplete items.'
             exit 1
           fi
-      - name: Confirm required release documents
+      - name: Confirm required release documents and tooling
         shell: bash
         run: |
           set -euo pipefail
-          test -s CHANGELOG.md
-          test -s PROJECT_STATUS.md
-          test -s docs/releases/RELEASE_CHECKLIST.md
-          test -s docs/releases/NEXT_STEPS.md
-          test -s docs/security/DEPENDENCY_RISK_REGISTER.md
-          test -s docs/releases/RELEASE_EVIDENCE.md
-          test -s docs/releases/SECURITY_RELEASE_REVIEW.md
+          required=(
+            CHANGELOG.md
+            PROJECT_STATUS.md
+            what_changed.md
+            docs/releases/RELEASE_CHECKLIST.md
+            docs/releases/NEXT_STEPS.md
+            docs/releases/RELEASE_PROCESS.md
+            docs/releases/RELEASE_EVIDENCE.md
+            docs/releases/SECURITY_RELEASE_REVIEW.md
+            docs/releases/MANUAL_TEST_MATRIX.md
+            docs/releases/PACKAGED_RELEASE_VALIDATION.md
+            docs/releases/STORE_BUILD_POLICY.md
+            docs/releases/STORE_SUBMISSION_CHECKLIST.md
+            docs/releases/STORE_POLICY_REVIEW_20260818.md
+            docs/releases/PACKAGE_EVIDENCE_TOOLING.md
+            docs/security/DEPENDENCY_RISK_REGISTER.md
+            build/scripts/verify-store-safe-payload.py
+            build/scripts/create-package-evidence.py
+            build/scripts/test-create-package-evidence.py
+          )
+          for path in "${required[@]}"; do
+            if [[ ! -s "$path" ]]; then
+              echo "Production release blocked: required release evidence/tooling is missing or empty: $path"
+              exit 1
+            fi
+          done
 
   release-source-tests:
     name: Release source tests
@@ -56,6 +75,16 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
+      - name: Verify package evidence Python syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            build/scripts/verify-store-safe-payload.py \
+            build/scripts/create-package-evidence.py \
+            build/scripts/test-create-package-evidence.py
+      - name: Self-test package evidence tooling
+        run: python3 build/scripts/test-create-package-evidence.py
       - name: Unit tests
         run: dotnet test tests/CareNest.UnitTests/CareNest.UnitTests.csproj --configuration Release --nologo
       - name: Integration tests
