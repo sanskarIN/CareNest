@@ -88,7 +88,7 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     }
 
     [Fact]
-    public void Production_release_gate_requires_current_evidence_documents_and_package_tooling()
+    public void Production_release_gate_requires_current_evidence_documents_and_tooling()
     {
         var root = FindRepositoryRoot();
         var workflow = Read(root, ".github/workflows/release-gate.yml");
@@ -100,6 +100,8 @@ public sealed class ReleaseDocumentationConsistencyContractTests
 
         Assert.Contains("python3 -m py_compile", workflow, StringComparison.Ordinal);
         Assert.Contains("python3 build/scripts/test-create-package-evidence.py", workflow, StringComparison.Ordinal);
+        Assert.Contains("python3 build/scripts/test-verify-documentation-links.py", workflow, StringComparison.Ordinal);
+        Assert.Contains("python3 build/scripts/verify-documentation-links.py", workflow, StringComparison.Ordinal);
     }
 
     private static readonly string[] StableReleasePolicyDocuments =
@@ -155,8 +157,11 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         "docs/releases/STORE_POLICY_REVIEW_20260818.md",
         "docs/releases/AUTOMATED_BASELINE.md",
         "docs/releases/PACKAGE_EVIDENCE_TOOLING.md",
+        "docs/testing/DOCUMENTATION_INTEGRITY.md",
         "build/scripts/create-package-evidence.py",
         "build/scripts/test-create-package-evidence.py",
+        "build/scripts/verify-documentation-links.py",
+        "build/scripts/test-verify-documentation-links.py",
     ];
 
     private static string Read(string root, string relativePath) =>
