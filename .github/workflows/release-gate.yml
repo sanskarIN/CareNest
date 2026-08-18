@@ -41,6 +41,7 @@ jobs:
             CHANGELOG.md
             PROJECT_STATUS.md
             what_changed.md
+            docs/releases/AUTOMATED_BASELINE.md
             docs/releases/RELEASE_CHECKLIST.md
             docs/releases/NEXT_STEPS.md
             docs/releases/RELEASE_PROCESS.md
