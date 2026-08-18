@@ -1,6 +1,6 @@
 # Exact-Head Verification Branch Protocol
 
-CareNest uses temporary marker-only pull requests to obtain fresh PR-triggered automated evidence for an exact intended `main` source state without merging verification artifacts into production source.
+CareNest uses temporary marker-only pull requests when fresh PR-triggered automated evidence is needed for an exact intended `main` source state without merging verification artifacts into production source.
 
 ## Why this exists
 
@@ -15,9 +15,25 @@ This matters when source changes affect:
 - platform source/configuration;
 - GitHub Actions workflows;
 - release scripts/quality/preflight logic;
-- repository policy/release gates.
+- package-evidence tooling;
+- repository policy/release gates;
+- current documentation consumed by release/source-policy tests.
 
-Documentation-only changes can sometimes be compared separately, but only when no verification-relevant source category above changed.
+Documentation-only changes can sometimes be compared separately, but only when no verification-relevant source category above changed and no changed document is consumed by a verification contract.
+
+## Current verified baseline versus new candidate
+
+The latest exact verified Gumroad implementation/source-policy baseline remains:
+
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+
+Its recorded result is 336/336 core tests plus the platform/store-candidate/CodeQL evidence in:
+
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+
+Later release-documentation consistency tests, package-evidence tooling, CI/release workflow changes and related current release documents are verification-relevant. They must receive a fresh exact-source verification before a newer source replaces the baseline above.
+
+Do not predict or publish a newer test total merely by counting added test methods. Record only the count actually reported by the exact verification run.
 
 ## Marker-only procedure
 
@@ -28,6 +44,7 @@ Documentation-only changes can sometimes be compared separately, but only when n
 5. Open a pull request from the marker branch to `main`.
 6. Confirm the PR changes only the marker file beyond the frozen base SHA.
 7. Require the full applicable PR automation:
+   - package-evidence Python syntax/self-test through CareNest CI;
    - platform-neutral formatting;
    - unit tests;
    - integration tests;
@@ -36,6 +53,8 @@ Documentation-only changes can sometimes be compared separately, but only when n
    - Windows Release;
    - iOS simulator Release;
    - Mac Catalyst Release;
+   - Store Package Configuration on all four targets;
+   - Store Inspection Artifacts;
    - CodeQL;
    - unsuppressed Dependency Audit.
 8. Record exact run IDs, test counts, platform outcomes, source/base SHA, marker/head SHA, and PR number.
@@ -49,8 +68,8 @@ Do not suppress/ignore a legitimate failure to preserve the checkpoint.
 Instead:
 
 1. inspect the exact failing job/log;
-2. determine whether the defect is source, test, workflow, package, toolchain, or infrastructure;
-3. fix legitimate source/test/workflow/package/script defects on `main`;
+2. determine whether the defect is source, test, workflow, package, toolchain, documentation contract or infrastructure;
+3. fix legitimate source/test/workflow/package/script/documentation-contract defects on `main`;
 4. close the old marker PR as failed/superseded;
 5. create a new marker branch from the corrected exact `main` SHA;
 6. rerun the complete required matrix.
@@ -59,7 +78,7 @@ Partial green evidence from a failed checkpoint can be retained historically, bu
 
 ## If `main` changes while verification is running
 
-Ask whether the newer commits are verification-relevant.
+Determine whether the newer commits are verification-relevant.
 
 ### Verification-relevant movement
 
@@ -71,20 +90,21 @@ Examples:
 - workflows;
 - `build/scripts/*`;
 - platform configuration/resources affecting build/runtime;
-- repository policy source consumed by executable tests.
+- repository policy source consumed by executable tests;
+- release documents parsed by current consistency/source-policy tests.
 
 If these change, the running checkpoint is stale for the newer source. Close/supersede it and verify the new exact head.
 
 ### Truly documentation-only movement
 
-A later commit can be treated as documentation-only only when an exact comparison confirms there are no runtime/test/project/workflow/package/platform/build-script changes.
+A later commit can be treated as documentation-only only when an exact comparison confirms there are no runtime/test/project/workflow/package/platform/build-script changes **and** none of the changed documents are inputs to executable/source-policy tests.
 
 In that case:
 
 - keep the previously verified source SHA explicit;
 - identify the later documentation head separately;
 - do not claim the documentation head itself ran the platform matrix unless it actually did;
-- if repository policy tests parse that documentation and the changed document is verification-sensitive, prefer a fresh exact-head verification anyway.
+- if there is any ambiguity, prefer a fresh exact-head verification.
 
 ## Marker naming
 
@@ -116,6 +136,7 @@ Verification PR:
 Frozen source/base SHA:
 Marker/head SHA:
 CareNest CI run:
+Package-evidence tooling self-test:
 Formatting:
 Unit tests:
 Integration tests:
@@ -124,6 +145,8 @@ Android Release:
 Windows Release:
 iOS simulator Release:
 Mac Catalyst Release:
+Store Package Configuration run:
+Store Inspection Artifacts run:
 CodeQL run:
 Dependency Audit run:
 PR closed without merge: yes/no
@@ -138,10 +161,23 @@ For an approved `v*` tag, the exact tagged commit is configured to run:
 - CareNest CI;
 - CodeQL;
 - Dependency Audit;
+- Store Package Configuration;
+- Store Inspection Artifacts;
 - Release Gate;
 - CareNest Release Evidence.
 
-Production publication must wait for all required tag-triggered workflows plus the applicable manual/device/accessibility/store/signing/packaged-data evidence.
+The Release Gate and Release Evidence workflows also verify the package-evidence tooling source/self-test, but they do not create or sign final production packages.
+
+Production publication must wait for all required tag-triggered workflows plus applicable:
+
+- final signed-package structured evidence JSON;
+- real-device/manual evidence;
+- accessibility evidence;
+- packaged SQLite/document/backup compatibility evidence;
+- production signing/notarization provenance;
+- live store-console declarations/metadata;
+- submission-date store-policy review;
+- final store approval/publication evidence.
 
 If release/tag workflows or release scripts change after marker verification, create a new exact-head verification before using those changes for production.
 
