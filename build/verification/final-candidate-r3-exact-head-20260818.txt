@@ -1,0 +1,15 @@
+CareNest verification-only marker
+
+Frozen source/base SHA: b6eecae66f74bd72bcb20d93508355542f9f3442
+Supersedes verification PRs #78 and #79 after fixing documentation-link example parsing and two stale UI/source-policy assertions exposed by the previous exact-head runs.
+
+This marker must not be merged into main.
+
+Required PR-triggered evidence:
+- CareNest CI: repository Python tooling syntax, package-evidence self-test, documentation-integrity self-test, stable live documentation link integrity, formatting, unit/integration/UI source-policy tests, Android/Windows/iOS simulator/Mac Catalyst Release builds
+- Store Package Configuration on all four targets
+- Store Inspection Artifacts
+- CodeQL
+- unsuppressed Dependency Audit
+
+Record only actual workflow outcomes and test counts. If a genuine gate fails, preserve the evidence, fix the smallest correct source boundary on main, and verify the corrected exact source from a replacement marker-only PR.
