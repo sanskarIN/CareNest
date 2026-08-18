@@ -53,6 +53,7 @@ jobs:
             docs/releases/STORE_SUBMISSION_CHECKLIST.md
             docs/releases/STORE_POLICY_REVIEW_20260818.md
             docs/releases/PACKAGE_EVIDENCE_TOOLING.md
+            docs/testing/DOCUMENTATION_INTEGRITY.md
             docs/security/DEPENDENCY_RISK_REGISTER.md
             build/scripts/verify-store-safe-payload.py
             build/scripts/create-package-evidence.py
