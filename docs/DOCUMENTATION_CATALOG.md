@@ -2,10 +2,11 @@
 
 **Release line:** `1.0.0-rc.1`  
 **Documentation baseline date:** 2026-08-18  
-**Latest fully verified Gumroad rollout source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Current automated baseline record:** `docs/releases/AUTOMATED_BASELINE.md`  
+**Current dependency/toolchain baseline:** `docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`  
 **Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`  
 **Package evidence guide:** `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`  
-**Compiled-binding verification source head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9` (PR #74)
+**Documentation integrity guide:** `docs/testing/DOCUMENTATION_INTEGRITY.md`
 
 This catalog is the navigation and ownership map for the complete CareNest documentation set. It does not replace the detailed documents; it tells readers which document is authoritative for each question.
 
@@ -14,16 +15,19 @@ This catalog is the navigation and ownership map for the complete CareNest docum
 When documents appear to disagree, use this order:
 
 1. `PROJECT_STATUS.md` for current release state, verification boundary and blockers.
-2. `docs/releases/NEXT_STEPS.md` for remaining production work and the immediate fresh exact-head verification gate.
-3. latest dated verification record under `docs/releases/` for exact automated evidence.
-4. `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` for exact-head verification rules when current source has moved beyond the verified baseline.
-5. `docs/releases/RELEASE_EVIDENCE.md` for the required release evidence contract.
-6. `docs/releases/PACKAGE_EVIDENCE_TOOLING.md` for structured final-package checksum/provenance evidence.
-7. `docs/releases/STORE_POLICY_REVIEW_20260818.md` for the latest dated pre-submission store-policy review; official live store policies remain authoritative at actual submission time.
-8. `docs/COMPLETE_PROJECT_DOCUMENTATION.md` for the end-to-end product/engineering reference.
-9. specialized architecture/security/testing/setup documents for implementation details.
-10. `GUMROAD.md` and `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` for the current external storefront placement/package boundary.
-11. `what_changed.md` and `docs/history/` for chronological and historical context.
+2. `docs/releases/AUTOMATED_BASELINE.md` for the latest actually observed exact-source automated verification record.
+3. `docs/releases/NEXT_STEPS.md` for remaining production work and the immediate exact-head verification gate.
+4. latest dated verification record under `docs/releases/` for permanent exact automated evidence.
+5. `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` for exact-head verification rules when current source has moved beyond the verified baseline.
+6. `docs/releases/RELEASE_EVIDENCE.md` for the required release evidence contract.
+7. `docs/releases/PACKAGE_EVIDENCE_TOOLING.md` for structured final-package checksum/provenance evidence.
+8. `docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md` for the current human-readable package/GitHub Actions source baseline.
+9. `docs/testing/DOCUMENTATION_INTEGRITY.md` for stable/dynamic/historical documentation-link verification boundaries.
+10. `docs/releases/STORE_POLICY_REVIEW_20260818.md` for the dated pre-submission store-policy review; official live store policies remain authoritative at actual submission time.
+11. `docs/COMPLETE_PROJECT_DOCUMENTATION.md` for the end-to-end product/engineering reference.
+12. specialized architecture/security/testing/setup documents for implementation details.
+13. `GUMROAD.md` and `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` for the current external storefront placement/package boundary.
+14. `what_changed.md` and `docs/history/` for chronological and historical context.
 
 Historical evidence is intentionally retained and may describe older source boundaries. A dated historical file must not be interpreted as the current product state merely because it contains a detailed test count or source SHA.
 
@@ -44,11 +48,15 @@ Historical evidence is intentionally retained and may describe older source boun
 ### Contributors and developers
 
 - `CONTRIBUTING.md` — contribution rules.
+- `.github/PULL_REQUEST_TEMPLATE.md` — safety/privacy/migration/testing/release contribution checklist.
+- `.github/CODEOWNERS` — default repository ownership.
 - `docs/DEVELOPER_REFERENCE.md` — development conventions and current technical baseline.
+- `docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md` — package versions and maintained GitHub Actions majors.
 - `docs/setup/DEVELOPMENT.md` — environment and build/test setup.
 - `docs/setup/PLATFORM_SETUP.md` — target-specific requirements.
 - `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` — authoritative executable/package creation guide for Windows, Android, iOS and Mac Catalyst.
 - `docs/releases/PACKAGE_EVIDENCE_TOOLING.md` — final-package evidence generator and fail-closed production requirements.
+- `docs/testing/DOCUMENTATION_INTEGRITY.md` — stable active documentation local-link verification.
 - `docs/setup/TROUBLESHOOTING.md` — build/runtime troubleshooting.
 - `docs/CODEBASE_REFERENCE.md` — source/project/file map.
 - `docs/CONFIGURATION_REFERENCE.md` — package/build/configuration reference.
@@ -61,18 +69,21 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/MAINTENANCE_AND_OPERATIONS.md` — maintenance and incident operations.
 - `docs/setup/MAINTAINER_OPERATIONS.md` — setup/repository operations.
 - `docs/REPOSITORY_GOVERNANCE.md` — documentation/source/evidence governance.
+- `docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md` — exact current dependency/action baseline to compare with executable configuration.
 - `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` — complete executable/package build guide.
 - `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md` — concise operator checklist and package-evidence integration.
 - `docs/releases/RELEASE_PROCESS.md` — production release process.
 - `docs/releases/RELEASE_CHECKLIST.md` — release gate checklist.
 - `docs/releases/RELEASE_EVIDENCE.md` — automated/manual/security/store/signing/package evidence contract.
 - `docs/releases/PACKAGE_EVIDENCE_TOOLING.md` — deterministic final-package checksum/provenance JSON tooling.
+- `docs/testing/DOCUMENTATION_INTEGRITY.md` — stable documentation integrity gate and dynamic evidence exception.
 - `docs/releases/MANUAL_TEST_MATRIX.md` — manual platform validation.
 - `docs/releases/PACKAGED_RELEASE_VALIDATION.md` — packaged compatibility validation.
 - `docs/releases/STORE_SUBMISSION_CHECKLIST.md` — exact store-submission preparation and final package evidence.
+- `docs/releases/AUTOMATED_BASELINE.md` — current exact-source automated evidence authority.
 - `docs/releases/NEXT_STEPS.md` — current remaining work.
 - `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` — exact-head verification procedure.
-- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — latest fully verified Gumroad rollout automated evidence.
+- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — permanent Gumroad rollout automated evidence.
 - `docs/releases/STORE_POLICY_REVIEW_20260818.md` — dated pre-submission Apple/Google/Microsoft policy review.
 - `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md` — permanent compiled-binding evidence.
 - `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — external-commerce package-boundary rules.
@@ -81,12 +92,14 @@ Historical evidence is intentionally retained and may describe older source boun
 
 - `PRIVACY.md` — user-facing privacy statement.
 - `SECURITY.md` — security policy/reporting.
+- `.github/ISSUE_TEMPLATE/config.yml` — private vulnerability routing and safe public-support links.
 - `docs/privacy/PRIVACY_MODEL.md` — privacy architecture.
 - `docs/privacy/DATA_LIFECYCLE.md` — data lifecycle.
 - `docs/security/SECURITY_MODEL.md` — technical security model.
 - `docs/security/THREAT_MODEL.md` — threat model and residual risk.
 - `docs/security/LOGGING_PRIVACY.md` — diagnostic/logging policy.
 - `docs/security/DEPENDENCY_RISK_REGISTER.md` — dependency security status.
+- `docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md` — current dependency/action versions and upgrade policy.
 - `docs/releases/SECURITY_RELEASE_REVIEW.md` — exact-candidate security review checklist.
 - `docs/releases/PACKAGE_EVIDENCE_TOOLING.md` — package provenance and no-secret evidence rules.
 - `docs/releases/STORE_POLICY_REVIEW_20260818.md` — current dated sensitive-health-data/store-policy review.
@@ -98,18 +111,22 @@ Historical evidence is intentionally retained and may describe older source boun
 - `docs/testing/TEST_PLAN.md` — test plan.
 - `docs/testing/REMINDER_SCHEDULING_CONTRACT.md` — reminder correctness contract.
 - `docs/testing/SETTINGS_LIFECYCLE_CONTRACT.md` — settings lifecycle contract.
+- `docs/testing/DOCUMENTATION_INTEGRITY.md` — offline local-link checker behavior and exact-source boundary.
 - `docs/PLATFORM_BEHAVIOR_MATRIX.md` — automated versus manual platform evidence.
 - `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md` — executable/package validation checklist.
 - `docs/releases/RELEASE_EVIDENCE.md` — exact release evidence requirements.
 - `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` — current exact-head verification procedure.
 - `docs/releases/PACKAGE_EVIDENCE_TOOLING.md` — package evidence self-test/production behavior.
-- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — exact source/test/build/security result for the latest fully verified Gumroad baseline.
+- `docs/releases/AUTOMATED_BASELINE.md` — latest actual workflow run/test-count record.
+- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — permanent exact source/test/build/security result for the Gumroad baseline.
 - `docs/releases/STORE_POLICY_REVIEW_20260818.md` — dated policy review evidence and submission-day recheck boundary.
 - `tests/CareNest.UiTests/FundingLinkContractTests.cs` — repository/storefront placement contracts.
 - `tests/CareNest.UiTests/StoreFundingPayloadContractTests.cs` — store-payload external-commerce exclusion contracts.
-- `tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs` — active release-documentation consistency contracts.
+- `tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs` — stable release-governance consistency contracts.
 - `tests/CareNest.UiTests/PackageEvidenceToolContractTests.cs` — package-evidence tooling/source/workflow contracts.
+- `tests/CareNest.UiTests/DocumentationIntegrityToolContractTests.cs` — documentation-integrity source/workflow contracts.
 - `build/scripts/test-create-package-evidence.py` — synthetic package-evidence behavior self-test.
+- `build/scripts/test-verify-documentation-links.py` — synthetic documentation-link behavior self-test.
 - dated verification documents under `docs/releases/` — exact workflow evidence.
 
 ### Design, accessibility and localization
@@ -192,57 +209,53 @@ Current XAML compiler policy:
 - `XC0022`, `XC0023`, `XC0024`, `XC0025` are warnings-as-errors;
 - no matching warning suppression is part of the intended baseline.
 
-Current central package versions include:
+Current central package versions are maintained in `Directory.Packages.props` and documented in `docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`. The current candidate source includes:
 
-- Microsoft.Maui.Controls `10.0.20`;
+- Microsoft.Maui.Controls `10.0.90`;
 - sqlite-net-pcl `1.9.172`;
 - SQLitePCLRaw.bundle_green `2.1.11`;
 - SQLitePCLRaw.lib.e_sqlite3 `3.53.3`;
 - SQLitePCLRaw Android/provider leaves `2.1.12` where pinned;
 - xUnit `2.9.3`;
-- Microsoft.NET.Test.Sdk `17.14.1`.
+- Microsoft.NET.Test.Sdk `18.9.0`;
+- xunit.runner.visualstudio `4.0.0`;
+- coverlet.collector `10.0.1`.
 
-## 6. Latest fully verified automated evidence
+Current maintained workflow majors include checkout v7, setup-dotnet v6, CodeQL v4 and upload-artifact v7 where used.
 
-Latest fully verified Gumroad rollout implementation/source-policy source:
+## 6. Automated evidence authority
 
-`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+Current mutable automated evidence authority:
 
-Verified results on that exact revision:
+`docs/releases/AUTOMATED_BASELINE.md`
 
-- 122 unit tests passed;
-- 39 integration tests passed;
-- 175 UI/source-policy tests passed;
-- **336/336 total core tests passed**;
-- Android Release build passed;
-- Windows Release build passed;
-- iOS simulator Release build passed;
-- Mac Catalyst Release build passed;
-- all four store-candidate configurations passed;
-- CodeQL passed.
+It must record only workflow/test results actually observed for the exact source named there.
 
-Verification record: `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`.
+Permanent historical verification records include:
 
-The PR #74 compiled-binding evidence remains at `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md` for the exact source it verified.
+- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — verified `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` with 336/336 core tests plus its recorded platform/store-candidate/CodeQL matrix;
+- `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md` — permanent strict XAML compiled-binding evidence for its own exact source.
 
-## 7. Current newer source verification boundary
+Historical counts do not transfer automatically to newer package/tooling/source heads.
 
-Current `main` contains later verification-relevant changes including:
+## 7. Current newer-source verification boundary
 
-- release-documentation consistency tests;
-- package-evidence tooling tests;
-- package-evidence build scripts/wrappers/self-test;
-- CareNest CI changes;
-- Release Gate changes;
-- Release Evidence workflow changes;
-- verification-sensitive release documentation consumed by the new tests.
+The current candidate source contains verification-relevant changes after the last permanent Gumroad baseline, including:
+
+- release-documentation consistency contracts;
+- package-evidence tooling tests/scripts/workflows;
+- documentation-integrity tooling/tests/workflows;
+- MAUI/test/coverage dependency updates;
+- GitHub Actions major-version maintenance;
+- MAUI file/camera gateway cancellation hardening;
+- open-source issue/PR/CODEOWNERS maintenance metadata;
+- current configuration/toolchain documentation.
 
 Therefore:
 
-- `94e867...` remains the latest fully verified baseline until a new exact-source matrix succeeds;
-- 336/336 is not claimed as the result of the newer head;
-- the actual replacement test counts must be read from the future exact verification run;
-- `docs/releases/NEXT_STEPS.md` and `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` own the immediate verification procedure.
+- the current candidate source must complete a fresh exact-source matrix before it replaces the recorded baseline;
+- no replacement test count should be predicted from source inspection;
+- `docs/releases/NEXT_STEPS.md`, `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`, and `docs/releases/AUTOMATED_BASELINE.md` own the verification/evidence procedure.
 
 ## 8. Current store-policy evidence
 
@@ -282,14 +295,26 @@ Authority map:
 
 The Gumroad storefront is not a CareNest health entitlement and must not be represented as medical advice, diagnosis, treatment, dosage guidance, reminder reliability, emergency service, or health-data access.
 
-## 10. Historical documentation
+## 10. Documentation-integrity ownership
+
+`docs/testing/DOCUMENTATION_INTEGRITY.md` owns the offline local-link integrity design.
+
+Source-controlled tooling:
+
+- `build/scripts/verify-documentation-links.py`;
+- `build/scripts/test-verify-documentation-links.py`;
+- `tests/CareNest.UiTests/DocumentationIntegrityToolContractTests.cs`.
+
+The default exact-source check validates stable active Markdown while excluding `docs/history/` and the explicitly dynamic post-verification evidence/status files. `--include-history` and `--include-dynamic` provide explicit wider audits without changing the stable exact-source evidence boundary.
+
+## 11. Historical documentation
 
 `docs/history/` contains exact snapshots of previously active handoff/status/documentation files. Dated release documents intentionally retain older verification boundaries. Do not rewrite historical evidence merely to make old files look current or to retroactively insert Gumroad promotion/newer test counts.
 
-## 11. Production status boundary
+## 12. Production status boundary
 
-Documentation and package-evidence tooling completeness do not mean production release completeness.
+Documentation/tooling/source completeness does not mean production release completeness.
 
-CareNest remains `1.0.0-rc.1`. The latest fully verified Gumroad rollout remains at the named implementation/source-policy baseline. Current `main` requires fresh exact-head automated verification because verification-relevant tests/scripts/workflows changed. The 2026-08-18 preliminary store-policy review is complete, while remaining production gates include real-device behavior, accessibility validation, packaged existing-data/encrypted-data compatibility, production signing, structured final-package evidence, final signed-package inspection, live store-console declarations/metadata, submission-day policy re-check, exact approved production source/tag, tagged release gates and publication evidence.
+CareNest remains `1.0.0-rc.1` until the applicable release evidence is real. Remaining external/manual gates can include real-device notification/lifecycle behavior, accessibility validation, packaged existing-data/encrypted-data compatibility, production signing/notarization, structured final-package evidence, final signed-package inspection, live store-console declarations/metadata, submission-day policy re-check, exact approved production source/tag, tagged release gates and publication/store-approval evidence.
 
-Use `docs/releases/NEXT_STEPS.md` as the authoritative operational checklist.
+Use `docs/releases/AUTOMATED_BASELINE.md` for the current automated source boundary and `docs/releases/NEXT_STEPS.md` as the authoritative operational checklist.
