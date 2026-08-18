@@ -8,10 +8,12 @@
 
 **Project:** CareNest  
 **Release line:** `1.0.0-rc.1`  
-**Documentation baseline:** 2026-08-17  
+**Documentation baseline:** 2026-08-18  
 **Repository:** `https://github.com/sanskarIN/CareNest`  
 **Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`  
-**Latest fully verified pre-Gumroad source:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+**Latest fully verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`  
+**Package evidence guide:** `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
 
 The complete project guide that was active before the Gumroad rollout is preserved exactly at:
 
@@ -180,6 +182,7 @@ Any future networked, commerce-in-app or clinical feature requires a separate pr
 - blocking NuGet dependency auditing
 - source/repository policy tests
 - package marker scanning
+- structured package evidence self-tests
 - release/store configuration gates
 - exact-source evidence workflows
 
@@ -304,7 +307,8 @@ Use:
 
 - `docs/CONFIGURATION_REFERENCE.md` for configuration ownership;
 - `docs/setup/DEVELOPMENT.md` for development setup;
-- `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` for publish/package instructions.
+- `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` for publish/package instructions;
+- `docs/releases/PACKAGE_EVIDENCE_TOOLING.md` for final package checksum/provenance evidence.
 
 ---
 
@@ -562,6 +566,7 @@ Security controls include:
 - source-policy/architecture/privacy contracts;
 - repository-commerce runtime-isolation contracts;
 - package forbidden-marker scanning;
+- structured final-package evidence tooling;
 - exact-source release evidence.
 
 Residual risk includes compromised devices, external exported copies, weak user-selected secrets, OS notification behavior and process termination during cross-surface compensation.
@@ -645,6 +650,12 @@ dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj -c 
 dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj -c Release
 ```
 
+Package-evidence synthetic self-test:
+
+```bash
+python3 build/scripts/test-create-package-evidence.py
+```
+
 Android example:
 
 ```bash
@@ -698,7 +709,60 @@ The scanner deliberately avoids treating every current-clock read as a generic d
 
 ---
 
-## 32. Quality gates
+## 32. Release-governance and package-evidence contracts
+
+`ReleaseDocumentationConsistencyContractTests.cs` protects current active release documents from drifting back to superseded test counts/source claims and ensures:
+
+- applicable current documents retain the latest fully verified source/result until a newer exact verification is real;
+- both external-commerce markers remain in final-package evidence rules;
+- live store declarations remain open until actually completed;
+- package-evidence tooling remains integrated into release governance;
+- Release Gate requires the current evidence/tooling set.
+
+`PackageEvidenceToolContractTests.cs` protects:
+
+- package evidence scripts/wrappers/guide existence;
+- exact tag/source/HEAD/clean-workspace production requirements;
+- mandatory store-safe scanner integration;
+- payload hashing contracts;
+- synthetic self-test coverage;
+- CI syntax/self-test wiring;
+- no-secret/release-boundary documentation.
+
+---
+
+## 33. Structured package evidence tooling
+
+`build/scripts/create-package-evidence.py` generates JSON checksum/provenance evidence for inspection or production artifacts.
+
+Cross-platform wrappers:
+
+- `build/scripts/create-package-evidence.sh`;
+- `build/scripts/create-package-evidence.ps1`.
+
+Synthetic self-test:
+
+- `build/scripts/test-create-package-evidence.py`.
+
+Production mode requires:
+
+- immutable `v*` source tag;
+- tag SHA equals recorded source SHA;
+- checked-out HEAD equals recorded source SHA;
+- clean tracked Git workspace;
+- non-secret real signing/notarization/store provenance description;
+- successful store-safe payload scan;
+- evidence output outside the package payload.
+
+The generated JSON records per-file SHA-256 plus a top-level file/deterministic-directory payload SHA-256.
+
+The tool does not sign packages, validate private signing credentials by itself, submit to a store, prove store approval, replace real-device testing, replace accessibility testing or replace packaged SQLite/document/backup compatibility.
+
+See `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`.
+
+---
+
+## 34. Quality gates
 
 Repository gates include:
 
@@ -711,38 +775,38 @@ PowerShell equivalents live beside those scripts.
 
 Dependency audit is intentionally blocking.
 
-Do not weaken tests/analyzers/audit/payload rules simply to obtain green status.
+Do not weaken tests/analyzers/audit/payload/evidence rules simply to obtain green status.
 
 ---
 
-## 33. GitHub Actions
+## 35. GitHub Actions
 
 Current workflow roles include:
 
-- `.github/workflows/ci.yml` — formatting, tests, Android/Windows/Apple builds;
+- `.github/workflows/ci.yml` — package-evidence Python syntax/self-test, formatting, tests, Android/Windows/Apple builds;
 - `.github/workflows/codeql.yml` — CodeQL;
 - `.github/workflows/dependency-review.yml` — dependency policy/audit;
 - `.github/workflows/store-package-verification.yml` — store-candidate configuration builds;
 - `.github/workflows/store-inspection-artifacts.yml` — internal package inspection artifacts and forbidden-marker scans;
-- `.github/workflows/release-gate.yml` — production-tag aggregate gate;
-- `.github/workflows/release-evidence.yml` — release evidence/provenance.
+- `.github/workflows/release-gate.yml` — production-tag policy/evidence/tooling/source-test gate;
+- `.github/workflows/release-evidence.yml` — release evidence/provenance, including package-tooling self-test evidence.
 
 Exact-source verification matters. Results from an older SHA must not be presented as proof for a newer verification-relevant source.
 
 ---
 
-## 34. Latest fully verified pre-Gumroad baseline
+## 36. Latest fully verified Gumroad rollout baseline
 
 Exact source:
 
-`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
 Verified on that exact revision:
 
 - **122/122** unit tests;
 - **39/39** integration tests;
-- **173/173** UI/source-policy tests;
-- **334/334** total core tests;
+- **175/175** UI/source-policy tests;
+- **336/336** total core tests;
 - Android Release build;
 - Windows Release build;
 - iOS simulator Release build;
@@ -753,22 +817,37 @@ Verified on that exact revision:
 - Mac Catalyst store-candidate build;
 - CodeQL.
 
-This remains the last fully verified baseline until the exact final Gumroad/documentation/test/scanner rollout source completes its own applicable workflow matrix.
+Authoritative record:
+
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+
+This is the latest fully verified baseline currently recorded.
 
 ---
 
-## 35. Gumroad rollout verification rule
+## 37. Current newer-source verification rule
 
-The Gumroad rollout is verification-relevant because it changes:
+Current `main` contains later verification-relevant changes including:
 
-- repository/source-policy tests;
-- `build/scripts/verify-store-safe-payload.py`;
-- current support/marketing metadata/documentation.
+- release-documentation consistency tests;
+- package-evidence tooling tests;
+- package-evidence scripts/wrappers/self-test;
+- CI changes;
+- Release Gate changes;
+- Release Evidence changes;
+- current release documents consumed by the new contracts.
 
-Use `what_changed.md` for the active exact SHA and commit series.
+Therefore:
 
-A new authoritative baseline requires the same exact final source to pass:
+- 336/336 belongs only to `94e867...`;
+- a replacement test total must not be predicted from source inspection;
+- the final intended current source must complete a fresh exact-head matrix before a newer baseline is promoted.
 
+Use `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` and `docs/releases/NEXT_STEPS.md`.
+
+The fresh matrix requires, as applicable:
+
+- package-evidence Python syntax/self-test;
 - formatting;
 - unit tests;
 - integration tests;
@@ -777,35 +856,49 @@ A new authoritative baseline requires the same exact final source to pass:
 - Windows Release;
 - iOS simulator Release;
 - Mac Catalyst Release;
-- all four store-candidate configurations;
-- CodeQL.
-
-Store Inspection Artifacts run on their configured PR/release/tag/manual triggers rather than every ordinary `main` push; source contracts ensure the two-marker scanner remains wired correctly between inspection runs.
+- Store Package Configuration;
+- Store Inspection Artifacts;
+- CodeQL;
+- unsuppressed Dependency Audit.
 
 ---
 
-## 36. Release process
+## 38. Release process
 
 Production promotion requires an exact approved source/tag and cannot be inferred from source completeness alone.
 
 Use:
 
 - `docs/releases/NEXT_STEPS.md`;
+- `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`;
 - `docs/releases/RELEASE_PROCESS.md`;
 - `docs/releases/RELEASE_CHECKLIST.md`;
 - `docs/releases/QUALITY_GATE.md`;
 - `docs/releases/MANUAL_TEST_MATRIX.md`;
 - `docs/releases/PACKAGED_RELEASE_VALIDATION.md`;
+- `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`;
 - `docs/releases/SECURITY_RELEASE_REVIEW.md`;
+- `docs/releases/STORE_BUILD_POLICY.md`;
 - `docs/releases/STORE_SUBMISSION_CHECKLIST.md`;
+- `docs/releases/STORE_POLICY_REVIEW_20260818.md`;
 - `docs/releases/RELEASE_EVIDENCE.md`;
 - `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md`.
 
 ---
 
-## 37. Remaining production blockers
+## 39. Remaining production blockers
 
-Even after final Gumroad source automation is green, production evidence still requires external/manual work.
+### Fresh exact-head automation
+
+- final verification-relevant source freeze;
+- package-evidence syntax/self-test;
+- actual unit/integration/UI/total test counts;
+- all four Release builds;
+- Store Package Configuration;
+- Store Inspection Artifacts;
+- CodeQL;
+- unsuppressed Dependency Audit;
+- exact source/run evidence.
 
 ### Device/platform validation
 
@@ -838,32 +931,43 @@ Using fictional/synthetic data only:
 - reduced motion;
 - color-independent states.
 
-### Signing/store/publication
+### Signing/final-package evidence
 
 - production Android signing material outside Git;
 - Apple signing/provisioning outside Git;
 - Windows signing material outside Git;
 - final signed packages;
-- SHA-256/provenance;
+- structured package evidence JSON for each production artifact;
+- independent SHA-256/provenance cross-check;
+- both external-commerce marker scans;
+- installed-package smoke/manual checks.
+
+### Store/publication
+
 - current store metadata/screenshots/privacy/data-safety declarations;
+- live Google Play Health apps declaration and Data safety;
+- current Apple privacy/store metadata;
+- current Microsoft/Partner Center privacy/store metadata where applicable;
 - submission-time policy review;
 - exact approved immutable `v*` tag;
 - tagged release/security/dependency/package evidence;
-- final publication evidence.
+- final publication/store-approval evidence.
 
 ---
 
-## 38. Documentation governance
+## 40. Documentation governance
 
 Current documentation authority:
 
-1. `PROJECT_STATUS.md` — current state;
+1. `PROJECT_STATUS.md` — current state/verification boundary;
 2. `docs/releases/NEXT_STEPS.md` — remaining operational work;
 3. latest exact-source verification record — automated evidence;
-4. this document — end-to-end project reference;
-5. specialized subsystem docs — technical detail;
-6. `GUMROAD.md` and marketing policy — storefront/package rules;
-7. `what_changed.md` and `docs/history/` — continuation/history.
+4. `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` — current exact-head verification procedure;
+5. `docs/releases/PACKAGE_EVIDENCE_TOOLING.md` — structured package evidence procedure;
+6. this document — end-to-end project reference;
+7. specialized subsystem docs — technical detail;
+8. `GUMROAD.md` and marketing policy — storefront/package rules;
+9. `what_changed.md` and `docs/history/` — continuation/history.
 
 Historical snapshots are preserved rather than rewritten to look current.
 
@@ -871,7 +975,7 @@ See `docs/REPOSITORY_GOVERNANCE.md` and `docs/DOCUMENTATION_CATALOG.md`.
 
 ---
 
-## 39. Contribution rules
+## 41. Contribution rules
 
 Contributors must:
 
@@ -888,7 +992,7 @@ See `CONTRIBUTING.md`.
 
 ---
 
-## 40. Support and official links
+## 42. Support and official links
 
 - **Gumroad:** https://ramsandesh.gumroad.com
 - **Repository:** https://github.com/sanskarIN/CareNest
@@ -901,7 +1005,7 @@ CareNest support cannot provide diagnosis, dosage decisions, treatment recommend
 
 ---
 
-## 41. License
+## 43. License
 
 CareNest is licensed under Apache License 2.0.
 
@@ -912,12 +1016,14 @@ See:
 
 ---
 
-## 42. Current interpretation
+## 44. Current interpretation
 
 CareNest remains `1.0.0-rc.1`.
 
-The intended RC source scope is implemented and heavily automated. The Ram Sandesh Gumroad storefront is now prominently integrated across current repository/documentation surfaces while remaining outside the CareNest health-app package under the current policy.
+The intended RC runtime feature scope is implemented and heavily automated. The Ram Sandesh Gumroad storefront is prominently integrated across current repository/documentation surfaces while remaining outside the CareNest health-app package under the current policy.
 
-The latest fully verified pre-Gumroad source is `7cbe5568b6cffa06c279b29f3cb1b107ea988791`. The current Gumroad rollout must complete exact-source verification before replacing that baseline.
+The latest fully verified Gumroad implementation/source-policy source is `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` with 336/336 core tests and its recorded platform/store-candidate/CodeQL matrix.
 
-Documentation completeness, source completeness and automated green builds do not imply that production signing, real-device accessibility/notification behavior, store approval or publication has already occurred.
+Current `main` now includes additional verification-relevant release-documentation contracts, package-evidence tooling and CI/release workflow changes. A fresh exact-head automated matrix is required before those changes can replace the verified baseline.
+
+Documentation completeness, source completeness and automated green builds do not imply that production signing, real-device accessibility/notification behavior, packaged compatibility, live store declarations, store approval or publication has already occurred.
