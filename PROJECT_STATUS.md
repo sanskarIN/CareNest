@@ -3,19 +3,26 @@
 **Date:** 2026-08-18  
 **Release line:** `1.0.0-rc.1`  
 **Repository:** `https://github.com/sanskarIN/CareNest`  
-**Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`
+**Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`  
+**Latest accepted automated source:** `b6eecae66f74bd72bcb20d93508355542f9f3442`
 
 The complete project status that was active before the Gumroad rollout is preserved exactly at:
 
 `docs/history/pre-gumroad-rollout-20260817/PROJECT_STATUS.md`
 
-Do not treat that preserved historical snapshot as the current status merely because it contains detailed older verification records.
+Historical verification records remain authoritative only for their exact source boundaries. The current dynamic automated authority is:
+
+`docs/releases/AUTOMATED_BASELINE.md`
+
+The dated final-candidate verification record is:
+
+`docs/releases/FINAL_CANDIDATE_VERIFICATION_20260818.md`
 
 ---
 
 ## 1. Current product boundary
 
-CareNest is a local-first organizational health application built with .NET MAUI.
+CareNest is a local-first organizational health application built with .NET MAUI for Android, Windows, iOS/iPadOS and Mac Catalyst.
 
 CareNest does **not**:
 
@@ -35,240 +42,166 @@ The current release remains account-free and local-first. It does not require a 
 
 ## 2. Current implementation state
 
-The source-controlled `1.0.0-rc.1` product scope remains source-complete for the intended RC feature set, including:
+The source-controlled `1.0.0-rc.1` scope is source-complete for the intended RC feature set, including:
 
 - multiple local person/family profiles;
 - medicine records with user-entered strength/instruction text;
 - explicit schedules and deterministic reminder occurrences;
-- reminder history/status/reconciliation and compensation behavior;
+- reminder lifecycle/history/status/reconciliation/compensation behavior;
 - appointments and optional reminders;
 - stock/refill organization;
 - encrypted imported-document vault;
 - password-encrypted manual backup/restore;
 - optional local app lock;
-- reports/exports;
+- reports and explicit exports;
 - privacy-aware diagnostics;
 - light/dark/system themes;
 - accessibility-oriented source contracts;
-- Android, Windows, iOS/iPadOS and Mac Catalyst targets;
 - strict compiled XAML bindings;
-- automated source-line/structured-file quality contracts;
-- CodeQL, dependency and store/release gates.
+- automated C#/structured-file quality contracts;
+- documentation-integrity tooling;
+- package-evidence/provenance tooling;
+- CodeQL, dependency, store and release gates.
+
+No unresolved GitHub issue was present in the repository issue backlog at finalization time. That is not a claim that undiscovered bugs are impossible.
 
 ---
 
-## 3. Gumroad storefront rollout
+## 3. Repository/open-source completeness
 
-The Ram Sandesh Gumroad storefront is a first-class **repository/documentation** surface:
+The public repository includes the core open-source/community surfaces expected for this project:
+
+- Apache License 2.0 `LICENSE`;
+- `NOTICE`;
+- public `README.md`;
+- `CHANGELOG.md`;
+- `CODE_OF_CONDUCT.md`;
+- `CONTRIBUTING.md`;
+- `SECURITY.md`;
+- privacy, terms and support documentation;
+- `.github/CODEOWNERS`;
+- `.github/dependabot.yml`;
+- bug-report issue form;
+- feature-request issue form;
+- issue-template configuration;
+- pull-request template;
+- GitHub funding metadata;
+- CI, CodeQL, Dependency Audit, Store Package Configuration, Store Inspection Artifacts, Release Gate and Release Evidence workflows;
+- setup, architecture, testing, security, privacy, accessibility, localization, packaging, release and governance documentation.
+
+The final audit did not add decorative files simply to increase repository file count where an equivalent maintained surface already existed.
+
+---
+
+## 4. Gumroad and external-commerce package boundary
+
+The Ram Sandesh Gumroad storefront remains a first-class **repository/documentation** surface:
 
 **https://ramsandesh.gumroad.com**
 
-Current repository integration includes:
+Repository support/storefront promotion is separate from CareNest health functionality.
 
-- highlighted storefront badge and URL in the main README;
-- highlighted storefront in support documentation;
-- GitHub repository custom funding/project metadata;
-- `GUMROAD.md` canonical storefront guide;
-- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md`;
-- `docs/marketing/GUMROAD_ROLLOUT_CHECKLIST.md`;
-- `docs/assets/gumroad_store_badge.svg`;
-- contributor/developer/governance documentation;
-- automated repository-placement and package-isolation tests;
-- store-payload scanner coverage for the Gumroad marker.
-
-A Gumroad purchase is separate from CareNest health functionality and does not unlock diagnosis, dosage decisions, treatment recommendations, reminder priority/reliability, emergency assistance, clinical support, accounts/cloud services, or access to user health data.
-
-CareNest does not automatically transmit local health records to Gumroad.
-
----
-
-## 4. External-commerce application-package boundary
-
-The current distributed CareNest application source/package intentionally contains no external:
+The distributed application source/package intentionally contains no external:
 
 - `ramsandesh.gumroad.com` destination;
 - `buymeacoffee.com/sanskarIN` destination;
 - Gumroad/Buy Me a Coffee promotional runtime command;
 - Gumroad/Buy Me a Coffee promotional XAML surface;
-- repository promotional Gumroad badge in app resources.
+- repository promotional Gumroad badge in packaged app resources.
 
-Repository support, storefront and marketing surfaces remain separate from the health-app package under the current release/store policy.
+A purchase or contribution does not unlock diagnosis, dosage decisions, treatment recommendations, reminder priority/reliability, emergency assistance, clinical support, accounts/cloud services, or access to local health records.
 
-The store-safe payload scanner defaults to both repository-only markers:
-
-- `buymeacoffee.com/sanskarIN`;
-- `ramsandesh.gumroad.com`.
-
-It checks regular payload files and ZIP-compatible package entries using UTF-8 and UTF-16 marker encodings and fails closed for inspection errors.
+The store-safe payload scanner defaults to both repository-only markers and checks regular payloads plus ZIP-compatible package entries using UTF-8/UTF-16 marker encodings. It fails closed for inspection errors.
 
 ---
 
-## 5. Latest fully verified implementation/source-policy baseline
+## 5. Final accepted exact-source automated baseline
 
-Exact verified Gumroad implementation/source-policy SHA:
+Frozen verified source:
 
-`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+`b6eecae66f74bd72bcb20d93508355542f9f3442`
 
-That exact source passed:
+Verification marker/head:
 
-- unit tests: **122/122**;
-- integration tests: **39/39**;
-- UI/source-policy tests: **175/175**;
-- total core tests: **336/336**;
-- Android Release build;
-- Windows Release build;
-- iOS simulator Release build;
-- Mac Catalyst Release build;
-- Android store-candidate configuration;
-- Windows store-candidate configuration;
-- iOS simulator store-candidate configuration;
-- Mac Catalyst store-candidate configuration;
-- CodeQL.
+`ef1e8cea30108f1f3a4dca3158d9b862121e33fe`
 
-Authoritative verification record:
+Verification PR:
 
-`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+`#80` — closed without merge after success.
 
-The two-test increase from 173 to 175 UI/source-policy tests in that verified baseline was the intended Gumroad repository-placement/accessibility/package-isolation expansion.
+Observed CareNest CI run `32141539179`:
 
----
+- repository Python tooling syntax: **success**;
+- package-evidence self-test: **success**;
+- documentation-link checker self-test: **success**;
+- stable documentation local-link integrity: **success** — 182 live local links across 109 stable active Markdown files;
+- platform-neutral formatting: **success**;
+- unit tests: **122/122 passed**;
+- integration tests: **39/39 passed**;
+- UI/source-policy tests: **194/194 passed**;
+- total core tests: **355/355 passed**;
+- Android Release: **success**;
+- Windows Release: **success**;
+- iOS simulator Release: **success**;
+- Mac Catalyst Release: **success**.
 
-## 6. Current verification-relevant continuation — new exact-head verification required
+Store Package Configuration run `32141539246`:
 
-After the 336-test baseline was verified, current `main` gained additional **verification-relevant** release-engineering source.
+- Android: **success**;
+- Windows: **success**;
+- iOS simulator: **success**;
+- Mac Catalyst: **success**.
 
-New current source now includes:
+Store Inspection Artifacts run `32141539169`:
 
-- `tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs`;
-- `tests/CareNest.UiTests/PackageEvidenceToolContractTests.cs`;
-- `build/scripts/create-package-evidence.py`;
-- `build/scripts/create-package-evidence.sh`;
-- `build/scripts/create-package-evidence.ps1`;
-- `build/scripts/test-create-package-evidence.py`;
-- CareNest CI package-evidence syntax/self-test steps;
-- Release Gate package-evidence syntax/self-test and required-evidence checks;
-- Release Evidence package-evidence self-test capture;
-- current release documents consumed by the new consistency contracts.
+- scanner positive/negative/archive/fail-closed self-test: **success**;
+- Android inspection artifact: **success**;
+- Windows inspection artifact: **success**;
+- Apple inspection artifacts: **success**.
 
-Because tests, workflows, build scripts and verification-sensitive release documents changed, these later commits are **not** documentation-only for verification purposes.
+CodeQL run `32141539253`: **success**.
 
-Therefore:
+Dependency Audit run `32141539349`: **success**.
 
-- `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` remains the latest fully verified baseline until a replacement exact source completes the applicable matrix;
-- **336/336 must not be presented as the test result of the newer current head**;
-- no newer test total should be predicted from the number of added test methods;
-- a fresh exact-head verification must record the actual unit/integration/UI totals and workflow results before a newer baseline is promoted.
+Authoritative dated record:
 
-Protocol:
-
-`docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`
+`docs/releases/FINAL_CANDIDATE_VERIFICATION_20260818.md`
 
 ---
 
-## 7. Structured final-package evidence tooling
+## 6. Failed verification checkpoints were fixed, not hidden
 
-Current source now includes a fail-closed package checksum/provenance generator:
+The accepted final baseline followed two superseded verification checkpoints:
 
-`build/scripts/create-package-evidence.py`
+- PR #78 exposed a documentation-link checker false positive on fenced example code. The checker was fixed to ignore fenced/inline/comment example-only links while preserving fail-closed checking for live local links.
+- PR #79 reached 122/122 unit and 39/39 integration tests but UI/source-policy reported 192 passed and 2 failed. The two failures were stale verification contracts: one still required `actions/upload-artifact@v4` after the workflow moved to v7, and one raw Markdown substring assertion did not account for emphasis around the existing `not store approval` wording. The contracts were corrected without weakening the underlying safety/policy rules.
 
-Cross-platform wrappers:
-
-- `build/scripts/create-package-evidence.sh`;
-- `build/scripts/create-package-evidence.ps1`.
-
-Synthetic self-test:
-
-`build/scripts/test-create-package-evidence.py`
-
-Guide:
-
-`docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
-
-The tool records:
-
-- exact source SHA;
-- release tag when supplied;
-- stage/platform/version/build/package identity;
-- tracked-workspace clean state;
-- non-secret signing/notarization/store-managed provenance text;
-- per-file SHA-256;
-- top-level file or deterministic directory payload SHA-256;
-- store-safe scanner result;
-- optional non-sensitive notes.
-
-Production mode fails closed unless:
-
-- a `v*` tag is supplied;
-- the tag resolves to the recorded source SHA;
-- checked-out HEAD equals that source SHA;
-- tracked Git files are clean;
-- signing provenance is not empty/unsigned/not-applicable;
-- the existing store-safe payload scanner passes;
-- evidence output is outside the payload being hashed.
-
-The tool does not sign packages, verify real signing credentials by itself, perform store submission, prove store approval, replace real-device testing, replace accessibility testing, or replace packaged database/encryption compatibility testing.
+PR #80 then passed the complete required matrix. Superseded failures remain historical debugging evidence.
 
 ---
 
-## 8. Package-evidence automated protection
+## 7. Source quality and regression protection
 
-CareNest CI now:
-
-- syntax-checks the store-safe scanner, package-evidence generator and synthetic self-test with `python3 -m py_compile`;
-- runs `python3 build/scripts/test-create-package-evidence.py` before the .NET formatting/test steps.
-
-The synthetic self-test covers:
-
-- safe single-file SHA-256 evidence;
-- deterministic directory evidence;
-- Gumroad marker fail-closed behavior;
-- rejection of evidence output inside the payload;
-- rejection of production evidence without a `v*` tag.
-
-The Release Gate repeats package-tool syntax/self-test checks and requires the current package-evidence/release documents to exist and be non-empty.
-
-The Release Evidence workflow also runs the package-tool self-test, stores its output in release evidence, and treats failure as a release-evidence failure.
-
-These workflow changes require fresh exact-source verification before they become a new accepted automated baseline.
-
----
-
-## 9. Release-documentation consistency protection
-
-Current UI/source-policy tests protect active release documentation from drifting back to superseded release evidence.
-
-The consistency contract requires applicable current documents to preserve:
-
-- the current verified `94e867...` baseline until replaced by real newer evidence;
-- the recorded **336/336** result only as that exact baseline's result;
-- both repository-only external-commerce markers in final-package evidence rules;
-- the 2026-08-18 store-policy review link without misrepresenting it as store approval;
-- open live Google Play Health apps/Data safety and submission-day Apple/Google/Microsoft review gates;
-- package-evidence guide integration;
-- Release Gate requirements for current release evidence/tooling.
-
-This converts previously manual documentation alignment into CI-enforced release governance.
-
----
-
-## 10. Source-line and structured-file quality state
-
-The current UI/source-policy suite includes a deterministic source quality contract that scans runtime C# lines for known defect patterns such as:
+Current automated source/policy coverage includes checks for:
 
 - unresolved merge-conflict markers;
-- unfinished `TODO`/`FIXME`/`HACK` placeholders;
+- unfinished `TODO`/`FIXME`/`HACK` placeholders in runtime source;
 - `NotImplementedException` placeholders;
 - common sync-over-async forms;
 - `Thread.Sleep`/`Task.WaitAll`/`Task.WaitAny` runtime patterns;
-- `throw ex;` stack-trace destruction.
+- `throw ex;` stack-trace destruction;
+- malformed XAML/XML/project/JSON inputs;
+- strict XAML compiled-binding requirements;
+- package external-commerce isolation;
+- package-evidence tooling behavior;
+- release-documentation policy invariants;
+- stable documentation local-link integrity.
 
-It also parses structured runtime files including XAML, project/XML-family files and JSON so malformed structured source inputs fail the repository quality gate.
-
-The broad scanner intentionally does not classify every direct clock read as a defect; time semantics are handled by more specific tests/rules.
+The broad scanner does not classify every direct clock read as a generic defect; time semantics remain protected by more specific scheduling/time-zone tests.
 
 ---
 
-## 11. Strict XAML binding state
+## 8. Strict XAML binding state
 
 The application retains:
 
@@ -276,104 +209,103 @@ The application retains:
 - `MauiStrictXamlCompilation=true`;
 - `XC0022`, `XC0023`, `XC0024`, `XC0025` as warnings-as-errors;
 - typed binding-bearing pages/templates;
-- no intended `NoWarn`/type-safety bypass for the compiled-binding policy.
+- no intended warning/type-safety bypass for the compiled-binding policy.
 
-Permanent historical verification for the compiled-binding migration remains:
+Permanent migration evidence remains at:
 
 `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`
 
 ---
 
-## 12. Security/dependency state
+## 9. Structured final-package evidence tooling
 
-Current policy retains:
+Current source includes:
 
-- CodeQL scanning;
-- blocking dependency auditing;
-- no restoration of the former exact SQLite advisory suppression merely to make audit green;
-- privacy-aware logging contracts;
-- encrypted imported-document and manual-backup protections;
-- source/package external-commerce isolation contracts;
-- release/store verification mechanisms;
-- fail-closed structured final-package evidence generation.
+- `build/scripts/create-package-evidence.py`;
+- `build/scripts/create-package-evidence.sh`;
+- `build/scripts/create-package-evidence.ps1`;
+- `build/scripts/test-create-package-evidence.py`;
+- `build/scripts/verify-store-safe-payload.py`.
 
-A green source dependency graph does not prove packaged existing-data/encrypted-data upgrade compatibility; that remains a separate production gate.
+Guide:
+
+`docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
+
+Production evidence mode fails closed unless it receives an immutable `v*` tag matching the recorded SHA, checked-out HEAD matches that SHA, tracked files are clean, real non-secret signing/notarization/store-managed provenance is supplied, the store-safe scanner passes, and evidence output is outside the payload being hashed.
+
+The tool records deterministic SHA-256/package provenance evidence. It does not sign a package, verify a private signing identity by itself, submit to a store, or prove store approval.
 
 ---
 
-## 13. Current store-policy review
+## 10. Security/dependency state
 
-A dated pre-submission store-policy review was completed on **2026-08-18** and recorded at:
+Current source retains:
+
+- CodeQL scanning;
+- blocking unsuppressed dependency auditing;
+- no restoration of the former SQLite advisory suppression merely to make audit green;
+- privacy-minimized logging rules;
+- encrypted imported-document protections;
+- authenticated password-encrypted backup protections;
+- app-lock privacy barrier protections;
+- package external-commerce isolation;
+- fail-closed package evidence generation;
+- release/store workflow gates.
+
+A green dependency graph does not prove packaged historical-data/encryption compatibility; those remain separate manual/package gates.
+
+---
+
+## 11. Store-policy state
+
+A dated pre-submission review was completed on 2026-08-18:
 
 `docs/releases/STORE_POLICY_REVIEW_20260818.md`
 
-The review checked the current CareNest product/package boundary against:
+It covers current Apple, Google Play and Microsoft policy areas relevant to the product boundary, health claims, sensitive-data privacy and external commerce.
 
-- Apple App Review Guidelines relevant to medical/health functionality, privacy, completeness and external purchase links;
-- Google Play Health Content and Services, Health apps declaration and Data safety requirements;
-- Microsoft Store rules for personal and highly sensitive information.
+The conservative current decision remains: Gumroad and Buy Me a Coffee stay repository/documentation-only and outside the distributed health-app package.
 
-The review preserves the current conservative release choice: Gumroad and Buy Me a Coffee remain repository/documentation surfaces and stay outside the distributed CareNest health-app package.
-
-This dated review is not store approval. The official policy pages and live store-console declarations must be re-checked against the exact production binary/listing immediately before submission.
+The dated review is not store approval. Submission-day policies and live store-console declarations must still be re-checked against the exact signed production package/listing.
 
 ---
 
-## 14. Documentation state
+## 12. Documentation authority
 
-Current documentation entry points include:
+Use these current entry points:
 
-- `README.md` — public project overview and highlighted Gumroad storefront;
-- `docs/README.md` — documentation hub;
-- `docs/DOCUMENTATION_CATALOG.md` — authority/ownership map;
-- `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — whole-project reference;
-- `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — latest fully verified implementation/source-policy evidence;
-- `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` — fresh exact-head verification protocol;
-- `docs/releases/PACKAGE_EVIDENCE_TOOLING.md` — structured package checksum/provenance tool guide;
-- `docs/releases/RELEASE_EVIDENCE.md` — release evidence contract;
-- `docs/releases/PACKAGED_RELEASE_VALIDATION.md` — packaged compatibility runbook;
-- `docs/releases/STORE_SUBMISSION_CHECKLIST.md` — final submission checklist;
-- `docs/releases/STORE_POLICY_REVIEW_20260818.md` — current dated pre-submission store-policy review;
-- `docs/DEVELOPER_REFERENCE.md` — developer rules;
-- `docs/REPOSITORY_GOVERNANCE.md` — source/evidence/marketing governance;
-- `GUMROAD.md` — canonical storefront guide;
-- `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — storefront/package policy;
-- `docs/assets/README.md` — repository visual-asset rules;
-- `SUPPORT.md` and `docs/SUPPORT_CARENEST.md` — support/storefront separation;
-- `what_changed.md` — active detailed continuation record;
-- `docs/history/` — immutable historical snapshots.
+1. `docs/releases/AUTOMATED_BASELINE.md` — latest accepted dynamic automated baseline;
+2. `docs/releases/FINAL_CANDIDATE_VERIFICATION_20260818.md` — final exact-head automated evidence;
+3. `PROJECT_STATUS.md` — active product/release status;
+4. `docs/releases/NEXT_STEPS.md` — remaining production work;
+5. `README.md` — public project overview;
+6. `docs/README.md` — documentation hub;
+7. `docs/DOCUMENTATION_CATALOG.md` — documentation authority/ownership map;
+8. `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — end-to-end project reference;
+9. `docs/releases/RELEASE_EVIDENCE.md` — production evidence contract;
+10. `docs/releases/PACKAGED_RELEASE_VALIDATION.md` — package/manual validation runbook;
+11. `docs/releases/STORE_SUBMISSION_CHECKLIST.md` — store submission checklist;
+12. `docs/releases/PACKAGE_EVIDENCE_TOOLING.md` — package evidence guide;
+13. `docs/releases/STORE_POLICY_REVIEW_20260818.md` — preliminary store-policy review;
+14. `what_changed.md` — detailed continuation/handoff record;
+15. `docs/history/` — preserved historical snapshots.
 
-Dated historical evidence is not rewritten to retroactively insert current Gumroad promotion or newer test counts.
+Stable documentation was finalized before the exact source freeze. Dynamic status/evidence files can record completed runs without creating an executable verification loop.
 
 ---
 
-## 15. Production blockers still open
+## 13. Production blockers still open
 
-Automated source/build verification, package-evidence tooling, and the 2026-08-18 pre-submission policy review do not complete production release evidence.
-
-### Immediate exact-source automated gate
-
-- [ ] freeze the final intended verification-relevant `main` SHA after this continuation;
-- [ ] run fresh exact-head CareNest CI including package-evidence syntax/self-test;
-- [ ] record actual unit/integration/UI test counts;
-- [ ] verify Android Release;
-- [ ] verify Windows Release;
-- [ ] verify iOS simulator Release;
-- [ ] verify Mac Catalyst Release;
-- [ ] verify Store Package Configuration on all four targets;
-- [ ] verify Store Inspection Artifacts;
-- [ ] verify CodeQL;
-- [ ] verify unsuppressed Dependency Audit;
-- [ ] promote a newer baseline only after the complete required matrix succeeds.
+The in-repository source/tooling/documentation and automated verification work is complete for the current RC1 candidate. Production promotion still requires evidence that cannot be fabricated from source CI alone.
 
 ### Real-device/platform behavior
 
 - [ ] representative Android device/emulator matrix;
 - [ ] Android notification permission denied/granted behavior;
 - [ ] actual Android reminder delivery/cancellation/snooze behavior;
-- [ ] exact/inexact alarm and battery-optimization behavior;
+- [ ] exact/inexact alarm and battery/vendor behavior;
 - [ ] Android reboot/restart/clock/time-zone/DST recovery;
-- [ ] Windows manual reminder/lifecycle behavior;
+- [ ] Windows installed/manual reminder and lifecycle behavior;
 - [ ] real iPhone/iPad notification permission/delivery/recovery;
 - [ ] Mac Catalyst manual notification/lifecycle behavior.
 
@@ -385,8 +317,8 @@ Use fictional/synthetic data only.
 - [ ] SQLite integrity/readability/editability after upgrade;
 - [ ] reminder reconciliation after packaged upgrade;
 - [ ] packaged encrypted-document compatibility;
-- [ ] packaged encrypted-backup create/restore/wrong-password/tamper validation;
-- [ ] genuine historical encrypted fixtures where real prior bytes exist and can be safely tested.
+- [ ] packaged encrypted-backup create/restore/wrong-password/tamper/truncation/trailing-data validation;
+- [ ] genuine historical encrypted fixtures where genuine prior bytes actually exist and can be tested safely.
 
 ### Accessibility
 
@@ -399,42 +331,41 @@ Use fictional/synthetic data only.
 
 ### Signing/final package evidence
 
-- [ ] production Android signing identity/secrets outside Git;
+- [ ] production Android signing outside Git;
 - [ ] Apple signing/provisioning outside Git;
-- [ ] Windows production signing identity outside Git;
-- [ ] final production-signed packages;
-- [ ] structured package evidence JSON for every final production artifact;
-- [ ] package evidence payload SHA-256 cross-check;
-- [ ] signed-package BMC marker scan;
-- [ ] signed-package Gumroad marker scan;
-- [ ] signing/notarization/store provenance;
-- [ ] final installed-package smoke tests.
+- [ ] Windows production signing outside Git where applicable;
+- [ ] final signed/notarized production artifacts;
+- [ ] `--stage production` package evidence JSON for every final artifact;
+- [ ] independent package SHA-256/provenance cross-check;
+- [ ] final signed-package BMC marker scan;
+- [ ] final signed-package Gumroad marker scan;
+- [ ] installed-package smoke tests.
 
 ### Store/publication
 
-- [ ] current store screenshots/listing/privacy/data-safety metadata;
-- [ ] live Google Play Health apps declaration for the exact production feature set;
-- [ ] live Google Play Data safety for the exact production binary/SDK behavior;
-- [ ] Apple privacy/store metadata for the exact production package;
+- [ ] final store screenshots/listing/privacy/data-safety metadata;
+- [ ] live Google Play Health apps declaration;
+- [ ] live Google Play Data safety answers;
+- [ ] Apple privacy/store metadata;
 - [ ] Microsoft/Partner Center privacy/store metadata where applicable;
-- [ ] submission-day Apple/Google/Microsoft policy re-check as applicable;
-- [ ] exact approved production source commit;
-- [ ] immutable approved `v*` tag;
-- [ ] tagged CI/CodeQL/dependency/store/release-gate/release-evidence success;
-- [ ] final publication/store-approval evidence.
+- [ ] submission-day Apple/Google/Microsoft policy re-check;
+- [ ] exact approved production source/tag decision;
+- [ ] immutable approved `v*` production tag;
+- [ ] tagged CI/CodeQL/Dependency Audit/Store Package/Store Inspection/Release Gate/Release Evidence success;
+- [ ] final store submission/approval/publication evidence.
 
 ---
 
-## 16. Current interpretation
+## 14. Current interpretation
 
 - CareNest remains `1.0.0-rc.1`.
-- The intended RC runtime feature scope remains source-complete.
-- The Gumroad storefront remains strongly highlighted across repository/documentation surfaces only.
-- Gumroad and Buy Me a Coffee remain absent from the packaged CareNest health app under the current policy.
-- The latest **fully verified** implementation/source-policy baseline remains `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` with **336/336 core tests**, all normal platform builds, all four store-candidate builds, and CodeQL green.
-- Current `main` now contains additional verification-relevant release contracts, package-evidence tooling and workflow changes and therefore requires fresh exact-source verification before it can replace that baseline.
-- A dated pre-submission Apple/Google/Microsoft policy review is recorded for 2026-08-18.
-- Production validation still requires fresh exact-head automation, real-device, accessibility, packaged compatibility, signing, structured final-package evidence, live store-console metadata/policy re-check and publication evidence.
-- CareNest is not yet production-signed, store-approved, production-published, manually proven on every target/device condition, or globally guaranteed bug-free.
+- The intended RC runtime feature scope is source-complete.
+- The repository/open-source documentation and community surfaces have been audited and no material missing standard repository file was identified in the final pass.
+- No open GitHub issues were present at finalization time.
+- Gumroad and Buy Me a Coffee remain repository/documentation-only and excluded from the distributed health-app package under the current policy.
+- The accepted exact automated source is `b6eecae66f74bd72bcb20d93508355542f9f3442` with **355/355 core tests** and the recorded platform/store/security matrix green.
+- PR #80 is closed without merge; its verification marker did not enter `main`.
+- The remaining work is production validation requiring actual packages/devices/signing/store accounts and current live policy/store evidence.
+- CareNest is not claimed globally bug-free, medically authoritative, production-signed, store-approved or production-published merely because automated verification is green.
 
-Use `what_changed.md` for the exact active continuation and commit history.
+Use `what_changed.md` for the detailed final continuation history.
