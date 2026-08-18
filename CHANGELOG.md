@@ -30,7 +30,7 @@ This record is intentionally not presented as store approval. The official curre
 
 Updated current release documentation that still described older pre-Gumroad or intermediate automated baselines.
 
-The current release-policy/checklist/evidence documents now consistently identify the latest verified Gumroad implementation/source-policy baseline as:
+The current release-policy/checklist/evidence documents now consistently identify the latest fully verified Gumroad implementation/source-policy baseline as:
 
 `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
@@ -47,11 +47,11 @@ Verified results on that exact source remain:
 - all four store-candidate configurations;
 - CodeQL.
 
-The correction is documentation/evidence alignment only; it does not claim that later documentation-only repository heads have inherited exact-head automated evidence.
+The correction is evidence alignment only. The 336-test result belongs to that exact source and must not be assigned to later verification-relevant heads without a fresh exact run.
 
 ### Changed — release/store evidence boundary
 
-Current release documents now consistently require final production packages to preserve the established repository-only external-commerce boundary:
+Current release documents consistently require final production packages to preserve the established repository-only external-commerce boundary:
 
 - no in-app `buymeacoffee.com/sanskarIN` promotion/purchase surface;
 - no in-app `ramsandesh.gumroad.com` promotion/purchase surface;
@@ -60,7 +60,134 @@ Current release documents now consistently require final production packages to 
 
 The preliminary store-policy review is marked complete, while real-device testing, packaged compatibility, accessibility, production signing, final package inspection, live store-console metadata/declarations, submission-day policy review, production tagging and publication remain production blockers.
 
-No CareNest runtime product feature was changed by this documentation continuation.
+### Added — release-documentation consistency contracts
+
+Added:
+
+`tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs`
+
+The contract protects current active release governance from drifting back to superseded evidence. It checks applicable current documents for:
+
+- the latest fully verified Gumroad source SHA until a newer baseline is actually proven;
+- the exact **336/336** result only as that source's recorded baseline;
+- absence of the superseded 331-test/current-PR #74 release claims from active current documents;
+- both Buy Me a Coffee and Gumroad final-package marker requirements;
+- current store-policy review linkage without claiming store approval;
+- live Google Play Health apps/Data safety and submission-day policy review remaining open;
+- package-evidence guide integration;
+- Release Gate evidence/tooling requirements.
+
+These tests mean current release documents can now be verification-sensitive source inputs rather than merely passive prose.
+
+### Added — structured package checksum/provenance tooling
+
+Added:
+
+- `build/scripts/create-package-evidence.py`;
+- `build/scripts/create-package-evidence.sh`;
+- `build/scripts/create-package-evidence.ps1`;
+- `build/scripts/test-create-package-evidence.py`;
+- `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`;
+- `tests/CareNest.UiTests/PackageEvidenceToolContractTests.cs`.
+
+The package-evidence generator records:
+
+- stage/platform/version/build/package identity;
+- exact full source SHA;
+- source tag when supplied;
+- tracked-workspace state;
+- non-secret signing/notarization/store provenance description;
+- per-file SHA-256;
+- top-level package-file or deterministic directory payload SHA-256;
+- mandatory store-safe payload scanner result;
+- optional non-sensitive notes.
+
+Production mode fails closed unless:
+
+- an immutable `v*` source tag is supplied;
+- that tag resolves to the recorded source SHA;
+- checked-out HEAD equals that source SHA;
+- tracked Git files are clean;
+- signing provenance is not empty/unsigned/not-applicable;
+- store-safe payload scanning passes;
+- the evidence JSON is written outside the package payload.
+
+The tool does not create signatures, validate private signing credentials by itself, submit packages, prove store approval, replace real-device/accessibility testing, or replace packaged SQLite/encrypted-data compatibility evidence.
+
+### Added — synthetic package-evidence self-test
+
+`build/scripts/test-create-package-evidence.py` uses temporary synthetic payloads only and verifies:
+
+- successful single-file SHA-256 evidence;
+- deterministic sorted directory evidence;
+- Gumroad marker fail-closed behavior;
+- rejection of evidence output inside a hashed payload directory;
+- rejection of production evidence without a `v*` source tag.
+
+No real user health data or signing secret is needed for this self-test.
+
+### Changed — CI, Release Gate and Release Evidence
+
+CareNest CI now:
+
+- syntax-checks the store-safe scanner, package-evidence generator and package-evidence self-test with `python3 -m py_compile`;
+- runs the synthetic package-evidence self-test before the existing .NET formatting/test steps.
+
+Release Gate now:
+
+- requires current release evidence/runbooks/package-evidence tooling to exist and be non-empty;
+- repeats Python syntax verification and the package-evidence synthetic self-test before release source tests.
+
+Release Evidence now:
+
+- records Python version;
+- runs the package-evidence syntax/self-test as an independently captured outcome;
+- stores self-test output under the release-evidence artifact;
+- treats package-tooling failure as a Release Evidence failure.
+
+### Changed — release process and package evidence documentation
+
+Updated current active release documents including:
+
+- `PROJECT_STATUS.md`;
+- `docs/releases/NEXT_STEPS.md`;
+- `docs/releases/RELEASE_PROCESS.md`;
+- `docs/releases/RELEASE_CHECKLIST.md`;
+- `docs/releases/QUALITY_GATE.md`;
+- `docs/releases/SECURITY_RELEASE_REVIEW.md`;
+- `docs/releases/MANUAL_TEST_MATRIX.md`;
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md`;
+- `docs/releases/STORE_BUILD_POLICY.md`;
+- `docs/releases/STORE_SUBMISSION_CHECKLIST.md`;
+- `docs/releases/EXECUTABLE_BUILD_CHECKLIST.md`;
+- `docs/releases/RELEASE_EVIDENCE.md`;
+- `docs/releases/RELEASE_NOTES_TEMPLATE.md`;
+- `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`;
+- `docs/DOCUMENTATION_CATALOG.md`.
+
+The documents now use one consistent route from build output to final evidence:
+
+1. build/sign through the platform's secure signing process;
+2. inspect the exact final package;
+3. scan for both repository-only external-commerce markers;
+4. generate structured package evidence JSON;
+5. cross-check SHA-256/provenance;
+6. retain real-device/package/accessibility/store evidence separately;
+7. publish only after all required exact-tag/manual/store gates pass.
+
+### Verification status — fresh exact-head automation now required
+
+The package-evidence/release-governance continuation changes tests, build scripts and GitHub Actions workflows after the last fully verified baseline.
+
+Therefore:
+
+- `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` remains the latest fully verified baseline for now;
+- **336/336 is not claimed as the result of the newer current head**;
+- a new test total must not be predicted from source inspection;
+- the final intended current source must complete fresh exact-head CareNest CI, Store Package Configuration, Store Inspection Artifacts, CodeQL and unsuppressed Dependency Audit before a newer baseline is promoted;
+- final production-tag Release Gate/Release Evidence remain separate later gates.
+
+No CareNest runtime health-organizer feature was added by this release-engineering continuation.
 
 ---
 
@@ -135,7 +262,7 @@ Updated:
 
 `build/scripts/verify-store-safe-payload.py`
 
-The scanner now defaults to both repository-only markers and continues to inspect:
+The scanner defaults to both repository-only markers and inspects:
 
 - UTF-8;
 - UTF-16 little-endian;
@@ -143,7 +270,7 @@ The scanner now defaults to both repository-only markers and continues to inspec
 - regular payload files;
 - ZIP-compatible package entries such as AABs.
 
-The scanner continues to fail closed for unreadable/missing inspection paths and returns failure when a forbidden marker is found.
+The scanner fails closed for unreadable/missing inspection paths and returns failure when a forbidden marker is found.
 
 The `--forbidden` option is repeatable for explicit one-or-more marker scans.
 
@@ -212,7 +339,7 @@ The assertion was corrected without weakening the health-safety requirement. The
 
 CareNest remains `1.0.0-rc.1`.
 
-The intended RC source scope and Gumroad repository/package-isolation rollout are automated-verified, but production promotion still requires real-device notification/lifecycle validation, accessibility evidence, packaged existing-data/encrypted-data compatibility, production signing, signed-package inspection, current store metadata/policy review, an exact approved immutable production tag and publication evidence.
+The intended RC source scope and Gumroad repository/package-isolation rollout are automated-verified at the exact named baseline, but production promotion still requires newer source verification when verification-relevant changes occur, real-device notification/lifecycle validation, accessibility evidence, packaged existing-data/encrypted-data compatibility, production signing, structured/final signed-package inspection, current store metadata/policy review, an exact approved immutable production tag and publication evidence.
 
 Do not describe CareNest as globally bug-free, production-signed, store-approved or production-published until those external gates are actually completed.
 
