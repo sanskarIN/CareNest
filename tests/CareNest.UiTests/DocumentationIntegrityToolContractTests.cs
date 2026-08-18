@@ -30,6 +30,25 @@ public sealed class DocumentationIntegrityToolContractTests
     }
 
     [Fact]
+    public void Documentation_checker_ignores_non_live_code_and_comment_examples()
+    {
+        var root = FindRepositoryRoot();
+        var tool = Read(root, "build/scripts/verify-documentation-links.py");
+        var selfTest = Read(root, "build/scripts/test-verify-documentation-links.py");
+
+        Assert.Contains("strip_fenced_code_blocks", tool, StringComparison.Ordinal);
+        Assert.Contains("HTML_COMMENT_RE", tool, StringComparison.Ordinal);
+        Assert.Contains("INLINE_CODE_RE", tool, StringComparison.Ordinal);
+        Assert.Contains("example-only-missing.svg", selfTest, StringComparison.Ordinal);
+        Assert.Contains("inline-example-missing.md", selfTest, StringComparison.Ordinal);
+        Assert.Contains("comment-example-missing.md", selfTest, StringComparison.Ordinal);
+        Assert.Contains(
+            "Clean synthetic documentation and example-only links should pass",
+            selfTest,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Documentation_checker_fails_closed_for_missing_and_repository_escaping_targets()
     {
         var root = FindRepositoryRoot();
@@ -38,7 +57,7 @@ public sealed class DocumentationIntegrityToolContractTests
 
         Assert.Contains("candidate.exists()", tool, StringComparison.Ordinal);
         Assert.Contains("escapes repository root", tool, StringComparison.Ordinal);
-        Assert.Contains("Missing local targets must fail closed", selfTest, StringComparison.Ordinal);
+        Assert.Contains("Missing live local targets must fail closed", selfTest, StringComparison.Ordinal);
         Assert.Contains("Repository-escaping links must fail closed", selfTest, StringComparison.Ordinal);
         Assert.Contains("--include-dynamic must audit dynamic evidence/status links", selfTest, StringComparison.Ordinal);
         Assert.Contains("--include-history must audit historical snapshots", selfTest, StringComparison.Ordinal);
