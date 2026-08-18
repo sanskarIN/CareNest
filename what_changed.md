@@ -1,11 +1,11 @@
 # CareNest — Active Completion Handoff
 
-**Date:** 2026-08-17  
+**Date:** 2026-08-18  
 **Release line:** `1.0.0-rc.1`  
 **Repository:** `sanskarIN/CareNest`  
 **Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`  
 **Verified Gumroad implementation/source-policy SHA:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
-**Continuation focus:** complete Gumroad rollout, repository branding, package isolation, complete current documentation, error correction, and verified exact-source evidence
+**Continuation focus:** complete Gumroad rollout, repository branding, package isolation, complete current documentation, error correction, verified exact-source evidence, and production-readiness/store-policy evidence alignment
 
 The complete active handoff from before the Gumroad rollout is preserved exactly at:
 
@@ -15,7 +15,7 @@ Other major active documents replaced during this continuation were also preserv
 
 ---
 
-## 1. What this continuation completed
+## 1. What the Gumroad continuation completed
 
 The Ram Sandesh Gumroad storefront is now a first-class **repository/documentation** surface while remaining outside the CareNest health-application package under the current store/product policy.
 
@@ -336,18 +336,20 @@ Use:
 1. `PROJECT_STATUS.md` — active product/release state;
 2. `docs/releases/NEXT_STEPS.md` — remaining operational work;
 3. `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md` — current Gumroad rollout automated evidence;
-4. `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — complete current project reference;
-5. `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` — executable/package build guide;
-6. `docs/releases/STORE_BUILD_POLICY.md` — current store/package external-commerce boundary;
-7. `docs/releases/PACKAGED_RELEASE_VALIDATION.md` — package/manual evidence runbook;
-8. `GUMROAD.md` — canonical storefront guide;
-9. `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — storefront placement/package policy;
-10. this `what_changed.md` — active continuation record;
-11. `docs/history/` — immutable prior snapshots.
+4. `docs/releases/STORE_POLICY_REVIEW_20260818.md` — latest dated pre-submission store-policy review;
+5. `docs/releases/RELEASE_EVIDENCE.md` — exact release evidence contract;
+6. `docs/COMPLETE_PROJECT_DOCUMENTATION.md` — complete current project reference;
+7. `docs/EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md` — executable/package build guide;
+8. `docs/releases/STORE_BUILD_POLICY.md` — current store/package external-commerce boundary;
+9. `docs/releases/PACKAGED_RELEASE_VALIDATION.md` — package/manual evidence runbook;
+10. `GUMROAD.md` — canonical storefront guide;
+11. `docs/marketing/GUMROAD_PLACEMENT_AND_COMPLIANCE.md` — storefront placement/package policy;
+12. this `what_changed.md` — active continuation record;
+13. `docs/history/` — immutable prior snapshots.
 
 ---
 
-## 13. Focused commits created in this continuation
+## 13. Focused commits created in the 2026-08-17 Gumroad continuation
 
 ### Initial Gumroad rollout
 
@@ -407,18 +409,17 @@ Use:
 48. `8dc7fa9b1cea2e29dc109b5e6dd02efd8536eedf` — `docs: close automated Gumroad rollout gate`
 49. `c18cbb26750fb65c54f0eb2a78aa2a0f3c13f141` — `docs: complete Gumroad rollout checklist`
 50. `28b184ab1109a8388f014b6fc2154fe21842d736` — `docs: record verified Gumroad rollout result`
-
-This `what_changed.md` update is the final planned documentation commit in this continuation. Its resulting repository head must complete the applicable exact-head workflows before the repository-head status is described as fully green.
+51. `2777c6079e6b8cfba7e6ad1a961e17fb3d01dd8b` — `docs: finalize verified Gumroad rollout handoff`
 
 ---
 
-## 14. Documentation-only final-head verification
+## 14. Documentation-only final-head verification boundary from the 2026-08-17 pass
 
-The tested implementation/source-policy baseline is already verified at `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` with 336/336 core tests, all four normal platform builds, all four store-candidate builds and CodeQL.
+The tested implementation/source-policy baseline is verified at `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` with 336/336 core tests, all four normal platform builds, all four store-candidate builds and CodeQL.
 
-The subsequent commits only promote/document that verified result. Because CareNest governance prefers exact-head evidence, this final handoff commit will trigger the applicable `main` workflows one more time.
+Subsequent commits promoted/documented that verified result. Because CareNest governance prefers exact-head evidence, documentation-only repository heads must not be described as exact-source test/build evidence unless the applicable workflows are actually observed for that head.
 
-No further content change should be made unless that exact final head exposes a real failure.
+No later documentation-only change is treated as a substitute for the verified implementation/source-policy SHA.
 
 ---
 
@@ -450,9 +451,9 @@ Still open:
 
 ---
 
-## 16. Continuation rule after this pass
+## 16. Continuation rule after the 2026-08-17 pass
 
-The Gumroad implementation/source-policy rollout is verified. After the final documentation-only head is green, the next meaningful CareNest work is **production validation**, not another broad speculative source refactor.
+The Gumroad implementation/source-policy rollout is verified. The next meaningful CareNest work is **production validation**, not another broad speculative source refactor.
 
 If real manual/package/security/accessibility testing finds a defect:
 
@@ -463,4 +464,333 @@ If real manual/package/security/accessibility testing finds a defect:
 5. rebuild/retest the affected final package;
 6. update current evidence only after results are known.
 
-Current project interpretation: **CareNest `1.0.0-rc.1` remains source-complete for its intended RC scope, now with strongly highlighted repository-only Gumroad promotion, explicit Gumroad/BMC package exclusion, refreshed complete current documentation, and a verified Gumroad implementation baseline of 336/336 core tests; real production evidence is the next major gate after the final documentation-head workflows are green.**
+---
+
+# 2026-08-18 Production-Readiness Continuation
+
+## 17. Why this continuation was performed
+
+The source/product implementation remains complete for the intended `1.0.0-rc.1` feature scope, so this pass did not manufacture new runtime work merely to create activity.
+
+The next repository work was to audit the **current release documentation itself** for stale automated baselines and incomplete production-policy evidence before real signing/store/device validation.
+
+Concrete drift was found:
+
+- `docs/releases/STORE_BUILD_POLICY.md` still named the older pre-Gumroad source/test baseline;
+- `docs/releases/RELEASE_CHECKLIST.md` still named an earlier intermediate source and 331-test baseline;
+- `docs/releases/RELEASE_EVIDENCE.md` still described a release-time decision about conditionally allowing the external Buy Me a Coffee app link instead of the stronger current policy that both Buy Me a Coffee and Gumroad remain repository-only;
+- the documentation hub/catalog did not yet expose a dated current store-policy review;
+- `docs/releases/NEXT_STEPS.md` still treated all current policy review as completely unperformed rather than separating preliminary policy review from the final submission-day review.
+
+These were documentation/evidence-governance defects, not CareNest runtime defects.
+
+---
+
+## 18. Current store-policy review added
+
+Added:
+
+`docs/releases/STORE_POLICY_REVIEW_20260818.md`
+
+The dated review records the current pre-submission comparison of the existing CareNest product/package boundary with official policy areas for:
+
+- Apple App Review Guidelines;
+- Google Play Health Content and Services;
+- Google Play Health apps declaration;
+- Google Play Data safety;
+- Microsoft Store privacy/sensitive-personal-information requirements.
+
+The record explicitly retains the current product boundary:
+
+- CareNest is an organizational health app, not a diagnosis/treatment/dosage/clinical-risk product;
+- Gumroad remains repository/documentation-only;
+- Buy Me a Coffee remains repository/documentation-only;
+- neither external service changes health features or gives access to local health records;
+- the final live store policies/forms must be re-checked against the exact signed production package/listing immediately before submission.
+
+The dated review is **not** represented as store approval, signing evidence, medical-device approval, or a substitute for the final live store-console declarations.
+
+---
+
+## 19. Store build policy corrected
+
+Updated:
+
+`docs/releases/STORE_BUILD_POLICY.md`
+
+Corrections:
+
+- removed the stale pre-Gumroad 334-test automated baseline as the current reference;
+- promoted exact verified Gumroad implementation/source-policy SHA `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`;
+- promoted the correct **336/336** core-test total;
+- retained all four normal Release builds, all four store-candidate configurations and CodeQL as verified evidence on that exact source;
+- linked the new 2026-08-18 policy review;
+- separated preliminary review evidence from mandatory submission-day policy/store-console review;
+- retained final package scans for both external-commerce markers.
+
+No store-safe package rule was weakened.
+
+---
+
+## 20. Release checklist corrected
+
+Updated:
+
+`docs/releases/RELEASE_CHECKLIST.md`
+
+Corrections:
+
+- current automated baseline now points to `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`;
+- unit/integration/UI totals now correctly record 122/39/175 = **336**;
+- both Gumroad and Buy Me a Coffee application-package exclusions are recorded;
+- both final package marker scans remain required;
+- preliminary Apple/Google/Microsoft policy review rows are complete;
+- live Google Play Health apps declaration/Data safety, Apple privacy metadata, Microsoft metadata where applicable, final submission-date policy review, screenshots/listing verification and exact production package evidence remain unchecked blockers;
+- all real-device, packaged compatibility, accessibility, signing, tagging and publication rows remain unchecked.
+
+The checklist was not falsely marked complete.
+
+---
+
+## 21. Active project status advanced
+
+Updated:
+
+`PROJECT_STATUS.md`
+
+Changes:
+
+- active date advanced to 2026-08-18;
+- added the dated preliminary store-policy review to current evidence;
+- added the policy-review document to current documentation entry points;
+- added the live Google Play Health apps declaration to remaining signing/store/publication work;
+- clarified that submission-day Apple/Google/Microsoft policy review remains required;
+- retained every real-device/package/accessibility/signing/publication production blocker.
+
+CareNest remains `1.0.0-rc.1`.
+
+---
+
+## 22. Release evidence contract aligned
+
+Updated:
+
+`docs/releases/RELEASE_EVIDENCE.md`
+
+Changes:
+
+- added the current verified 336-test Gumroad implementation/source-policy baseline;
+- linked the dated 2026-08-18 store-policy review;
+- removed stale language that treated the Buy Me a Coffee app link as a conditional release decision;
+- established the current stronger evidence rule: both Buy Me a Coffee and Gumroad remain outside final application packages;
+- requires final package scans for both repository-only markers;
+- requires live Google Play Health apps/Data safety declarations and current Apple/Microsoft privacy/store metadata as applicable;
+- expanded the release-record template with store-package workflow, store declaration, marker-scan, and final package provenance fields;
+- retained the rule that blank required evidence blocks production promotion.
+
+---
+
+## 23. Documentation catalog and hub advanced
+
+Updated:
+
+- `docs/DOCUMENTATION_CATALOG.md`;
+- `docs/README.md`.
+
+Changes:
+
+- documentation baseline advanced to 2026-08-18;
+- `docs/releases/STORE_POLICY_REVIEW_20260818.md` added to the authority map;
+- release operators, security/privacy reviewers, QA and current verification sections now point to the dated review;
+- the review is explicitly distinguished from store approval;
+- current production-state wording now says the preliminary review is complete while live store-console/submission-day review remains open.
+
+---
+
+## 24. Next steps advanced without hiding blockers
+
+Updated:
+
+`docs/releases/NEXT_STEPS.md`
+
+Changes:
+
+- date advanced to 2026-08-18;
+- preliminary policy review is now a completed source/evidence item;
+- a dedicated section records what the dated policy review covered;
+- final submission-day Apple/Google/Microsoft review and live store-console declarations remain open Priority 0 work;
+- packaged SQLite/document/backup compatibility remains open;
+- Android/Windows/iPhone/iPad/Mac Catalyst real behavior remains open;
+- accessibility remains open;
+- production signing remains open;
+- final signed-package inspection remains open;
+- exact production source/tag and final publication evidence remain open.
+
+The continuation rule still blocks speculative broad source changes in the absence of a reproduced defect.
+
+---
+
+## 25. Active changelog advanced
+
+Updated:
+
+`CHANGELOG.md`
+
+Added a 2026-08-18 Unreleased entry recording:
+
+- the dated pre-submission store-policy review;
+- correction of stale release-policy/evidence baselines;
+- continued Gumroad/BMC package exclusion;
+- continued 336-test exact verified implementation/source-policy baseline;
+- explicit statement that this pass changes documentation/release evidence and does not introduce a new CareNest runtime feature.
+
+The complete 2026-08-17 Gumroad changelog remains retained below it.
+
+---
+
+## 26. Focused commits created in the 2026-08-18 continuation
+
+1. `8f2467bea5c876182fc9ffdec790a75b39ff9b0c` — `docs: add current store policy review`
+2. `e7db31659fed7b46b6d1cdb4f436608189c5e5ca` — `docs: refresh store build policy baseline`
+3. `52f7c5479b577532aa6d7b00da8446fa1c85921b` — `docs: refresh release checklist baseline`
+4. `ed645aefbd875fc2dd83a653018e1b144fdf899e` — `docs: record current store policy review status`
+5. `5352cb0dd92a929e850a0d98479b463bc542380c` — `docs: align release evidence with store policy`
+6. `9b6f73e98aea939e369ca254eb030514d7efac31` — `docs: catalog current store policy review`
+7. `9cc03d5d6921c130cbc88a3f7fd8578ccefcfe22` — `docs: advance next steps after policy review`
+8. `3913858c2ff2d6f9f948c9318905e837e5e70572` — `docs: record release policy continuation`
+9. `a1ab8cfcd5ae797d129dd6ebee5b49d428c34196` — `docs: link current store policy review`
+
+This `what_changed.md` update is the final handoff commit of this pass and therefore cannot truthfully list its own resulting SHA inside itself before that SHA exists.
+
+---
+
+## 27. Source/runtime verification boundary after this continuation
+
+This continuation intentionally made **documentation and release-evidence changes only** after determining that the intended RC runtime/source scope was already complete and that no newly reproduced runtime defect existed.
+
+Therefore:
+
+- the latest verified implementation/source-policy baseline remains `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`;
+- the verified total remains **336/336 core tests** on that exact source;
+- the verified normal platform builds/store-candidate configurations/CodeQL remain those recorded in `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`;
+- later documentation-only commits are not falsely described as automatically inheriting exact-head workflow evidence;
+- no production-signed package was created by this continuation;
+- no real-device test was fabricated;
+- no live store-console declaration was fabricated;
+- no store approval/publication result was fabricated.
+
+---
+
+## 28. Real production work remaining now
+
+Still required before production promotion:
+
+### Packaged compatibility
+
+- representative synthetic earlier-RC data package upgrade/install;
+- SQLite integrity/readability/editability after package upgrade;
+- reminder reconciliation/stale-request checks after package upgrade;
+- packaged encrypted-document lifecycle;
+- packaged encrypted-backup creation/restore/wrong-password/tamper/truncation/trailing-data behavior;
+- genuine historical encrypted fixtures only where genuine prior bytes actually exist.
+
+### Android
+
+- representative device/emulator install and reminder behavior;
+- notification permission denied/granted;
+- actual medicine/appointment reminder delivery;
+- Taken/Skipped/Delayed/Missed/Snooze behavior;
+- exact/inexact alarm behavior;
+- battery/vendor restrictions;
+- restart/reboot/clock/time-zone/DST recovery;
+- file picker/share, backup/restore, app lock and accessibility.
+
+### Windows
+
+- installed/package execution;
+- CRUD/navigation;
+- running-app reminder behavior;
+- closed-app limitation behavior;
+- replacement/cancellation/snooze/recovery;
+- document/share, backup/restore, app lock;
+- keyboard/focus and themes/accessibility.
+
+### iPhone/iPad
+
+- signed/provisioned real-device install;
+- real notification permission/delivery/actions/snooze/recovery;
+- time-zone/DST;
+- backup/document/app-lock behavior;
+- Dynamic Type, VoiceOver and notification-preview privacy.
+
+### Mac Catalyst
+
+- real install/execution;
+- notifications/actions/reconciliation/restart;
+- file picker/share;
+- backup/restore/app lock;
+- keyboard/focus/theme/contrast/accessibility;
+- signed/notarized candidate behavior when signing infrastructure exists.
+
+### Accessibility
+
+- representative screen readers;
+- large text/scaling;
+- reading order/names/hints;
+- keyboard/focus;
+- light/dark/system contrast;
+- color-independent meaning;
+- reduced motion;
+- destructive confirmation readability;
+- privacy-safe actionable errors.
+
+### Production signing/package evidence
+
+- Android production signing outside Git;
+- Apple signing/provisioning outside Git;
+- Windows production signing outside Git where applicable;
+- exact source/version/package identity;
+- final package filenames/SHA-256;
+- signing/notarization/store-managed provenance;
+- final package marker scans for both BMC and Gumroad;
+- final installed-package smoke tests.
+
+### Live store/submission evidence
+
+- submission-date official Apple policy review;
+- submission-date official Google Play policy review;
+- submission-date official Microsoft/Windows policy review where applicable;
+- live Google Play Health apps declaration;
+- live Google Play Data safety answers;
+- Apple privacy/store metadata;
+- Microsoft/Partner Center privacy/store metadata where applicable;
+- exact fictional-data screenshots/listing copy;
+- support/privacy/terms/security links;
+- final recorded review date/sources/conclusions.
+
+### Production identity/publication
+
+- exact approved production source commit;
+- repeat exact-source verification if verification-relevant source changes;
+- immutable approved `v*` tag;
+- tagged CI/CodeQL/dependency/store/release-gate/release-evidence success;
+- final signed-package provenance;
+- GitHub/store submission/approval/publication evidence where intended.
+
+---
+
+## 29. Current project interpretation after the 2026-08-18 pass
+
+CareNest `1.0.0-rc.1` remains source-complete for its intended RC scope.
+
+The repository now additionally contains:
+
+- a dated 2026-08-18 preliminary Apple/Google/Microsoft store-policy review;
+- corrected current release-policy/checklist/evidence baselines;
+- current documentation authority links for the store-policy review;
+- a release evidence contract that consistently protects both Gumroad and Buy Me a Coffee from the distributed application package;
+- an operational next-steps list that distinguishes completed preliminary policy review from still-required submission-day/live store evidence.
+
+The latest exact verified implementation/source-policy baseline remains `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f` with 336/336 core tests and its recorded build/store-candidate/CodeQL matrix.
+
+The next meaningful work is real production validation and signing/store evidence. Do not create broad speculative runtime changes unless a real device/package/security/accessibility/store finding requires a focused fix.
