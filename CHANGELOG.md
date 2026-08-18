@@ -8,6 +8,62 @@ The complete changelog that was active immediately before the 2026-08-17 Gumroad
 
 Earlier exact snapshots remain under `docs/history/` and Git history.
 
+## [Unreleased] - 2026-08-18
+
+### Added — current pre-submission store-policy review
+
+Added:
+
+`docs/releases/STORE_POLICY_REVIEW_20260818.md`
+
+The dated review records a current pre-submission check of CareNest's existing non-clinical/local-first/package boundary against official policy areas for:
+
+- Apple App Review Guidelines;
+- Google Play Health Content and Services;
+- Google Play Health apps declaration;
+- Google Play Data safety;
+- Microsoft Store sensitive-personal-information/privacy requirements.
+
+This record is intentionally not presented as store approval. The official current policies and live store-console declarations must still be reviewed against the exact production package/listing on the actual submission date.
+
+### Fixed — stale release-policy evidence references
+
+Updated current release documentation that still described older pre-Gumroad or intermediate automated baselines.
+
+The current release-policy/checklist/evidence documents now consistently identify the latest verified Gumroad implementation/source-policy baseline as:
+
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+
+Verified results on that exact source remain:
+
+- 122/122 unit tests;
+- 39/39 integration tests;
+- 175/175 UI/source-policy tests;
+- **336/336 total core tests**;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release;
+- all four store-candidate configurations;
+- CodeQL.
+
+The correction is documentation/evidence alignment only; it does not claim that later documentation-only repository heads have inherited exact-head automated evidence.
+
+### Changed — release/store evidence boundary
+
+Current release documents now consistently require final production packages to preserve the established repository-only external-commerce boundary:
+
+- no in-app `buymeacoffee.com/sanskarIN` promotion/purchase surface;
+- no in-app `ramsandesh.gumroad.com` promotion/purchase surface;
+- final package marker scans for both destinations;
+- no health feature or data access linked to purchase/funding state.
+
+The preliminary store-policy review is marked complete, while real-device testing, packaged compatibility, accessibility, production signing, final package inspection, live store-console metadata/declarations, submission-day policy review, production tagging and publication remain production blockers.
+
+No CareNest runtime product feature was changed by this documentation continuation.
+
+---
+
 ## [Unreleased] - 2026-08-17
 
 ### Added — Ram Sandesh Gumroad storefront integration
