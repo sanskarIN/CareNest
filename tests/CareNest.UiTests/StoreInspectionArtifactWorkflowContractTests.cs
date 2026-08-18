@@ -129,6 +129,7 @@ public sealed class StoreInspectionArtifactWorkflowContractTests
         Assert.True(workflow.Split("artifact_purpose=internal-inspection-only", StringSplitOptions.None).Length - 1 >= 3);
         Assert.True(workflow.Split("store_submission_ready=false", StringSplitOptions.None).Length - 1 >= 3);
         Assert.True(workflow.Split("if-no-files-found: error", StringSplitOptions.None).Length - 1 >= 3);
-        Assert.True(workflow.Split("actions/upload-artifact@v4", StringSplitOptions.None).Length - 1 >= 3);
+        Assert.True(workflow.Split("actions/upload-artifact@v7", StringSplitOptions.None).Length - 1 >= 3);
+        Assert.DoesNotContain("actions/upload-artifact@v4", workflow, StringComparison.Ordinal);
     }
 }
