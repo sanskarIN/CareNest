@@ -1,7 +1,8 @@
 # CareNest Store Build Policy
 
 **Release line:** `1.0.0-rc.1`  
-**Latest fully verified pre-Gumroad source:** `7cbe5568b6cffa06c279b29f3cb1b107ea988791`  
+**Latest verified Gumroad implementation/source-policy baseline:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`  
 **Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`
 
 This document defines the current source/package boundary for store-oriented builds. It is not evidence of production signing or store approval.
@@ -141,25 +142,33 @@ They must not be described as:
 
 Final production packages require separate signing/provenance/smoke/manual validation.
 
-## 10. Latest fully verified pre-Gumroad automated evidence
+## 10. Latest verified Gumroad rollout automated evidence
 
-Exact source:
+Exact verified implementation/source-policy source:
 
-`7cbe5568b6cffa06c279b29f3cb1b107ea988791`
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
 Verified on that exact revision:
 
-- 122/122 unit tests;
-- 39/39 integration tests;
-- 173/173 UI/source-policy tests;
-- **334/334 total core tests**;
-- Android/Windows/iOS simulator/Mac Catalyst Release builds;
-- all four store-candidate configurations;
+- unit tests: **122/122**;
+- integration tests: **39/39**;
+- UI/source-policy tests: **175/175**;
+- total core tests: **336/336**;
+- Android Release build;
+- Windows Release build;
+- iOS simulator Release build;
+- Mac Catalyst Release build;
+- Android store-candidate configuration;
+- Windows store-candidate configuration;
+- iOS simulator store-candidate configuration;
+- Mac Catalyst store-candidate configuration;
 - CodeQL.
 
-The Gumroad rollout changes tests and package-scanner behavior. A newer source becomes authoritative only after the exact final Gumroad revision completes its applicable workflow matrix.
+Authoritative automated verification record:
 
-Use `PROJECT_STATUS.md` and `what_changed.md` for current evidence.
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+
+Documentation-only commits after that exact implementation/source-policy source do not change the tested runtime or package-scanner behavior unless explicitly stated. The exact final repository head must still complete the applicable workflows before it is described as fully green.
 
 ## 11. Strict XAML behavior
 
@@ -184,14 +193,21 @@ Every candidate/listing must preserve:
 - explicit external export/share boundaries;
 - no claim that Gumroad purchase or project funding changes health-app behavior.
 
-## 13. Submission-time policy review
+## 13. Current policy review and submission-time re-check
+
+A dated pre-submission review was completed on 2026-08-18 and is recorded at:
+
+`docs/releases/STORE_POLICY_REVIEW_20260818.md`
+
+That review covers current Apple App Review Guidelines, Google Play health-app/declaration/Data safety guidance and Microsoft Store sensitive-personal-information policy as they apply to the current CareNest boundary.
 
 Store policy changes over time. At actual submission:
 
-- review current Apple rules for the exact package/listing;
-- review current Google Play rules for the exact package/listing;
-- review Microsoft/Windows requirements where applicable;
+- re-open and review the current Apple rules for the exact package/listing;
+- re-open and review the current Google Play rules for the exact package/listing;
+- re-open and review Microsoft/Windows requirements where applicable;
 - review current rules applicable to external commerce/support links;
+- complete the live store-console health/privacy/data-safety declarations against the exact production binary;
 - record date/source/conclusion;
 - change listing/package only through an explicit reviewed source change followed by new verification.
 
