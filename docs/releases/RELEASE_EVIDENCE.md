@@ -165,6 +165,36 @@ For every final production package, retain evidence that:
 - no health feature, reminder behavior, medical limitation or health-data access changes according to purchase/funding state;
 - the package still exposes the intentional repository/creator/business/support/privacy/terms/security/notices surfaces documented by the current product design.
 
+## Structured package checksum/provenance evidence
+
+Use:
+
+`docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
+
+Source-controlled tooling:
+
+- `build/scripts/create-package-evidence.py`;
+- `build/scripts/create-package-evidence.sh`;
+- `build/scripts/create-package-evidence.ps1`;
+- `build/scripts/test-create-package-evidence.py`.
+
+For every final production package, generate and retain a package evidence JSON using `--stage production`.
+
+Production mode requires:
+
+- an immutable `v*` source tag;
+- the tag to resolve to the recorded full source SHA;
+- checked-out HEAD to equal that source SHA;
+- a clean tracked Git workspace;
+- non-secret real signing/notarization/store-managed provenance text;
+- successful store-safe scanning;
+- SHA-256 evidence for the entire file or deterministic directory payload plus every contained file;
+- evidence output outside the package payload.
+
+The evidence tool does not sign artifacts and does not prove store approval. Its generated JSON is one part of the final release record and must be paired with actual platform signing/notarization/store evidence, manual package/device evidence and current store review evidence.
+
+The synthetic package-evidence self-test is run by CareNest CI and exercises success/fail-closed behavior without real user data or signing secrets.
+
 ## Store and signing evidence
 
 For each distribution channel:
@@ -177,6 +207,7 @@ For each distribution channel:
 - screenshots/listing text do not claim diagnosis, dosage decisions, treatment recommendations, guaranteed reminders, medical-device status without applicable approval, or emergency-service behavior;
 - privacy/data-safety disclosures match the local-first implementation and exact binary;
 - final package filename, SHA-256 and signing/notarization/store-managed provenance are recorded;
+- structured package evidence JSON is generated and retained;
 - final installed-package smoke/manual validation is complete.
 
 For Google Play, complete the live Health apps declaration and Data safety form for the exact production feature/binary set. For Apple and Microsoft distribution, complete the current privacy/store metadata required by the applicable submission channel.
@@ -244,6 +275,8 @@ SQLite dependency decision:
 Signing/package review:
 BMC package-marker scan:
 Gumroad package-marker scan:
+Package evidence JSON:
+Package evidence payload SHA-256:
 Final package SHA-256/provenance:
 Release owner:
 Release date:
