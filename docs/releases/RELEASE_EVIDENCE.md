@@ -25,6 +25,31 @@ The normal CI, CodeQL, and Dependency Audit workflows support:
 
 This is intentional: a release tag must not bypass the same source/test/platform/security gates that protected the release candidate.
 
+## Current verified automated baseline
+
+The latest verified Gumroad implementation/source-policy baseline is:
+
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+
+On that exact source:
+
+- unit tests: **122/122**;
+- integration tests: **39/39**;
+- UI/source-policy tests: **175/175**;
+- total core tests: **336/336**;
+- Android Release build passed;
+- Windows Release build passed;
+- iOS simulator Release build passed;
+- Mac Catalyst Release build passed;
+- all four store-candidate configurations passed;
+- CodeQL passed.
+
+Authoritative record:
+
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+
+Documentation-only commits after that exact implementation/source-policy source must not be described as exact-head automated evidence unless the applicable workflows have also completed successfully for the newer head.
+
 ## Release Evidence artifact contents
 
 The manual/tag-triggered `CareNest Release Evidence` workflow records:
@@ -106,18 +131,55 @@ Before release:
 
 The source remediation for the formerly tracked SQLite advisory is complete in the current RC1 graph. That source remediation must not be confused with the still-manual packaged existing-data compatibility gate.
 
+## Store-policy evidence
+
+A dated pre-submission policy review is recorded at:
+
+`docs/releases/STORE_POLICY_REVIEW_20260818.md`
+
+It records a 2026-08-18 review of the current CareNest product/package boundary against Apple, Google Play and Microsoft Store policy areas relevant to health functionality, sensitive-data privacy, application completeness and external-commerce placement.
+
+This review is not store approval and is not the final submission-time policy check. Immediately before submitting the exact production package/listing, the release owner must:
+
+- re-open the official current policy sources;
+- complete the live store-console declarations for the exact production binary/capabilities/SDK behavior;
+- record review date, source, conclusion and any required product/listing change;
+- repeat affected exact-source verification if a source/package change is required.
+
+## Current external-commerce evidence boundary
+
+For `1.0.0-rc.1`, repository storefront/funding promotion remains separate from the CareNest application package.
+
+The final application packages must contain no external application promotion or purchase surface for:
+
+- `https://buymeacoffee.com/sanskarIN`;
+- `https://ramsandesh.gumroad.com`.
+
+This is stronger than deciding at release time whether a funding link is conditionally visible. Under the current policy, both destinations are repository/documentation-only.
+
+For every final production package, retain evidence that:
+
+- the exact package payload was scanned for `buymeacoffee.com/sanskarIN`;
+- the exact package payload was scanned for `ramsandesh.gumroad.com`;
+- no Gumroad/Buy Me a Coffee promotional card, command, button or artwork is present in the installed app;
+- no health feature, reminder behavior, medical limitation or health-data access changes according to purchase/funding state;
+- the package still exposes the intentional repository/creator/business/support/privacy/terms/security/notices surfaces documented by the current product design.
+
 ## Store and signing evidence
 
 For each distribution channel:
 
-- current store-policy review is complete;
-- the external voluntary Buy Me a Coffee link is allowed for that channel or is conditionally hidden/removed;
-- signing credentials are provided only through the intended secure signing mechanism;
+- current store-policy review is complete for the exact submission package/listing;
+- production signing credentials are provided only through the intended secure signing mechanism and remain outside Git;
 - the signed package is produced from the exact verified commit;
 - package identifier, version and build number match release metadata;
-- requested permissions match documented product behavior;
-- screenshots/listing text do not claim diagnosis, dosage decisions, treatment recommendations, guaranteed reminders or emergency-service behavior;
-- privacy/data-safety disclosures match the local-first implementation.
+- requested permissions/capabilities match documented product behavior;
+- screenshots/listing text do not claim diagnosis, dosage decisions, treatment recommendations, guaranteed reminders, medical-device status without applicable approval, or emergency-service behavior;
+- privacy/data-safety disclosures match the local-first implementation and exact binary;
+- final package filename, SHA-256 and signing/notarization/store-managed provenance are recorded;
+- final installed-package smoke/manual validation is complete.
+
+For Google Play, complete the live Health apps declaration and Data safety form for the exact production feature/binary set. For Apple and Microsoft distribution, complete the current privacy/store metadata required by the applicable submission channel.
 
 ## Exact-tag release behavior
 
@@ -126,6 +188,8 @@ When the approved `v*` tag is created, repository automation is expected to run 
 - CareNest CI;
 - CodeQL;
 - Dependency Audit;
+- Store Package Configuration;
+- Store Inspection Artifacts;
 - Release Gate;
 - CareNest Release Evidence.
 
@@ -150,6 +214,8 @@ Commit SHA:
 CareNest CI run:
 CodeQL run:
 Dependency Audit run:
+Store Package Configuration run:
+Store Inspection Artifacts run:
 Release Gate run:
 Release Evidence run:
 Release Evidence artifact:
@@ -169,9 +235,16 @@ Packaged SQLite existing-data compatibility:
 Encrypted document compatibility:
 Backup compatibility:
 Accessibility review:
-Store-policy review:
+Store-policy review date/sources:
+Google Play Health apps declaration:
+Google Play Data safety:
+Apple privacy metadata:
+Microsoft privacy metadata:
 SQLite dependency decision:
 Signing/package review:
+BMC package-marker scan:
+Gumroad package-marker scan:
+Final package SHA-256/provenance:
 Release owner:
 Release date:
 ```
