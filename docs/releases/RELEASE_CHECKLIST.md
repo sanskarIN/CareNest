@@ -1,35 +1,38 @@
 # CareNest Release Checklist
 
 **Release line:** `1.0.0-rc.1`  
-**Current verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
-**Verified PR #74 head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+**Latest verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`
 
 This checklist separates completed source/automated evidence from production work that still requires real package/device/accessibility/signing/store evidence.
 
 ## 1. Current automated source baseline — completed
 
-- [x] CareNest CI #735 / run `31938301209` succeeded.
+For exact source `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`:
+
+- [x] CareNest CI run `32032436061` succeeded.
 - [x] Platform-neutral formatting succeeded.
 - [x] Unit tests: **122/122**.
 - [x] Integration tests: **39/39**.
-- [x] UI/source-policy tests: **170/170**.
-- [x] Total core tests: **331/331**.
+- [x] UI/source-policy tests: **175/175**.
+- [x] Total core tests: **336/336**.
 - [x] Android Release build succeeded.
 - [x] Windows Release build succeeded.
 - [x] iOS simulator Release build succeeded.
 - [x] Mac Catalyst Release build succeeded.
-- [x] Store Package Configuration #124 / `31938301146` succeeded on all four targets.
-- [x] Store Inspection Artifacts #47 / `31938301275` succeeded.
-- [x] Store payload scanner self-test succeeded.
-- [x] Android/Windows/Apple inspection artifacts/checksum/provenance workflows succeeded.
-- [x] CodeQL #735 / `31938301252` succeeded.
-- [x] Unsuppressed Dependency Audit #91 / `31938301172` succeeded on configured graphs.
-- [x] Former SQLite exact audit suppression remains removed.
+- [x] Store Package Configuration run `32032436093` succeeded on all four targets.
+- [x] CodeQL run `32032436037` succeeded.
 - [x] Strict XAML Source binding compilation is enabled.
 - [x] `XC0022`, `XC0023`, `XC0024`, `XC0025` are warnings-as-errors.
-- [x] Current application source/package contains no external BMC destination/card/command/artwork.
+- [x] Current application source/package contains no external Buy Me a Coffee destination/card/command/artwork.
+- [x] Current application source/package contains no external Gumroad destination/card/command/artwork.
+- [x] Store payload scanner covers both repository-only external-commerce markers.
 
-Permanent current evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+Authoritative current automated record: `docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`.
+
+Permanent compiled-binding evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+
+Documentation-only commits after the verified implementation/source-policy baseline do not automatically inherit an exact-head green claim; the applicable latest-head workflows must still be checked separately.
 
 ## 2. Source/product boundary — completed
 
@@ -45,7 +48,7 @@ Permanent current evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_2
 - [x] Cancellation-first reminder-action/reconciliation behavior implemented.
 - [x] Encrypted document/backup v2 framing with retained documented v1 read compatibility implemented.
 - [x] SQLite dependency source remediation implemented.
-- [x] Funding-free distributed application package/source policy implemented.
+- [x] Gumroad/Buy Me a Coffee-free distributed application package/source policy implemented.
 
 ## 3. Documentation — completed for current source scope
 
@@ -59,6 +62,7 @@ Permanent current evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_2
 - [x] Release process/checklists/runbooks current.
 - [x] Previous canonical documentation snapshots preserved under `docs/history/`.
 - [x] Documentation audit recorded for 2026-08-16.
+- [x] Current preliminary store-policy review recorded for 2026-08-18.
 
 ## 4. Packaged existing-data/SQLite compatibility — required
 
@@ -189,24 +193,34 @@ For every production package:
 - [ ] Filename recorded.
 - [ ] SHA-256 recorded.
 - [ ] Signing/notarization/store provenance recorded.
-- [ ] Forbidden external-funding marker scan passed.
-- [ ] About contains no external BMC funding destination/card.
-- [ ] Repository/creator/business/support/privacy/terms/security/notices remain available.
+- [ ] `buymeacoffee.com/sanskarIN` forbidden-marker scan passed.
+- [ ] `ramsandesh.gumroad.com` forbidden-marker scan passed.
+- [ ] Installed About/runtime contains no Gumroad/Buy Me a Coffee promotion or purchase CTA.
+- [ ] Repository/creator/business/support/privacy/terms/security/notices remain available as intentionally designed.
 - [ ] Installed package starts.
 - [ ] Platform smoke tests passed.
 
-## 13. Store metadata/policy — required at submission time
+## 13. Store metadata/policy — preliminary review complete; submission-time evidence still required
 
-- [ ] Current Apple rules reviewed where applicable.
-- [ ] Current Google Play rules reviewed where applicable.
-- [ ] Current Microsoft/Windows rules reviewed where applicable.
-- [ ] Health-organizer/non-clinical claims reviewed.
-- [ ] Notification limitation wording reviewed.
-- [ ] Privacy/data-safety declarations match runtime.
-- [ ] Screenshots use fictional data and match exact package.
-- [ ] No screenshot/listing implies removed in-app BMC funding feature.
-- [ ] Support/privacy/terms/security links verified.
-- [ ] Review date/source/conclusion recorded.
+Pre-submission policy review: `docs/releases/STORE_POLICY_REVIEW_20260818.md`.
+
+- [x] Apple App Review Guidelines reviewed on 2026-08-18 against current CareNest source/product boundary.
+- [x] Google Play health-app, Health apps declaration and Data safety guidance reviewed on 2026-08-18.
+- [x] Microsoft Store sensitive-personal-information/privacy rules reviewed on 2026-08-18.
+- [x] Current CareNest non-clinical health-organizer wording boundary reviewed.
+- [x] Current Gumroad/Buy Me a Coffee package-exclusion decision reviewed.
+- [ ] Re-check current Apple rules on the actual submission date for the exact package/listing.
+- [ ] Re-check current Google Play rules on the actual submission date for the exact package/listing.
+- [ ] Re-check current Microsoft/Windows rules on the actual submission date where applicable.
+- [ ] Complete live Google Play Health apps declaration against the exact production feature set.
+- [ ] Complete live Google Play Data safety answers against the exact production binary/SDK behavior.
+- [ ] Complete Apple privacy metadata against the exact production binary/capabilities.
+- [ ] Complete Microsoft/Partner Center privacy metadata where applicable.
+- [ ] Notification limitation wording reviewed against final listing text.
+- [ ] Screenshots use fictional data and match exact production package.
+- [ ] No screenshot/listing implies in-app Gumroad/Buy Me a Coffee purchase/funding functionality.
+- [ ] Support/privacy/terms/security links verified from final store metadata.
+- [ ] Final submission review date/source/conclusion recorded.
 
 ## 14. Select exact production source — required
 
