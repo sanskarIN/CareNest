@@ -2,9 +2,10 @@
 
 **Release line:** `1.0.0-rc.1`  
 **Latest verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
-**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`
+**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`  
+**Package evidence guide:** `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
 
-This document defines the end-to-end path from a source-complete release candidate to a public production release. Automated evidence, real-device evidence, package compatibility, accessibility, signing, store-console declarations, current policy review and store approval are separate gates.
+This document defines the end-to-end path from a source-complete release candidate to a public production release. Automated evidence, real-device evidence, package compatibility, accessibility, signing, structured package provenance, store-console declarations, current policy review and store approval are separate gates.
 
 ## 1. Release principle
 
@@ -23,6 +24,7 @@ Public promotion requires the exact candidate source to satisfy applicable:
 - security/privacy review;
 - production signing;
 - final signed-package inspection;
+- structured final-package checksum/provenance evidence;
 - current store-policy/metadata/declaration review;
 - exact immutable release tag;
 - tagged Release Gate/Release Evidence;
@@ -57,7 +59,9 @@ Permanent compiled-binding evidence remains:
 
 Older PR/source records remain historical evidence for their own exact boundaries and must not replace the current verified Gumroad baseline.
 
-Documentation-only commits after the verified implementation/source-policy SHA must not be described as automatically inheriting exact-head automated evidence.
+The repository now contains later verification-relevant release-documentation contracts, package-evidence tooling, and CI/release workflow changes. Those changes require a fresh exact-source verification before a newer source can replace the verified baseline above.
+
+Do not infer a new test count from source inspection. Record the count actually produced by the exact verification run.
 
 ## 3. Freeze intended scope
 
@@ -69,9 +73,10 @@ Before production work:
 4. review `PROJECT_STATUS.md`;
 5. review `docs/releases/NEXT_STEPS.md`;
 6. review `docs/releases/STORE_POLICY_REVIEW_20260818.md`;
-7. identify every applicable manual/package/accessibility/signing/store blocker;
-8. confirm the Gumroad/Buy Me a Coffee-free application-package boundary remains intact;
-9. confirm the former SQLite audit suppression remains absent.
+7. review `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`;
+8. identify every applicable automated/manual/package/accessibility/signing/store blocker;
+9. confirm the Gumroad/Buy Me a Coffee-free application-package boundary remains intact;
+10. confirm the former SQLite audit suppression remains absent.
 
 ## 4. Development preflight
 
@@ -95,7 +100,7 @@ There is no current application funding/storefront build toggle. Gumroad and Buy
 
 ## 5. Exact-source automated verification
 
-If verification-relevant runtime/test/project/package/workflow/build-script/platform source changes after the accepted baseline:
+If verification-relevant runtime/test/project/package/workflow/build-script/platform/release-policy source changes after the accepted baseline:
 
 1. finish the intended source;
 2. freeze exact candidate SHA;
@@ -105,13 +110,13 @@ If verification-relevant runtime/test/project/package/workflow/build-script/plat
 6. record exact source/run/test evidence;
 7. preserve failed evidence rather than re-labelling an unverified source as approved.
 
-Documentation-only commits can sit above a verified executable source only when the documentation clearly distinguishes that verified source from later documentation-only heads.
+Documentation-only commits can sit above a verified executable source only when the documentation clearly distinguishes that verified source from later documentation-only heads and the changed docs are not verification-contract inputs.
 
 ## 6. Required automated gates
 
 For a verification-relevant candidate require, as applicable:
 
-- CareNest CI;
+- CareNest CI, including package-evidence Python syntax/self-test;
 - CodeQL;
 - Dependency Audit;
 - Store Package Configuration;
@@ -119,8 +124,8 @@ For a verification-relevant candidate require, as applicable:
 
 Production-style `v*` tags additionally require:
 
-- Release Gate;
-- Release Evidence.
+- Release Gate, including package-evidence tooling validation;
+- Release Evidence, including retained package-evidence tooling self-test output.
 
 No single workflow substitutes for the other required release gates.
 
@@ -246,7 +251,7 @@ Configure production signing identity outside Git, produce intended signed packa
 
 Never commit private keys, certificates containing private material, keystores, passwords or signing-service credentials.
 
-## 14. Final signed-package inspection
+## 14. Final signed-package inspection and structured evidence
 
 For every production candidate record:
 
@@ -263,7 +268,32 @@ For every production candidate record:
 - install/launch smoke test;
 - platform-specific smoke/manual result.
 
-Internal CI inspection artifacts are not automatically production packages.
+Then generate a structured JSON record using:
+
+```text
+build/scripts/create-package-evidence.py
+```
+
+or the platform wrappers:
+
+```text
+build/scripts/create-package-evidence.sh
+build/scripts/create-package-evidence.ps1
+```
+
+For final production evidence use `--stage production`. The tool requires:
+
+- immutable `v*` source tag;
+- tag SHA equals recorded source SHA;
+- checked-out HEAD equals recorded source SHA;
+- clean tracked workspace;
+- non-secret signing/notarization/store provenance;
+- successful store-safe scan;
+- evidence output outside the package payload.
+
+Retain the generated JSON and verify its payload SHA-256 against independently recorded package evidence.
+
+The tool does not sign packages and cannot prove store approval. Internal CI inspection artifacts are not automatically production packages.
 
 ## 15. Store metadata/policy review
 
@@ -302,7 +332,7 @@ Only after candidate selection:
 - update `CHANGELOG.md`;
 - prepare release notes from `RELEASE_NOTES_TEMPLATE.md`;
 - update current status/next steps/evidence references;
-- avoid executable changes after final verification.
+- avoid executable or verification-contract changes after final verification.
 
 If verification-relevant source changes, repeat exact-source verification.
 
@@ -324,18 +354,18 @@ Do not move/reuse a failed/rejected production tag to point at different source.
 
 ## 18. Release Evidence
 
-Release Evidence must follow `docs/releases/RELEASE_EVIDENCE.md` and should record exact source/ref/run/attempt identity, source manifests/checksums, test/dependency evidence, workspace integrity and evidence checksums according to the current workflow.
+Release Evidence must follow `docs/releases/RELEASE_EVIDENCE.md` and should record exact source/ref/run/attempt identity, source manifests/checksums, test/dependency evidence, package-evidence tooling self-test evidence, workspace integrity and evidence checksums according to the current workflow.
 
 Artifact existence alone is not approval; the workflow conclusion and provenance must be accepted.
 
-Final signed-package provenance belongs in the release record in addition to CI evidence.
+Final signed-package structured provenance belongs in the release record in addition to CI evidence.
 
 ## 19. Publication
 
 After all required tag/manual/package/accessibility/signing/store gates pass:
 
 - confirm signed artifacts originate from exact tagged source;
-- confirm checksums/provenance;
+- confirm package evidence JSON/checksums/provenance;
 - publish GitHub release as appropriate;
 - submit/promote store packages;
 - record final publication/store-approval evidence;
@@ -360,9 +390,10 @@ For a production defect:
 5. run affected/full exact-source gates;
 6. repeat applicable manual/package checks;
 7. build/sign corrected candidate;
-8. create a new approved version/tag;
-9. require tagged gates;
-10. publish patch release.
+8. regenerate structured package evidence for the corrected package;
+9. create a new approved version/tag;
+10. require tagged gates;
+11. publish patch release.
 
 ## 22. Release blocker rule
 
