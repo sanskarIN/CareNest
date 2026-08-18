@@ -1,5 +1,9 @@
 # CareNest Security Release Review
 
+**Release line:** `1.0.0-rc.1`  
+**Latest verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`
+
 Complete this review against the exact commit/tag/package proposed for public release.
 
 ## 1. Candidate identity
@@ -8,6 +12,7 @@ Complete this review against the exact commit/tag/package proposed for public re
 - [ ] Version/build/application identity recorded.
 - [ ] Final package filename/SHA-256 recorded.
 - [ ] Signing/notarization/store provenance recorded.
+- [ ] Structured package evidence JSON recorded.
 - [ ] Candidate corresponds to the source actually reviewed.
 
 ## 2. Local-first/privacy boundary
@@ -112,8 +117,6 @@ Release checks:
 - [ ] SQLite packaged compatibility evidence reviewed separately from audit result.
 - [ ] Final Release Evidence records actual resolved dependency graph.
 
-Current accepted automated source evidence is PR #74, not the older PR #54/#56 checkpoints.
-
 ## 10. XAML/UI source security/quality
 
 - [ ] Source binding compilation remains enabled.
@@ -122,25 +125,50 @@ Current accepted automated source evidence is PR #74, not the older PR #54/#56 c
 - [ ] Binding-bearing views/templates remain accurately typed.
 - [ ] No warning/type-safety bypass introduced.
 - [ ] Accessibility/privacy/medical limitation surfaces remain reachable.
+- [ ] Release-documentation consistency contracts pass.
+- [ ] Package-evidence tooling contracts pass.
 
-## 11. Application funding/package boundary
+## 11. External-commerce application-package boundary
 
 Current invariant:
 
 - no external Buy Me a Coffee destination/card/command/artwork in distributed application source/package;
+- no external Gumroad destination/card/command/artwork in distributed application source/package;
 - no `CareNestShowFundingLink` application build property;
-- repository-only support documentation remains separate;
-- funding never changes health/reminder/medical behavior.
+- repository-only support/storefront documentation remains separate;
+- funding/purchase never changes health/reminder/medical behavior or local-health-data access.
 
 Release checks:
 
 - [ ] Source-policy guard passes.
 - [ ] Store payload scanner self-test passes.
-- [ ] Final signed package forbidden-marker scan passes.
-- [ ] About has no BMC funding action/card.
-- [ ] Store listing/screenshots do not imply removed in-app funding behavior.
+- [ ] Package-evidence synthetic self-test passes.
+- [ ] Final signed package scan passes for `buymeacoffee.com/sanskarIN`.
+- [ ] Final signed package scan passes for `ramsandesh.gumroad.com`.
+- [ ] About/runtime has no Buy Me a Coffee funding action/card.
+- [ ] About/runtime has no Gumroad storefront/purchase action/card.
+- [ ] Store listing/screenshots do not imply in-app Gumroad/Buy Me a Coffee behavior under the current package policy.
 
-## 12. Release-engineering security controls
+## 12. Structured package provenance evidence
+
+Use:
+
+`docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
+
+Release checks:
+
+- [ ] `build/scripts/create-package-evidence.py --stage production` used for every final production package.
+- [ ] Production evidence source tag begins with `v` and resolves to the recorded source SHA.
+- [ ] Checked-out HEAD equals the recorded source SHA.
+- [ ] Tracked workspace is clean.
+- [ ] Package evidence signing/notarization provenance contains no secrets.
+- [ ] Package evidence payload SHA-256 matches independently recorded final package evidence.
+- [ ] Store-safe scan result is `passed`.
+- [ ] Generated JSON is retained outside the package payload.
+
+The tool does not sign packages and does not prove store approval; independent platform/store signing/notarization evidence remains required.
+
+## 13. Release-engineering security controls
 
 - [ ] CareNest CI passes exact production tag.
 - [ ] CodeQL passes exact production tag.
@@ -151,42 +179,51 @@ Release checks:
 - [ ] Release Evidence passes exact production tag.
 - [ ] Release Evidence provenance/checksums reviewed.
 - [ ] Release-preflight/quality-gate audit remains fail closed.
+- [ ] Package-evidence Python syntax/self-test remains part of CareNest CI.
 - [ ] Signing secrets remain outside Git/workflow logs.
 
-## 13. Platform/distribution
+## 14. Platform/distribution
 
 - [ ] Android permissions/alarm/battery behavior matches product/docs.
 - [ ] Apple entitlements/notification behavior matches product/docs.
 - [ ] Windows capabilities/reminder limitations match product/docs.
 - [ ] Real-device/manual platform matrix complete.
 - [ ] Accessibility matrix complete.
-- [ ] Current store privacy/data-safety/policy review complete.
+- [ ] Submission-date store privacy/data-safety/policy review complete.
+- [ ] Live Google Play Health apps/Data safety declarations complete where applicable.
+- [ ] Apple privacy/store metadata complete where applicable.
+- [ ] Microsoft/Partner Center privacy/store metadata complete where applicable.
 
-## 14. Current automated reference
+## 15. Current automated reference
 
-PR #74 frozen source head:
+Latest exact verified Gumroad implementation/source-policy source:
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
 
-Merged executable source:
+Evidence on that exact source:
 
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
-
-Evidence:
-
-- CareNest CI #735 / `31938301209`: success;
-- 122 unit + 39 integration + 170 UI/source-policy = **331/331**;
+- 122 unit + 39 integration + 175 UI/source-policy = **336/336**;
 - all four Release target builds: success;
-- Store Package Configuration #124 / `31938301146`: success;
-- Store Inspection Artifacts #47 / `31938301275`: success;
-- CodeQL #735 / `31938301252`: success;
-- Dependency Audit #91 / `31938301172`: success.
+- all four Store Package Configuration targets: success;
+- CodeQL: success.
 
-Permanent record: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+Permanent current Gumroad record:
 
-This does not pre-approve a production tag/package or complete manual/package/signing/store gates.
+`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
 
-## 15. Approval record
+The repository now contains later verification-relevant release-documentation/package-evidence tests/scripts. Those later changes require their own exact-source workflow evidence before they replace the verified baseline above.
+
+This automated baseline does not pre-approve a production tag/package or complete manual/package/signing/store gates.
+
+## 16. Store-policy review reference
+
+Preliminary dated review:
+
+`docs/releases/STORE_POLICY_REVIEW_20260818.md`
+
+The dated review is not store approval and does not replace final live policy/store-console review for the exact production package/listing.
+
+## 17. Approval record
 
 ```text
 Version/build:
@@ -201,11 +238,19 @@ Store Inspection run:
 Release Gate run:
 Release Evidence run/artifact:
 Signed package filename/SHA-256:
+Package evidence JSON:
+Package evidence payload SHA-256:
 Signing/notarization provenance:
 SQLite packaged compatibility result:
 Encrypted document/backup compatibility result:
 Accessibility/manual platform result:
-Store policy/privacy review result:
+Store policy review date/sources:
+Google Play Health apps declaration:
+Google Play Data safety:
+Apple privacy metadata:
+Microsoft privacy metadata:
+BMC package-marker scan:
+Gumroad package-marker scan:
 Open security blockers:
 Approved for signing/package creation: yes/no
 Approved for publication: yes/no
