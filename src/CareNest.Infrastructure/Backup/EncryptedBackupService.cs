@@ -89,6 +89,7 @@ public sealed class EncryptedBackupService(
                     }
                 }
 
+                BackupArchiveValidator.ValidateContainerLength(new FileInfo(archive).Length);
                 using (var validationZip = ZipFile.OpenRead(archive))
                 {
                     BackupArchiveValidator.ValidateTopology(validationZip, manifest);
@@ -376,7 +377,8 @@ public sealed class EncryptedBackupService(
                 key,
                 PayloadMagic,
                 Aad,
-                cancellationToken);
+                cancellationToken,
+                BackupArchiveLimits.Default.MaxDecryptedArchiveBytes);
         }
         catch (CryptographicException)
         {
