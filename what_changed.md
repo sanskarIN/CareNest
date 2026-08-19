@@ -1,3 +1,335 @@
+# CareNest — 2026-08-19 Verified Continuation Handoff
+
+**Date:** 2026-08-19  
+**Release line:** `1.0.0-rc.1`  
+**Repository:** `https://github.com/sanskarIN/CareNest`  
+**Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`  
+**Current accepted exact automated source:** `30ee6c265104c64ec5a1a4013f592f7f058750e8`  
+**Verified PR merge-ref SHA:** `84fda5bb8ced9f4c487110e43652f51ba2d8d495`  
+**PR #81 merge commit:** `2549c08b25145f20c59b7e73ca227c35d5bbf0ec`  
+**Current automated result:** **370/370 core tests passed**
+
+This section records the 2026-08-19 continuation. The complete 2026-08-18 handoff remains preserved below this section rather than being deleted or shortened.
+
+## 2026-08-19 continuation scope
+
+The repository was inspected from the current `main` state before changes were made.
+
+Observed starting state:
+
+- `main` source: `02e63969cc1cf22f0958b0979bb80c33e5e665cf`;
+- no open GitHub issues in the repository issue backlog;
+- no indexed runtime `TODO`/`FIXME` continuation target was found;
+- the existing release handoff explicitly said not to add unrelated speculative source merely to increase commit count;
+- the previous accepted exact automated source was `b6eecae66f74bd72bcb20d93508355542f9f3442` with **355/355** core tests and all required platform/store/security workflows green.
+
+A real security/availability defect was then identified in the encrypted-backup boundary rather than inventing new product scope.
+
+## Reproduced backup resource-exhaustion gap
+
+CareNest already authenticated encrypted backups and strictly validated backup topology, but a deliberately crafted password-valid backup could still require excessive local resources before ordinary manifest/topology/extraction validation completed.
+
+The gap affected availability/resource consumption rather than bypassing authenticated encryption. The relevant risk was an authenticated backup containing or expanding into an excessively large decrypted ZIP, manifest, database, document entry, total uncompressed payload or entry set.
+
+No real user health data, production backup, PIN, password, key or signing secret was used to reproduce or fix this issue.
+
+## Implemented resource boundaries
+
+The accepted source now applies the following default backup ceilings:
+
+- decrypted ZIP container: **2304 MiB** maximum;
+- manifest: **1 MiB** maximum;
+- SQLite database: **1 GiB** maximum;
+- each encrypted document entry: **512 MiB** maximum;
+- total uncompressed ZIP payload: **2 GiB** maximum;
+- document count: **5,000** maximum;
+- total archive-entry count: document ceiling plus the fixed required-entry allowance;
+- explicit directory-only ZIP entries: rejected.
+
+The configured document-count limit is itself validated so the fixed-entry allowance cannot overflow the archive-entry-count calculation.
+
+## Validation ordering hardened
+
+The accepted backup path now:
+
+1. validates the outer CareNest backup header/version;
+2. derives the password key;
+3. decrypts authenticated chunked payload while enforcing the backup-specific decrypted-container maximum;
+4. opens only the bounded ZIP output;
+5. validates archive entry count and rejects directory-only entries;
+6. validates manifest size before manifest deserialization;
+7. validates database/document entry sizes and total uncompressed payload;
+8. deserializes and validates the manifest;
+9. validates database/key/document topology and count agreement;
+10. extracts only after those checks;
+11. validates restored SQLite integrity/schema before database replacement.
+
+Existing wrong-password, authenticated tamper, truncation and trailing-data protections remain intact.
+
+## Creation/restore symmetry
+
+Backup creation now validates the generated ZIP against the same current container/topology/resource boundary before encryption.
+
+This prevents current CareNest from intentionally producing a backup that its own current restore/inspection path would reject solely because of the newly enforced limits.
+
+If genuine historical backup bytes are later found to exceed a current ceiling, that must be recorded as an explicit compatibility/security finding rather than silently weakening the resource boundary or manufacturing replacement bytes and calling them historical evidence.
+
+## Shared encrypted-stream hardening
+
+`ChunkedAead.DecryptAsync` now supports an optional maximum plaintext byte count.
+
+Behavior:
+
+- callers that do not provide the option retain the previous unbounded-by-caller behavior;
+- the backup path supplies the decrypted-container ceiling;
+- cumulative plaintext is checked with overflow-safe arithmetic;
+- an over-limit chunk is rejected before that chunk is decrypted/written to the destination;
+- current framing v2 preserves authenticated terminal/trailing-data behavior;
+- legacy framing v1 remains readable and also obeys a supplied plaintext limit.
+
+## Regression coverage added
+
+Fifteen focused integration tests were added across backup archive validation and encrypted-stream framing. They cover:
+
+- oversized manifest rejection before parsing;
+- oversized database rejection;
+- oversized document rejection;
+- excessive total uncompressed payload rejection;
+- excessive archive-entry count rejection;
+- directory-only archive-entry rejection;
+- manifest document-count ceiling rejection;
+- decrypted ZIP container over-limit rejection;
+- decrypted ZIP exact-limit acceptance;
+- unsafe configured document-count/entry-ceiling rejection;
+- encrypted plaintext over-limit rejection before first-chunk write;
+- encrypted plaintext exact-limit acceptance;
+- invalid non-positive plaintext-limit rejection;
+- cumulative plaintext-limit enforcement across multiple chunks;
+- legacy v1 plaintext-limit enforcement.
+
+The accepted inventory advanced from:
+
+- 122 unit;
+- 39 integration;
+- 194 UI/source-policy;
+- 355 total;
+
+to:
+
+- **122/122 unit**;
+- **54/54 integration**;
+- **194/194 UI/source-policy**;
+- **370/370 total core tests**.
+
+No existing unit or UI/source-policy coverage was removed to obtain the new total.
+
+## Security/release documentation aligned before freeze
+
+Verification-relevant stable documentation was updated on the PR branch before the final source was frozen, including:
+
+- `SECURITY.md`;
+- `docs/security/THREAT_MODEL.md`;
+- `docs/security/SECURITY_MODEL.md`;
+- `docs/releases/PACKAGED_RELEASE_VALIDATION.md`;
+- `docs/releases/SECURITY_RELEASE_REVIEW.md`;
+- new `docs/releases/BACKUP_RESOURCE_HARDENING_20260819.md`.
+
+These documents now describe the backup resource boundary and packaged compatibility requirements instead of leaving the newly identified risk undocumented.
+
+## Branch and commit strategy
+
+Continuation branch:
+
+`continue/backup-resource-hardening-20260819`
+
+PR:
+
+`#81` — `security: bound backup archive resource usage`
+
+Final frozen verification-relevant head:
+
+`30ee6c265104c64ec5a1a4013f592f7f058750e8`
+
+The branch contained **19 meaningful commits**. Commits were intentionally separated across implementation, regression coverage and stable security/release documentation rather than squashed into one large change.
+
+GitHub workflow checkout metadata confirmed commits were attributed to:
+
+`Sanskar <sanskarin@outlook.in>`
+
+The final diff was audited before merge:
+
+- 19 commits ahead of the starting `main`;
+- 11 intended files changed;
+- 672 additions;
+- 63 deletions;
+- no unrelated application UI/configuration scope added;
+- `main` remained at the same base SHA while the final PR matrix executed.
+
+## Exact-head/merge-ref automated verification
+
+The pull-request workflows tested GitHub's merge ref:
+
+`84fda5bb8ced9f4c487110e43652f51ba2d8d495`
+
+That merge ref represented final source `30ee6c265104c64ec5a1a4013f592f7f058750e8` merged into then-current `main` source `02e63969cc1cf22f0958b0979bb80c33e5e665cf`.
+
+All required workflows completed successfully before merge.
+
+### CareNest CI
+
+Run:
+
+`32205946013`
+
+Result:
+
+**success**
+
+Observed:
+
+- repository Python tooling syntax: success;
+- package-evidence self-test: success;
+- documentation-link checker self-test: success;
+- stable active documentation links: **182 links across 111 stable active Markdown files — success**;
+- platform-neutral formatting: success;
+- unit tests: **122/122**;
+- integration tests: **54/54**;
+- UI/source-policy tests: **194/194**;
+- total core tests: **370/370**;
+- Android Release: success;
+- Windows Release: success;
+- iOS simulator Release: success;
+- Mac Catalyst Release: success.
+
+### Store Package Configuration
+
+Run:
+
+`32205946003`
+
+Result:
+
+**success**
+
+Observed:
+
+- Android store-safe configuration: success;
+- Windows store-safe configuration: success;
+- iOS simulator store-safe configuration: success;
+- Mac Catalyst store-safe configuration: success.
+
+### Store Inspection Artifacts
+
+Run:
+
+`32205946001`
+
+Result:
+
+**success**
+
+Observed:
+
+- store-safe payload scanner self-test: success;
+- Android inspection artifact: success;
+- Windows inspection artifact: success;
+- iOS/Mac Catalyst Apple inspection artifacts: success;
+- configured staging/provenance/artifact upload steps: success.
+
+### CodeQL
+
+Run:
+
+`32205946030`
+
+Result:
+
+**success**
+
+### Dependency Audit
+
+Run:
+
+`32205946026`
+
+Result:
+
+**success**
+
+The dependency audit remained unsuppressed; no former SQLite advisory suppression was restored simply to obtain a green result.
+
+## PR merge
+
+After every required exact-head workflow was green, PR #81 was merged with merge method `merge` rather than squash/rebase.
+
+Merge commit:
+
+`2549c08b25145f20c59b7e73ca227c35d5bbf0ec`
+
+This preserves all 19 meaningful branch commits in repository history.
+
+## Post-verification dynamic evidence commits
+
+Per `docs/releases/AUTOMATED_BASELINE.md`, only the four designated dynamic evidence/status files are updated after a successful exact-source verification without redefining the frozen executable source:
+
+- `docs/releases/AUTOMATED_BASELINE.md`;
+- `PROJECT_STATUS.md`;
+- `docs/releases/NEXT_STEPS.md`;
+- `what_changed.md`.
+
+Completed dynamic commits before this file update:
+
+- `2990999f02488b79b3fb2dae5e19d3a20ba99506` — `docs: promote verified 370-test automated baseline`;
+- `59458d55548af6cb1c415bc1214f250a9772ecc6` — `docs: advance CareNest status after security verification`;
+- `905c04e70a7eff66c4a37c66380f906bbb3c7286` — `docs: refresh remaining production steps after PR 81`.
+
+This `what_changed.md` update cannot include its own resulting commit SHA before GitHub creates the commit.
+
+## Current accepted automated baseline
+
+Accepted exact verification-relevant source:
+
+`30ee6c265104c64ec5a1a4013f592f7f058750e8`
+
+Merged executable-source commit:
+
+`2549c08b25145f20c59b7e73ca227c35d5bbf0ec`
+
+Current automated result:
+
+**370/370 core tests passed with Android/Windows/iOS-simulator/Mac-Catalyst Release builds, all store-candidate configurations, Store Inspection Artifacts, CodeQL and unsuppressed Dependency Audit successful.**
+
+Canonical dynamic pointer:
+
+`docs/releases/AUTOMATED_BASELINE.md`
+
+## Remaining work after this continuation
+
+The remaining open work is production evidence that cannot be truthfully fabricated from source CI:
+
+- real-device/platform reminder and lifecycle behavior;
+- packaged existing-data/SQLite compatibility;
+- packaged encrypted-document compatibility;
+- packaged backup create/inspect/restore compatibility against the new resource ceilings;
+- genuine historical encrypted-backup compatibility where genuine prior bytes safely exist;
+- real assistive-technology/accessibility validation;
+- production Android/Apple/Windows signing outside Git;
+- final signed/notarized package checksums/provenance/package-evidence JSON;
+- final signed-package Gumroad/BMC forbidden-marker scans;
+- live Google Play Health apps/Data safety declarations;
+- Apple/Microsoft privacy/store metadata where applicable;
+- submission-day store-policy review;
+- immutable approved production `v*` tag and tagged release gates;
+- actual store submission/approval/publication evidence.
+
+Do not resume speculative feature churn merely to increase commit count. If a new real defect is reproduced, fix the smallest correct boundary, add regression coverage, freeze a replacement source, and run the required exact-source matrix again.
+
+---
+
+# Preserved 2026-08-18 Handoff
+
+The content below is the complete previous active handoff and is intentionally preserved as historical continuation context.
+
 # CareNest — Final Active Completion Handoff
 
 **Date:** 2026-08-18  
