@@ -1,59 +1,42 @@
 # CareNest Release Checklist
 
 **Release line:** `1.0.0-rc.1`  
-**Accepted exact automated source:** `30ee6c265104c64ec5a1a4013f592f7f058750e8`  
-**Merged executable-source commit:** `2549c08b25145f20c59b7e73ca227c35d5bbf0ec`  
-**Accepted automated result:** **370/370 core tests passed**  
+**Current automated evidence authority:** `AUTOMATED_BASELINE.md`  
 **Current store-policy review:** `STORE_POLICY_REVIEW_20260818.md`  
 **Production evidence standard:** `PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`  
 **Production evidence index:** `PRODUCTION_EVIDENCE_INDEX.md`  
 **Package evidence guide:** `PACKAGE_EVIDENCE_TOOLING.md`
 
-This checklist is the current release authority for CareNest `1.0.0-rc.1`. It separates completed source/automated work from production work that still requires real packages, devices, assistive technology, signing identities and store accounts.
+This checklist is the stable production release checklist for CareNest `1.0.0-rc.1`. It separates source/product readiness from production work that requires exact-source automation, real packages, devices, assistive technology, signing identities, live store accounts and current store policy.
 
-A checkbox may be marked complete only from real evidence. A build, simulator compile or template is not a substitute for a manual production result.
+Do not hard-code a moving accepted SHA, workflow run ID or test total in this stable checklist. Read the latest actually observed accepted source/result from `AUTOMATED_BASELINE.md`.
 
-## 1. Accepted exact-source automated baseline — complete
+A checkbox may be marked complete only from real evidence. A build, simulator compile or canonical template is not a substitute for a manual production result.
 
-Accepted source:
+## 1. Exact-source automated verification — required for final candidate
 
-`30ee6c265104c64ec5a1a4013f592f7f058750e8`
+Before production approval:
 
-Verified PR merge ref:
+- [ ] Record the exact approved source SHA/tag.
+- [ ] Confirm `AUTOMATED_BASELINE.md` describes automation that actually ran for the exact candidate, or run a fresh exact-source matrix.
+- [ ] CareNest CI passes.
+- [ ] Repository Python tooling syntax/self-tests pass.
+- [ ] Documentation-integrity tooling self-test and stable active-link check pass.
+- [ ] Platform-neutral formatting passes.
+- [ ] Unit tests pass; record actual count.
+- [ ] Integration tests pass; record actual count.
+- [ ] UI/source-policy tests pass; record actual count.
+- [ ] Android Release build passes.
+- [ ] Windows Release build passes.
+- [ ] iOS simulator Release build passes.
+- [ ] Mac Catalyst Release build passes.
+- [ ] Store Package Configuration passes on every configured target.
+- [ ] Store Inspection Artifacts passes.
+- [ ] CodeQL passes.
+- [ ] Unsuppressed Dependency Audit passes.
+- [ ] No required check is failed, stale, cancelled, skipped, superseded or merely queued.
 
-`84fda5bb8ced9f4c487110e43652f51ba2d8d495`
-
-Merged executable-source commit:
-
-`2549c08b25145f20c59b7e73ca227c35d5bbf0ec`
-
-Verification PR:
-
-`#81` — `security: bound backup archive resource usage`
-
-Completed automated evidence:
-
-- [x] CareNest CI run `32205946013` succeeded.
-- [x] Repository Python tooling syntax succeeded.
-- [x] Package-evidence self-test succeeded.
-- [x] Documentation-link checker self-test succeeded.
-- [x] Stable active documentation links passed — 182 links across 111 stable active Markdown files at the verified boundary.
-- [x] Platform-neutral formatting succeeded.
-- [x] Unit tests: **122/122**.
-- [x] Integration tests: **54/54**.
-- [x] UI/source-policy tests: **194/194**.
-- [x] Total core tests: **370/370**.
-- [x] Android Release build succeeded.
-- [x] Windows Release build succeeded.
-- [x] iOS simulator Release build succeeded.
-- [x] Mac Catalyst Release build succeeded.
-- [x] Store Package Configuration run `32205946003` succeeded on all configured targets.
-- [x] Store Inspection Artifacts run `32205946001` succeeded.
-- [x] CodeQL run `32205946030` succeeded.
-- [x] Unsuppressed Dependency Audit run `32205946026` succeeded.
-- [x] PR #81 merged after the required exact-head matrix succeeded.
-
-Canonical dynamic automated pointer: `AUTOMATED_BASELINE.md`.
+If verification-relevant source changes after the accepted automated boundary, follow `VERIFICATION_BRANCH_PROTOCOL.md` and record only the result actually observed for the replacement exact source.
 
 ## 2. Source/product scope — complete for RC1
 
@@ -84,8 +67,6 @@ Do not add speculative health features merely to increase commit count. A new ru
 
 ## 3. Backup resource hardening — source complete
 
-The accepted source bounds authenticated backup resource usage before ordinary restore/extraction work proceeds.
-
 Current default limits:
 
 - decrypted ZIP container: **2304 MiB** maximum;
@@ -107,13 +88,13 @@ Completed source work:
 - [x] Generated backups validated against the same current restore boundary before encryption.
 - [x] Current framing v2 tamper/truncation/trailing-data handling retained.
 - [x] Legacy framing v1 read compatibility retained under caller-provided plaintext limits.
-- [x] Fifteen focused integration regressions added.
+- [x] Focused integration regression coverage exists for the bounded backup path.
 
-Packaged compatibility remains required in section 5.
+Packaged compatibility remains a separate production requirement.
 
 ## 4. Production evidence preparation — complete
 
-The repository now contains reusable evidence rules/templates. These files are preparation only and do not claim manual validation has occurred.
+The repository contains reusable evidence rules/templates. These files are preparation only and do not prove a release has been tested.
 
 - [x] Production validation evidence standard: `PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`.
 - [x] Production evidence index: `PRODUCTION_EVIDENCE_INDEX.md`.
@@ -127,7 +108,7 @@ The repository now contains reusable evidence rules/templates. These files are p
 - [x] Store submission/policy/publication template.
 - [x] Final production release approval template.
 
-Templates live under `templates/` and must be copied into release-specific evidence files when real validation begins.
+Templates live under `templates/` and must remain visibly unperformed. Create release-specific copies for actual evidence.
 
 ## 5. Packaged existing-data/document/backup compatibility — required
 
@@ -336,7 +317,7 @@ Store policies are time-sensitive; preliminary review is not store approval.
 Only after applicable manual/package/accessibility/signing/store findings are resolved:
 
 - [ ] Select exact approved production commit.
-- [ ] Repeat exact-source automated verification if verification-relevant source changes after `30ee6c265104c64ec5a1a4013f592f7f058750e8`.
+- [ ] Confirm the selected source has current exact-source automation in `AUTOMATED_BASELINE.md`, or run fresh verification.
 - [ ] Verify final version/build metadata.
 - [ ] Verify final release notes/changelog.
 - [ ] Verify signed-package hashes/provenance/package-evidence JSON.
@@ -345,9 +326,22 @@ Only after applicable manual/package/accessibility/signing/store findings are re
 
 Do not move a failed/rejected production tag to a different source merely to reuse its version identity.
 
-## 16. Production approval — required
+## 16. Tagged production gates — required
 
-Use `templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md`.
+For the immutable approved `v*` tag:
+
+- [ ] Tagged CareNest CI succeeds.
+- [ ] Tagged CodeQL succeeds.
+- [ ] Tagged Dependency Audit succeeds.
+- [ ] Tagged Store Package Configuration succeeds.
+- [ ] Tagged Store Inspection Artifacts succeeds.
+- [ ] Tagged Release Gate succeeds.
+- [ ] Tagged Release Evidence succeeds.
+- [ ] Exact tagged run IDs/artifacts/checksums are retained in the release-specific evidence record.
+
+## 17. Production approval — required
+
+Use a release-specific copy of `templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md`.
 
 - [ ] Applicable automated evidence is current.
 - [ ] Applicable packaged compatibility evidence passes.
@@ -359,7 +353,7 @@ Use `templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md`.
 - [ ] Approved source/tag/package hashes are recorded explicitly.
 - [ ] Final approval decision is recorded.
 
-## 17. Publication — required
+## 18. Publication — required
 
 - [ ] GitHub release published where intended.
 - [ ] Store packages submitted/promoted where intended.
@@ -370,6 +364,6 @@ Use `templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md`.
 
 ## Final rule
 
-A failed, unknown, stale, blocked or unperformed required gate blocks production promotion unless it is explicitly and defensibly recorded as not applicable.
+A failed, unknown, stale, blocked or unperformed required gate blocks production promotion unless it is explicitly and defensibly recorded as not applicable under `PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`.
 
 CareNest remains `1.0.0-rc.1` until applicable production rows are actually evidenced.
