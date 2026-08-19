@@ -391,6 +391,8 @@ public sealed class EncryptedBackupService(
         CancellationToken cancellationToken)
     {
         using var zip = ZipFile.OpenRead(archivePath);
+        BackupArchiveValidator.ValidateBeforeManifest(zip);
+
         var manifestEntry = zip.GetEntry("manifest.json")
             ?? throw new InvalidDataException("Backup manifest is missing.");
 
