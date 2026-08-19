@@ -89,6 +89,11 @@ public sealed class EncryptedBackupService(
                     }
                 }
 
+                using (var validationZip = ZipFile.OpenRead(archive))
+                {
+                    BackupArchiveValidator.ValidateTopology(validationZip, manifest);
+                }
+
                 var salt = RandomNumberGenerator.GetBytes(SaltSize);
                 var key = Rfc2898DeriveBytes.Pbkdf2(
                     password,
