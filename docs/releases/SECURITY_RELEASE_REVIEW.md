@@ -1,8 +1,9 @@
 # CareNest Security Release Review
 
 **Release line:** `1.0.0-rc.1`  
-**Latest verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
-**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`
+**Accepted automated baseline before current backup hardening:** `b6eecae66f74bd72bcb20d93508355542f9f3442`  
+**Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`  
+**Current backup-hardening record:** `docs/releases/BACKUP_RESOURCE_HARDENING_20260819.md`
 
 Complete this review against the exact commit/tag/package proposed for public release.
 
@@ -62,7 +63,9 @@ Complete this review against the exact commit/tag/package proposed for public re
 - [ ] App lock described as privacy barrier, not database encryption.
 - [ ] New documents/backups use current authenticated chunked framing v2.
 - [ ] Authenticated terminal/truncation/trailing-data protections intact.
+- [ ] Optional encrypted-stream plaintext bounds remain fail closed when configured.
 - [ ] Legacy v1 read compatibility remains intentional/documented.
+- [ ] Legacy v1 obeys configured plaintext bounds where the caller requires them.
 - [ ] Existing v1 ciphertext not described as retroactively upgraded.
 - [ ] Cryptographic key/password material excluded from diagnostics.
 - [ ] Sensitive mutable buffers cleared where practical.
@@ -92,11 +95,17 @@ Complete this review against the exact commit/tag/package proposed for public re
 - [ ] Relationship/cascade cleanup tests pass.
 - [ ] WAL/snapshot/integrity behavior passes.
 - [ ] Backup topology rejects duplicate/unexpected/invalid entries.
+- [ ] Backup rejects explicit directory-only archive entries.
+- [ ] Backup validates entry count/resource bounds before manifest parsing/extraction.
+- [ ] Decrypted ZIP container output is bounded during authenticated decryption.
+- [ ] Generated backups are checked against current restore/resource limits before encryption.
+- [ ] Current defaults remain reviewed: 2304 MiB decrypted ZIP, 1 MiB manifest, 1 GiB database, 512 MiB/document, 2 GiB total uncompressed payload, 5,000 documents.
 - [ ] Wrong-password/tamper/truncation/trailing-data restore fails closed.
 - [ ] Document-bearing backup key material validates correctly.
 - [ ] Packaged existing-data upgrade/readability/editability test completed with fictional data.
 - [ ] Existing encrypted documents remain decryptable through unchanged key path.
 - [ ] Current/genuine historical backup compatibility tested where real prior fixtures exist.
+- [ ] Any genuine historical fixture above a new resource ceiling is treated as an explicit compatibility/security decision.
 
 ## 9. Dependency security
 
@@ -194,24 +203,30 @@ The tool does not sign packages and does not prove store approval; independent p
 - [ ] Apple privacy/store metadata complete where applicable.
 - [ ] Microsoft/Partner Center privacy/store metadata complete where applicable.
 
-## 15. Current automated reference
+## 15. Accepted automated reference
 
-Latest exact verified Gumroad implementation/source-policy source:
+Accepted exact-source automated baseline before the current backup hardening:
 
-`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+`b6eecae66f74bd72bcb20d93508355542f9f3442`
 
 Evidence on that exact source:
 
-- 122 unit + 39 integration + 175 UI/source-policy = **336/336**;
+- 122 unit + 39 integration + 194 UI/source-policy = **355/355**;
 - all four Release target builds: success;
 - all four Store Package Configuration targets: success;
-- CodeQL: success.
+- Store Inspection Artifacts: success;
+- CodeQL: success;
+- unsuppressed Dependency Audit: success.
 
-Permanent current Gumroad record:
+Permanent record:
 
-`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+`docs/releases/FINAL_CANDIDATE_VERIFICATION_20260818.md`
 
-The repository now contains later verification-relevant release-documentation/package-evidence tests/scripts. Those later changes require their own exact-source workflow evidence before they replace the verified baseline above.
+Current backup resource hardening is recorded at:
+
+`docs/releases/BACKUP_RESOURCE_HARDENING_20260819.md`
+
+That hardening must pass its own final exact-source workflow matrix before it replaces the accepted baseline above.
 
 This automated baseline does not pre-approve a production tag/package or complete manual/package/signing/store gates.
 
@@ -243,6 +258,7 @@ Package evidence payload SHA-256:
 Signing/notarization provenance:
 SQLite packaged compatibility result:
 Encrypted document/backup compatibility result:
+Backup resource-limit compatibility result:
 Accessibility/manual platform result:
 Store policy review date/sources:
 Google Play Health apps declaration:
