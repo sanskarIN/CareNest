@@ -28,6 +28,8 @@ Current PR behavior adds fail-closed limits for:
 
 The encrypted chunked-decryption primitive now supports an optional maximum plaintext byte count. Backup decryption supplies the decrypted-container ceiling so a malicious archive cannot first expand to an unbounded temporary ZIP and only then reach topology validation.
 
+Configured document-count limits are also validated so adding the required fixed archive entries cannot overflow the archive-entry ceiling calculation.
+
 ## 3. Validation ordering
 
 The backup path now applies controls in this order:
@@ -66,13 +68,14 @@ Focused integration coverage now includes:
 - manifest document-count ceiling rejection;
 - decrypted-container over-limit rejection;
 - decrypted-container exact-limit acceptance;
+- configured document-count overflow-guard rejection;
 - encrypted plaintext over-limit rejection before first chunk write;
 - encrypted plaintext exact-limit acceptance;
 - invalid non-positive decrypt-limit rejection;
 - cumulative limit enforcement across multiple encrypted chunks;
 - legacy framing v1 enforcement of the same optional plaintext limit.
 
-The accepted pre-change baseline had 39 integration tests and 355 total core tests. This PR adds 14 integration tests, so the expected inventory is 53 integration tests and 369 total core tests if the exact-source matrix confirms all tests and existing suites unchanged.
+The accepted pre-change baseline had 39 integration tests and 355 total core tests. This PR adds 15 integration tests, so the expected inventory is 54 integration tests and 370 total core tests if the exact-source matrix confirms all tests and existing suites unchanged.
 
 Do not record those expected counts as passed until GitHub Actions reports success for the final PR head.
 
