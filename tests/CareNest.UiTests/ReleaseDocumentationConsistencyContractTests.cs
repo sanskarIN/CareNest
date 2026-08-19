@@ -105,6 +105,18 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         Assert.Contains("python3 build/scripts/verify-documentation-links.py", workflow, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Production_release_gate_requires_every_canonical_production_evidence_template()
+    {
+        var root = FindRepositoryRoot();
+        var workflow = Read(root, ".github/workflows/release-gate.yml");
+
+        foreach (var template in ProductionEvidenceTemplates)
+        {
+            Assert.Contains(template, workflow, StringComparison.Ordinal);
+        }
+    }
+
     private static readonly string[] StableReleasePolicyDocuments =
     [
         "docs/releases/STORE_BUILD_POLICY.md",
@@ -152,11 +164,26 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         "docs/releases/PACKAGED_RELEASE_VALIDATION.md",
     ];
 
+    private static readonly string[] ProductionEvidenceTemplates =
+    [
+        "docs/releases/templates/ANDROID_DEVICE_VALIDATION_RECORD.md",
+        "docs/releases/templates/WINDOWS_VALIDATION_RECORD.md",
+        "docs/releases/templates/IOS_DEVICE_VALIDATION_RECORD.md",
+        "docs/releases/templates/MACCATALYST_VALIDATION_RECORD.md",
+        "docs/releases/templates/ACCESSIBILITY_VALIDATION_RECORD.md",
+        "docs/releases/templates/PACKAGED_COMPATIBILITY_VALIDATION_RECORD.md",
+        "docs/releases/templates/SIGNING_PROVENANCE_RECORD.md",
+        "docs/releases/templates/STORE_SUBMISSION_RECORD.md",
+        "docs/releases/templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md",
+    ];
+
     private static readonly string[] ReleaseGateRequiredPaths =
     [
         "docs/releases/STORE_SUBMISSION_CHECKLIST.md",
         "docs/releases/STORE_POLICY_REVIEW_20260818.md",
         "docs/releases/AUTOMATED_BASELINE.md",
+        "docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md",
+        "docs/releases/PRODUCTION_EVIDENCE_INDEX.md",
         "docs/releases/PACKAGE_EVIDENCE_TOOLING.md",
         "docs/testing/DOCUMENTATION_INTEGRITY.md",
         "build/scripts/create-package-evidence.py",
