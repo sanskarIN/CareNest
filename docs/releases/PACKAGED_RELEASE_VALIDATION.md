@@ -1,7 +1,7 @@
 # CareNest Packaged Release Validation
 
 **Release line:** `1.0.0-rc.1`  
-**Latest verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Accepted automated baseline before current backup hardening:** `b6eecae66f74bd72bcb20d93508355542f9f3442`  
 **Package evidence guide:** `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`  
 **Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`
 
@@ -11,25 +11,27 @@ Use fictional/synthetic data only.
 
 ## 1. Automated source boundary
 
-Latest exact verified Gumroad implementation/source-policy source:
+Accepted exact-source automated baseline before the current backup resource-hardening branch:
 
-`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+`b6eecae66f74bd72bcb20d93508355542f9f3442`
 
 That exact source passed:
 
 - 122/122 unit tests;
 - 39/39 integration tests;
-- 175/175 UI/source-policy tests;
-- **336/336 core tests**;
+- 194/194 UI/source-policy tests;
+- **355/355 core tests**;
 - Android/Windows/iOS simulator/Mac Catalyst Release builds;
 - all four store-candidate configurations;
-- CodeQL.
+- Store Inspection Artifacts;
+- CodeQL;
+- unsuppressed Dependency Audit.
 
 Authoritative record:
 
-`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+`docs/releases/FINAL_CANDIDATE_VERIFICATION_20260818.md`
 
-The repository now contains later verification-relevant release-documentation/package-evidence tests/scripts. Those later changes require their own exact-source workflow evidence before they replace the verified baseline above.
+Any later verification-relevant source, including backup security hardening, requires its own exact-source workflow evidence before it replaces the accepted baseline above.
 
 This source automation is still not packaged production evidence.
 
@@ -109,8 +111,20 @@ Verify:
 - truncated backup rejected;
 - trailing data rejected;
 - invalid/duplicate/unexpected archive topology rejected;
+- current default archive resource ceilings are enforced before manifest parsing/extraction;
+- a newly created backup is checked against the same resource/topology limits before encryption;
 - restored encrypted documents remain usable;
 - reminder/platform derived state rebuilds correctly.
+
+For current defaults, explicitly verify boundary behavior around:
+
+- 1 MiB manifest maximum;
+- 1 GiB SQLite database maximum;
+- 512 MiB per encrypted document maximum;
+- 2 GiB total uncompressed payload maximum;
+- 5,000-document maximum.
+
+Use deliberately small synthetic fixtures when testing rejection paths where possible; do not create multi-gigabyte public fixtures merely to prove a boundary already covered by parameterized source tests. Real packaged compatibility should instead confirm normal representative backups remain comfortably within the configured ceilings.
 
 ## 7. Historical encrypted compatibility
 
@@ -119,7 +133,8 @@ Where genuine previous CareNest encrypted document/backup fixtures exist:
 - record exact producing version/source if known;
 - keep canonical bytes unchanged;
 - verify current candidate reads/restores according to documented compatibility;
-- record result/checksum.
+- record result/checksum;
+- if a genuine historical backup exceeds a newly enforced resource ceiling, treat that as a compatibility finding requiring explicit design review rather than weakening the limit silently.
 
 Do not generate a current fixture and label it historical.
 
@@ -359,6 +374,7 @@ Signing/notarization provenance:
 SQLite upgrade result:
 Encrypted document result:
 Backup result:
+Backup resource-limit compatibility result:
 Reminder/notification result:
 Accessibility result:
 Buy Me a Coffee marker scan:

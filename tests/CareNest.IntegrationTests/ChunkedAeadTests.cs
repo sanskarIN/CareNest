@@ -103,6 +103,128 @@ public sealed class ChunkedAeadTests
     }
 
     [Fact]
+    public async Task Version2_RejectsPlaintextBeyondConfiguredLimitBeforeWritingChunk()
+    {
+        var key = RandomNumberGenerator.GetBytes(32);
+        var plaintext = RandomNumberGenerator.GetBytes(128);
+        try
+        {
+            await using var source = new MemoryStream(plaintext, writable: false);
+            await using var encrypted = new MemoryStream();
+            await ChunkedAead.EncryptAsync(source, encrypted, key, Magic, Aad, CancellationToken.None);
+
+            encrypted.Position = 0;
+            await using var output = new MemoryStream();
+
+            await Assert.ThrowsAsync<InvalidDataException>(() =>
+                ChunkedAead.DecryptAsync(
+                    encrypted,
+                    output,
+                    key,
+                    Magic,
+                    Aad,
+                    CancellationToken.None,
+                    maxPlaintextBytes: 127));
+
+            Assert.Equal(0, output.Length);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(key);
+            CryptographicOperations.ZeroMemory(plaintext);
+        }
+    }
+
+    [Fact]
+    public async Task Version2_AllowsPlaintextAtConfiguredLimit()
+    {
+        var key = RandomNumberGenerator.GetBytes(32);
+        var plaintext = RandomNumberGenerator.GetBytes(128);
+        try
+        {
+            await using var source = new MemoryStream(plaintext, writable: false);
+            await using var encrypted = new MemoryStream();
+            await ChunkedAead.EncryptAsync(source, encrypted, key, Magic, Aad, CancellationToken.None);
+
+            encrypted.Position = 0;
+            await using var output = new MemoryStream();
+            await ChunkedAead.DecryptAsync(
+                encrypted,
+                output,
+                key,
+                Magic,
+                Aad,
+                CancellationToken.None,
+                maxPlaintextBytes: plaintext.Length);
+
+            Assert.Equal(plaintext, output.ToArray());
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(key);
+            CryptographicOperations.ZeroMemory(plaintext);
+        }
+    }
+
+    [Fact]
+    public async Task Version2_EnforcesConfiguredLimitAcrossChunks()
+    {
+        var key = RandomNumberGenerator.GetBytes(32);
+        var plaintext = RandomNumberGenerator.GetBytes(ChunkSize + 1);
+        try
+        {
+            await using var source = new MemoryStream(plaintext, writable: false);
+            await using var encrypted = new MemoryStream();
+            await ChunkedAead.EncryptAsync(source, encrypted, key, Magic, Aad, CancellationToken.None);
+
+            encrypted.Position = 0;
+            await using var output = new MemoryStream();
+
+            await Assert.ThrowsAsync<InvalidDataException>(() =>
+                ChunkedAead.DecryptAsync(
+                    encrypted,
+                    output,
+                    key,
+                    Magic,
+                    Aad,
+                    CancellationToken.None,
+                    maxPlaintextBytes: ChunkSize));
+
+            Assert.Equal(ChunkSize, output.Length);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(key);
+            CryptographicOperations.ZeroMemory(plaintext);
+        }
+    }
+
+    [Fact]
+    public async Task Decrypt_RejectsNonPositivePlaintextLimit()
+    {
+        var key = RandomNumberGenerator.GetBytes(32);
+        try
+        {
+            await using var encryptedInput = new MemoryStream();
+            await using var output = new MemoryStream();
+
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+                ChunkedAead.DecryptAsync(
+                    encryptedInput,
+                    output,
+                    key,
+                    Magic,
+                    Aad,
+                    CancellationToken.None,
+                    maxPlaintextBytes: 0));
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(key);
+        }
+    }
+
+    [Fact]
     public async Task LegacyVersion1_StreamStillDecrypts()
     {
         var key = RandomNumberGenerator.GetBytes(32);
@@ -115,6 +237,35 @@ public sealed class ChunkedAeadTests
             await ChunkedAead.DecryptAsync(legacy, output, key, Magic, Aad, CancellationToken.None);
 
             Assert.Equal(plaintext, output.ToArray());
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(key);
+            CryptographicOperations.ZeroMemory(plaintext);
+        }
+    }
+
+    [Fact]
+    public async Task LegacyVersion1_RespectsConfiguredPlaintextLimit()
+    {
+        var key = RandomNumberGenerator.GetBytes(32);
+        var plaintext = Encoding.UTF8.GetBytes("legacy CareNest encrypted stream");
+        try
+        {
+            await using var legacy = await CreateLegacyVersion1Async(plaintext, key);
+            await using var output = new MemoryStream();
+
+            await Assert.ThrowsAsync<InvalidDataException>(() =>
+                ChunkedAead.DecryptAsync(
+                    legacy,
+                    output,
+                    key,
+                    Magic,
+                    Aad,
+                    CancellationToken.None,
+                    maxPlaintextBytes: plaintext.Length - 1));
+
+            Assert.Equal(0, output.Length);
         }
         finally
         {

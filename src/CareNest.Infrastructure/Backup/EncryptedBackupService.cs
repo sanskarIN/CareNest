@@ -89,6 +89,12 @@ public sealed class EncryptedBackupService(
                     }
                 }
 
+                BackupArchiveValidator.ValidateContainerLength(new FileInfo(archive).Length);
+                using (var validationZip = ZipFile.OpenRead(archive))
+                {
+                    BackupArchiveValidator.ValidateTopology(validationZip, manifest);
+                }
+
                 var salt = RandomNumberGenerator.GetBytes(SaltSize);
                 var key = Rfc2898DeriveBytes.Pbkdf2(
                     password,
@@ -371,7 +377,8 @@ public sealed class EncryptedBackupService(
                 key,
                 PayloadMagic,
                 Aad,
-                cancellationToken);
+                cancellationToken,
+                BackupArchiveLimits.Default.MaxDecryptedArchiveBytes);
         }
         catch (CryptographicException)
         {
@@ -391,6 +398,8 @@ public sealed class EncryptedBackupService(
         CancellationToken cancellationToken)
     {
         using var zip = ZipFile.OpenRead(archivePath);
+        BackupArchiveValidator.ValidateBeforeManifest(zip);
+
         var manifestEntry = zip.GetEntry("manifest.json")
             ?? throw new InvalidDataException("Backup manifest is missing.");
 
