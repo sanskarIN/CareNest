@@ -27,6 +27,7 @@ Current v1 security boundaries include:
 - no claim of transparent whole-database encryption;
 - imported application-owned health documents encrypted with authenticated AES-256-GCM-based framing;
 - password-encrypted/authenticated manual backups;
+- bounded backup archive entry counts and uncompressed payload sizes before manifest parsing/extraction;
 - optional local app lock using salted PBKDF2-HMAC-SHA256 verifier material, fixed-time comparison and platform secure storage where applicable;
 - privacy-minimized logging;
 - blocking dependency audit and CodeQL;
@@ -35,6 +36,18 @@ Current v1 security boundaries include:
 - production signing secrets kept outside source control.
 
 The app lock is a local privacy barrier, not a substitute for device authentication or protection against a fully compromised device/OS.
+
+## Backup resource-safety boundary
+
+CareNest backup restore/inspection validates archive metadata before deserializing the manifest or extracting files. Current default limits are:
+
+- manifest: 1 MiB maximum;
+- SQLite database: 1 GiB maximum;
+- each encrypted document: 512 MiB maximum;
+- total uncompressed backup payload: 2 GiB maximum;
+- documents: 5,000 maximum.
+
+Backup creation validates the generated archive against the same limits before encryption so CareNest does not intentionally create a backup that its current restore path would reject. These bounds are availability/resource-exhaustion controls; they do not replace authenticated encryption, archive topology validation, database integrity checks or package/device compatibility testing.
 
 ## External links
 
@@ -62,25 +75,23 @@ The previously tracked SQLite native dependency path for `GHSA-2m69-gcr7-jv3q` i
 
 A suppression is not remediation. Future exceptions must be exact, temporary, documented and reviewed. A clean vulnerability audit also does not replace packaged existing-database/encrypted-data compatibility testing after persistence/native-provider changes.
 
-## Current automated security reference
+## Accepted automated security reference
 
-PR #74 frozen source head:
+Accepted final-candidate source before the backup resource-limit hardening:
 
-`8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+`b6eecae66f74bd72bcb20d93508355542f9f3442`
 
-Merged executable source:
+Observed evidence for that accepted source includes:
 
-`e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
-
-Current evidence includes:
-
-- 331/331 core tests;
+- 355/355 core tests;
 - Android/Windows/iOS-simulator/Mac-Catalyst Release builds;
 - all four store-candidate configurations;
 - Store Inspection Artifacts;
 - CodeQL;
 - unsuppressed Dependency Audit;
 - strict compiled XAML binding enforcement.
+
+Any verification-relevant source change after that accepted source, including backup security hardening, requires a fresh exact-source automated matrix before it can replace the accepted production-candidate reference.
 
 This is source automation evidence, not final production signing/store/device security approval.
 
