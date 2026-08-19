@@ -1,3 +1,208 @@
+# CareNest — 2026-08-19 Production-Evidence Readiness Continuation
+
+**Date:** 2026-08-19  
+**Release line:** `1.0.0-rc.1`  
+**Repository:** `https://github.com/sanskarIN/CareNest`  
+**Continuation branch:** `continue/production-evidence-readiness-20260819`  
+**Accepted automated source before this continuation:** `30ee6c265104c64ec5a1a4013f592f7f058750e8`  
+**Accepted automated result before this continuation:** **370/370 core tests passed**
+
+This section records the next continuation requested after the verified backup-hardening work. The complete previous 2026-08-19 and preserved 2026-08-18 handoffs remain below this section without being removed or shortened.
+
+## Continuation decision
+
+The repository was not given speculative health/runtime features merely to increase commit count.
+
+The accepted runtime/source behavior is already feature-complete for the intended RC1 scope, and the previous handoff explicitly requires the next work to focus on real production validation or on a newly reproduced defect.
+
+A concrete release-process defect was identified instead:
+
+- `docs/releases/RELEASE_CHECKLIST.md` still described the older `94e867d...` / **336/336** verification boundary;
+- the current accepted exact automated source is `30ee6c265104c64ec5a1a4013f592f7f058750e8` with **370/370** core tests and the current platform/store/security matrix green;
+- production-only validation checklists existed, but there was no unified evidence standard and no reusable per-platform evidence record set that prevented `NOT RUN`, `BLOCKED` or `N/A` work from being mistaken for a pass.
+
+The continuation fixes that documentation/evidence gap without claiming any manual device, signing, store or publication task has been completed.
+
+## Production validation evidence standard added
+
+Added:
+
+`docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`
+
+The standard defines:
+
+- required source/package/device/date/time-zone identity;
+- allowed result states: `PASS`, `FAIL`, `BLOCKED`, `N/A`, `NOT RUN`;
+- the rule that unknown/stale/unperformed work cannot be recorded as passed;
+- fictional/synthetic-data requirements;
+- health-data/log/screenshot redaction requirements;
+- private signing material/access-token/recovery-code exclusions;
+- failure handling and re-verification rules;
+- reminder-specific evidence distinctions;
+- existing-data/SQLite compatibility evidence requirements;
+- accessibility evidence requirements;
+- signing/store evidence boundaries;
+- the production-promotion rule that green automation is necessary but not sufficient.
+
+## Platform validation records added
+
+Added reusable canonical templates:
+
+- `docs/releases/templates/ANDROID_DEVICE_VALIDATION_RECORD.md`;
+- `docs/releases/templates/WINDOWS_VALIDATION_RECORD.md`;
+- `docs/releases/templates/IOS_DEVICE_VALIDATION_RECORD.md`;
+- `docs/releases/templates/MACCATALYST_VALIDATION_RECORD.md`.
+
+The templates require exact package/source/device identity and cover the remaining platform-specific reminder, lifecycle, backup/document, app-lock, accessibility and limitation behavior that hosted source CI cannot prove.
+
+The iPhone/iPad record explicitly states that simulator compilation is not real-device notification evidence.
+
+The Windows record explicitly preserves the closed-app limitation boundary rather than implying background guarantees the platform implementation does not provide.
+
+The Android record distinguishes notification permission, exact/inexact capability, battery/background restrictions, restart/reboot, force-stop and time-zone/DST behavior.
+
+The Mac Catalyst record distinguishes normal package/manual behavior from signed/notarized-candidate behavior that remains unavailable until real signing infrastructure exists.
+
+## Cross-platform evidence records added
+
+Added:
+
+- `docs/releases/templates/ACCESSIBILITY_VALIDATION_RECORD.md`;
+- `docs/releases/templates/PACKAGED_COMPATIBILITY_VALIDATION_RECORD.md`;
+- `docs/releases/templates/SIGNING_PROVENANCE_RECORD.md`;
+- `docs/releases/templates/STORE_SUBMISSION_RECORD.md`;
+- `docs/releases/templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md`.
+
+The accessibility template distinguishes automated semantics from real assistive-technology validation and records screen reader, focus/reading order, scaling, contrast, color independence, motion/input and privacy-safe error behavior.
+
+The packaged compatibility template records origin/target version/source/schema, representative synthetic data counts, SQLite integrity/migration behavior, encrypted-document compatibility, current backup create/inspect/restore behavior, clean-install restore and genuine historical backup provenance where genuine prior bytes actually exist.
+
+The packaged compatibility template also records the accepted backup resource ceilings:
+
+- decrypted ZIP container: 2304 MiB;
+- manifest: 1 MiB;
+- SQLite database: 1 GiB;
+- each encrypted document: 512 MiB;
+- total uncompressed ZIP payload: 2 GiB;
+- documents: 5,000;
+- archive-entry count: document limit plus fixed required entries;
+- explicit directory-only ZIP entries rejected.
+
+The signing provenance template explicitly excludes private keys, passwords, access tokens and recovery codes while retaining safe public package/signing fingerprints/identifiers and final post-signing SHA-256 evidence.
+
+The store submission template separates policy review, metadata completion, submission, review, rejection, approval and publication instead of treating them as one state.
+
+The production release approval template is the final evidence aggregator and cannot be marked approved merely because automated CI is green.
+
+## Production evidence index added
+
+Added:
+
+`docs/releases/PRODUCTION_EVIDENCE_INDEX.md`
+
+It links the standard, current release/package runbooks and all evidence templates, and defines a release-specific evidence-directory convention without modifying the canonical templates to look completed.
+
+## Release checklist corrected
+
+Updated:
+
+`docs/releases/RELEASE_CHECKLIST.md`
+
+The stale 336-test authority was replaced with the current accepted automated boundary:
+
+- exact source `30ee6c265104c64ec5a1a4013f592f7f058750e8`;
+- PR merge ref `84fda5bb8ced9f4c487110e43652f51ba2d8d495`;
+- merged executable-source commit `2549c08b25145f20c59b7e73ca227c35d5bbf0ec`;
+- CareNest CI `32205946013`;
+- **122/122 unit**;
+- **54/54 integration**;
+- **194/194 UI/source-policy**;
+- **370/370 total core tests**;
+- Android/Windows/iOS-simulator/Mac-Catalyst Release builds successful;
+- Store Package Configuration `32205946003` successful;
+- Store Inspection Artifacts `32205946001` successful;
+- CodeQL `32205946030` successful;
+- unsuppressed Dependency Audit `32205946026` successful.
+
+No manual production checkbox was changed to completed merely because the checklist was refreshed.
+
+The checklist now links each remaining platform/cross-platform production gate to the corresponding evidence record.
+
+## Next-steps authority aligned
+
+Updated:
+
+`docs/releases/NEXT_STEPS.md`
+
+The file now:
+
+- preserves the 370-test accepted automated boundary;
+- records the production-evidence readiness continuation;
+- links the new evidence standard/index/templates;
+- keeps runtime/source RC1 scope marked complete;
+- keeps packaged compatibility, devices, accessibility, signing, package evidence, store review/submission, immutable production tagging and publication open;
+- explicitly requires fresh exact-source evidence for verification-relevant continuation changes before they replace the accepted source boundary.
+
+## Commit strategy
+
+This continuation intentionally uses granular commits for distinct maintained artifacts rather than one bulk documentation change.
+
+Commits created before this `what_changed.md` update:
+
+- `a99fc8d308aec5ee5ff1917510cb6819d4fc30bf` — `docs: define production validation evidence standard`;
+- `358a65f854a973068abd230623dc4f37b240ea0b` — `docs: add Android device validation record`;
+- `6f600455d6d4b88b314de4394ae5d428190fc16e` — `docs: add Windows validation record`;
+- `51ad51674a8e7d3642f0cc5d36ac9ed9d64c565a` — `docs: add iOS device validation record`;
+- `03b2292db22d0a36954f3b28527524e7ec06467f` — `docs: add Mac Catalyst validation record`;
+- `95b15369c3a7f541a4b12ce5ff4f13681c0d6f3d` — `docs: add accessibility validation record`;
+- `acae4f40618786380534b360d040c620bc1eac16` — `docs: add packaged compatibility validation record`;
+- `ea0da50b988cefaf51c3b0bb42ce18013288c136` — `docs: add signing provenance record`;
+- `49fec04dc4f3dbe57ee959a4fa8fc01574e77528` — `docs: add store submission evidence record`;
+- `42a07d7fa22a858cbb7c609fb3180f20838b13aa` — `docs: add production release approval record`;
+- `3a5d9f52bcab561e5db4388cf6ae08f089c33a2a` — `docs: add production evidence index`;
+- `7eaca4f8b843027e1ec97b99712150dc7ac6d7e1` — `docs: refresh release checklist to 370-test baseline`;
+- `e64c42d85d869fa5e270bedfa1214eed492e3fb1` — `docs: align next steps with production evidence workflow`.
+
+This file update cannot include its own resulting commit SHA before GitHub creates the commit.
+
+## Verification state for this continuation
+
+The new release checklist/evidence standard/templates are verification-relevant documentation changes.
+
+Therefore:
+
+- the accepted automated source remains `30ee6c265104c64ec5a1a4013f592f7f058750e8` until a fresh exact-head/pull-request matrix verifies the final continuation head;
+- no old 370-test result is copied forward as if it were generated by this newer branch head;
+- a pull request should be opened only after this handoff is updated;
+- required workflows must be allowed to complete on the final branch head;
+- failed checks must be corrected rather than suppressed or described as successful;
+- merge should preserve the granular commit history when repository policy permits.
+
+## Remaining work after this continuation
+
+The remaining open work still requires real external evidence:
+
+- packaged existing-data/SQLite upgrade compatibility;
+- packaged encrypted-document compatibility;
+- packaged backup create/inspect/restore against current resource ceilings;
+- genuine historical encrypted-backup compatibility where genuine prior bytes safely exist;
+- Android real-device/emulator reminder/lifecycle/vendor validation;
+- Windows installed/manual reminder/lifecycle validation;
+- iPhone/iPad signed real-device notification/accessibility validation;
+- Mac Catalyst installed/manual and later signed/notarized validation;
+- real screen-reader/large-text/keyboard/focus/contrast/reduced-motion validation;
+- production signing identities/material outside Git;
+- final signed/notarized package SHA-256/provenance/package-evidence JSON;
+- final signed-package Gumroad/BMC forbidden-marker scans;
+- submission-day Apple/Google/Microsoft policy review where applicable;
+- live store privacy/health/data-safety declarations;
+- exact immutable approved production `v*` tag and tagged release gates;
+- actual store submission/approval/publication evidence.
+
+No real-device result, signing result, store approval or publication result is fabricated in this continuation.
+
+---
+
 # CareNest — 2026-08-19 Verified Continuation Handoff
 
 **Date:** 2026-08-19  
@@ -247,7 +452,6 @@ Result:
 **success**
 
 ### Dependency Audit
-
 Run:
 
 `32205946026`
@@ -997,7 +1201,6 @@ Updated after successful verification without changing executable/stable-policy 
 - `PROJECT_STATUS.md`;
 - `docs/releases/NEXT_STEPS.md`;
 - `what_changed.md`.
-
 These files are part of the intentional dynamic post-verification evidence boundary.
 
 ---
@@ -1247,7 +1450,6 @@ No material missing standard open-source project/community surface was identifie
 The current repository already includes the relevant source, tests, build tooling, package tooling, documentation tooling, community metadata, security/privacy files and release automation for the intended RC1 scope.
 
 Additional speculative features would increase risk and invalidate a verified final candidate without a demonstrated requirement.
-
 Future feature work should begin only after RC1 production validation or after a real issue/requirement is documented.
 
 ---
