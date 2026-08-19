@@ -4,11 +4,11 @@ public sealed class ProductionEvidenceDocumentationContractTests
 {
     private const string EvidenceStandard = "docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md";
     private const string EvidenceIndex = "docs/releases/PRODUCTION_EVIDENCE_INDEX.md";
+    private const string AutomatedBaseline = "docs/releases/AUTOMATED_BASELINE.md";
     private const string ReleaseChecklist = "docs/releases/RELEASE_CHECKLIST.md";
     private const string ReleaseEvidence = "docs/releases/RELEASE_EVIDENCE.md";
     private const string DocumentationHub = "docs/README.md";
     private const string DocumentationCatalog = "docs/DOCUMENTATION_CATALOG.md";
-    private const string ProjectStatus = "PROJECT_STATUS.md";
 
     private static readonly string[] EvidenceTemplates =
     [
@@ -73,37 +73,58 @@ public sealed class ProductionEvidenceDocumentationContractTests
     }
 
     [Fact]
-    public void Release_checklist_uses_current_evidence_workflow_without_stale_336_baseline()
+    public void Stable_release_evidence_documents_use_dynamic_automated_baseline_authority()
+    {
+        var root = FindRepositoryRoot();
+
+        foreach (var relativePath in new[] { ReleaseChecklist, ReleaseEvidence })
+        {
+            var text = Read(root, relativePath);
+            Assert.Contains(AutomatedBaseline, text, StringComparison.Ordinal);
+            Assert.Contains("PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md", text, StringComparison.Ordinal);
+            Assert.Contains("PRODUCTION_EVIDENCE_INDEX.md", text, StringComparison.Ordinal);
+
+            Assert.DoesNotContain("94e867dce9519a8c1c71f1c4f1e5f833d6a3211f", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("b6eecae66f74bd72bcb20d93508355542f9f3442", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("30ee6c265104c64ec5a1a4013f592f7f058750e8", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("**336/336**", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("**355/355**", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("**370/370**", text, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void Release_checklist_links_canonical_production_records_without_claiming_template_execution()
     {
         var root = FindRepositoryRoot();
         var checklist = Read(root, ReleaseChecklist);
 
-        Assert.Contains("PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md", checklist, StringComparison.Ordinal);
-        Assert.Contains("PRODUCTION_EVIDENCE_INDEX.md", checklist, StringComparison.Ordinal);
+        Assert.Contains("templates/PACKAGED_COMPATIBILITY_VALIDATION_RECORD.md", checklist, StringComparison.Ordinal);
         Assert.Contains("templates/ANDROID_DEVICE_VALIDATION_RECORD.md", checklist, StringComparison.Ordinal);
+        Assert.Contains("templates/WINDOWS_VALIDATION_RECORD.md", checklist, StringComparison.Ordinal);
+        Assert.Contains("templates/IOS_DEVICE_VALIDATION_RECORD.md", checklist, StringComparison.Ordinal);
+        Assert.Contains("templates/MACCATALYST_VALIDATION_RECORD.md", checklist, StringComparison.Ordinal);
+        Assert.Contains("templates/ACCESSIBILITY_VALIDATION_RECORD.md", checklist, StringComparison.Ordinal);
+        Assert.Contains("templates/SIGNING_PROVENANCE_RECORD.md", checklist, StringComparison.Ordinal);
+        Assert.Contains("templates/STORE_SUBMISSION_RECORD.md", checklist, StringComparison.Ordinal);
         Assert.Contains("templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md", checklist, StringComparison.Ordinal);
-        Assert.DoesNotContain("**336/336**", checklist, StringComparison.Ordinal);
-        Assert.DoesNotContain("94e867dce9519a8c1c71f1c4f1e5f833d6a3211f", checklist, StringComparison.Ordinal);
+        Assert.Contains("Templates live under `templates/` and must remain visibly unperformed", checklist, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Release_evidence_uses_current_accepted_baseline_and_production_records()
+    public void Release_evidence_links_current_production_records_and_forbids_false_approval()
     {
         var root = FindRepositoryRoot();
         var evidence = Read(root, ReleaseEvidence);
 
-        Assert.Contains("30ee6c265104c64ec5a1a4013f592f7f058750e8", evidence, StringComparison.Ordinal);
-        Assert.Contains("**370/370**", evidence, StringComparison.Ordinal);
-        Assert.Contains("PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md", evidence, StringComparison.Ordinal);
-        Assert.Contains("PRODUCTION_EVIDENCE_INDEX.md", evidence, StringComparison.Ordinal);
         Assert.Contains("templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md", evidence, StringComparison.Ordinal);
         Assert.Contains("templates/STORE_SUBMISSION_RECORD.md", evidence, StringComparison.Ordinal);
-        Assert.DoesNotContain("latest verified Gumroad implementation/source-policy baseline", evidence, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("**336/336**", evidence, StringComparison.Ordinal);
+        Assert.Contains("Green CI alone cannot mark production approved", evidence, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Canonical templates must remain visibly unperformed", evidence, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void Documentation_navigation_surfaces_current_production_evidence_authorities()
+    public void Documentation_navigation_surfaces_production_evidence_authorities_without_pinning_result_values()
     {
         var root = FindRepositoryRoot();
         var hub = Read(root, DocumentationHub);
@@ -111,6 +132,7 @@ public sealed class ProductionEvidenceDocumentationContractTests
 
         foreach (var document in new[]
                  {
+                     "AUTOMATED_BASELINE.md",
                      "PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md",
                      "PRODUCTION_EVIDENCE_INDEX.md",
                      "RELEASE_EVIDENCE.md",
@@ -120,28 +142,8 @@ public sealed class ProductionEvidenceDocumentationContractTests
             Assert.Contains(document, catalog, StringComparison.Ordinal);
         }
 
-        Assert.Contains("**370/370 total core tests**", hub, StringComparison.Ordinal);
-        Assert.Contains("**370/370**", catalog, StringComparison.Ordinal);
         Assert.Contains("ProductionEvidenceDocumentationContractTests.cs", hub, StringComparison.Ordinal);
         Assert.Contains("ProductionEvidenceDocumentationContractTests.cs", catalog, StringComparison.Ordinal);
-        Assert.DoesNotContain("those combined changes still require exact-head verification before promotion as a new automated baseline", hub, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("current candidate source must complete a fresh exact-source matrix before it replaces the recorded baseline", catalog, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public void Project_status_separates_accepted_baseline_from_current_verification_branch()
-    {
-        var root = FindRepositoryRoot();
-        var status = Read(root, ProjectStatus);
-
-        Assert.Contains("30ee6c265104c64ec5a1a4013f592f7f058750e8", status, StringComparison.Ordinal);
-        Assert.Contains("**370/370 core tests**", status, StringComparison.Ordinal);
-        Assert.Contains("PR #82", status, StringComparison.Ordinal);
-        Assert.Contains("PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md", status, StringComparison.Ordinal);
-        Assert.Contains("PRODUCTION_EVIDENCE_INDEX.md", status, StringComparison.Ordinal);
-        Assert.Contains("must never be represented as a pass", status, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("must complete the required fresh PR matrix before merge", status, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("The in-repository runtime/source/tooling/documentation and automated verification work is complete for the current RC1 candidate", status, StringComparison.Ordinal);
     }
 
     [Fact]
