@@ -1,12 +1,12 @@
 # Exact-Head Verification Branch Protocol
 
-CareNest uses temporary marker-only pull requests when fresh PR-triggered automated evidence is needed for an exact intended `main` source state without merging verification artifacts into production source.
+CareNest uses exact-head verification when fresh PR-triggered automated evidence is needed for an intended source state.
 
 ## Why this exists
 
 A previously green CI run does not prove a later verification-relevant commit is green.
 
-This matters when source changes affect:
+Verification-relevant changes include:
 
 - runtime behavior;
 - tests/contracts;
@@ -16,18 +16,19 @@ This matters when source changes affect:
 - GitHub Actions workflows;
 - release scripts/quality/preflight logic;
 - package-evidence tooling;
+- documentation-integrity tooling;
 - repository policy/release gates;
-- stable policy documents whose content is parsed by executable/source-policy tests.
+- stable release-policy/evidence documents parsed by executable/source-policy tests.
 
 ## Dynamic evidence versus stable policy
 
-CareNest deliberately separates mutable verification evidence from stable executable policy inputs.
+CareNest separates mutable verification evidence from stable release policy.
 
 Canonical dynamic automated-baseline pointer:
 
 `docs/releases/AUTOMATED_BASELINE.md`
 
-Dynamic evidence/status documents may include:
+Dynamic evidence/status documents include, as applicable:
 
 - `docs/releases/AUTOMATED_BASELINE.md`;
 - dated verification records under `docs/releases/`;
@@ -39,16 +40,17 @@ Dynamic evidence/status documents may include:
 - `CHANGELOG.md`;
 - `what_changed.md`.
 
-These files may be updated **after** a successful exact-source verification to record that result as documentation-only evidence promotion, provided the promotion does not also change runtime/test/project/workflow/build-script/stable-policy source.
+These files may be updated **after** successful exact-source verification to record the observed result as documentation-only evidence promotion, provided the promotion does not also change runtime/test/project/workflow/build-script/stable-policy source.
 
-Executable release-documentation consistency tests must not assert mutable SHA/test-count text inside those dynamic evidence files. They may verify stable policy invariants and the existence/path of the canonical dynamic baseline record.
+Executable documentation/source-policy tests must not pin mutable SHA, workflow-run ID or test-count values inside dynamic evidence files. They may verify stable invariants such as required authority links, privacy/safety wording or file existence as long as those assertions do not force a post-verification result-recording commit to rerun solely because a moving evidence value changed.
 
-This avoids a self-referential loop where recording successful verification would itself change a tested evidence value and require another verification solely to record the first result.
+This prevents a self-referential loop where recording successful verification changes a tested evidence value and therefore requires another verification only to record the first result.
 
 ## Stable release-policy inputs
 
-Stable policy documents parsed for invariant contracts include current release process/store/security/package rules such as:
+Stable policy documents parsed for invariant contracts include:
 
+- `docs/releases/RELEASE_CHECKLIST.md`;
 - `docs/releases/STORE_BUILD_POLICY.md`;
 - `docs/releases/RELEASE_EVIDENCE.md`;
 - `docs/releases/RELEASE_PROCESS.md`;
@@ -57,11 +59,14 @@ Stable policy documents parsed for invariant contracts include current release p
 - `docs/releases/SECURITY_RELEASE_REVIEW.md`;
 - `docs/releases/MANUAL_TEST_MATRIX.md`;
 - `docs/releases/PACKAGED_RELEASE_VALIDATION.md`;
+- `docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`;
+- `docs/releases/PRODUCTION_EVIDENCE_INDEX.md`;
+- canonical templates under `docs/releases/templates/`;
 - this protocol.
 
 If one of these stable policy inputs changes, the exact source requires fresh verification.
 
-Stable policy documents should avoid treating a mutable source SHA/test count as a value that must be edited after every successful verification. Use `docs/releases/AUTOMATED_BASELINE.md` and the latest dated verification record for the current accepted automated result.
+Stable policy documents must not require editing a moving accepted SHA/test count after every successful verification. They should reference `docs/releases/AUTOMATED_BASELINE.md` and dated verification records for the current accepted automated result.
 
 ## Current accepted automated baseline
 
@@ -71,61 +76,84 @@ Use:
 
 That dynamic record identifies the latest accepted exact-source automated baseline and its authoritative dated evidence.
 
-Do not predict or publish a newer test total merely by counting added test methods. Record only the count actually reported by the exact verification run.
+Do not predict or publish a newer test total merely by counting test methods. Record only the count actually reported by the exact verification run.
 
-## Marker-only procedure
+## Verification options
+
+### Verification of an open implementation/policy PR
+
+When the intended verification-relevant work already lives on a pull-request branch:
+
+1. finish the complete intended branch change set;
+2. update pre-verification dynamic handoff/status material if needed;
+3. freeze the final PR head SHA;
+4. make no further verification-relevant change while that checkpoint is being accepted;
+5. require the full applicable PR automation for that exact head;
+6. record actual run IDs/test counts/results after completion;
+7. merge only if the required matrix is successful and branch protection/review requirements are satisfied.
+
+If a later commit is added, the earlier head’s result is superseded for the new head.
+
+### Marker-only verification of an intended `main` state
+
+Use a temporary marker-only PR when fresh PR-triggered evidence is needed for an exact intended `main` source without merging a verification artifact.
 
 1. Finish all intended verification-relevant changes on `main`.
-2. Update dynamic handoff/status documentation needed **before** the verification freeze.
+2. Update dynamic handoff/status documentation needed before the verification freeze.
 3. Record the exact `main` SHA to verify.
-4. Do not make further verification-relevant changes while that checkpoint is running.
+4. Do not make further verification-relevant changes while that checkpoint runs.
 5. Create a temporary branch from that exact SHA.
 6. Add exactly one marker file under `build/verification/`.
 7. Open a pull request from the marker branch to `main`.
-8. Confirm the PR changes only the marker file beyond the frozen base SHA.
-9. Require the full applicable PR automation:
-   - package-evidence Python syntax/self-test through CareNest CI;
-   - platform-neutral formatting;
-   - unit tests;
-   - integration tests;
-   - UI-contract/policy tests;
-   - Android Release;
-   - Windows Release;
-   - iOS simulator Release;
-   - Mac Catalyst Release;
-   - Store Package Configuration on all four targets;
-   - Store Inspection Artifacts;
-   - CodeQL;
-   - unsuppressed Dependency Audit.
-10. Record exact run IDs, actual test counts, platform outcomes, source/base SHA, marker/head SHA, and PR number in a dated verification record.
+8. Confirm the PR changes only the marker beyond the frozen base SHA.
+9. Require the full applicable PR automation.
+10. Record exact run IDs, actual test counts, platform outcomes, source/base SHA, marker/head SHA and PR number in a dated verification record.
 11. Close the marker PR without merge after evidence is recorded.
-12. Ensure the marker file never enters `main`.
-13. Promote the completed result only through dynamic evidence/status documents unless a real verification-relevant source change is required.
+12. Ensure the marker never enters `main`.
+13. Promote the result only through dynamic evidence/status documents unless a real verification-relevant source change is required.
+
+## Required PR automation
+
+For a verification-relevant source require, as applicable:
+
+- repository Python tooling syntax/self-tests through CareNest CI;
+- documentation-integrity self-test and stable active-link check;
+- platform-neutral formatting;
+- unit tests;
+- integration tests;
+- UI/source-policy tests;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release;
+- Store Package Configuration on every configured target;
+- Store Inspection Artifacts;
+- CodeQL;
+- unsuppressed Dependency Audit.
+
+Production `v*` tags additionally require the configured Release Gate and Release Evidence workflows.
 
 ## If a gate fails
 
-Do not suppress/ignore a legitimate failure to preserve the checkpoint.
+Do not suppress or ignore a legitimate failure merely to preserve a checkpoint.
 
 Instead:
 
 1. inspect the exact failing job/log;
 2. determine whether the defect is source, test, workflow, package, toolchain, stable documentation contract or infrastructure;
 3. preserve completed/failed evidence accurately;
-4. close the marker PR as failed/superseded when its source must change;
-5. fix legitimate verification-relevant defects on `main`;
-6. update dynamic handoff/status material as needed before the replacement freeze;
-7. create a new marker branch from the corrected exact `main` SHA;
-8. rerun the complete required matrix.
+4. fix legitimate verification-relevant defects;
+5. update dynamic handoff/status material as needed before the replacement freeze;
+6. freeze the corrected exact head;
+7. rerun the complete required matrix.
 
-Partial green evidence from a failed/superseded checkpoint can be retained historically, but it is not the final baseline.
+Partial green evidence from a failed/superseded checkpoint is historical debugging evidence, not the final baseline.
 
-## If `main` changes while verification is running
+## If the source changes while verification runs
 
-Determine whether the newer commits are verification-relevant.
+Determine whether newer commits are verification-relevant.
 
-### Verification-relevant movement
-
-Examples:
+Examples include:
 
 - `.cs`, `.xaml`, `.csproj`, `.props`, `.targets`;
 - package version/configuration files;
@@ -133,20 +161,21 @@ Examples:
 - workflows;
 - `build/scripts/*`;
 - platform configuration/resources affecting build/runtime;
-- stable repository policy source parsed by executable tests.
+- stable release/evidence policy source parsed by executable tests.
 
-If these change, the running checkpoint is stale for the newer source. Close/supersede it and verify the new exact head.
+If verification-relevant source changes, the running checkpoint is stale for the newer source and a new exact-head matrix is required.
 
-### Post-verification dynamic evidence promotion
+## Post-verification dynamic evidence promotion
 
-After a checkpoint has completed successfully, the dynamic evidence/status documents named above may be updated to record the completed result without treating the evidence-only commit as a new executable baseline, provided an exact comparison confirms there are no changes to runtime/test/project/workflow/package/platform/build-script/stable-policy source.
+After a checkpoint completes successfully, dynamic evidence/status documents may be updated to record the completed result without treating the evidence-only commit as a new executable baseline, provided an exact comparison confirms there are no changes to runtime/test/project/workflow/package/platform/build-script/stable-policy source.
 
 In that case:
 
 - keep the verified source SHA explicit;
-- identify the later evidence/documentation head separately if useful;
-- do not claim that the evidence-only head itself ran platform workflows;
+- identify the later evidence/documentation head separately when useful;
+- do not claim the evidence-only head itself ran platform workflows;
 - keep `AUTOMATED_BASELINE.md` pointed at the exact source that actually ran;
+- do not change a stable policy merely to insert the new SHA/test count;
 - if there is any verification-relevant change or ambiguity, verify a new exact source.
 
 ## Marker naming
@@ -161,15 +190,15 @@ The marker should record the frozen source SHA and state that it is verification
 
 ## PR description
 
-The PR body should identify:
+A verification PR body should identify:
 
-- frozen base/source SHA;
-- marker/head SHA when available;
-- marker path;
+- exact frozen source/head SHA;
 - purpose of verification;
 - required gates;
-- statement that the marker must not be merged;
-- any known source boundary that this PR supersedes.
+- source boundary it supersedes if applicable;
+- whether the PR itself is intended to merge or is marker-only.
+
+For marker-only PRs, include the marker path and state that the marker must not be merged.
 
 ## Evidence requirements
 
@@ -177,14 +206,14 @@ Record at least:
 
 ```text
 Verification PR:
-Frozen source/base SHA:
-Marker/head SHA:
+Exact verified source/head SHA:
 CareNest CI run:
 Package-evidence tooling self-test:
+Documentation-integrity checks:
 Formatting:
 Unit tests:
 Integration tests:
-UI-contract/policy tests:
+UI/source-policy tests:
 Android Release:
 Windows Release:
 iOS simulator Release:
@@ -193,36 +222,16 @@ Store Package Configuration run:
 Store Inspection Artifacts run:
 CodeQL run:
 Dependency Audit run:
-PR closed without merge: yes/no
+PR disposition:
 ```
 
-## Superseded checkpoint example — PR #77
-
-Verification PR #77 froze source:
-
-`0e894ef57d3b9bfb9297cd5d3cda37ac7abccc3d`
-
-Marker/head:
-
-`4d8e521dff85ae3f4887782ed313c79985de0295`
-
-Observed before supersession:
-
-- Dependency Audit run `32132538649`: success;
-- CareNest CI run `32132538608`: queued;
-- CodeQL run `32132538582`: queued;
-- Store Package Configuration run `32132538730`: queued;
-- Store Inspection Artifacts run `32132538637`: queued.
-
-PR #77 was closed without merge because verification review discovered that mutable post-verification evidence/status files were being parsed for mutable SHA/test-count assertions. Recording successful evidence would therefore have created an unnecessary recursive verification loop.
-
-That governance defect is corrected by separating dynamic evidence from stable policy inputs. PR #77 remains historical/superseded evidence and must not be represented as a completed verification baseline.
+For marker-only verification also record frozen base/source SHA and marker/head SHA.
 
 ## Production tag verification is separate
 
-Marker-only PR verification proves the candidate source under PR automation. It is not the final production tag gate.
+PR verification proves the exact candidate under PR automation. It is not the final production tag gate.
 
-For an approved `v*` tag, the exact tagged commit is configured to run:
+For an approved immutable `v*` tag, require the configured:
 
 - CareNest CI;
 - CodeQL;
@@ -232,9 +241,9 @@ For an approved `v*` tag, the exact tagged commit is configured to run:
 - Release Gate;
 - CareNest Release Evidence.
 
-The Release Gate and Release Evidence workflows also verify package-evidence tooling source/self-test, but they do not create or sign final production packages.
+The Release Gate must require current production evidence policy/templates/tooling to exist, but the canonical templates themselves do not prove real manual validation.
 
-Production publication must wait for all required tag-triggered workflows plus applicable:
+Production publication must also wait for applicable:
 
 - final signed-package structured evidence JSON;
 - real-device/manual evidence;
@@ -245,13 +254,13 @@ Production publication must wait for all required tag-triggered workflows plus a
 - submission-date store-policy review;
 - final store approval/publication evidence.
 
-If release/tag workflows, tests, stable policies or release scripts change after marker verification, create a new exact-head verification before using those changes for production.
+If release/tag workflows, tests, stable policies or release scripts change after PR verification, verify a new exact source before production use.
 
 ## Historical evidence rule
 
-Never rewrite a failed/superseded marker PR as successful release evidence.
+Never rewrite a failed/superseded verification checkpoint as successful release evidence.
 
-Document what actually happened:
+Historical records may retain:
 
 - successes;
 - failures/skips/queued gates;
@@ -259,4 +268,4 @@ Document what actually happened:
 - fixing commit;
 - replacement verification.
 
-This keeps release history useful for future debugging and prevents a green subset from being confused with a fully green matrix.
+They remain authoritative only for their own exact source boundary.
