@@ -2,6 +2,13 @@
 
 This document defines the evidence that must exist before a CareNest source commit is promoted from release candidate to a public production release.
 
+For the canonical result-state and evidence-quality rules, use:
+
+- `docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`;
+- `docs/releases/PRODUCTION_EVIDENCE_INDEX.md`.
+
+Those documents define the `PASS`, `FAIL`, `BLOCKED`, `N/A`, and `NOT RUN` semantics used by production validation records. Unknown, stale, blocked, or unperformed work must never be represented as a pass.
+
 ## Automated evidence
 
 The exact release commit must have successful GitHub-hosted evidence for:
@@ -14,41 +21,52 @@ The exact release commit must have successful GitHub-hosted evidence for:
 - CodeQL;
 - the repository Dependency Audit workflow;
 - the platform-neutral formatting gate;
+- Store Package Configuration;
+- Store Inspection Artifacts;
 - the production Release Gate;
 - the `CareNest Release Evidence` workflow.
 
-The normal CI, CodeQL, and Dependency Audit workflows support:
+The normal CI, CodeQL, Dependency Audit, package/store and release-evidence workflows support the repository's exact-source verification process. A release tag must not bypass the same source/test/platform/security gates that protected the release candidate.
 
-- pull-request verification where applicable;
-- manual `workflow_dispatch` execution;
-- exact release-tag execution for tags matching `v*`.
+## Current accepted automated baseline
 
-This is intentional: a release tag must not bypass the same source/test/platform/security gates that protected the release candidate.
+The latest accepted exact automated source before the current production-evidence-readiness continuation is:
 
-## Current verified automated baseline
+`30ee6c265104c64ec5a1a4013f592f7f058750e8`
 
-The latest verified Gumroad implementation/source-policy baseline is:
+Verified pull-request merge-ref:
 
-`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+`84fda5bb8ced9f4c487110e43652f51ba2d8d495`
 
-On that exact source:
+Merged executable-source commit:
 
+`2549c08b25145f20c59b7e73ca227c35d5bbf0ec`
+
+Observed accepted evidence:
+
+- CareNest CI run `32205946013`: **success**;
 - unit tests: **122/122**;
-- integration tests: **39/39**;
-- UI/source-policy tests: **175/175**;
-- total core tests: **336/336**;
-- Android Release build passed;
-- Windows Release build passed;
-- iOS simulator Release build passed;
-- Mac Catalyst Release build passed;
-- all four store-candidate configurations passed;
-- CodeQL passed.
+- integration tests: **54/54**;
+- UI/source-policy tests: **194/194**;
+- total core tests: **370/370**;
+- Android Release build: **success**;
+- Windows Release build: **success**;
+- iOS simulator Release build: **success**;
+- Mac Catalyst Release build: **success**;
+- Store Package Configuration run `32205946003`: **success**;
+- Store Inspection Artifacts run `32205946001`: **success**;
+- CodeQL run `32205946030`: **success**;
+- unsuppressed Dependency Audit run `32205946026`: **success**.
 
-Authoritative record:
+Dynamic authority:
 
-`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
+`docs/releases/AUTOMATED_BASELINE.md`
 
-Documentation-only commits after that exact implementation/source-policy source must not be described as exact-head automated evidence unless the applicable workflows have also completed successfully for the newer head.
+Backup hardening record frozen into that accepted source:
+
+`docs/releases/BACKUP_RESOURCE_HARDENING_20260819.md`
+
+A newer verification-relevant branch/head must not inherit these results merely because its changes are documentation-only. The current production-evidence-readiness continuation must complete its own required fresh matrix before it can replace the accepted source boundary.
 
 ## Release Evidence artifact contents
 
@@ -91,28 +109,80 @@ The separate Dependency Audit workflow remains the authoritative vulnerability-a
 ### Artifact integrity and failure preservation
 
 - evidence files receive a SHA-256 evidence-manifest checksum;
-- the evidence artifact is uploaded with `if: always()` so a failed release-evidence run retains the evidence that was successfully produced before/after the failure;
-- the artifact upload occurs before the final aggregate outcome gate;
-- the workflow fails after upload if unit, integration, UI-contract, dependency-inventory, or tracked-workspace-integrity evidence did not complete successfully;
-- evidence artifacts are retained for 90 days by the workflow.
+- the evidence artifact is uploaded with failure-preservation behavior so a failed run retains evidence produced before/after the failure;
+- artifact upload occurs before the final aggregate outcome gate;
+- the workflow fails if required unit, integration, UI-contract, dependency-inventory, or tracked-workspace-integrity evidence did not complete successfully;
+- evidence artifacts use the retention configured by the workflow.
 
-A failed evidence workflow is not release approval merely because an artifact exists. The artifact is retained specifically to make failed release verification diagnosable and auditable.
+A failed evidence workflow is not release approval merely because an artifact exists. A successful evidence workflow does not replace platform builds, device testing, accessibility testing, store-policy review, signing, package inspection, or packaged existing-data compatibility testing.
 
-A successful evidence workflow does not replace platform builds, device testing, accessibility testing, store-policy review, signing, package inspection, or packaged existing-data compatibility testing.
+## Production validation records
 
-## Manual evidence
+Production validation must use the canonical evidence standard and reusable records under:
 
-The release owner must complete `docs/releases/MANUAL_TEST_MATRIX.md` on appropriately provisioned targets and retain at least:
+`docs/releases/templates/`
+
+Current canonical records are:
+
+- `ANDROID_DEVICE_VALIDATION_RECORD.md`;
+- `WINDOWS_VALIDATION_RECORD.md`;
+- `IOS_DEVICE_VALIDATION_RECORD.md`;
+- `MACCATALYST_VALIDATION_RECORD.md`;
+- `ACCESSIBILITY_VALIDATION_RECORD.md`;
+- `PACKAGED_COMPATIBILITY_VALIDATION_RECORD.md`;
+- `SIGNING_PROVENANCE_RECORD.md`;
+- `STORE_SUBMISSION_RECORD.md`;
+- `PRODUCTION_RELEASE_APPROVAL_RECORD.md`.
+
+The templates are evidence containers, not evidence by themselves. Keep canonical templates unperformed. Create release-specific copies according to `docs/releases/PRODUCTION_EVIDENCE_INDEX.md` and record actual results there.
+
+Use fictional or synthetic application data for public validation evidence. Do not commit real user health records, prescription documents, PINs, backup passwords, private signing keys, access tokens, recovery codes, or other secrets.
+
+## Manual platform evidence
+
+The release owner must complete representative platform validation on appropriately provisioned targets and retain at least:
 
 - tested platform/OS version;
-- device or emulator/simulator identity;
-- app version/build;
+- device/emulator/simulator identity where applicable;
+- exact package/app version and build;
 - exact source commit;
-- date of test;
-- pass/fail result;
-- notes for any limitation, workaround or blocked case.
+- test date and time zone;
+- individual result state;
+- notes/evidence references for limitations, failures, blocked cases, or justified `N/A` items.
 
-Do not store user health records, real prescription documents, PINs, backup passwords or other sensitive test data in public release evidence.
+Simulator compilation is not a substitute for signed real-device iPhone/iPad notification evidence. Hosted compilation is not a substitute for actual installed-package behavior.
+
+Use the platform records linked from `docs/releases/PRODUCTION_EVIDENCE_INDEX.md`.
+
+## Packaged compatibility evidence
+
+Before production approval, validate the intended packages with fictional/synthetic representative existing data and record:
+
+- SQLite open/integrity/migration behavior;
+- profiles, medicines, schedules, occurrences, logs, appointments, stock, settings and related data behavior;
+- encrypted-document compatibility;
+- reminder reconciliation after upgrade/restore;
+- current backup create/inspect/restore behavior;
+- clean-install restore;
+- wrong-password, tamper, truncation and trailing-data behavior;
+- genuine historical encrypted backup compatibility where genuine prior bytes safely exist.
+
+Current backup resource ceilings are documented by the backup architecture/hardening records and the canonical packaged compatibility template. Do not manufacture a current backup and label it historical evidence. Do not silently weaken a current security/resource boundary merely to make an unverified historical scenario pass.
+
+## Accessibility evidence
+
+Automated semantics/source checks are necessary but not sufficient. Retain actual representative evidence for:
+
+- screen-reader behavior;
+- focus/reading order;
+- large text/text scaling;
+- keyboard/input behavior on applicable desktop targets;
+- light/dark/system contrast;
+- color-independent state communication;
+- reduced-motion behavior where applicable;
+- privacy-safe error and validation messaging.
+
+Use `docs/releases/templates/ACCESSIBILITY_VALIDATION_RECORD.md`.
 
 ## Security evidence
 
@@ -124,10 +194,10 @@ Before release:
 - confirm no new unsuppressed dependency advisory blocks the intended production graph;
 - confirm `GHSA-2m69-gcr7-jv3q` has not been reintroduced through the old dependency path or hidden by a restored `NuGetAuditSuppress` entry;
 - confirm no wildcard/severity-wide audit suppression was introduced;
-- confirm no signing key, certificate, `.pfx`, `.p12`, `.jks`, keystore, `.env`, service credential or API secret was committed;
-- confirm CodeQL completed successfully for the exact release head;
+- confirm no signing key, certificate, `.pfx`, `.p12`, `.jks`, keystore, `.env`, service credential, access token, recovery code or API secret was committed;
+- confirm CodeQL completed successfully for the exact release head/tag;
 - confirm Dependency Audit completed successfully for the exact release head/tag;
-- confirm packaged existing-database, encrypted-document, backup, and reminder compatibility evidence was recorded after dependency/provider changes.
+- confirm packaged existing-database, encrypted-document, backup and reminder compatibility evidence was recorded after dependency/provider changes.
 
 The source remediation for the formerly tracked SQLite advisory is complete in the current RC1 graph. That source remediation must not be confused with the still-manual packaged existing-data compatibility gate.
 
@@ -145,6 +215,8 @@ This review is not store approval and is not the final submission-time policy ch
 - complete the live store-console declarations for the exact production binary/capabilities/SDK behavior;
 - record review date, source, conclusion and any required product/listing change;
 - repeat affected exact-source verification if a source/package change is required.
+
+Use `docs/releases/templates/STORE_SUBMISSION_RECORD.md` to separate policy review, metadata completion, submission, review, rejection, approval and publication states.
 
 ## Current external-commerce evidence boundary
 
@@ -178,7 +250,7 @@ Source-controlled tooling:
 - `build/scripts/create-package-evidence.ps1`;
 - `build/scripts/test-create-package-evidence.py`.
 
-For every final production package, generate and retain a package evidence JSON using `--stage production`.
+For every final production package, generate and retain package evidence JSON using `--stage production`.
 
 Production mode requires:
 
@@ -191,7 +263,7 @@ Production mode requires:
 - SHA-256 evidence for the entire file or deterministic directory payload plus every contained file;
 - evidence output outside the package payload.
 
-The evidence tool does not sign artifacts and does not prove store approval. Its generated JSON is one part of the final release record and must be paired with actual platform signing/notarization/store evidence, manual package/device evidence and current store review evidence.
+The evidence tool does not sign artifacts and does not prove store approval. Its generated JSON is one part of the final release record and must be paired with actual platform signing/notarization/store evidence, manual package/device evidence and current store-review evidence.
 
 The synthetic package-evidence self-test is run by CareNest CI and exercises success/fail-closed behavior without real user data or signing secrets.
 
@@ -206,9 +278,11 @@ For each distribution channel:
 - requested permissions/capabilities match documented product behavior;
 - screenshots/listing text do not claim diagnosis, dosage decisions, treatment recommendations, guaranteed reminders, medical-device status without applicable approval, or emergency-service behavior;
 - privacy/data-safety disclosures match the local-first implementation and exact binary;
-- final package filename, SHA-256 and signing/notarization/store-managed provenance are recorded;
+- final package filename, SHA-256 and non-secret signing/notarization/store-managed provenance are recorded;
 - structured package evidence JSON is generated and retained;
 - final installed-package smoke/manual validation is complete.
+
+Do not put private signing material, passwords, access tokens or recovery codes in the repository evidence record. Use `docs/releases/templates/SIGNING_PROVENANCE_RECORD.md` for safe provenance fields.
 
 For Google Play, complete the live Health apps declaration and Data safety form for the exact production feature/binary set. For Apple and Microsoft distribution, complete the current privacy/store metadata required by the applicable submission channel.
 
@@ -224,9 +298,9 @@ When the approved `v*` tag is created, repository automation is expected to run 
 - Release Gate;
 - CareNest Release Evidence.
 
-A tag should not be considered release-approved until every required tag-triggered workflow is successful and the manual/signing/store evidence is complete.
+A tag must not be considered release-approved until every required tag-triggered workflow is successful and the manual/signing/store evidence is complete.
 
-If a tag-triggered required workflow fails:
+If a required tag-triggered workflow fails:
 
 1. preserve the failed evidence;
 2. do not publish/promote the failing tag as a successful production release;
@@ -234,9 +308,17 @@ If a tag-triggered required workflow fails:
 4. repeat exact-source verification and manual checks as applicable;
 5. create the corrected release tag only after approval.
 
+## Production release approval
+
+The final production approval record is:
+
+`docs/releases/templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md`
+
+A release-specific copy must aggregate the actual automated, package, device, accessibility, compatibility, security, signing, policy, submission and publication evidence. Green automation alone cannot mark the production release approved.
+
 ## Release record template
 
-For a promoted release, record:
+For a promoted release, retain at least:
 
 ```text
 Version:
@@ -253,7 +335,7 @@ Release Evidence artifact:
 Release Evidence SHA256SUMS:
 Unit tests:
 Integration tests:
-UI-contract tests:
+UI/source-policy tests:
 Android build:
 Windows build:
 iOS simulator build:
@@ -265,7 +347,7 @@ Manual Mac Catalyst evidence:
 Packaged SQLite existing-data compatibility:
 Encrypted document compatibility:
 Backup compatibility:
-Accessibility review:
+Accessibility evidence:
 Store-policy review date/sources:
 Google Play Health apps declaration:
 Google Play Data safety:
@@ -278,8 +360,10 @@ Gumroad package-marker scan:
 Package evidence JSON:
 Package evidence payload SHA-256:
 Final package SHA-256/provenance:
+Store submission state:
+Store approval/publication evidence:
 Release owner:
 Release date:
 ```
 
-A blank or blocked field remains a release blocker unless the release checklist explicitly documents why that field does not apply.
+A blank, blocked, unknown or `NOT RUN` field remains a release blocker unless the release checklist and evidence standard explicitly document why that item is legitimately `N/A`.
