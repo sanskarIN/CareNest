@@ -254,6 +254,14 @@ public sealed class BackupArchiveValidatorTests
             Limits(maxDecryptedArchiveBytes: 8));
     }
 
+    [Fact]
+    public void DocumentCountLimitThatCannotIncludeFixedEntries_IsRejected()
+    {
+        var limits = Limits(maxDocumentCount: int.MaxValue);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => limits.EnsureValid());
+    }
+
     private static BackupManifest Manifest(int documentCount) => new(
         AppConstants.BackupFormatVersion,
         5,
