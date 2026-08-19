@@ -5,6 +5,7 @@ public sealed class ProductionEvidenceDocumentationContractTests
     private const string EvidenceStandard = "docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md";
     private const string EvidenceIndex = "docs/releases/PRODUCTION_EVIDENCE_INDEX.md";
     private const string ReleaseChecklist = "docs/releases/RELEASE_CHECKLIST.md";
+    private const string ReleaseEvidence = "docs/releases/RELEASE_EVIDENCE.md";
 
     private static readonly string[] EvidenceTemplates =
     [
@@ -80,6 +81,22 @@ public sealed class ProductionEvidenceDocumentationContractTests
         Assert.Contains("templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md", checklist, StringComparison.Ordinal);
         Assert.DoesNotContain("**336/336**", checklist, StringComparison.Ordinal);
         Assert.DoesNotContain("94e867dce9519a8c1c71f1c4f1e5f833d6a3211f", checklist, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Release_evidence_uses_current_accepted_baseline_and_production_records()
+    {
+        var root = FindRepositoryRoot();
+        var evidence = Read(root, ReleaseEvidence);
+
+        Assert.Contains("30ee6c265104c64ec5a1a4013f592f7f058750e8", evidence, StringComparison.Ordinal);
+        Assert.Contains("**370/370**", evidence, StringComparison.Ordinal);
+        Assert.Contains("PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md", evidence, StringComparison.Ordinal);
+        Assert.Contains("PRODUCTION_EVIDENCE_INDEX.md", evidence, StringComparison.Ordinal);
+        Assert.Contains("templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md", evidence, StringComparison.Ordinal);
+        Assert.Contains("templates/STORE_SUBMISSION_RECORD.md", evidence, StringComparison.Ordinal);
+        Assert.DoesNotContain("latest verified Gumroad implementation/source-policy baseline", evidence, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("**336/336**", evidence, StringComparison.Ordinal);
     }
 
     [Fact]
