@@ -3,6 +3,33 @@ using CareNest.Shared;
 
 namespace CareNest.Infrastructure.Backup;
 
+internal sealed record BackupArchiveLimits(
+    long MaxManifestBytes,
+    long MaxDatabaseBytes,
+    long MaxDocumentBytes,
+    long MaxTotalUncompressedBytes,
+    int MaxDocumentCount)
+{
+    public static BackupArchiveLimits Default { get; } = new(
+        MaxManifestBytes: 1L * 1024 * 1024,
+        MaxDatabaseBytes: 1L * 1024 * 1024 * 1024,
+        MaxDocumentBytes: 512L * 1024 * 1024,
+        MaxTotalUncompressedBytes: 2L * 1024 * 1024 * 1024,
+        MaxDocumentCount: 5_000);
+
+    public void EnsureValid()
+    {
+        if (MaxManifestBytes <= 0 ||
+            MaxDatabaseBytes <= 0 ||
+            MaxDocumentBytes <= 0 ||
+            MaxTotalUncompressedBytes <= 0 ||
+            MaxDocumentCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(BackupArchiveLimits), "Backup archive limits must be positive.");
+        }
+    }
+}
+
 internal static class BackupArchiveValidator
 {
     private const string ManifestEntryName = "manifest.json";
@@ -10,10 +37,68 @@ internal static class BackupArchiveValidator
     private const string DocumentKeyEntryName = "secrets/document-master-key.bin";
     private const string DocumentsPrefix = "documents/";
 
-    public static void ValidateTopology(ZipArchive zip, BackupManifest manifest)
+    public static void ValidateBeforeManifest(
+        ZipArchive zip,
+        BackupArchiveLimits? limits = null)
+    {
+        ArgumentNullException.ThrowIfNull(zip);
+        limits ??= BackupArchiveLimits.Default;
+        limits.EnsureValid();
+
+        var fileEntries = GetFileEntries(zip);
+        ValidateDuplicateEntries(fileEntries);
+
+        var maximumFileEntries = checked(limits.MaxDocumentCount + 3);
+        if (fileEntries.Length > maximumFileEntries)
+        {
+            throw new InvalidDataException("Backup contains too many archive entries.");
+        }
+
+        var manifestEntry = fileEntries.SingleOrDefault(entry =>
+            string.Equals(entry.FullName, ManifestEntryName, StringComparison.Ordinal))
+            ?? throw new InvalidDataException("Backup manifest is missing.");
+
+        ValidateEntryLength(manifestEntry, limits.MaxManifestBytes, "Backup manifest is too large.");
+
+        long totalUncompressedBytes = 0;
+        foreach (var entry in fileEntries)
+        {
+            try
+            {
+                totalUncompressedBytes = checked(totalUncompressedBytes + entry.Length);
+            }
+            catch (OverflowException)
+            {
+                throw new InvalidDataException("Backup uncompressed size is invalid.");
+            }
+
+            if (totalUncompressedBytes > limits.MaxTotalUncompressedBytes)
+            {
+                throw new InvalidDataException("Backup uncompressed payload is too large.");
+            }
+
+            if (string.Equals(entry.FullName, DatabaseEntryName, StringComparison.Ordinal))
+            {
+                ValidateEntryLength(entry, limits.MaxDatabaseBytes, "Backup database is too large.");
+            }
+            else if (IsTopLevelDocumentEntry(entry.FullName))
+            {
+                ValidateEntryLength(entry, limits.MaxDocumentBytes, "Backup document is too large.");
+            }
+        }
+    }
+
+    public static void ValidateTopology(
+        ZipArchive zip,
+        BackupManifest manifest,
+        BackupArchiveLimits? limits = null)
     {
         ArgumentNullException.ThrowIfNull(zip);
         ArgumentNullException.ThrowIfNull(manifest);
+        limits ??= BackupArchiveLimits.Default;
+        limits.EnsureValid();
+
+        ValidateBeforeManifest(zip, limits);
 
         if (manifest.FormatVersion != AppConstants.BackupFormatVersion)
         {
@@ -30,22 +115,12 @@ internal static class BackupArchiveValidator
             throw new InvalidDataException("Backup document count is invalid.");
         }
 
-        var fileEntries = zip.Entries
-            .Where(entry => !string.IsNullOrEmpty(entry.Name))
-            .ToArray();
-
-        var duplicate = fileEntries
-            .GroupBy(entry => entry.FullName, StringComparer.Ordinal)
-            .FirstOrDefault(group => group.Count() > 1);
-        if (duplicate is not null)
+        if (manifest.DocumentCount > limits.MaxDocumentCount)
         {
-            throw new InvalidDataException("Backup contains duplicate archive entries.");
+            throw new InvalidDataException("Backup document count exceeds the supported limit.");
         }
 
-        if (!fileEntries.Any(entry => string.Equals(entry.FullName, ManifestEntryName, StringComparison.Ordinal)))
-        {
-            throw new InvalidDataException("Backup manifest is missing.");
-        }
+        var fileEntries = GetFileEntries(zip);
 
         if (!fileEntries.Any(entry => string.Equals(entry.FullName, DatabaseEntryName, StringComparison.Ordinal)))
         {
@@ -85,6 +160,29 @@ internal static class BackupArchiveValidator
         if (keyEntry is not null && keyEntry.Length != 32)
         {
             throw new InvalidDataException("Backup document encryption key is invalid.");
+        }
+    }
+
+    private static ZipArchiveEntry[] GetFileEntries(ZipArchive zip) => zip.Entries
+        .Where(entry => !string.IsNullOrEmpty(entry.Name))
+        .ToArray();
+
+    private static void ValidateDuplicateEntries(ZipArchiveEntry[] fileEntries)
+    {
+        var duplicate = fileEntries
+            .GroupBy(entry => entry.FullName, StringComparer.Ordinal)
+            .FirstOrDefault(group => group.Count() > 1);
+        if (duplicate is not null)
+        {
+            throw new InvalidDataException("Backup contains duplicate archive entries.");
+        }
+    }
+
+    private static void ValidateEntryLength(ZipArchiveEntry entry, long maximumBytes, string message)
+    {
+        if (entry.Length < 0 || entry.Length > maximumBytes)
+        {
+            throw new InvalidDataException(message);
         }
     }
 
