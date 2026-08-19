@@ -11,6 +11,8 @@ internal sealed record BackupArchiveLimits(
     int MaxDocumentCount,
     long MaxDecryptedArchiveBytes = 2304L * 1024 * 1024)
 {
+    private const int FixedArchiveEntryAllowance = 3;
+
     public static BackupArchiveLimits Default { get; } = new(
         MaxManifestBytes: 1L * 1024 * 1024,
         MaxDatabaseBytes: 1L * 1024 * 1024 * 1024,
@@ -19,6 +21,8 @@ internal sealed record BackupArchiveLimits(
         MaxDocumentCount: 5_000,
         MaxDecryptedArchiveBytes: 2304L * 1024 * 1024);
 
+    public int MaxArchiveEntryCount => MaxDocumentCount + FixedArchiveEntryAllowance;
+
     public void EnsureValid()
     {
         if (MaxManifestBytes <= 0 ||
@@ -26,9 +30,12 @@ internal sealed record BackupArchiveLimits(
             MaxDocumentBytes <= 0 ||
             MaxTotalUncompressedBytes <= 0 ||
             MaxDocumentCount < 0 ||
+            MaxDocumentCount > int.MaxValue - FixedArchiveEntryAllowance ||
             MaxDecryptedArchiveBytes <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(BackupArchiveLimits), "Backup archive limits must be positive.");
+            throw new ArgumentOutOfRangeException(
+                nameof(BackupArchiveLimits),
+                "Backup archive byte limits must be positive and document-count limits must be non-negative and safely bounded.");
         }
     }
 }
@@ -62,8 +69,7 @@ internal static class BackupArchiveValidator
         limits.EnsureValid();
 
         var archiveEntries = zip.Entries.ToArray();
-        var maximumArchiveEntries = checked(limits.MaxDocumentCount + 3);
-        if (archiveEntries.Length > maximumArchiveEntries)
+        if (archiveEntries.Length > limits.MaxArchiveEntryCount)
         {
             throw new InvalidDataException("Backup contains too many archive entries.");
         }
