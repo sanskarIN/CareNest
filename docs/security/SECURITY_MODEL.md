@@ -1,16 +1,15 @@
 # CareNest Security Architecture Reference
 
 **Release line:** `1.0.0-rc.1`  
-**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`  
-**Verified PR #74 head:** `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9`
+**Accepted automated baseline before current backup hardening:** `b6eecae66f74bd72bcb20d93508355542f9f3442`
 
 CareNest is a local-first organizational health app. This security model describes source-controlled protections and residual risk. It does not claim protection against a fully compromised device/OS, clinical correctness, guaranteed reminder delivery, or completed production signing/store review.
 
 ## 1. Current automated security baseline
 
-PR #74 verified:
+Accepted source `b6eecae66f74bd72bcb20d93508355542f9f3442` verified:
 
-- 122 unit + 39 integration + 170 UI/source-policy = **331/331** core tests;
+- 122 unit + 39 integration + 194 UI/source-policy = **355/355** core tests;
 - Android, Windows, iOS simulator and Mac Catalyst Release builds;
 - all four store-candidate configurations;
 - Store Inspection Artifacts, including fail-closed payload-scanner self-test;
@@ -18,9 +17,11 @@ PR #74 verified:
 - unsuppressed Dependency Audit;
 - strict XAML compiled-binding policy.
 
-Permanent current evidence: `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+Any verification-relevant source change after the accepted source must pass a fresh exact-source matrix before replacing this baseline.
 
-Older PR #68/#67/#61/#59/#58/#56/#54 security/package evidence remains historical for older source boundaries.
+Permanent supporting evidence includes `docs/releases/FINAL_CANDIDATE_VERIFICATION_20260818.md` and `docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`.
+
+Older PR #74/#68/#67/#61/#59/#58/#56/#54 security/package evidence remains historical for older source boundaries.
 
 ## 2. Security objectives
 
@@ -33,7 +34,7 @@ CareNest aims to:
 - store app-lock/document key material through platform secure storage where applicable;
 - avoid sensitive application logging;
 - fail closed for invalid cryptographic/key state;
-- validate backup topology before extraction;
+- validate backup topology and resource bounds before manifest parsing/extraction;
 - reconcile reminder persisted/platform state conservatively;
 - keep dependency/security/release gates fail closed;
 - preserve documented encrypted-data compatibility rather than silently making old data unreadable.
@@ -145,14 +146,25 @@ Manual backup uses:
 - versioned package metadata;
 - document-recovery material where required;
 - strict decrypted ZIP topology validation;
+- pre-manifest archive entry/resource validation;
 - wrong-password/tamper/truncation/trailing-data rejection;
 - database snapshot/integrity checks.
 
-Weak user passwords remain vulnerable to offline guessing within their entropy limits.
+Default archive resource ceilings are:
+
+- manifest: 1 MiB;
+- SQLite database: 1 GiB;
+- each encrypted document: 512 MiB;
+- total uncompressed payload: 2 GiB;
+- document count: 5,000.
+
+The same topology/resource validator runs against a newly generated ZIP before it is encrypted, preventing current CareNest from intentionally producing a backup outside the current restore boundary.
+
+Weak user passwords remain vulnerable to offline guessing within their entropy limits. Inputs within the accepted resource ceilings can still consume local CPU and disk during validation/restore.
 
 ## 11. Restore rollback/key integrity
 
-Restore validates package/authentication/topology before acceptance and attempts to preserve/restore prior key/database/filesystem state when a later operation fails.
+Restore validates package/authentication/resource bounds/topology before acceptance and attempts to preserve/restore prior key/database/filesystem state when a later operation fails.
 
 Process/OS termination can still interrupt compensation; that remains residual risk.
 
@@ -290,6 +302,7 @@ Current controls include:
 - reminder time/ownership/reconciliation/action tests;
 - SQLite migration/integrity tests;
 - document/backup tamper/framing tests;
+- backup topology/resource-bound tests;
 - strict compiled XAML tests;
 - funding-free app/source/package contracts;
 - package payload scanner self-test;
@@ -305,6 +318,7 @@ Residual risk includes:
 - weak backup/app-lock secrets;
 - OS/cloud backup copies;
 - exported/shared copies;
+- accepted-size backup CPU/disk consumption;
 - OS notification failure;
 - process termination during cross-surface compensation;
 - future dependency/toolchain advisories;
@@ -334,6 +348,7 @@ A fresh security/privacy review is required before materially changing:
 - document interpretation/medical decision support;
 - biometric/remote app-lock recovery;
 - encryption framing/key ownership/legacy compatibility;
+- backup archive topology/resource ceilings/extraction behavior;
 - raw SQL/import execution paths;
 - dependency/release audit/evidence policy;
 - package signing/provenance;
