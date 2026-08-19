@@ -128,6 +128,17 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     }
 
     [Fact]
+    public void Codeql_cancels_superseded_runs_for_the_same_ref()
+    {
+        var root = FindRepositoryRoot();
+        var workflow = Read(root, ".github/workflows/codeql.yml");
+
+        Assert.Contains("concurrency:", workflow, StringComparison.Ordinal);
+        Assert.Contains("group: codeql-${{ github.workflow }}-${{ github.ref }}", workflow, StringComparison.Ordinal);
+        Assert.Contains("cancel-in-progress: true", workflow, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Verification_protocol_classifies_production_evidence_policy_as_stable_and_avoids_recursive_result_pinning()
     {
         var root = FindRepositoryRoot();
