@@ -152,6 +152,8 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         "docs/releases/SECURITY_RELEASE_REVIEW.md",
         "docs/releases/MANUAL_TEST_MATRIX.md",
         "docs/releases/PACKAGED_RELEASE_VALIDATION.md",
+        "docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md",
+        "docs/releases/PRODUCTION_EVIDENCE_INDEX.md",
         "docs/releases/VERIFICATION_BRANCH_PROTOCOL.md",
     ];
 
