@@ -1,9 +1,10 @@
 # CareNest Next Steps
 
-**Date:** 2026-08-18  
+**Date:** 2026-08-19  
 **Release line:** `1.0.0-rc.1`  
 **Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`  
-**Accepted automated source:** `b6eecae66f74bd72bcb20d93508355542f9f3442`
+**Accepted automated source:** `30ee6c265104c64ec5a1a4013f592f7f058750e8`  
+**Merged source commit:** `2549c08b25145f20c59b7e73ca227c35d5bbf0ec`
 
 The complete active checklist from before the Gumroad rollout is preserved exactly at:
 
@@ -14,7 +15,8 @@ The in-repository RC1 feature, hardening, documentation, open-source/community-f
 Current automated authority:
 
 - `docs/releases/AUTOMATED_BASELINE.md`;
-- `docs/releases/FINAL_CANDIDATE_VERIFICATION_20260818.md`.
+- `docs/releases/BACKUP_RESOURCE_HARDENING_20260819.md`;
+- `docs/releases/FINAL_CANDIDATE_VERIFICATION_20260818.md` for the immediately previous accepted baseline.
 
 ---
 
@@ -22,23 +24,31 @@ Current automated authority:
 
 Verified exact source:
 
-`b6eecae66f74bd72bcb20d93508355542f9f3442`
+`30ee6c265104c64ec5a1a4013f592f7f058750e8`
 
-Marker-only verification PR:
+Verified PR merge ref:
 
-`#80` — closed without merge after success.
+`84fda5bb8ced9f4c487110e43652f51ba2d8d495`
+
+Merged `main` commit preserving all PR commits:
+
+`2549c08b25145f20c59b7e73ca227c35d5bbf0ec`
+
+Verification/merge PR:
+
+`#81` — merged after the complete required matrix succeeded.
 
 Observed automated evidence:
 
 - [x] repository Python tooling syntax;
 - [x] package-evidence self-test;
 - [x] documentation-link checker self-test;
-- [x] stable active documentation local-link integrity — 182 links / 109 Markdown files;
+- [x] stable active documentation local-link integrity — 182 links / 111 stable active Markdown files;
 - [x] platform-neutral formatting;
 - [x] unit tests — **122/122**;
-- [x] integration tests — **39/39**;
+- [x] integration tests — **54/54**;
 - [x] UI/source-policy tests — **194/194**;
-- [x] total core tests — **355/355**;
+- [x] total core tests — **370/370**;
 - [x] Android Release;
 - [x] Windows Release;
 - [x] iOS simulator Release;
@@ -47,16 +57,16 @@ Observed automated evidence:
 - [x] Store Inspection Artifacts — scanner self-test plus Android/Windows/Apple artifacts;
 - [x] CodeQL;
 - [x] unsuppressed Dependency Audit;
-- [x] final verification PR closed without merge;
-- [x] accepted baseline promoted to dynamic evidence/status files.
+- [x] PR #81 merged with merge commit after success;
+- [x] accepted baseline promoted to designated dynamic evidence/status files.
 
 Workflow runs:
 
-- CareNest CI `32141539179`;
-- Store Package Configuration `32141539246`;
-- Store Inspection Artifacts `32141539169`;
-- CodeQL `32141539253`;
-- Dependency Audit `32141539349`.
+- CareNest CI `32205946013`;
+- Store Package Configuration `32205946003`;
+- Store Inspection Artifacts `32205946001`;
+- CodeQL `32205946030`;
+- Dependency Audit `32205946026`.
 
 ---
 
@@ -68,6 +78,9 @@ Do not repeat these passes unless a real defect or changed requirement is discov
 - [x] profile/medicine/schedule/log/appointment/document/report/settings/app-lock source scope;
 - [x] deterministic reminder planning/reconciliation/compensation hardening;
 - [x] encrypted document and password-encrypted backup protections;
+- [x] bounded authenticated backup decrypted-container/archive resource handling;
+- [x] generated-backup validation against current restore limits before encryption;
+- [x] legacy/current encrypted-stream compatibility under caller-provided plaintext limits;
 - [x] SQLite transactional/migration/dependency-security hardening;
 - [x] strict compiled XAML binding enforcement;
 - [x] `XC0022`–`XC0025` promoted to errors;
@@ -86,15 +99,58 @@ Do not repeat these passes unless a real defect or changed requirement is discov
 - [x] stable/dynamic documentation evidence boundary;
 - [x] open-source/community repository-file audit;
 - [x] dated preliminary Apple/Google/Microsoft store-policy review;
-- [x] final exact-head automated verification.
+- [x] final exact-head automated verification after backup resource hardening.
 
-The final repository issue search returned no open GitHub issues. Do not infer from this that undiscovered defects are impossible.
+The repository issue search at the start of this continuation returned no open GitHub issues. Do not infer from this that undiscovered defects are impossible.
+
+---
+
+## 3. Backup resource-hardening follow-up — source complete, packaged compatibility pending
+
+The 2026-08-19 continuation reproduced a concrete availability/resource-exhaustion gap in authenticated backup processing. It is now fixed and verified in source.
+
+Current default limits:
+
+- decrypted ZIP container: **2304 MiB** maximum;
+- manifest: **1 MiB** maximum;
+- SQLite database: **1 GiB** maximum;
+- each encrypted document: **512 MiB** maximum;
+- total uncompressed ZIP payload: **2 GiB** maximum;
+- documents: **5,000** maximum;
+- archive-entry count: document limit plus fixed required entries;
+- explicit directory-only ZIP entries: rejected.
+
+Completed source work:
+
+- [x] bound decrypted authenticated backup output before ZIP parsing;
+- [x] validate archive entry count before manifest parsing;
+- [x] reject directory-only archive entries;
+- [x] reject oversized manifest/database/document entries;
+- [x] reject excessive total uncompressed ZIP payload;
+- [x] safely validate configured document-count ceilings without integer overflow;
+- [x] validate newly generated backups against the same current restore boundary before encryption;
+- [x] retain existing tamper/truncation/trailing-data handling;
+- [x] retain legacy framing compatibility while honoring caller-provided plaintext limits;
+- [x] add 15 focused integration regressions;
+- [x] run and pass the complete exact-head CI/store/security matrix.
+
+Still required with actual intended packages and fictional data:
+
+- [ ] verify representative normal packaged backups remain comfortably below current ceilings;
+- [ ] verify packaged create/inspect/restore on each intended platform path;
+- [ ] verify clean-install restore;
+- [ ] verify restored encrypted documents remain usable;
+- [ ] verify wrong-password/tamper/truncation/trailing-data behavior in packaged builds;
+- [ ] test genuine historical encrypted backup bytes where genuine prior fixtures safely exist;
+- [ ] if a genuine historical backup exceeds a current limit, record and resolve it as an explicit compatibility/security decision rather than silently weakening the boundary.
+
+Runbook: `docs/releases/PACKAGED_RELEASE_VALIDATION.md`.
 
 ---
 
 # Priority 0 — remaining production validation
 
-## 3. Preliminary store-policy review is complete; submission-day review remains
+## 4. Preliminary store-policy review is complete; submission-day review remains
 
 Dated preliminary record:
 
@@ -125,7 +181,7 @@ A preliminary policy review is evidence, not store approval.
 
 ---
 
-## 4. Packaged existing-data and SQLite compatibility
+## 5. Packaged existing-data and SQLite compatibility
 
 Use fictional/synthetic data only.
 
@@ -143,7 +199,7 @@ Runbook: `docs/releases/PACKAGED_RELEASE_VALIDATION.md`.
 
 ---
 
-## 5. Encrypted document and backup compatibility
+## 6. Encrypted document and backup compatibility
 
 With fictional data:
 
@@ -156,6 +212,7 @@ With fictional data:
 - [ ] tamper rejection;
 - [ ] truncation rejection;
 - [ ] trailing-data rejection;
+- [ ] resource-ceiling rejection behavior where practical with deliberately small test-only fixtures or controlled packaged tests;
 - [ ] restored encrypted-document usability;
 - [ ] clean-install restore;
 - [ ] genuine historical fixture validation only where genuine historical bytes safely exist.
@@ -164,7 +221,7 @@ Never manufacture a current artifact and label it historical evidence.
 
 ---
 
-## 6. Android real-device/emulator validation
+## 7. Android real-device/emulator validation
 
 On representative supported Android versions/vendors:
 
@@ -190,7 +247,7 @@ On representative supported Android versions/vendors:
 
 ---
 
-## 7. Windows validation
+## 8. Windows validation
 
 On representative Windows targets:
 
@@ -209,7 +266,7 @@ On representative Windows targets:
 
 ---
 
-## 8. iPhone/iPad real-device validation
+## 9. iPhone/iPad real-device validation
 
 Simulator compilation is not real-device notification evidence.
 
@@ -229,7 +286,7 @@ Simulator compilation is not real-device notification evidence.
 
 ---
 
-## 9. Mac Catalyst validation
+## 10. Mac Catalyst validation
 
 - [ ] fresh execution/install path;
 - [ ] notification permission/delivery;
@@ -244,7 +301,7 @@ Simulator compilation is not real-device notification evidence.
 
 ---
 
-## 10. Accessibility validation
+## 11. Accessibility validation
 
 Automated source checks do not replace real assistive-technology testing.
 
@@ -260,7 +317,7 @@ Automated source checks do not replace real assistive-technology testing.
 
 ---
 
-## 11. Production signing outside Git
+## 12. Production signing outside Git
 
 Never commit private signing material.
 
@@ -272,7 +329,7 @@ Never commit private signing material.
 
 ---
 
-## 12. Structured final-package evidence
+## 13. Structured final-package evidence
 
 Guide:
 
@@ -297,7 +354,7 @@ The tool does not sign artifacts or prove store approval.
 
 ---
 
-## 13. Final signed-package inspection
+## 14. Final signed-package inspection
 
 For every intended production package:
 
@@ -320,7 +377,7 @@ It remains intentionally outside the app package under the current policy.
 
 ---
 
-## 14. Store metadata and policy review at submission
+## 15. Store metadata and policy review at submission
 
 - [ ] Apple submission-date policy/listing review;
 - [ ] Google Play submission-date policy/listing review;
@@ -341,23 +398,25 @@ Store policies are time-sensitive.
 
 ---
 
-## 15. Freeze exact production source and tag
+## 16. Freeze exact production source and tag
 
 Only after applicable manual/package/accessibility/signing/store findings are resolved:
 
 - [ ] select exact approved production commit;
-- [ ] repeat exact-source automated verification if any verification-relevant source changed after `b6eecae66f74bd72bcb20d93508355542f9f3442`;
+- [ ] repeat exact-source automated verification if any verification-relevant source changes after `30ee6c265104c64ec5a1a4013f592f7f058750e8`;
 - [ ] verify release version/build metadata;
 - [ ] verify release notes;
 - [ ] verify signed-package hashes/provenance/package evidence JSON;
 - [ ] ensure no unresolved production blocker remains;
 - [ ] create immutable approved `v*` tag.
 
+The designated dynamic status/evidence files may advance beyond the frozen verified executable source without redefining that source boundary. Runtime/test/project/workflow/build-script/stable-policy/stable-documentation changes require a replacement exact-source verification.
+
 Do not move a failed/rejected production tag to a different source merely to reuse its version identity.
 
 ---
 
-## 16. Production `v*` tag and final gates
+## 17. Production `v*` tag and final gates
 
 For the exact approved production tag require:
 
@@ -413,7 +472,7 @@ Any future networked, remote-data, commerce-in-app or clinical feature requires 
 
 The intended RC runtime product scope, package-evidence/release-governance tooling, documentation-integrity tooling and current automated exact-head verification are complete.
 
-Do **not** add unrelated verification-relevant source merely to create more commits after this final candidate is green.
+Do **not** add unrelated verification-relevant source merely to create more commits after this candidate is green.
 
 If actual device/package/security/accessibility/store validation finds a defect:
 
@@ -424,4 +483,4 @@ If actual device/package/security/accessibility/store validation finds a defect:
 5. rebuild/retest the affected final package;
 6. update evidence only after the replacement result is known.
 
-Current state: **CareNest `1.0.0-rc.1` is source-complete for its intended RC scope and the final candidate source `b6eecae66f74bd72bcb20d93508355542f9f3442` has passed 355/355 core tests, all configured normal platform builds, all store-candidate builds, Store Inspection Artifacts, CodeQL and unsuppressed Dependency Audit. Remaining work is real production validation/signing/store/publication evidence, not another speculative source-feature pass.**
+Current state: **CareNest `1.0.0-rc.1` is source-complete for its intended RC scope. Exact source `30ee6c265104c64ec5a1a4013f592f7f058750e8` passed 370/370 core tests, all configured normal platform builds, all store-candidate builds, Store Inspection Artifacts, CodeQL and unsuppressed Dependency Audit, and PR #81 was merged while preserving its 19 meaningful commits. Remaining work is real production package/device/accessibility/signing/store/publication evidence, including genuine packaged/historical backup compatibility against the new resource ceilings—not another speculative source-feature pass.**
