@@ -1,12 +1,16 @@
 # CareNest Store Build Policy
 
 **Release line:** `1.0.0-rc.1`  
-**Latest fully verified Gumroad implementation/source-policy baseline:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Current automated evidence authority:** `docs/releases/AUTOMATED_BASELINE.md`  
+**Production evidence standard:** `docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`  
+**Production evidence index:** `docs/releases/PRODUCTION_EVIDENCE_INDEX.md`  
 **Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`  
 **Package evidence guide:** `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`  
 **Canonical Gumroad storefront:** `https://ramsandesh.gumroad.com`
 
-This document defines the current source/package boundary for store-oriented builds. It is not evidence of production signing or store approval.
+This document defines the stable source/package boundary for store-oriented builds. It is not evidence of production signing or store approval.
+
+Do not pin a moving accepted source SHA or test total here. Current exact-source automation is owned by `docs/releases/AUTOMATED_BASELINE.md`.
 
 ## 1. Current external-commerce boundary
 
@@ -17,7 +21,7 @@ Repository-only destinations:
 - Gumroad: `https://ramsandesh.gumroad.com`;
 - Buy Me a Coffee: `https://buymeacoffee.com/sanskarIN`.
 
-Repository promotion/support does not unlock health functionality, reminder priority/reliability, medical advice, diagnosis, dosage decisions, treatment recommendations, emergency assistance, clinical services, accounts/cloud functionality, or access to local health records.
+Repository promotion/support does not unlock health functionality, reminder priority/reliability, medical advice, diagnosis, dosage decisions, treatment recommendations, emergency assistance, clinical services, accounts/cloud functionality or access to local health records.
 
 CareNest does not automatically transmit local health records to either external destination.
 
@@ -25,22 +29,20 @@ CareNest does not automatically transmit local health records to either external
 
 The old `CareNestShowFundingLink` / store-funding visibility architecture is removed.
 
-Store builds do not require a special Gumroad/funding-disabled property because both external destinations are absent from application source/package by product policy for every target.
+Store builds do not require a special Gumroad/funding-disabled property because both external destinations are absent from application source/package by current product policy for every target.
 
 Historical release evidence may describe the earlier funding-toggle investigation but must not be treated as current configuration.
 
 ## 3. Why package scanning remains mandatory
 
-The 2026-08-15 investigation proved that source/build flags alone can miss payload content: a URL-bearing SVG resource caused an external funding marker to enter Windows application bytes.
-
-The stronger current invariant is:
+Source/build rules alone can miss payload content. The current defense-in-depth invariant is:
 
 - external-commerce runtime surfaces absent by source policy;
-- actual built payload scanned for repository-only external-commerce markers before inspection artifact upload;
+- built payload scanned for repository-only external-commerce markers before inspection artifact upload;
 - final signed packages scanned again/equivalently inspected before production promotion;
-- final production package scan/hash/provenance results captured in structured package evidence JSON.
+- final package scan/hash/provenance results captured in structured package evidence JSON.
 
-The scanner and production evidence path are defense-in-depth and must fail closed.
+The scanner and production evidence path must fail closed.
 
 ## 4. Default forbidden package markers
 
@@ -51,15 +53,9 @@ buymeacoffee.com/sanskarIN
 ramsandesh.gumroad.com
 ```
 
-The scanner checks:
+The scanner covers UTF-8/UTF-16 marker encodings, regular files and ZIP-compatible package entries such as Android AABs according to current source tooling.
 
-- UTF-8 bytes;
-- UTF-16 little-endian bytes;
-- UTF-16 big-endian bytes;
-- regular files;
-- ZIP-compatible package entries such as Android AABs.
-
-The repeatable `--forbidden` option may be used for explicit marker lists, but normal CareNest package verification should retain both default markers.
+Normal CareNest package verification should retain both default markers.
 
 ## 5. Repository-only Gumroad branding
 
@@ -76,7 +72,7 @@ Repository placement rules are documented in:
 
 ## 6. Store-candidate configuration targets
 
-Current Store Package Configuration verifies Release configurations for:
+Store Package Configuration verifies the configured Release targets for:
 
 - Android;
 - Windows;
@@ -92,8 +88,7 @@ Store-package wrappers require an explicit supported target and delegate to stan
 Examples:
 
 ```bash
-CARENEST_TARGET=net10.0-android \
-./build/scripts/store-package-preflight.sh
+CARENEST_TARGET=net10.0-android ./build/scripts/store-package-preflight.sh
 ```
 
 ```powershell
@@ -107,34 +102,13 @@ The current wrapper does not accept/use a Gumroad or funding-link property.
 
 The inspection workflow generates non-production exact-source evidence.
 
-### Android
+Configured jobs may produce unsigned/unpackaged/simulator inspection artifacts by design. Before staging/upload, the applicable payload is scanned and provenance/checksum evidence is produced according to the workflow.
 
-- unsigned AAB inspection candidate;
-- payload scan before staging;
-- checksum/provenance;
-- artifact upload.
-
-### Windows
-
-- self-contained unpackaged inspection output;
-- payload scan before staging;
-- checksum/provenance;
-- artifact upload.
-
-### Apple
-
-- iOS simulator inspection build;
-- unsigned Mac Catalyst inspection publish;
-- payload scan/staging/checksums/provenance;
-- artifact upload.
-
-Production signing secrets are intentionally absent.
+Production signing secrets are intentionally absent from these internal inspection jobs.
 
 ## 9. Internal artifact boundary
 
-Inspection artifacts are engineering evidence only and may be unsigned, unpackaged or simulator-targeted by design.
-
-They must not be described as:
+Inspection artifacts are engineering evidence only and must not be described as:
 
 - production signed;
 - notarized;
@@ -144,45 +118,25 @@ They must not be described as:
 
 Final production packages require separate signing/provenance/smoke/manual validation and structured final-package evidence.
 
-## 10. Latest fully verified Gumroad rollout automated evidence
+## 10. Current automated evidence
 
-Exact verified implementation/source-policy source:
+Read the current accepted exact-source automation from:
 
-`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+`docs/releases/AUTOMATED_BASELINE.md`
 
-Verified on that exact revision:
+If store/build/workflow/stable-policy source changes after that exact boundary, run fresh exact-source verification according to `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`.
 
-- unit tests: **122/122**;
-- integration tests: **39/39**;
-- UI/source-policy tests: **175/175**;
-- total core tests: **336/336**;
-- Android Release build;
-- Windows Release build;
-- iOS simulator Release build;
-- Mac Catalyst Release build;
-- Android store-candidate configuration;
-- Windows store-candidate configuration;
-- iOS simulator store-candidate configuration;
-- Mac Catalyst store-candidate configuration;
-- CodeQL.
-
-Authoritative automated verification record:
-
-`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
-
-Current `main` now contains later verification-relevant release contracts, package-evidence tooling and workflow changes. Those newer changes require fresh exact-source automation before they can replace the verified baseline above.
-
-Do not assign the 336-test result to the newer source or predict a replacement total before the exact run is recorded.
+Do not copy an older test total onto a newer source.
 
 ## 11. Strict XAML behavior
 
-Store-candidate and inspection builds use:
+Store-candidate and inspection builds must preserve:
 
 - Source binding compilation enabled;
 - strict XAML compilation enabled;
-- `XC0022`–`XC0025` as errors.
-
-Do not weaken XAML warning policy to make store builds pass.
+- `XC0022`–`XC0025` as errors;
+- accurate typed binding contexts;
+- no warning/type-safety bypass merely to make a store build pass.
 
 ## 12. Store privacy/medical boundary
 
@@ -199,31 +153,31 @@ Every candidate/listing must preserve:
 
 ## 13. Current policy review and submission-time re-check
 
-A dated pre-submission review was completed on 2026-08-18 and is recorded at:
+Pre-submission review:
 
 `docs/releases/STORE_POLICY_REVIEW_20260818.md`
 
-That review covers current Apple App Review Guidelines, Google Play health-app/declaration/Data safety guidance and Microsoft Store sensitive-personal-information policy as they apply to the current CareNest boundary.
+The dated review is not store approval. At actual submission:
 
-Store policy changes over time. At actual submission:
-
-- re-open and review the current Apple rules for the exact package/listing;
-- re-open and review the current Google Play rules for the exact package/listing;
-- re-open and review Microsoft/Windows requirements where applicable;
-- review current rules applicable to external commerce/support links;
-- complete the live store-console health/privacy/data-safety declarations against the exact production binary;
+- re-open current Apple rules for the exact package/listing where applicable;
+- re-open current Google Play rules for the exact package/listing where applicable;
+- re-open current Microsoft/Windows requirements where applicable;
+- review current external-commerce/support rules;
+- complete live health/privacy/data-safety/store declarations against the exact production binary;
 - record date/source/conclusion;
-- change listing/package only through an explicit reviewed source change followed by new verification.
+- route required source/package changes through fresh review and verification.
 
-The current policy keeps Gumroad and Buy Me a Coffee out of the submitted application package.
+Use `docs/releases/templates/STORE_SUBMISSION_RECORD.md` for actual submission/review/approval/publication evidence.
 
 ## 14. Production signing
 
 Production signing remains outside Git and outside internal inspection workflows.
 
-Final packages must record exact source SHA/tag, identity/version, filename, SHA-256 and signing/notarization/store provenance.
+For final packages record exact source SHA/tag, identity/version, filename, SHA-256 and non-secret signing/notarization/store provenance.
 
-Never put private signing material, passwords, service credentials or account tokens into repository evidence or package-evidence notes.
+Never place private signing material, passwords, service credentials, access tokens or recovery codes in repository evidence or package-evidence notes.
+
+Use `docs/releases/templates/SIGNING_PROVENANCE_RECORD.md`.
 
 ## 15. Structured final-package evidence
 
@@ -237,41 +191,27 @@ For a final production artifact use `--stage production` according to:
 
 `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
 
-Production mode requires:
+Production mode must enforce the exact tag/source/HEAD/workspace/provenance/store-safe conditions documented by that guide.
 
-- immutable `v*` source tag;
-- tag SHA equals recorded source SHA;
-- checked-out HEAD equals recorded source SHA;
-- clean tracked workspace;
-- non-secret real signing/notarization/store-managed provenance text;
-- successful default store-safe scan;
-- output outside the payload.
-
-The resulting JSON records per-file SHA-256, top-level package/directory payload SHA-256 and the store-safe scanner result.
-
-The tool does not sign the package or prove store approval; independent signing/notarization/store provenance and manual validation remain required.
+The resulting evidence records SHA-256/provenance and store-safe scan state. The tool does not sign the package or prove store approval.
 
 ## 16. Final signed-package external-commerce inspection
 
-Even though source policy removes external-commerce surfaces, final signed packages must repeat/equivalently perform forbidden-marker scans for both:
+For every final signed/notarized/store candidate:
 
-```text
-buymeacoffee.com/sanskarIN
-ramsandesh.gumroad.com
-```
+- scan/equivalently inspect for `buymeacoffee.com/sanskarIN`;
+- scan/equivalently inspect for `ramsandesh.gumroad.com`;
+- manually verify installed app contains no Gumroad/BMC promotional card/action/artwork;
+- verify no health feature changes based on purchase/funding state;
+- retain package evidence JSON, independently checked SHA-256, signing/notarization/store provenance and installed-package smoke/manual evidence.
 
-Also manually verify that the installed app contains no Gumroad/Buy Me a Coffee promotional card/action/artwork and that no health feature changes based on purchase/funding state.
+## 17. Production evidence semantics
 
-For each final package retain:
+Use `docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md` and release-specific records linked by `docs/releases/PRODUCTION_EVIDENCE_INDEX.md`.
 
-- structured package evidence JSON;
-- independently checked package SHA-256;
-- signing/notarization/store provenance;
-- installed-package smoke/manual evidence.
+A configured store build or inspection artifact is not a substitute for real package/device/accessibility/signing/store evidence.
 
-This protects against packaging/tooling/regression differences after internal inspection.
-
-## 17. Change policy
+## 18. Change policy
 
 Do not reintroduce an application Gumroad link, payment SDK, funding link, external support card or promotional storefront asset as a routine store-specific switch.
 
