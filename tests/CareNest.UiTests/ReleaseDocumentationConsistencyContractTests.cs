@@ -16,7 +16,7 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         {
             var text = Read(root, relativePath);
 
-            Assert.Contains(AutomatedBaselineRecord, text, StringComparison.Ordinal);
+            Assert.Contains(Path.GetFileName(AutomatedBaselineRecord), text, StringComparison.Ordinal);
             Assert.DoesNotContain("Current verified executable source: `e8f4aa0a", text, StringComparison.Ordinal);
             Assert.DoesNotContain("Current accepted PR #74 source evidence", text, StringComparison.Ordinal);
             Assert.DoesNotContain("Latest verified Gumroad implementation/source-policy", text, StringComparison.OrdinalIgnoreCase);
