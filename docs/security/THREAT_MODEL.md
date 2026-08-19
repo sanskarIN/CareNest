@@ -1,7 +1,7 @@
 # CareNest Threat Model
 
 **Release line:** `1.0.0-rc.1`  
-**Verified executable source:** `e8f4aa0a2d95c15500fa59b83c5fc715fb202273`
+**Accepted automated baseline before current backup hardening:** `b6eecae66f74bd72bcb20d93508355542f9f3442`
 
 This threat model covers local structured records, encrypted documents, manual backups, app lock, reminders/appointments, exports, dependency/build automation, funding-free package policy, internal inspection artifacts and production provenance.
 
@@ -9,15 +9,17 @@ CareNest is organizational software. It does not claim clinical correctness, eme
 
 ## 1. Current automated evidence
 
-PR #74 source head `8908fa9f5f6d2b47123627e91f5aa5925d34a3c9` passed:
+Accepted source `b6eecae66f74bd72bcb20d93508355542f9f3442` passed:
 
-- 331/331 core tests;
+- 355/355 core tests;
 - all four configured Release platform builds;
 - all four store-candidate configurations;
 - Android/Windows/Apple inspection-artifact workflows;
 - CodeQL;
 - unsuppressed Dependency Audit;
 - strict compiled XAML binding policy.
+
+Any verification-relevant source change after that accepted source must pass a fresh exact-source matrix before replacing this baseline.
 
 This is source/automation evidence, not manual production security approval.
 
@@ -68,8 +70,8 @@ Protected/sensitive assets include:
 | Partial app-lock update | Multi-key rollback/fail closed | Process/OS termination can interrupt compensation |
 | Raw private-file theft | OS sandbox; encrypted document payloads | SQLite is not transparently whole-database encrypted |
 | Stolen backup | Password-derived AES-256-GCM | Weak password reduces protection |
-| Tampered/truncated backup | AEAD + authenticated v2 terminal + strict package validation | Malformed files can still cause bounded local DoS/resource usage |
-| Malicious backup topology | Entry allowlist/count/path validation | Structurally valid huge inputs remain resource risk |
+| Tampered/truncated backup | AEAD + authenticated v2 terminal + strict package validation | Malformed authenticated inputs can still consume bounded local resources before rejection |
+| Malicious backup topology/resource expansion | Entry allowlist/count/path validation plus pre-manifest per-entry/total uncompressed limits | Inputs within configured limits still consume local disk/CPU during validation |
 | Missing/corrupt document key | Fail closed; no unrelated replacement key | Real data becomes unrecoverable if genuine key is lost |
 | Partial document import | DB/filesystem compensation | Abrupt termination can interrupt rollback |
 | Plaintext export retention | Explicit handoff; app-owned staging cleanup | External copies cannot be remotely revoked |
@@ -127,11 +129,15 @@ Legacy v1 remains readable for documented compatibility. V1 is not described as 
 
 Removing legacy support would require genuine fixtures, migration/recovery design and explicit validation.
 
-## 9. Backup topology boundary
+## 9. Backup topology and resource boundary
 
-After decryption CareNest still validates package topology/manifest/database/key/document layout before extraction.
+After decryption CareNest validates archive metadata before manifest deserialization, then validates package topology/manifest/database/key/document layout before extraction.
 
 Invalid/duplicate/unexpected/nested/count-mismatched content fails rather than being accepted merely because AEAD authentication succeeded.
+
+Default resource ceilings are also enforced before manifest parsing/extraction: 1 MiB manifest, 1 GiB SQLite database, 512 MiB per encrypted document, 2 GiB total uncompressed payload and 5,000 documents. Backup creation applies the same topology/resource validator before encryption so current CareNest does not intentionally emit a backup outside its restore boundary.
+
+These ceilings bound, rather than eliminate, local CPU/disk consumption. Changing them is security- and compatibility-relevant and requires regression plus packaged compatibility review.
 
 ## 10. Document import consistency boundary
 
@@ -210,6 +216,7 @@ A new security/privacy architecture review is mandatory before adding/materially
 - in-app external payment/funding SDK/surface;
 - biometric/remote PIN/key recovery;
 - encrypted format/key ownership/legacy migration;
+- backup topology/resource ceilings or extraction behavior;
 - raw SQL/import execution paths;
 - release/audit/evidence weakening;
 - package signing/provenance logic.
