@@ -23,6 +23,16 @@ public sealed class ProductionEvidenceDocumentationContractTests
         "docs/releases/templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md",
     ];
 
+    private static readonly string[] MovingBaselineMarkers =
+    [
+        "94e867dce9519a8c1c71f1c4f1e5f833d6a3211f",
+        "b6eecae66f74bd72bcb20d93508355542f9f3442",
+        "30ee6c265104c64ec5a1a4013f592f7f058750e8",
+        "**336/336**",
+        "**355/355**",
+        "**370/370**",
+    ];
+
     [Fact]
     public void Production_evidence_standard_defines_fail_closed_result_states()
     {
@@ -38,6 +48,7 @@ public sealed class ProductionEvidenceDocumentationContractTests
         Assert.Contains("fictional or synthetic data", standard, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("private signing keys", standard, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("access tokens", standard, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(Path.GetFileName(AutomatedBaseline), standard, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -53,11 +64,16 @@ public sealed class ProductionEvidenceDocumentationContractTests
             var text = File.ReadAllText(path);
             Assert.Contains("NOT RUN", text, StringComparison.Ordinal);
             Assert.DoesNotContain("- [x]", text, StringComparison.OrdinalIgnoreCase);
+
+            foreach (var marker in MovingBaselineMarkers)
+            {
+                Assert.DoesNotContain(marker, text, StringComparison.Ordinal);
+            }
         }
     }
 
     [Fact]
-    public void Production_evidence_index_links_every_canonical_template()
+    public void Production_evidence_index_links_every_canonical_template_without_pinning_moving_results()
     {
         var root = FindRepositoryRoot();
         var index = Read(root, EvidenceIndex);
@@ -69,7 +85,10 @@ public sealed class ProductionEvidenceDocumentationContractTests
         }
 
         Assert.Contains("PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md", index, StringComparison.Ordinal);
+        Assert.Contains(Path.GetFileName(AutomatedBaseline), index, StringComparison.Ordinal);
         Assert.Contains("The templates are evidence containers, not evidence by themselves", index, StringComparison.OrdinalIgnoreCase);
+
+        AssertNoMovingBaselineMarkers(index);
     }
 
     [Fact]
@@ -83,13 +102,7 @@ public sealed class ProductionEvidenceDocumentationContractTests
             Assert.Contains(Path.GetFileName(AutomatedBaseline), text, StringComparison.Ordinal);
             Assert.Contains("PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md", text, StringComparison.Ordinal);
             Assert.Contains("PRODUCTION_EVIDENCE_INDEX.md", text, StringComparison.Ordinal);
-
-            Assert.DoesNotContain("94e867dce9519a8c1c71f1c4f1e5f833d6a3211f", text, StringComparison.Ordinal);
-            Assert.DoesNotContain("b6eecae66f74bd72bcb20d93508355542f9f3442", text, StringComparison.Ordinal);
-            Assert.DoesNotContain("30ee6c265104c64ec5a1a4013f592f7f058750e8", text, StringComparison.Ordinal);
-            Assert.DoesNotContain("**336/336**", text, StringComparison.Ordinal);
-            Assert.DoesNotContain("**355/355**", text, StringComparison.Ordinal);
-            Assert.DoesNotContain("**370/370**", text, StringComparison.Ordinal);
+            AssertNoMovingBaselineMarkers(text);
         }
     }
 
@@ -124,7 +137,7 @@ public sealed class ProductionEvidenceDocumentationContractTests
     }
 
     [Fact]
-    public void Documentation_navigation_surfaces_production_evidence_authorities_without_pinning_result_values()
+    public void Documentation_navigation_surfaces_production_evidence_authorities_without_pinning_result_values_in_contracts()
     {
         var root = FindRepositoryRoot();
         var hub = Read(root, DocumentationHub);
@@ -178,6 +191,14 @@ public sealed class ProductionEvidenceDocumentationContractTests
         }
 
         Assert.Contains("separates policy review, metadata completion, submission, approval and publication", store, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void AssertNoMovingBaselineMarkers(string text)
+    {
+        foreach (var marker in MovingBaselineMarkers)
+        {
+            Assert.DoesNotContain(marker, text, StringComparison.Ordinal);
+        }
     }
 
     private static string Read(string root, string relativePath) =>
