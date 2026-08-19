@@ -6,6 +6,8 @@ public sealed class ProductionEvidenceDocumentationContractTests
     private const string EvidenceIndex = "docs/releases/PRODUCTION_EVIDENCE_INDEX.md";
     private const string ReleaseChecklist = "docs/releases/RELEASE_CHECKLIST.md";
     private const string ReleaseEvidence = "docs/releases/RELEASE_EVIDENCE.md";
+    private const string DocumentationHub = "docs/README.md";
+    private const string DocumentationCatalog = "docs/DOCUMENTATION_CATALOG.md";
 
     private static readonly string[] EvidenceTemplates =
     [
@@ -97,6 +99,32 @@ public sealed class ProductionEvidenceDocumentationContractTests
         Assert.Contains("templates/STORE_SUBMISSION_RECORD.md", evidence, StringComparison.Ordinal);
         Assert.DoesNotContain("latest verified Gumroad implementation/source-policy baseline", evidence, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("**336/336**", evidence, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Documentation_navigation_surfaces_current_production_evidence_authorities()
+    {
+        var root = FindRepositoryRoot();
+        var hub = Read(root, DocumentationHub);
+        var catalog = Read(root, DocumentationCatalog);
+
+        foreach (var document in new[]
+                 {
+                     "PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md",
+                     "PRODUCTION_EVIDENCE_INDEX.md",
+                     "RELEASE_EVIDENCE.md",
+                 })
+        {
+            Assert.Contains(document, hub, StringComparison.Ordinal);
+            Assert.Contains(document, catalog, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("**370/370 total core tests**", hub, StringComparison.Ordinal);
+        Assert.Contains("**370/370**", catalog, StringComparison.Ordinal);
+        Assert.Contains("ProductionEvidenceDocumentationContractTests.cs", hub, StringComparison.Ordinal);
+        Assert.Contains("ProductionEvidenceDocumentationContractTests.cs", catalog, StringComparison.Ordinal);
+        Assert.DoesNotContain("those combined changes still require exact-head verification before promotion as a new automated baseline", hub, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("current candidate source must complete a fresh exact-source matrix before it replaces the recorded baseline", catalog, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
