@@ -151,12 +151,98 @@ public sealed class BackupArchiveValidatorTests
             BackupArchiveValidator.ValidateTopology(archive, manifest));
     }
 
+    [Fact]
+    public void OversizedManifest_IsRejectedBeforeParsing()
+    {
+        using var archive = CreateArchive(
+            ("manifest.json", 9),
+            ("database/carenest.db", 1));
+
+        Assert.Throws<InvalidDataException>(() =>
+            BackupArchiveValidator.ValidateBeforeManifest(archive, Limits(maxManifestBytes: 8)));
+    }
+
+    [Fact]
+    public void OversizedDatabase_IsRejectedBeforeExtraction()
+    {
+        using var archive = CreateArchive(
+            ("manifest.json", 1),
+            ("database/carenest.db", 9));
+
+        Assert.Throws<InvalidDataException>(() =>
+            BackupArchiveValidator.ValidateBeforeManifest(archive, Limits(maxDatabaseBytes: 8)));
+    }
+
+    [Fact]
+    public void OversizedDocument_IsRejectedBeforeExtraction()
+    {
+        using var archive = CreateArchive(
+            ("manifest.json", 1),
+            ("database/carenest.db", 1),
+            ("secrets/document-master-key.bin", 32),
+            ("documents/abc.cndoc", 9));
+
+        Assert.Throws<InvalidDataException>(() =>
+            BackupArchiveValidator.ValidateBeforeManifest(archive, Limits(maxDocumentBytes: 8)));
+    }
+
+    [Fact]
+    public void ExcessiveUncompressedPayload_IsRejectedBeforeExtraction()
+    {
+        using var archive = CreateArchive(
+            ("manifest.json", 4),
+            ("database/carenest.db", 4));
+
+        Assert.Throws<InvalidDataException>(() =>
+            BackupArchiveValidator.ValidateBeforeManifest(archive, Limits(maxTotalUncompressedBytes: 7)));
+    }
+
+    [Fact]
+    public void ExcessiveArchiveEntryCount_IsRejectedBeforeManifestParsing()
+    {
+        using var archive = CreateArchive(
+            ("manifest.json", 1),
+            ("database/carenest.db", 1),
+            ("secrets/document-master-key.bin", 32),
+            ("documents/a.cndoc", 1),
+            ("documents/b.cndoc", 1));
+
+        Assert.Throws<InvalidDataException>(() =>
+            BackupArchiveValidator.ValidateBeforeManifest(archive, Limits(maxDocumentCount: 1)));
+    }
+
+    [Fact]
+    public void ManifestDocumentCountBeyondLimit_IsRejected()
+    {
+        using var archive = CreateArchive(
+            ("manifest.json", 1),
+            ("database/carenest.db", 1));
+
+        Assert.Throws<InvalidDataException>(() =>
+            BackupArchiveValidator.ValidateTopology(
+                archive,
+                Manifest(documentCount: 2),
+                Limits(maxDocumentCount: 1)));
+    }
+
     private static BackupManifest Manifest(int documentCount) => new(
         AppConstants.BackupFormatVersion,
         5,
         new DateTime(2026, 8, 13, 9, 30, 0, DateTimeKind.Utc),
         "test",
         documentCount);
+
+    private static BackupArchiveLimits Limits(
+        long maxManifestBytes = 64,
+        long maxDatabaseBytes = 64,
+        long maxDocumentBytes = 64,
+        long maxTotalUncompressedBytes = 256,
+        int maxDocumentCount = 10) => new(
+            maxManifestBytes,
+            maxDatabaseBytes,
+            maxDocumentBytes,
+            maxTotalUncompressedBytes,
+            maxDocumentCount);
 
     private static ZipArchive CreateArchive(params (string Name, int Length)[] entries)
     {
