@@ -46,6 +46,17 @@ jobs:
             docs/releases/NEXT_STEPS.md
             docs/releases/RELEASE_PROCESS.md
             docs/releases/RELEASE_EVIDENCE.md
+            docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md
+            docs/releases/PRODUCTION_EVIDENCE_INDEX.md
+            docs/releases/templates/ANDROID_DEVICE_VALIDATION_RECORD.md
+            docs/releases/templates/WINDOWS_VALIDATION_RECORD.md
+            docs/releases/templates/IOS_DEVICE_VALIDATION_RECORD.md
+            docs/releases/templates/MACCATALYST_VALIDATION_RECORD.md
+            docs/releases/templates/ACCESSIBILITY_VALIDATION_RECORD.md
+            docs/releases/templates/PACKAGED_COMPATIBILITY_VALIDATION_RECORD.md
+            docs/releases/templates/SIGNING_PROVENANCE_RECORD.md
+            docs/releases/templates/STORE_SUBMISSION_RECORD.md
+            docs/releases/templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md
             docs/releases/SECURITY_RELEASE_REVIEW.md
             docs/releases/MANUAL_TEST_MATRIX.md
             docs/releases/PACKAGED_RELEASE_VALIDATION.md
