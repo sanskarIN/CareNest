@@ -110,9 +110,14 @@ internal static class ChunkedAead
         ReadOnlyMemory<byte> key,
         ReadOnlyMemory<byte> expectedMagic,
         ReadOnlyMemory<byte> associatedData,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        long? maxPlaintextBytes = null)
     {
         ValidateKey(key);
+        if (maxPlaintextBytes is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxPlaintextBytes), "Plaintext size limit must be positive when provided.");
+        }
 
         var magic = new byte[expectedMagic.Length];
         var baseNonce = new byte[NonceSize];
@@ -135,6 +140,7 @@ internal static class ChunkedAead
             await ReadExactlyAsync(source, baseNonce, cancellationToken);
 
             var counter = 0u;
+            long plaintextBytes = 0;
             using var aes = new AesGcm(key.Span, TagSize);
 
             while (true)
@@ -161,6 +167,20 @@ internal static class ChunkedAead
                 if (length < 0 || length > ChunkSize)
                 {
                     throw new InvalidDataException("Encrypted chunk length is invalid.");
+                }
+
+                try
+                {
+                    plaintextBytes = checked(plaintextBytes + length);
+                }
+                catch (OverflowException)
+                {
+                    throw new InvalidDataException("Encrypted stream plaintext size is invalid.");
+                }
+
+                if (maxPlaintextBytes.HasValue && plaintextBytes > maxPlaintextBytes.Value)
+                {
+                    throw new InvalidDataException("Encrypted stream plaintext exceeds the supported size limit.");
                 }
 
                 var tag = new byte[TagSize];
