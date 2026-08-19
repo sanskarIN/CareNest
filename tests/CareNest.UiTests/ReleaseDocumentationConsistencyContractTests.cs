@@ -9,15 +9,25 @@ public sealed class ReleaseDocumentationConsistencyContractTests
     private const string AutomatedBaselineRecord = "docs/releases/AUTOMATED_BASELINE.md";
 
     [Fact]
-    public void Stable_release_policy_documents_do_not_promote_superseded_intermediate_baselines()
+    public void Stable_release_policy_documents_use_dynamic_baseline_authority_without_pinning_moving_results()
     {
         var root = FindRepositoryRoot();
         foreach (var relativePath in StableReleasePolicyDocuments)
         {
             var text = Read(root, relativePath);
+
+            Assert.Contains(AutomatedBaselineRecord, text, StringComparison.Ordinal);
             Assert.DoesNotContain("Current verified executable source: `e8f4aa0a", text, StringComparison.Ordinal);
             Assert.DoesNotContain("Current accepted PR #74 source evidence", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("Latest verified Gumroad implementation/source-policy", text, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("Accepted automated baseline before current backup hardening", text, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("94e867dce9519a8c1c71f1c4f1e5f833d6a3211f", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("b6eecae66f74bd72bcb20d93508355542f9f3442", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("30ee6c265104c64ec5a1a4013f592f7f058750e8", text, StringComparison.Ordinal);
             Assert.DoesNotContain("**331/331**", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("**336/336**", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("**355/355**", text, StringComparison.Ordinal);
+            Assert.DoesNotContain("**370/370**", text, StringComparison.Ordinal);
         }
     }
 
@@ -68,11 +78,11 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         var root = FindRepositoryRoot();
         var submission = Read(root, "docs/releases/STORE_SUBMISSION_CHECKLIST.md");
 
-        Assert.Contains("- [ ] Live Google Play Health apps declaration", submission, StringComparison.Ordinal);
-        Assert.Contains("- [ ] Live Google Play Data safety", submission, StringComparison.Ordinal);
-        Assert.Contains("- [ ] Re-open current Apple policy sources", submission, StringComparison.Ordinal);
-        Assert.Contains("- [ ] Re-open current Google Play policy sources", submission, StringComparison.Ordinal);
-        Assert.Contains("- [ ] Re-open current Microsoft Store policy sources", submission, StringComparison.Ordinal);
+        Assert.Contains("Live Google Play Health apps declaration", submission, StringComparison.Ordinal);
+        Assert.Contains("Live Google Play Data safety", submission, StringComparison.Ordinal);
+        Assert.Contains("Re-open current Apple policy sources", submission, StringComparison.Ordinal);
+        Assert.Contains("Re-open current Google Play policy sources", submission, StringComparison.Ordinal);
+        Assert.Contains("Re-open current Microsoft Store policy sources", submission, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -117,8 +127,23 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         }
     }
 
+    [Fact]
+    public void Verification_protocol_classifies_production_evidence_policy_as_stable_and_avoids_recursive_result_pinning()
+    {
+        var root = FindRepositoryRoot();
+        var protocol = Read(root, "docs/releases/VERIFICATION_BRANCH_PROTOCOL.md");
+
+        Assert.Contains("docs/releases/RELEASE_CHECKLIST.md", protocol, StringComparison.Ordinal);
+        Assert.Contains("docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md", protocol, StringComparison.Ordinal);
+        Assert.Contains("docs/releases/PRODUCTION_EVIDENCE_INDEX.md", protocol, StringComparison.Ordinal);
+        Assert.Contains("canonical templates under `docs/releases/templates/`", protocol, StringComparison.Ordinal);
+        Assert.Contains("must not pin mutable SHA, workflow-run ID or test-count values inside dynamic evidence files", protocol, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Do not predict or publish a newer test total", protocol, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static readonly string[] StableReleasePolicyDocuments =
     [
+        "docs/releases/RELEASE_CHECKLIST.md",
         "docs/releases/STORE_BUILD_POLICY.md",
         "docs/releases/RELEASE_EVIDENCE.md",
         "docs/releases/RELEASE_PROCESS.md",
