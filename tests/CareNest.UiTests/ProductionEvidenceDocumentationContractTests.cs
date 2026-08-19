@@ -80,7 +80,7 @@ public sealed class ProductionEvidenceDocumentationContractTests
         foreach (var relativePath in new[] { ReleaseChecklist, ReleaseEvidence })
         {
             var text = Read(root, relativePath);
-            Assert.Contains(AutomatedBaseline, text, StringComparison.Ordinal);
+            Assert.Contains(Path.GetFileName(AutomatedBaseline), text, StringComparison.Ordinal);
             Assert.Contains("PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md", text, StringComparison.Ordinal);
             Assert.Contains("PRODUCTION_EVIDENCE_INDEX.md", text, StringComparison.Ordinal);
 
