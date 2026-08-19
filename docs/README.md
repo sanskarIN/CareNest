@@ -7,8 +7,10 @@
 </p>
 
 **Release line:** `1.0.0-rc.1`  
-**Documentation baseline:** 2026-08-18  
+**Documentation baseline:** 2026-08-19  
 **Current automated baseline:** `releases/AUTOMATED_BASELINE.md`  
+**Production evidence standard:** `releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`  
+**Production evidence index:** `releases/PRODUCTION_EVIDENCE_INDEX.md`  
 **Dependency/toolchain baseline:** `DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`  
 **Current store-policy review:** `releases/STORE_POLICY_REVIEW_20260818.md`  
 **Package evidence guide:** `releases/PACKAGE_EVIDENCE_TOOLING.md`  
@@ -32,14 +34,37 @@ The storefront is promoted throughout repository/documentation support and marke
 
 Use [`releases/AUTOMATED_BASELINE.md`](releases/AUTOMATED_BASELINE.md) for the latest **actually observed** exact-source automated result: source SHA, verification PR/marker, workflow IDs, test counts and conclusions.
 
-Use [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) whenever verification-relevant source changes after the recorded baseline.
+The accepted automated source before the current production-evidence-readiness continuation is `30ee6c265104c64ec5a1a4013f592f7f058750e8`, with **122/122 unit**, **54/54 integration**, **194/194 UI/source-policy**, and **370/370 total core tests** plus the recorded platform/store/security matrix green. Do not transfer those results to a newer head until that exact newer head completes its required matrix.
 
-Permanent historical verification records remain useful for their own exact source boundaries, including:
+Use [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) whenever verification-relevant source or release-governance documentation changes after the recorded baseline.
 
+Permanent historical verification records remain useful only for their own exact source boundaries, including:
+
+- [`releases/FINAL_CANDIDATE_VERIFICATION_20260818.md`](releases/FINAL_CANDIDATE_VERIFICATION_20260818.md);
 - [`releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`](releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md);
 - [`releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`](releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md).
 
 Do not copy an older test count onto a newer source revision.
+
+## Production validation evidence authority
+
+Use [`releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`](releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md) for evidence-quality rules and fail-closed result states.
+
+Use [`releases/PRODUCTION_EVIDENCE_INDEX.md`](releases/PRODUCTION_EVIDENCE_INDEX.md) for the canonical release-specific evidence workflow and templates covering:
+
+- Android installed/device validation;
+- Windows installed/manual validation;
+- iPhone/iPad real-device validation;
+- Mac Catalyst installed/manual validation;
+- accessibility validation;
+- packaged existing-data/document/backup compatibility;
+- signing/provenance;
+- store submission/review/approval/publication;
+- final production release approval.
+
+Canonical templates are evidence containers, not evidence by themselves. They intentionally start unperformed and must not be edited to look completed. Create release-specific copies and record only actual results.
+
+Allowed result states are `PASS`, `FAIL`, `BLOCKED`, `N/A`, and `NOT RUN`. Unknown, stale, blocked, or unperformed work must never be represented as a pass.
 
 ## Current dependency and toolchain authority
 
@@ -47,13 +72,15 @@ See [`DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`](DEPENDENCY_AND_TOOLCHAIN_BASELINE.m
 
 Executable source remains authoritative in `Directory.Packages.props`, `Directory.Build.props` and `.github/workflows/`.
 
-The current candidate includes maintained .NET MAUI/test/coverage dependencies and maintained GitHub Actions majors; those combined changes still require exact-head verification before promotion as a new automated baseline.
+The accepted `30ee6c...` source already completed the recorded exact-source automated matrix. Any newer dependency, workflow, runtime or verification-relevant documentation change still requires its own exact-head evidence before it replaces that accepted boundary.
 
 ## Current store-policy evidence
 
 Dated pre-submission review: [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md).
 
 The review compares the current product/package boundary with relevant Apple, Google Play and Microsoft Store policy areas. It does **not** mean CareNest is store-approved and does not replace final policy/store-console review against the exact production binary/listing on the submission date.
+
+Use [`releases/templates/STORE_SUBMISSION_RECORD.md`](releases/templates/STORE_SUBMISSION_RECORD.md) to keep policy review, metadata completion, submission, review, rejection, approval and publication as distinct states.
 
 ## Structured final-package evidence
 
@@ -81,14 +108,17 @@ python3 build/scripts/test-verify-documentation-links.py
 python3 build/scripts/verify-documentation-links.py
 ```
 
-The default exact-source gate excludes immutable `docs/history/` snapshots and the four dynamic post-verification status/evidence files. Use `--include-dynamic` for an explicit documentation-only audit after evidence promotion.
+The default exact-source gate excludes immutable `docs/history/` snapshots and designated dynamic post-verification status/evidence files. Use `--include-dynamic` only for the explicit dynamic-documentation audit described by the integrity guide.
 
 ## Primary documentation
 
 - [`DOCUMENTATION_CATALOG.md`](DOCUMENTATION_CATALOG.md) — complete navigation, audience and authority map.
 - [`COMPLETE_PROJECT_DOCUMENTATION.md`](COMPLETE_PROJECT_DOCUMENTATION.md) — end-to-end project reference.
 - [`DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`](DEPENDENCY_AND_TOOLCHAIN_BASELINE.md) — current package/action baseline and upgrade policy.
-- [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md) — complete Windows/Android/iOS/Mac Catalyst executable/package guide.
+- [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md) — Windows/Android/iOS/Mac Catalyst executable/package guide.
+- [`releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`](releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md) — production evidence quality/result-state contract.
+- [`releases/PRODUCTION_EVIDENCE_INDEX.md`](releases/PRODUCTION_EVIDENCE_INDEX.md) — production evidence workflow/templates.
+- [`releases/RELEASE_EVIDENCE.md`](releases/RELEASE_EVIDENCE.md) — release evidence contract.
 - [`releases/EXECUTABLE_BUILD_CHECKLIST.md`](releases/EXECUTABLE_BUILD_CHECKLIST.md) — concise release-operator build checklist.
 - [`releases/PACKAGE_EVIDENCE_TOOLING.md`](releases/PACKAGE_EVIDENCE_TOOLING.md) — final-package checksum/provenance tooling.
 - [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) — exact-head verification procedure.
@@ -215,6 +245,7 @@ The model separates explicit user intent, persisted occurrence state and OS requ
 - [`design/ACCESSIBILITY.md`](design/ACCESSIBILITY.md)
 - [`design/LOCALIZATION.md`](design/LOCALIZATION.md)
 - [`design/STORE_ASSETS.md`](design/STORE_ASSETS.md)
+- [`releases/templates/ACCESSIBILITY_VALIDATION_RECORD.md`](releases/templates/ACCESSIBILITY_VALIDATION_RECORD.md)
 
 Automated source/semantics checks do not replace real assistive-technology evidence.
 
@@ -236,6 +267,7 @@ Automated source/semantics checks do not replace real assistive-technology evide
 - [`testing/SETTINGS_LIFECYCLE_CONTRACT.md`](testing/SETTINGS_LIFECYCLE_CONTRACT.md)
 - [`testing/DOCUMENTATION_INTEGRITY.md`](testing/DOCUMENTATION_INTEGRITY.md)
 - [`../tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs`](../tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs)
+- [`../tests/CareNest.UiTests/ProductionEvidenceDocumentationContractTests.cs`](../tests/CareNest.UiTests/ProductionEvidenceDocumentationContractTests.cs)
 - [`../tests/CareNest.UiTests/PackageEvidenceToolContractTests.cs`](../tests/CareNest.UiTests/PackageEvidenceToolContractTests.cs)
 - [`../tests/CareNest.UiTests/DocumentationIntegrityToolContractTests.cs`](../tests/CareNest.UiTests/DocumentationIntegrityToolContractTests.cs)
 
@@ -247,6 +279,9 @@ Current operational documents:
 
 - [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md)
 - [`releases/EXECUTABLE_BUILD_CHECKLIST.md`](releases/EXECUTABLE_BUILD_CHECKLIST.md)
+- [`releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`](releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md)
+- [`releases/PRODUCTION_EVIDENCE_INDEX.md`](releases/PRODUCTION_EVIDENCE_INDEX.md)
+- [`releases/RELEASE_EVIDENCE.md`](releases/RELEASE_EVIDENCE.md)
 - [`releases/PACKAGE_EVIDENCE_TOOLING.md`](releases/PACKAGE_EVIDENCE_TOOLING.md)
 - [`releases/AUTOMATED_BASELINE.md`](releases/AUTOMATED_BASELINE.md)
 - [`releases/NEXT_STEPS.md`](releases/NEXT_STEPS.md)
@@ -260,7 +295,6 @@ Current operational documents:
 - [`releases/STORE_BUILD_POLICY.md`](releases/STORE_BUILD_POLICY.md)
 - [`releases/STORE_SUBMISSION_CHECKLIST.md`](releases/STORE_SUBMISSION_CHECKLIST.md)
 - [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md)
-- [`releases/RELEASE_EVIDENCE.md`](releases/RELEASE_EVIDENCE.md)
 
 Automated source completeness is not equivalent to production approval. Real-device/platform, accessibility, packaged compatibility, production signing, final package provenance, live store declarations, submission-day policy review, immutable tagged gates and publication/store approval remain distinct evidence categories.
 
