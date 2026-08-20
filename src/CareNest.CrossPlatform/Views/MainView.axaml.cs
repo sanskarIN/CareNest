@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 
 namespace CareNest.CrossPlatform.Views;
 
@@ -8,17 +7,10 @@ public sealed partial class MainView : UserControl
     public MainView()
     {
         InitializeComponent();
-        PlatformText.Text = $"Running on {GetPlatformName()}";
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-        PlatformText = this.FindControl<TextBlock>("PlatformText")
+        var platformText = this.FindControl<TextBlock>("PlatformText")
             ?? throw new InvalidOperationException("PlatformText control was not found.");
+        platformText.Text = $"Running on {GetPlatformName()}";
     }
-
-    private TextBlock PlatformText { get; set; } = null!;
 
     private static string GetPlatformName()
     {
