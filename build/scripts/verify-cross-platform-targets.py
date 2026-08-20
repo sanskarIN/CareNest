@@ -18,14 +18,28 @@ CHECKS = {
         "<TargetFramework>net10.0</TargetFramework>",
         "<PackageReference Include=\"Avalonia\" />",
     ),
+    "src/CareNest.CrossPlatform/App.axaml.cs": (
+        "class App : Avalonia.Application",
+        "IClassicDesktopStyleApplicationLifetime",
+        "ISingleViewApplicationLifetime",
+    ),
     "src/CareNest.CrossPlatform.Desktop/CareNest.CrossPlatform.Desktop.csproj": (
         "<TargetFramework>net10.0</TargetFramework>",
         "<PackageReference Include=\"Avalonia.Desktop\" />",
+    ),
+    "src/CareNest.CrossPlatform.Desktop/Program.cs": (
+        "AppBuilder.Configure<App>()",
+        ".UsePlatformDetect()",
+        ".StartWithClassicDesktopLifetime(args)",
     ),
     "src/CareNest.CrossPlatform.Browser/CareNest.CrossPlatform.Browser.csproj": (
         "Microsoft.NET.Sdk.WebAssembly",
         "<TargetFramework>net10.0-browser</TargetFramework>",
         "<PackageReference Include=\"Avalonia.Browser\" />",
+    ),
+    "src/CareNest.CrossPlatform.Browser/Program.cs": (
+        "AppBuilder.Configure<App>()",
+        ".StartBrowserAppAsync(\"out\")",
     ),
     "Directory.Packages.props": (
         "<PackageVersion Include=\"Avalonia\"",
@@ -97,7 +111,7 @@ def main() -> int:
     print(
         "CareNest cross-platform target verification passed: "
         "Android, iOS/iPadOS, macOS, Windows, Linux desktop and browser hosts are configured, "
-        "dependency-audited, release-gated and backed by well-formed Avalonia XAML."
+        "dependency-audited, release-gated, wired to their Avalonia lifetimes and backed by well-formed Avalonia XAML."
     )
     return 0
 
