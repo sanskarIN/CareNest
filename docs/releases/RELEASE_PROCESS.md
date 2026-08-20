@@ -1,67 +1,51 @@
 # CareNest Release Process
 
 **Release line:** `1.0.0-rc.1`  
-**Latest verified Gumroad implementation/source-policy source:** `94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`  
+**Current automated evidence authority:** `docs/releases/AUTOMATED_BASELINE.md`  
+**Production evidence standard:** `docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`  
+**Production evidence index:** `docs/releases/PRODUCTION_EVIDENCE_INDEX.md`  
 **Current store-policy review:** `docs/releases/STORE_POLICY_REVIEW_20260818.md`  
 **Package evidence guide:** `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`
 
-This document defines the end-to-end path from a source-complete release candidate to a public production release. Automated evidence, real-device evidence, package compatibility, accessibility, signing, structured package provenance, store-console declarations, current policy review and store approval are separate gates.
+This document defines the stable end-to-end path from a source-complete release candidate to a public production release.
+
+Do not pin a moving accepted source SHA, workflow run ID or test count here. Current exact-source automation belongs in `docs/releases/AUTOMATED_BASELINE.md` and its dated verification record.
 
 ## 1. Release principle
 
 A build is not production-approved merely because it compiles or passes tests.
 
-Public promotion requires the exact candidate source to satisfy applicable:
+Public promotion requires applicable evidence for:
 
-- formatting/tests/builds;
+- exact-source tests/builds;
 - CodeQL;
-- unsuppressed Dependency Audit;
-- store-candidate configuration builds;
-- package inspection/provenance;
-- real-device/platform behavior;
+- unsuppressed dependency audit;
+- store-candidate configuration;
+- store-safe payload inspection;
+- real platform/device behavior;
 - packaged existing-data/encrypted-data compatibility;
 - accessibility;
 - security/privacy review;
-- production signing;
-- final signed-package inspection;
-- structured final-package checksum/provenance evidence;
-- current store-policy/metadata/declaration review;
+- production signing/notarization;
+- final package checksum/provenance;
+- current store policy/metadata/declarations;
 - exact immutable release tag;
-- tagged Release Gate/Release Evidence;
-- publication evidence.
+- tagged release gates;
+- store submission/approval/publication where intended.
+
+Use `PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md` for `PASS`, `FAIL`, `BLOCKED`, `N/A` and `NOT RUN` semantics. Unknown/stale/unperformed work cannot be treated as passed.
 
 ## 2. Current automated baseline
 
-Latest exact verified Gumroad implementation/source-policy source:
+Read:
 
-`94e867dce9519a8c1c71f1c4f1e5f833d6a3211f`
+`docs/releases/AUTOMATED_BASELINE.md`
 
-Verified on that exact source:
+That dynamic record identifies the latest actually observed accepted exact-source automated boundary.
 
-- 122/122 unit tests;
-- 39/39 integration tests;
-- 175/175 UI/source-policy tests;
-- **336/336 total core tests**;
-- Android Release;
-- Windows Release;
-- iOS simulator Release;
-- Mac Catalyst Release;
-- Store Package Configuration on all four targets;
-- CodeQL.
+If verification-relevant source moves beyond it, follow `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` and record only results actually produced by the replacement exact source.
 
-Authoritative current automated evidence:
-
-`docs/releases/GUMROAD_ROLLOUT_VERIFICATION_20260817.md`
-
-Permanent compiled-binding evidence remains:
-
-`docs/releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`
-
-Older PR/source records remain historical evidence for their own exact boundaries and must not replace the current verified Gumroad baseline.
-
-The repository now contains later verification-relevant release-documentation contracts, package-evidence tooling, and CI/release workflow changes. Those changes require a fresh exact-source verification before a newer source can replace the verified baseline above.
-
-Do not infer a new test count from source inspection. Record the count actually produced by the exact verification run.
+Do not infer a test count from source inspection.
 
 ## 3. Freeze intended scope
 
@@ -72,11 +56,14 @@ Before production work:
 3. stop unrelated feature work;
 4. review `PROJECT_STATUS.md`;
 5. review `docs/releases/NEXT_STEPS.md`;
-6. review `docs/releases/STORE_POLICY_REVIEW_20260818.md`;
-7. review `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`;
-8. identify every applicable automated/manual/package/accessibility/signing/store blocker;
-9. confirm the Gumroad/Buy Me a Coffee-free application-package boundary remains intact;
-10. confirm the former SQLite audit suppression remains absent.
+6. review `docs/releases/RELEASE_CHECKLIST.md`;
+7. review `docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`;
+8. review `docs/releases/PRODUCTION_EVIDENCE_INDEX.md`;
+9. review `docs/releases/STORE_POLICY_REVIEW_20260818.md`;
+10. review `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`;
+11. identify every applicable automated/manual/package/accessibility/signing/store blocker;
+12. confirm the Gumroad/Buy Me a Coffee-free application-package boundary remains intact;
+13. confirm dependency audit remains unsuppressed under current policy.
 
 ## 4. Development preflight
 
@@ -92,111 +79,121 @@ or:
 ./build/scripts/release-preflight.ps1
 ```
 
-The current preflight is intended to fail closed for required source hygiene, formatting, builds/tests and unsuppressed dependency audit.
+Use the documented `CARENEST_TARGET` mechanism for explicit MAUI targets.
 
-For an explicit MAUI target, use the current `CARENEST_TARGET` mechanism documented in `docs/CONFIGURATION_REFERENCE.md`.
-
-There is no current application funding/storefront build toggle. Gumroad and Buy Me a Coffee are repository/documentation-only under the current RC1 policy.
+There is no current in-app funding/storefront toggle. Gumroad and Buy Me a Coffee remain repository/documentation-only under the RC1 package policy.
 
 ## 5. Exact-source automated verification
 
-If verification-relevant runtime/test/project/package/workflow/build-script/platform/release-policy source changes after the accepted baseline:
+When runtime, test, project, package, workflow, build script, platform or stable release-policy source changes:
 
-1. finish the intended source;
+1. finish intended changes;
 2. freeze exact candidate SHA;
-3. follow `docs/releases/VERIFICATION_BRANCH_PROTOCOL.md` where applicable;
-4. require all configured exact-source gates;
-5. fix actual failures instead of weakening policies;
-6. record exact source/run/test evidence;
-7. preserve failed evidence rather than re-labelling an unverified source as approved.
+3. follow `VERIFICATION_BRANCH_PROTOCOL.md` where applicable;
+4. require the full applicable exact-source matrix;
+5. fix actual failures instead of weakening policy;
+6. retain exact source/run/test evidence;
+7. preserve failed/cancelled/superseded evidence accurately.
 
-Documentation-only commits can sit above a verified executable source only when the documentation clearly distinguishes that verified source from later documentation-only heads and the changed docs are not verification-contract inputs.
+Dynamic evidence/status documentation may record a completed result after successful exact-source verification according to `VERIFICATION_BRANCH_PROTOCOL.md` without changing the frozen executable source boundary.
 
 ## 6. Required automated gates
 
 For a verification-relevant candidate require, as applicable:
 
-- CareNest CI, including package-evidence Python syntax/self-test;
+- CareNest CI;
+- platform-neutral formatting;
+- unit tests;
+- integration tests;
+- UI/source-policy tests;
+- Android Release;
+- Windows Release;
+- iOS simulator Release;
+- Mac Catalyst Release;
 - CodeQL;
-- Dependency Audit;
+- unsuppressed Dependency Audit;
 - Store Package Configuration;
 - Store Inspection Artifacts.
 
 Production-style `v*` tags additionally require:
 
-- Release Gate, including package-evidence tooling validation;
-- Release Evidence, including retained package-evidence tooling self-test output.
+- Release Gate;
+- Release Evidence.
 
-No single workflow substitutes for the other required release gates.
+No single workflow substitutes for another required gate.
 
-## 7. Manual platform matrix
+## 7. Production validation records
 
-Use `docs/releases/MANUAL_TEST_MATRIX.md` and `docs/PLATFORM_BEHAVIOR_MATRIX.md`.
+Use release-specific copies of the templates indexed by `PRODUCTION_EVIDENCE_INDEX.md`.
+
+Canonical templates cover:
+
+- Android;
+- Windows;
+- iPhone/iPad;
+- Mac Catalyst;
+- accessibility;
+- packaged compatibility;
+- signing provenance;
+- store submission/review/publication;
+- final production approval.
+
+Canonical templates remain unperformed. Release-specific copies contain actual evidence.
+
+## 8. Manual platform validation
+
+Validate representative installed behavior for:
 
 ### Android
 
-Validate representative real/emulated targets for permission, actual reminder delivery, exact/inexact alarm behavior, battery/vendor restrictions, reboot/restart/time-zone recovery, reminder actions/snooze/reconciliation, files/backups/app lock and accessibility.
+Permission, actual reminder delivery, exact/inexact alarm behavior, battery/vendor restrictions, reboot/restart/time-zone recovery, reminder actions/snooze/reconciliation, files, backup, app lock and accessibility.
 
 ### Windows
 
-Validate installed package behavior, core flows, running/closed-app reminder limitations, timer replacement/cancellation, files/backups/app lock, keyboard/focus and themes/accessibility.
+Installed package behavior, core flows, running/closed-app reminder limits, timer replacement/cancellation, files, backup, app lock, keyboard/focus and themes/accessibility.
 
 ### iPhone/iPad
 
-Use real devices for permission/delivery, lifecycle/time-zone behavior, reminder actions, files/backups/app lock, Dynamic Type, VoiceOver and notification-preview privacy.
+Real devices for permission/delivery, lifecycle/time-zone behavior, reminder actions, files, backup, app lock, Dynamic Type, VoiceOver and notification-preview privacy.
 
-Simulator compilation is not real-device evidence.
+Simulator compilation is not real-device notification evidence.
 
 ### Mac Catalyst
 
-Validate notifications/lifecycle, files/backups/app lock, keyboard/focus, themes/accessibility and signed/notarized behavior when available.
+Installed notification/lifecycle behavior, files, backup, app lock, keyboard/focus, themes/accessibility and signed/notarized behavior when applicable.
 
-## 8. Packaged SQLite compatibility
+## 9. Packaged compatibility
 
-With representative fictional prior data:
+Using fictional/synthetic representative prior data:
 
-1. install/upgrade through realistic package path;
-2. open database;
-3. run integrity validation;
-4. verify profiles/medicines/schedules/occurrences/logs/appointments/stock/documents/tags/settings;
-5. verify records remain readable/editable;
-6. verify schema version/migrations;
-7. rebuild/reconcile reminders;
-8. verify no duplicate/stale platform requests;
-9. record package/source/checksum/result evidence.
+- verify SQLite opens and passes integrity checks;
+- verify schema/migration behavior;
+- verify representative data remains readable/editable;
+- verify reminder rebuild/reconciliation;
+- verify encrypted documents;
+- verify current backup create/inspect/restore;
+- verify wrong-password/tamper/truncation/trailing-data rejection;
+- verify clean-install restore;
+- test genuine historical encrypted fixtures only where genuine prior bytes safely exist.
 
-A green dependency audit does not replace this gate.
+Do not manufacture a new artifact and call it historical evidence.
 
-## 9. Encrypted document/backup compatibility
-
-Using fictional data:
-
-- current encrypted document import/open/export/delete;
-- failed export cleanup;
-- missing/corrupt key fail-closed behavior;
-- current backup create/inspect/restore;
-- wrong-password rejection;
-- tamper/truncation/trailing-data rejection;
-- restored encrypted documents remain usable;
-- clean-install restore;
-- genuine historical fixtures when real prior bytes exist.
-
-Do not manufacture a new artifact and label it historical evidence.
+Use `docs/releases/templates/PACKAGED_COMPATIBILITY_VALIDATION_RECORD.md`.
 
 ## 10. Accessibility qualification
 
-Use representative assistive technology for:
+Use actual representative assistive technology for:
 
-- screen-reader names/order;
+- screen readers;
+- reading/focus order;
 - large text/scaling;
 - keyboard/focus;
-- light/dark/system contrast;
-- reduced motion;
+- contrast/themes;
 - color-independent meaning;
-- destructive confirmations;
+- reduced motion;
 - privacy-safe errors.
 
-Source/XAML semantics are not enough.
+Automated XAML/source semantics are not accessibility certification.
 
 ## 11. Security/privacy review
 
@@ -211,128 +208,74 @@ Review:
 - `docs/releases/SECURITY_RELEASE_REVIEW.md`;
 - `docs/releases/STORE_POLICY_REVIEW_20260818.md`.
 
-Confirm no required account/cloud/telemetry was introduced without design review and no medical/clinical claims crossed the product boundary.
+Confirm no medical/clinical claims cross the product boundary and no required account/cloud/telemetry behavior is introduced without explicit review.
 
 ## 12. External-commerce application-package boundary
 
-Current product invariant:
+Current invariant:
 
-- no external Buy Me a Coffee destination/card/command/artwork in distributed application source/package;
-- no external Gumroad destination/card/command/artwork in distributed application source/package;
-- repository-only voluntary support/storefront surfaces may remain in repository documentation/metadata;
-- purchase/funding never creates health/medical/reminder entitlement or local-health-data access;
-- Store Inspection payload scanning remains defense-in-depth;
-- final signed packages must be scanned again/equivalently inspected for both repository-only markers.
+- no external Buy Me a Coffee destination/card/command/artwork in the distributed application package;
+- no external Gumroad destination/card/command/artwork in the distributed application package;
+- repository-only support/storefront surfaces remain separate;
+- purchase/funding never changes health/reminder/medical behavior or local-health-data access.
 
-Current repository-only markers:
+Repository-only markers:
 
 ```text
 buymeacoffee.com/sanskarIN
 ramsandesh.gumroad.com
 ```
 
-Do not resurrect obsolete `CareNestShowFundingLink` or per-target external-commerce switches in the release process.
+Final signed packages must be scanned again/equivalently inspected for both markers.
 
 ## 13. Production signing
 
 Signing material stays outside Git.
 
-### Android
+Record only safe non-secret provenance using `docs/releases/templates/SIGNING_PROVENANCE_RECORD.md`.
 
-Configure production keystore/signing service securely, build intended signed AAB/APK, verify identity/permissions and record safe signing provenance/fingerprint information.
+For each channel verify package identity/version, signing/notarization state where applicable and final package checksum without committing private keys, keystores, certificate private material, passwords, service credentials, tokens or recovery codes.
 
-### Apple
+## 14. Final package evidence
 
-Configure certificates/provisioning securely, verify bundle/entitlements, archive/sign/notarize as applicable and record provenance.
-
-### Windows
-
-Configure production signing identity outside Git, produce intended signed package and record provenance.
-
-Never commit private keys, certificates containing private material, keystores, passwords or signing-service credentials.
-
-## 14. Final signed-package inspection and structured evidence
-
-For every production candidate record:
+For every production candidate retain:
 
 - exact source SHA/tag;
-- version/build;
-- package identity;
+- version/build/application identity;
 - filename;
 - SHA-256;
-- signing/notarization/store provenance;
-- final scan for `buymeacoffee.com/sanskarIN`;
-- final scan for `ramsandesh.gumroad.com`;
-- confirmation that no Gumroad/Buy Me a Coffee card/button/command/artwork exists in the installed app;
-- About/legal/support-contact inspection;
-- install/launch smoke test;
-- platform-specific smoke/manual result.
-
-Then generate a structured JSON record using:
-
-```text
-build/scripts/create-package-evidence.py
-```
-
-or the platform wrappers:
-
-```text
-build/scripts/create-package-evidence.sh
-build/scripts/create-package-evidence.ps1
-```
-
-For final production evidence use `--stage production`. The tool requires:
-
-- immutable `v*` source tag;
-- tag SHA equals recorded source SHA;
-- checked-out HEAD equals recorded source SHA;
-- clean tracked workspace;
 - non-secret signing/notarization/store provenance;
-- successful store-safe scan;
-- evidence output outside the package payload.
+- BMC/Gumroad forbidden-marker scan results;
+- installed smoke/manual result;
+- structured package evidence JSON.
 
-Retain the generated JSON and verify its payload SHA-256 against independently recorded package evidence.
+Use `build/scripts/create-package-evidence.py --stage production` according to `docs/releases/PACKAGE_EVIDENCE_TOOLING.md`.
 
-The tool does not sign packages and cannot prove store approval. Internal CI inspection artifacts are not automatically production packages.
+The tool does not sign packages or prove store approval.
 
 ## 15. Store metadata/policy review
 
-A dated preliminary review is recorded at:
+Preliminary review:
 
 `docs/releases/STORE_POLICY_REVIEW_20260818.md`
 
-At actual submission time re-open the official current Apple/Google/Microsoft rules as applicable and complete the live store-console forms against the exact production binary/listing.
+At actual submission time re-open current official Apple/Google/Microsoft rules as applicable and complete live store-console forms against the exact production binary/listing.
 
-Validate:
+Validate organizer/non-clinical claims, reminder limitations, privacy/data safety, permissions/capabilities, fictional screenshots, support/privacy/terms/security links and package identity.
 
-- organizer/non-clinical claims;
-- no diagnosis/treatment/dosage/clinical-risk claim;
-- no unapproved medical-device claim;
-- reminder limitation wording;
-- privacy/data-safety declarations;
-- screenshots with fictional data;
-- permission/capability descriptions;
-- support/privacy/terms/security links;
-- final package identity/version;
-- no listing screenshot/copy implies in-app Gumroad/Buy Me a Coffee functionality under the current package policy.
+For Google Play complete the live Health apps declaration and Data safety form where applicable.
 
-For Google Play specifically, complete the live Health apps declaration and Data safety form for the exact production feature/binary set.
+Record review date, official sources, conclusions and any required changes.
 
-For Apple, complete the current App Store privacy/store metadata for the exact production capabilities and package.
-
-For Microsoft distribution, complete the current privacy/store metadata where applicable.
-
-Record the submission-date policy sources, conclusions and required changes.
-
-## 16. Release notes/version metadata
+## 16. Release metadata
 
 Only after candidate selection:
 
 - finalize display version/build;
 - update `CHANGELOG.md`;
-- prepare release notes from `RELEASE_NOTES_TEMPLATE.md`;
-- update current status/next steps/evidence references;
-- avoid executable or verification-contract changes after final verification.
+- prepare release notes;
+- update current dynamic status/evidence references;
+- avoid verification-relevant changes after the final source freeze.
 
 If verification-relevant source changes, repeat exact-source verification.
 
@@ -341,7 +284,7 @@ If verification-relevant source changes, repeat exact-source verification.
 Only after applicable pre-tag blockers are complete:
 
 1. freeze exact approved commit;
-2. create intended immutable `v*` tag;
+2. create immutable approved `v*` tag;
 3. require tagged CareNest CI;
 4. require tagged CodeQL;
 5. require tagged Dependency Audit;
@@ -350,53 +293,46 @@ Only after applicable pre-tag blockers are complete:
 8. require tagged Release Gate;
 9. require tagged Release Evidence.
 
-Do not move/reuse a failed/rejected production tag to point at different source.
+Do not move/reuse a failed production tag for a different source.
 
-## 18. Release Evidence
+## 18. Release Evidence and approval
 
-Release Evidence must follow `docs/releases/RELEASE_EVIDENCE.md` and should record exact source/ref/run/attempt identity, source manifests/checksums, test/dependency evidence, package-evidence tooling self-test evidence, workspace integrity and evidence checksums according to the current workflow.
+Follow `docs/releases/RELEASE_EVIDENCE.md` for automated/manual/security/store/signing/package evidence.
 
-Artifact existence alone is not approval; the workflow conclusion and provenance must be accepted.
+Use a release-specific copy of `docs/releases/templates/PRODUCTION_RELEASE_APPROVAL_RECORD.md` for the final decision.
 
-Final signed-package structured provenance belongs in the release record in addition to CI evidence.
+Artifact existence alone is not approval. Green automation is necessary but not sufficient.
 
 ## 19. Publication
 
 After all required tag/manual/package/accessibility/signing/store gates pass:
 
 - confirm signed artifacts originate from exact tagged source;
-- confirm package evidence JSON/checksums/provenance;
-- publish GitHub release as appropriate;
-- submit/promote store packages;
-- record final publication/store-approval evidence;
-- update `PROJECT_STATUS.md`, `NEXT_STEPS.md`, `CHANGELOG.md` and handoff documentation.
+- confirm package evidence/checksums/provenance;
+- publish GitHub release where intended;
+- submit/promote store packages where intended;
+- record submission/review/approval/publication evidence;
+- update dynamic status/changelog/next-steps/handoff documentation.
 
-## 20. Post-release monitoring
+## 20. Post-release and hotfixes
 
-CareNest v1 has no hidden telemetry feedback loop.
-
-Use explicit channels such as GitHub Issues, support email and the security-reporting process.
-
-Never ask users to publicly upload real health records, backups, PINs/passwords/keys or other secrets.
-
-## 21. Hotfix process
+Use explicit support, issue and security-reporting channels. Never ask users to publish real health records, backups, passwords/PINs/keys or secrets.
 
 For a production defect:
 
 1. reproduce safely;
 2. add regression coverage;
-3. make smallest correct fix;
-4. update documentation;
-5. run affected/full exact-source gates;
-6. repeat applicable manual/package checks;
-7. build/sign corrected candidate;
-8. regenerate structured package evidence for the corrected package;
-9. create a new approved version/tag;
-10. require tagged gates;
-11. publish patch release.
+3. make the smallest correct fix;
+4. update affected documentation;
+5. run exact-source gates;
+6. repeat affected manual/package checks;
+7. rebuild/sign corrected candidate;
+8. regenerate package evidence;
+9. use a new approved version/tag;
+10. publish only after required gates pass.
 
-## 22. Release blocker rule
+## 21. Release blocker rule
 
-Any required gate that is failed, unknown, stale or not actually performed blocks production promotion unless explicitly documented as non-applicable with a defensible reason.
+Any required gate that is failed, unknown, stale, blocked or not actually performed blocks production promotion unless explicitly documented as `N/A` with a defensible reason under `PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`.
 
 CareNest must never be described as globally bug-free, medically authoritative, production-signed, store-approved or production-published merely because CI is green.
