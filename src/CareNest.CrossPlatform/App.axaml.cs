@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -6,7 +5,7 @@ using CareNest.CrossPlatform.Views;
 
 namespace CareNest.CrossPlatform;
 
-public sealed partial class App : Application
+public sealed partial class App : Avalonia.Application
 {
     public override void Initialize()
     {
