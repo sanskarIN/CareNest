@@ -49,6 +49,19 @@ jobs:
           dotnet restore tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj --nologo -p:NuGetAudit=true -p:NuGetAuditMode=all
           dotnet restore tests/CareNest.UiTests/CareNest.UiTests.csproj --nologo -p:NuGetAudit=true -p:NuGetAuditMode=all
 
+      - name: Audit Avalonia desktop dependency graph
+        run: >-
+          dotnet restore src/CareNest.CrossPlatform.Desktop/CareNest.CrossPlatform.Desktop.csproj
+          --nologo -p:NuGetAudit=true -p:NuGetAuditMode=all
+
+      - name: Install WebAssembly workload for browser dependency audit
+        run: dotnet workload install wasm-tools
+
+      - name: Audit Avalonia browser dependency graph
+        run: >-
+          dotnet restore src/CareNest.CrossPlatform.Browser/CareNest.CrossPlatform.Browser.csproj
+          --nologo -p:NuGetAudit=true -p:NuGetAuditMode=all
+
       - name: Install Android MAUI workload for app dependency audit
         run: dotnet workload install maui-android
 
