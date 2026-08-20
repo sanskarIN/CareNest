@@ -42,6 +42,18 @@ CHECKS = {
         "CareNest.CrossPlatform.Desktop.csproj",
         "CareNest.CrossPlatform.Browser.csproj",
     ),
+    ".github/workflows/dependency-review.yml": (
+        "Audit Avalonia desktop dependency graph",
+        "Audit Avalonia browser dependency graph",
+        "CareNest.CrossPlatform.Desktop.csproj",
+        "CareNest.CrossPlatform.Browser.csproj",
+    ),
+    ".github/workflows/release-gate.yml": (
+        "release-cross-platform-hosts:",
+        "CareNest.CrossPlatform.Desktop.csproj",
+        "CareNest.CrossPlatform.Browser.csproj",
+        "verify-cross-platform-targets.py",
+    ),
 }
 
 
@@ -67,7 +79,8 @@ def main() -> int:
 
     print(
         "CareNest cross-platform target verification passed: "
-        "Android, iOS/iPadOS, macOS, Windows, Linux desktop and browser hosts are configured."
+        "Android, iOS/iPadOS, macOS, Windows, Linux desktop and browser hosts are configured, "
+        "dependency-audited and release-gated."
     )
     return 0
 
