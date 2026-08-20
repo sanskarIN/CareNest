@@ -3,6 +3,7 @@
 
 from pathlib import Path
 import sys
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -56,6 +57,11 @@ CHECKS = {
     ),
 }
 
+AVALONIA_XAML = (
+    "src/CareNest.CrossPlatform/App.axaml",
+    "src/CareNest.CrossPlatform/Views/MainView.axaml",
+)
+
 
 def main() -> int:
     errors: list[str] = []
@@ -71,6 +77,17 @@ def main() -> int:
             if token not in text:
                 errors.append(f"{relative_path}: missing required token {token!r}")
 
+    for relative_path in AVALONIA_XAML:
+        path = ROOT / relative_path
+        if not path.is_file():
+            errors.append(f"missing required Avalonia XAML file: {relative_path}")
+            continue
+
+        try:
+            ET.parse(path)
+        except ET.ParseError as exc:
+            errors.append(f"{relative_path}: malformed XML/XAML: {exc}")
+
     if errors:
         print("CareNest cross-platform target verification failed:", file=sys.stderr)
         for error in errors:
@@ -80,7 +97,7 @@ def main() -> int:
     print(
         "CareNest cross-platform target verification passed: "
         "Android, iOS/iPadOS, macOS, Windows, Linux desktop and browser hosts are configured, "
-        "dependency-audited and release-gated."
+        "dependency-audited, release-gated and backed by well-formed Avalonia XAML."
     )
     return 0
 
