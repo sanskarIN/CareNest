@@ -15,6 +15,8 @@ CareNest uses two presentation-host families over the same .NET 10 domain/applic
 
 The Avalonia desktop host can also run on Windows and macOS. The MAUI application remains the primary established host for the original four platform families while the shared Avalonia presentation layer provides Linux and browser reach without replacing the existing verified MAUI source.
 
+**Production feature parity is not implied by configured build support.** The current Linux and browser hosts establish presentation/build reach. Each native/browser capability must be implemented through an appropriate host adapter and validated on the actual release candidate before it can be represented as production-ready.
+
 ## Projects
 
 ```text
@@ -124,15 +126,33 @@ Operating systems and browsers differ in notification delivery, camera/file-pick
 
 The browser host must not silently claim native background-reminder, unrestricted filesystem, or native secure-store behavior. Any browser-specific implementation must use explicit browser capability semantics and preserve CareNest's local-first/privacy model.
 
+Linux desktop behavior is likewise host-specific. A successful Avalonia desktop build does not by itself prove notification delivery, secret storage, desktop integration, packaged update behavior, accessibility or feature parity with the established MAUI application.
+
+## Production validation records
+
+Canonical production-validation templates now include the cross-platform hosts:
+
+- Linux desktop: `../releases/templates/LINUX_DESKTOP_VALIDATION_RECORD.md`;
+- Browser/WebAssembly: `../releases/templates/BROWSER_VALIDATION_RECORD.md`.
+
+Both canonical files start `NOT RUN`. They must remain unperformed templates. Create release-specific copies only when actual validation is performed, and use the result vocabulary from `../releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`.
+
+A Linux build or browser publish is automated build evidence. It is not manual production evidence for persistence, notifications/background execution, secure storage, file/camera integration, accessibility, packaging/signing, browser storage behavior or full application parity.
+
 ## Continuous integration
 
 `.github/workflows/ci.yml` verifies:
 
 - core unit/integration/UI-contract tests on Linux;
+- cross-platform configuration/evidence-boundary verification and its regression self-tests;
 - Android MAUI build;
 - Windows MAUI build;
 - iOS simulator + Mac Catalyst builds;
 - Avalonia Linux desktop build;
 - Avalonia WebAssembly publish.
 
-A green matrix proves that the configured source builds/tests passed for that exact commit. It does not replace real-device validation, signing/notarization, accessibility testing, store review or browser-specific manual validation.
+`.github/workflows/dependency-review.yml` audits the Avalonia desktop and browser dependency graphs in addition to the existing CareNest dependency graphs.
+
+The tagged release gate also requires the Linux/browser validation templates to exist and remain part of the production-evidence system.
+
+A green matrix proves that the configured source builds/tests passed for that exact commit. It does not replace real-device validation, browser validation, signing/notarization, accessibility testing, store review or other manual production evidence.
