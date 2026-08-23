@@ -113,6 +113,8 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         Assert.Contains("python3 build/scripts/test-create-package-evidence.py", workflow, StringComparison.Ordinal);
         Assert.Contains("python3 build/scripts/test-verify-documentation-links.py", workflow, StringComparison.Ordinal);
         Assert.Contains("python3 build/scripts/verify-documentation-links.py", workflow, StringComparison.Ordinal);
+        Assert.Contains("python3 build/scripts/verify-cross-platform-targets.py", workflow, StringComparison.Ordinal);
+        Assert.Contains("python3 build/scripts/test-verify-cross-platform-targets.py", workflow, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -208,6 +210,8 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         "docs/releases/templates/WINDOWS_VALIDATION_RECORD.md",
         "docs/releases/templates/IOS_DEVICE_VALIDATION_RECORD.md",
         "docs/releases/templates/MACCATALYST_VALIDATION_RECORD.md",
+        "docs/releases/templates/LINUX_DESKTOP_VALIDATION_RECORD.md",
+        "docs/releases/templates/BROWSER_VALIDATION_RECORD.md",
         "docs/releases/templates/ACCESSIBILITY_VALIDATION_RECORD.md",
         "docs/releases/templates/PACKAGED_COMPATIBILITY_VALIDATION_RECORD.md",
         "docs/releases/templates/SIGNING_PROVENANCE_RECORD.md",
@@ -223,11 +227,16 @@ public sealed class ReleaseDocumentationConsistencyContractTests
         "docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md",
         "docs/releases/PRODUCTION_EVIDENCE_INDEX.md",
         "docs/releases/PACKAGE_EVIDENCE_TOOLING.md",
+        "docs/releases/templates/LINUX_DESKTOP_VALIDATION_RECORD.md",
+        "docs/releases/templates/BROWSER_VALIDATION_RECORD.md",
+        "docs/setup/CROSS_PLATFORM.md",
         "docs/testing/DOCUMENTATION_INTEGRITY.md",
         "build/scripts/create-package-evidence.py",
         "build/scripts/test-create-package-evidence.py",
         "build/scripts/verify-documentation-links.py",
         "build/scripts/test-verify-documentation-links.py",
+        "build/scripts/verify-cross-platform-targets.py",
+        "build/scripts/test-verify-cross-platform-targets.py",
     ];
 
     private static string Read(string root, string relativePath) =>
