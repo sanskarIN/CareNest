@@ -22,6 +22,11 @@ FIXTURE_FILES = (
     "src/CareNest.CrossPlatform.Browser/Program.cs",
     "Directory.Packages.props",
     "CareNest.sln",
+    "README.md",
+    "docs/setup/CROSS_PLATFORM.md",
+    "docs/releases/PRODUCTION_EVIDENCE_INDEX.md",
+    "docs/releases/templates/LINUX_DESKTOP_VALIDATION_RECORD.md",
+    "docs/releases/templates/BROWSER_VALIDATION_RECORD.md",
     ".github/workflows/ci.yml",
     ".github/workflows/dependency-review.yml",
     ".github/workflows/release-gate.yml",
@@ -73,12 +78,27 @@ def main() -> int:
         desktop_program.write_text(original_desktop, encoding="utf-8")
 
         main_view = fixture / "src/CareNest.CrossPlatform/Views/MainView.axaml"
-        main_view.write_text(main_view.read_text(encoding="utf-8") + "\n<broken>", encoding="utf-8")
+        original_main_view = main_view.read_text(encoding="utf-8")
+        main_view.write_text(original_main_view + "\n<broken>", encoding="utf-8")
         malformed_xaml = run_verifier(fixture)
         require(malformed_xaml.returncode == 1, "malformed Avalonia XAML was not rejected")
         require(
             "malformed XML/XAML" in malformed_xaml.stderr,
             "malformed Avalonia XAML failure was not classified clearly",
+        )
+        main_view.write_text(original_main_view, encoding="utf-8")
+
+        browser_record = fixture / "docs/releases/templates/BROWSER_VALIDATION_RECORD.md"
+        original_browser_record = browser_record.read_text(encoding="utf-8")
+        browser_record.write_text(
+            original_browser_record.replace("Result status: `NOT RUN`", "Result status: `PASS`"),
+            encoding="utf-8",
+        )
+        unsafe_evidence_default = run_verifier(fixture)
+        require(unsafe_evidence_default.returncode == 1, "pre-completed browser evidence template was not rejected")
+        require(
+            "Result status: `NOT RUN`" in unsafe_evidence_default.stderr,
+            "browser evidence failure did not identify the required fail-closed default",
         )
 
     print("Cross-platform target verifier self-tests passed.")
