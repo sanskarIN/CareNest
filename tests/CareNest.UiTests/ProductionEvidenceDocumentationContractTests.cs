@@ -16,6 +16,8 @@ public sealed class ProductionEvidenceDocumentationContractTests
         "docs/releases/templates/WINDOWS_VALIDATION_RECORD.md",
         "docs/releases/templates/IOS_DEVICE_VALIDATION_RECORD.md",
         "docs/releases/templates/MACCATALYST_VALIDATION_RECORD.md",
+        "docs/releases/templates/LINUX_DESKTOP_VALIDATION_RECORD.md",
+        "docs/releases/templates/BROWSER_VALIDATION_RECORD.md",
         "docs/releases/templates/ACCESSIBILITY_VALIDATION_RECORD.md",
         "docs/releases/templates/PACKAGED_COMPATIBILITY_VALIDATION_RECORD.md",
         "docs/releases/templates/SIGNING_PROVENANCE_RECORD.md",
