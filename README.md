@@ -8,7 +8,7 @@
 
 > **Current automated verification authority:** [`docs/releases/AUTOMATED_BASELINE.md`](docs/releases/AUTOMATED_BASELINE.md). It records only exact-source results that actually ran. Permanent dated verification records remain under `docs/releases/`; historical test counts are not automatically assigned to newer source.
 
-CareNest is an open-source, local-first family health organizer built with .NET MAUI and C#. It helps users organize medicine reminders, appointments, encrypted health documents, stock/refill notes, reports, backups and multiple local profiles without requiring a CareNest account or CareNest-owned cloud service.
+CareNest is an open-source, local-first family health organizer built with .NET 10, C# and two presentation-host families: .NET MAUI for the established Android/iOS/iPadOS/Mac Catalyst/Windows application and Avalonia for Linux desktop and WebAssembly/browser reach. It helps users organize medicine reminders, appointments, encrypted health documents, stock/refill notes, reports, backups and multiple local profiles without requiring a CareNest account or CareNest-owned cloud service.
 
 > **Medical limitation:** CareNest is organizational software. It does not diagnose conditions, calculate or infer dosage, recommend treatment, perform clinical medication-interaction checking, calculate clinical risk, verify adherence, replace a clinician/pharmacist, provide emergency services, or guarantee operating-system notification delivery.
 
@@ -31,11 +31,11 @@ Current release line:
 
 `1.0.0-rc.1`
 
-The intended source-controlled RC1 feature scope is implemented and heavily automated. The current candidate also includes release/documentation/package-evidence tooling, dependency/action maintenance and final bug-hardening changes that require a fresh exact-head verification before a newer automated baseline is promoted.
+The intended source-controlled RC1 feature scope is implemented and heavily automated. PR #84 is the current verification-relevant continuation for Linux desktop and WebAssembly/browser presentation hosts, cross-platform configuration verification and associated dependency/release gates. Those new hosts prove configured build/presentation reach only; production feature parity remains evidence-driven and platform-specific.
 
-Production promotion still requires applicable real-device/platform validation, accessibility evidence, packaged existing-data/encrypted-data compatibility, production signing, final signed-package inspection/provenance, live store declarations/current policy review, exact production tagging and publication evidence.
+Production promotion still requires applicable real-device/platform/browser validation, accessibility evidence, packaged existing-data/encrypted-data compatibility, production signing, final signed-package inspection/provenance, live store declarations/current policy review, exact production tagging and publication evidence.
 
-Use [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/releases/AUTOMATED_BASELINE.md`](docs/releases/AUTOMATED_BASELINE.md) and [`docs/releases/NEXT_STEPS.md`](docs/releases/NEXT_STEPS.md) for the exact current state.
+Use [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/releases/AUTOMATED_BASELINE.md`](docs/releases/AUTOMATED_BASELINE.md), [`docs/releases/NEXT_STEPS.md`](docs/releases/NEXT_STEPS.md) and [`docs/setup/CROSS_PLATFORM.md`](docs/setup/CROSS_PLATFORM.md) for the exact current state and platform boundaries.
 
 ## Highlights
 
@@ -57,8 +57,11 @@ Use [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/releases/AUTOMATED_BASELINE
 - Per-profile and aggregate CSV/PDF/JSON/report/export workflows with privacy boundaries.
 - Quiet-hours/reminder diagnostics/developer support settings.
 - Light/dark/system theme support, reduced-motion/large-interface settings and accessibility-oriented source contracts.
-- Android, iOS/iPadOS, Mac Catalyst and Windows targets.
-- Strict compiled XAML binding policy with `XC0022`–`XC0025` as errors.
+- Established .NET MAUI targets for Android, iOS/iPadOS, Mac Catalyst and Windows.
+- Avalonia Desktop host for Linux-capable desktop builds and Avalonia Browser host for modern WebAssembly-capable browsers.
+- Explicit capability/parity boundary: configured Linux/browser build reach is not presented as native notification, secure-store, background-execution or full feature-parity evidence.
+- Strict compiled MAUI XAML binding policy with `XC0022`–`XC0025` as errors.
+- Fail-closed Avalonia XAML/host-wiring configuration verification with mutation-style self-tests.
 - CodeQL, blocking dependency audit, release gates and package-inspection workflows.
 - Deterministic structured final-package evidence tooling.
 - Offline stable documentation-link integrity checks.
@@ -66,10 +69,14 @@ Use [`PROJECT_STATUS.md`](PROJECT_STATUS.md), [`docs/releases/AUTOMATED_BASELINE
 
 ## Current platform targets
 
-- Android: `net10.0-android`, minimum API 24.
-- iOS/iPadOS: `net10.0-ios`, minimum iOS 15.
-- Mac Catalyst: `net10.0-maccatalyst`, minimum 15.
-- Windows: `net10.0-windows10.0.19041.0`, minimum 10.0.19041.0.
+- Android: .NET MAUI `net10.0-android`, minimum API 24.
+- iOS/iPadOS: .NET MAUI `net10.0-ios`, minimum iOS 15.
+- Mac Catalyst: .NET MAUI `net10.0-maccatalyst`, minimum 15.
+- Windows: .NET MAUI `net10.0-windows10.0.19041.0`, minimum 10.0.19041.0.
+- Linux desktop: Avalonia Desktop host targeting `net10.0`.
+- Modern WebAssembly-capable browsers: Avalonia Browser host targeting `net10.0-browser`.
+
+The Avalonia desktop host can also execute on supported Windows/macOS environments, but the MAUI application remains the established primary host for the original four platform families. See [`docs/setup/CROSS_PLATFORM.md`](docs/setup/CROSS_PLATFORM.md) for build commands and capability boundaries.
 
 Application identity:
 
@@ -80,7 +87,8 @@ Application identity:
 ## Technology
 
 - .NET 10 / .NET MAUI
-- C# / XAML
+- Avalonia Desktop / Avalonia Browser WebAssembly
+- C# / XAML / Avalonia XAML
 - MVVM-style presentation separation
 - SQLite / `sqlite-net-pcl`
 - authenticated .NET cryptography for document/backup payloads
@@ -99,7 +107,10 @@ src/
   CareNest.Domain/
   CareNest.Application/
   CareNest.Infrastructure/
-  CareNest.App/
+  CareNest.App/                       # MAUI Android/iOS/Mac Catalyst/Windows
+  CareNest.CrossPlatform/             # shared Avalonia application/views
+  CareNest.CrossPlatform.Desktop/     # Linux/Windows/macOS Avalonia entry point
+  CareNest.CrossPlatform.Browser/     # WebAssembly Avalonia entry point
 tests/
   CareNest.UnitTests/
   CareNest.IntegrationTests/
@@ -121,10 +132,16 @@ build/scripts/
   workflows/
 ```
 
-Intended dependency direction:
+Intended dependency direction keeps platform-neutral business rules outside presentation hosts:
 
 ```text
-CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure <- CareNest.App
+CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure
+                                                        ^
+                                                        |
+                  CareNest.App (MAUI) ------------------+
+                  CareNest.CrossPlatform (Avalonia) ----+
+                    |- CareNest.CrossPlatform.Desktop
+                    `- CareNest.CrossPlatform.Browser
 ```
 
 ## Quick start
@@ -146,13 +163,15 @@ Repository tooling checks:
 python3 build/scripts/test-create-package-evidence.py
 python3 build/scripts/test-verify-documentation-links.py
 python3 build/scripts/verify-documentation-links.py
+python3 build/scripts/verify-cross-platform-targets.py
+python3 build/scripts/test-verify-cross-platform-targets.py
 ```
 
-For MAUI platform workloads and target-specific commands, use [`docs/setup/DEVELOPMENT.md`](docs/setup/DEVELOPMENT.md) and [`docs/setup/PLATFORM_SETUP.md`](docs/setup/PLATFORM_SETUP.md).
+For MAUI platform workloads and target-specific commands, use [`docs/setup/DEVELOPMENT.md`](docs/setup/DEVELOPMENT.md) and [`docs/setup/PLATFORM_SETUP.md`](docs/setup/PLATFORM_SETUP.md). For Linux desktop and WebAssembly/browser commands and capability boundaries, use [`docs/setup/CROSS_PLATFORM.md`](docs/setup/CROSS_PLATFORM.md).
 
 ## Strict XAML compiled bindings
 
-The app project currently enables:
+The MAUI app project currently enables:
 
 ```xml
 <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
@@ -160,7 +179,7 @@ The app project currently enables:
 <WarningsAsErrors>$(WarningsAsErrors);XC0022;XC0023;XC0024;XC0025</WarningsAsErrors>
 ```
 
-Binding-bearing pages/templates are typed for XamlC, and repository tests protect the policy from regression.
+Binding-bearing MAUI pages/templates are typed for XamlC, and repository tests protect the policy from regression. Avalonia XAML used by the cross-platform host is additionally XML-parsed by `build/scripts/verify-cross-platform-targets.py` so malformed XAML fails before expensive platform builds.
 
 ## Privacy model
 
@@ -186,15 +205,17 @@ CareNest separates:
 
 Because database and OS scheduling are not one atomic transaction, the implementation uses deterministic planning, reconciliation, cancellation-first ordering and compensation/recovery. See [`docs/testing/REMINDER_SCHEDULING_CONTRACT.md`](docs/testing/REMINDER_SCHEDULING_CONTRACT.md).
 
+The current cross-platform landing hosts do not claim that native MAUI reminder/background behavior is already equivalent on Linux or in a browser. Any host-specific implementation must preserve explicit capability semantics and be validated on that platform.
+
 ## File, camera and share behavior
 
-CareNest supports user-initiated document/file selection and supported camera capture through an application file gateway. The MAUI implementation honors cancellation before/after application-controlled picker/camera boundaries and disposes a newly opened stream if cancellation arrives during stream opening.
+The established MAUI application supports user-initiated document/file selection and supported camera capture through an application file gateway. The MAUI implementation honors cancellation before/after application-controlled picker/camera boundaries and disposes a newly opened stream if cancellation arrives during stream opening.
 
-This does not claim that every operating-system picker can be programmatically force-cancelled by a .NET cancellation token.
+This does not claim that every operating-system picker can be programmatically force-cancelled by a .NET cancellation token, or that browser/Linux adapters already provide identical file, camera, share or secure-storage behavior.
 
 ## Security model
 
-CareNest uses separate controls for structured data, encrypted documents, backups, secure-store secrets and optional app lock. Exported copies and compromised devices remain outside some protections. See [`SECURITY.md`](SECURITY.md), [`docs/security/SECURITY_MODEL.md`](docs/security/SECURITY_MODEL.md) and [`docs/security/THREAT_MODEL.md`](docs/security/THREAT_MODEL.md).
+CareNest uses separate controls for structured data, encrypted documents, backups, secure-store secrets and optional app lock. Exported copies and compromised devices remain outside some protections. Browser and native operating systems also expose different storage/security primitives; cross-platform adapters must preserve the documented local-first/privacy boundary rather than silently weakening it. See [`SECURITY.md`](SECURITY.md), [`docs/security/SECURITY_MODEL.md`](docs/security/SECURITY_MODEL.md) and [`docs/security/THREAT_MODEL.md`](docs/security/THREAT_MODEL.md).
 
 ## Automated verification
 
@@ -206,7 +227,9 @@ Exact-head procedure for a newer verification-relevant source:
 
 [`docs/releases/VERIFICATION_BRANCH_PROTOCOL.md`](docs/releases/VERIFICATION_BRANCH_PROTOCOL.md)
 
-A green automated matrix means the configured automated gates passed for the named source. It does **not** guarantee global bug-freedom or complete manual production qualification.
+PR #84 extends the CI source configuration with Linux desktop Release build and WebAssembly browser Release publish jobs plus cross-platform configuration/self-test gates. Those checks must succeed for the final exact head before the new source can replace an older accepted automated baseline.
+
+A green automated matrix means the configured automated gates passed for the named source. It does **not** guarantee global bug-freedom, complete feature parity or complete manual production qualification.
 
 ## Dependency and toolchain maintenance
 
@@ -214,7 +237,7 @@ Current source package versions and GitHub Actions majors:
 
 [`docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`](docs/DEPENDENCY_AND_TOOLCHAIN_BASELINE.md)
 
-Dependency upgrades remain subject to unsuppressed audit and the applicable exact-source build/test/platform/store matrix. A historically green isolated Dependabot PR does not prove the final combined candidate; the combined candidate must pass.
+Dependency upgrades remain subject to unsuppressed audit and the applicable exact-source build/test/platform/store matrix. Avalonia desktop and browser dependency graphs are included in the current cross-platform Dependency Audit configuration. A historically green isolated Dependabot PR does not prove the final combined candidate; the combined candidate must pass.
 
 ## Documentation integrity
 
@@ -256,6 +279,7 @@ Start with:
 - [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — user guide.
 - [`docs/DEVELOPER_REFERENCE.md`](docs/DEVELOPER_REFERENCE.md) — developer reference.
 - [`docs/CONFIGURATION_REFERENCE.md`](docs/CONFIGURATION_REFERENCE.md) — build/configuration/tooling reference.
+- [`docs/setup/CROSS_PLATFORM.md`](docs/setup/CROSS_PLATFORM.md) — Linux/browser host setup, architecture and capability boundaries.
 - [`docs/testing/TESTING_GUIDE.md`](docs/testing/TESTING_GUIDE.md) — testing strategy.
 - [`docs/testing/DOCUMENTATION_INTEGRITY.md`](docs/testing/DOCUMENTATION_INTEGRITY.md) — documentation link gate.
 - [`docs/KNOWN_LIMITATIONS.md`](docs/KNOWN_LIMITATIONS.md) — limitations.
