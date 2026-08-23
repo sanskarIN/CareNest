@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Fail closed when CareNest cross-platform build targets drift out of configuration."""
 
+from argparse import ArgumentParser
 from pathlib import Path
 import sys
 import xml.etree.ElementTree as ET
 
-ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_ROOT = Path(__file__).resolve().parents[2]
 
 CHECKS = {
     "src/CareNest.App/CareNest.App.csproj": (
@@ -77,11 +78,11 @@ AVALONIA_XAML = (
 )
 
 
-def main() -> int:
+def collect_errors(root: Path) -> list[str]:
     errors: list[str] = []
 
     for relative_path, required_tokens in CHECKS.items():
-        path = ROOT / relative_path
+        path = root / relative_path
         if not path.is_file():
             errors.append(f"missing required cross-platform file: {relative_path}")
             continue
@@ -92,7 +93,7 @@ def main() -> int:
                 errors.append(f"{relative_path}: missing required token {token!r}")
 
     for relative_path in AVALONIA_XAML:
-        path = ROOT / relative_path
+        path = root / relative_path
         if not path.is_file():
             errors.append(f"missing required Avalonia XAML file: {relative_path}")
             continue
@@ -101,6 +102,24 @@ def main() -> int:
             ET.parse(path)
         except ET.ParseError as exc:
             errors.append(f"{relative_path}: malformed XML/XAML: {exc}")
+
+    return errors
+
+
+def parse_args() -> Path:
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=DEFAULT_ROOT,
+        help="repository root to verify (defaults to the current CareNest checkout)",
+    )
+    return parser.parse_args().root.resolve()
+
+
+def main() -> int:
+    root = parse_args()
+    errors = collect_errors(root)
 
     if errors:
         print("CareNest cross-platform target verification failed:", file=sys.stderr)
