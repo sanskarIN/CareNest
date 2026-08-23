@@ -17,14 +17,19 @@ Read first:
 - `PACKAGE_EVIDENCE_TOOLING.md`;
 - `RELEASE_CHECKLIST.md`;
 - `RELEASE_EVIDENCE.md`;
-- `NEXT_STEPS.md`.
+- `NEXT_STEPS.md`;
+- `../setup/CROSS_PLATFORM.md` for Linux/browser host scope and capability boundaries.
 
 ## Platform validation templates
 
 - Android: `templates/ANDROID_DEVICE_VALIDATION_RECORD.md`;
 - Windows: `templates/WINDOWS_VALIDATION_RECORD.md`;
 - iPhone/iPad: `templates/IOS_DEVICE_VALIDATION_RECORD.md`;
-- Mac Catalyst: `templates/MACCATALYST_VALIDATION_RECORD.md`.
+- Mac Catalyst: `templates/MACCATALYST_VALIDATION_RECORD.md`;
+- Linux desktop: `templates/LINUX_DESKTOP_VALIDATION_RECORD.md`;
+- Browser/WebAssembly: `templates/BROWSER_VALIDATION_RECORD.md`.
+
+Linux and browser templates are intentionally explicit about the difference between configured build/presentation reach and implemented production feature parity. A successful Avalonia build or publish cannot be copied into native capability rows as a manual `PASS`.
 
 ## Cross-platform production templates
 
@@ -51,6 +56,8 @@ Recommended naming examples:
 - `windows-<build>-<date>.md`;
 - `ios-iphone-<version>-<date>.md`;
 - `maccatalyst-<version>-<date>.md`;
+- `linux-<distro>-<desktop>-<date>.md`;
+- `browser-<browser>-<version>-<date>.md`;
 - `accessibility-<platform>-<assistive-tech>-<date>.md`;
 - `compatibility-<origin>-to-<target>-<date>.md`;
 - `signing-<platform>-<date>.md`;
@@ -62,6 +69,8 @@ Recommended naming examples:
 Use fictional/synthetic CareNest data for public/shared evidence.
 
 Do not commit real medical data, prescription/document contents, passwords, PINs, private keys, signing secrets, access tokens, recovery codes or service credentials.
+
+For browser evidence, also avoid exposing sensitive values through URLs, query strings, console output, screenshots of real records or unintended browser-storage dumps.
 
 ## Result-state rule
 
@@ -75,8 +84,10 @@ Every release-specific record uses the status vocabulary defined by `PRODUCTION_
 
 Unknown, stale or unperformed work is not a pass.
 
+A platform build/publish success is automated build evidence only. It is not manual production evidence for notification delivery, secure storage, persistence, accessibility, background execution, filesystem/camera integration, packaging/signing or full feature parity unless those behaviors were actually exercised on the named release candidate.
+
 ## Current state rule
 
 Use `AUTOMATED_BASELINE.md` for the current accepted exact-source automation and `NEXT_STEPS.md` / `PROJECT_STATUS.md` for current operational status.
 
-The remaining production blockers must stay open until actual package/device/accessibility/signing/store evidence exists. A canonical template, green source build or simulator compile is not production evidence for a manual row.
+The remaining production blockers must stay open until actual package/device/browser/accessibility/signing/store evidence exists. A canonical template, green source build, simulator compile, Linux build or WebAssembly publish is not production evidence for a manual row.
