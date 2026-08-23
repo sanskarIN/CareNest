@@ -35,9 +35,12 @@ jobs:
             build/scripts/test-create-package-evidence.py \
             build/scripts/verify-documentation-links.py \
             build/scripts/test-verify-documentation-links.py \
-            build/scripts/verify-cross-platform-targets.py
+            build/scripts/verify-cross-platform-targets.py \
+            build/scripts/test-verify-cross-platform-targets.py
       - name: Verify configured cross-platform targets
         run: python3 build/scripts/verify-cross-platform-targets.py
+      - name: Self-test cross-platform target verifier
+        run: python3 build/scripts/test-verify-cross-platform-targets.py
       - name: Self-test package evidence tooling
         run: python3 build/scripts/test-create-package-evidence.py
       - name: Self-test documentation link tooling
