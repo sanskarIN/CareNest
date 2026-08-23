@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail closed when CareNest cross-platform build targets drift out of configuration."""
+"""Fail closed when CareNest cross-platform build targets or evidence boundaries drift."""
 
 from argparse import ArgumentParser
 from pathlib import Path
@@ -52,11 +52,40 @@ CHECKS = {
         "CareNest.CrossPlatform.Desktop",
         "CareNest.CrossPlatform.Browser",
     ),
+    "README.md": (
+        "docs/setup/CROSS_PLATFORM.md",
+        "Linux desktop",
+        "net10.0-browser",
+        "configured build/presentation reach",
+    ),
+    "docs/setup/CROSS_PLATFORM.md": (
+        "Linux desktop",
+        "Avalonia Desktop",
+        "Avalonia Browser",
+        "net10.0-browser",
+        "Production feature parity",
+    ),
+    "docs/releases/PRODUCTION_EVIDENCE_INDEX.md": (
+        "templates/LINUX_DESKTOP_VALIDATION_RECORD.md",
+        "templates/BROWSER_VALIDATION_RECORD.md",
+        "green source build, simulator compile, Linux build or WebAssembly publish is not production evidence",
+    ),
+    "docs/releases/templates/LINUX_DESKTOP_VALIDATION_RECORD.md": (
+        "Result status: `NOT RUN`",
+        "configured desktop presentation/build reach",
+        "Do not mark feature-parity rows `PASS`",
+    ),
+    "docs/releases/templates/BROWSER_VALIDATION_RECORD.md": (
+        "Result status: `NOT RUN`",
+        "configured WebAssembly presentation/build reach",
+        "Do not mark native or full-feature parity `PASS`",
+    ),
     ".github/workflows/ci.yml": (
         "linux-desktop:",
         "browser:",
         "CareNest.CrossPlatform.Desktop.csproj",
         "CareNest.CrossPlatform.Browser.csproj",
+        "test-verify-cross-platform-targets.py",
     ),
     ".github/workflows/dependency-review.yml": (
         "Audit Avalonia desktop dependency graph",
@@ -69,6 +98,9 @@ CHECKS = {
         "CareNest.CrossPlatform.Desktop.csproj",
         "CareNest.CrossPlatform.Browser.csproj",
         "verify-cross-platform-targets.py",
+        "test-verify-cross-platform-targets.py",
+        "LINUX_DESKTOP_VALIDATION_RECORD.md",
+        "BROWSER_VALIDATION_RECORD.md",
     ),
 }
 
@@ -130,7 +162,8 @@ def main() -> int:
     print(
         "CareNest cross-platform target verification passed: "
         "Android, iOS/iPadOS, macOS, Windows, Linux desktop and browser hosts are configured, "
-        "dependency-audited, release-gated, wired to their Avalonia lifetimes and backed by well-formed Avalonia XAML."
+        "dependency-audited, release-gated, wired to their Avalonia lifetimes, backed by well-formed Avalonia XAML, "
+        "and protected by fail-closed Linux/browser production-evidence boundaries."
     )
     return 0
 
