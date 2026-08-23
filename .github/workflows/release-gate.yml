@@ -64,6 +64,7 @@ jobs:
             docs/releases/STORE_SUBMISSION_CHECKLIST.md
             docs/releases/STORE_POLICY_REVIEW_20260818.md
             docs/releases/PACKAGE_EVIDENCE_TOOLING.md
+            docs/setup/CROSS_PLATFORM.md
             docs/testing/DOCUMENTATION_INTEGRITY.md
             docs/security/DEPENDENCY_RISK_REGISTER.md
             build/scripts/verify-store-safe-payload.py
@@ -71,6 +72,7 @@ jobs:
             build/scripts/test-create-package-evidence.py
             build/scripts/verify-documentation-links.py
             build/scripts/test-verify-documentation-links.py
+            build/scripts/verify-cross-platform-targets.py
           )
           for path in "${required[@]}"; do
             if [[ ! -s "$path" ]]; then
@@ -99,7 +101,10 @@ jobs:
             build/scripts/create-package-evidence.py \
             build/scripts/test-create-package-evidence.py \
             build/scripts/verify-documentation-links.py \
-            build/scripts/test-verify-documentation-links.py
+            build/scripts/test-verify-documentation-links.py \
+            build/scripts/verify-cross-platform-targets.py
+      - name: Verify configured cross-platform targets
+        run: python3 build/scripts/verify-cross-platform-targets.py
       - name: Self-test package evidence tooling
         run: python3 build/scripts/test-create-package-evidence.py
       - name: Self-test documentation link tooling
@@ -112,3 +117,21 @@ jobs:
         run: dotnet test tests/CareNest.IntegrationTests/CareNest.IntegrationTests.csproj --configuration Release --nologo
       - name: UI contract tests
         run: dotnet test tests/CareNest.UiTests/CareNest.UiTests.csproj --configuration Release --nologo
+
+  release-cross-platform-hosts:
+    name: Linux and browser release hosts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - name: Build Linux-capable Avalonia desktop host
+        run: dotnet build src/CareNest.CrossPlatform.Desktop/CareNest.CrossPlatform.Desktop.csproj --configuration Release --nologo
+      - name: Install WebAssembly toolchain
+        run: dotnet workload install wasm-tools
+      - name: Publish WebAssembly browser host
+        run: dotnet publish src/CareNest.CrossPlatform.Browser/CareNest.CrossPlatform.Browser.csproj --configuration Release --nologo
