@@ -12,7 +12,8 @@ This checklist supplements the stable release authorities. It must not replace `
 - [x] Assembly/file version set to `2.18.12.0`.
 - [x] MAUI display version set to `2.18.12`.
 - [x] MAUI package/build code set to `21812`.
-- [x] Version-consistency contract added.
+- [x] `Microsoft.Maui.Controls` baseline set to `10.0.100`.
+- [x] Version/dependency consistency contracts added.
 - [x] Draft release notes added.
 - [x] Version preparation record added.
 - [x] Active `what_changed.md` handoff refreshed.
@@ -27,10 +28,10 @@ This checklist supplements the stable release authorities. It must not replace `
 - [ ] Unit tests pass on the exact final head.
 - [ ] Integration tests pass on the exact final head.
 - [ ] UI/source-policy tests pass on the exact final head.
-- [ ] Android Release build passes on the exact final head.
-- [ ] Windows Release build passes on the exact final head.
-- [ ] iOS simulator Release build passes on the exact final head.
-- [ ] Mac Catalyst Release build passes on the exact final head.
+- [ ] Android Release build passes on the exact final head with MAUI `10.0.100`.
+- [ ] Windows Release build passes on the exact final head with MAUI `10.0.100`.
+- [ ] iOS simulator Release build passes on the exact final head with MAUI `10.0.100`.
+- [ ] Mac Catalyst Release build passes on the exact final head with MAUI `10.0.100`.
 - [ ] Linux desktop Release build passes on the exact final head.
 - [ ] WebAssembly browser Release publish passes on the exact final head.
 
@@ -40,9 +41,8 @@ Do not check any item from an older, cancelled, skipped, queued, failed or super
 
 - [ ] Merge PR #84 only after the exact-head matrix is green.
 - [x] Close/supersede stale PR #83 in favor of current-main PR #84.
-- [ ] Rebase Dependabot PR #85 onto the new `main`.
-- [ ] Validate `Microsoft.Maui.Controls` `10.0.100` with the applicable MAUI matrix.
-- [ ] Merge PR #85 only if its exact head is green and compatible.
+- [x] Integrate Dependabot PR #85 `Microsoft.Maui.Controls` `10.0.100` change into PR #84.
+- [x] Close superseded PR #85 after preserving its exact-source verification boundary.
 - [ ] Promote the dynamic automated baseline only from actually observed results.
 
 ## Production validation
