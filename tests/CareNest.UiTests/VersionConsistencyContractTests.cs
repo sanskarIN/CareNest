@@ -7,6 +7,7 @@ public sealed class VersionConsistencyContractTests
     private const string ReleaseVersion = "2.18.12";
     private const string AssemblyVersion = "2.18.12.0";
     private const string ApplicationBuild = "21812";
+    private const string MauiControlsVersion = "10.0.100";
 
     [Fact]
     public void Central_assembly_metadata_matches_release_target()
@@ -31,6 +32,21 @@ public sealed class VersionConsistencyContractTests
     }
 
     [Fact]
+    public void Maui_controls_dependency_matches_release_baseline()
+    {
+        var root = FindRepositoryRoot();
+        var packages = XDocument.Load(Path.Combine(root, "Directory.Packages.props"));
+        var mauiControls = packages
+            .Descendants("PackageVersion")
+            .Single(element => string.Equals(
+                (string?)element.Attribute("Include"),
+                "Microsoft.Maui.Controls",
+                StringComparison.Ordinal));
+
+        Assert.Equal(MauiControlsVersion, (string?)mauiControls.Attribute("Version"));
+    }
+
+    [Fact]
     public void Release_preparation_documents_match_target_without_claiming_publication()
     {
         var root = FindRepositoryRoot();
@@ -42,6 +58,7 @@ public sealed class VersionConsistencyContractTests
         {
             Assert.Contains(ReleaseVersion, text, StringComparison.Ordinal);
             Assert.Contains(ApplicationBuild, text, StringComparison.Ordinal);
+            Assert.Contains(MauiControlsVersion, text, StringComparison.Ordinal);
         }
 
         Assert.Contains("NOT PUBLISHED", preparation, StringComparison.OrdinalIgnoreCase);
