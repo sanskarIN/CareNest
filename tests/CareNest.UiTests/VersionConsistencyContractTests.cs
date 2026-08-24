@@ -30,8 +30,31 @@ public sealed class VersionConsistencyContractTests
         Assert.Equal(ApplicationBuild, PropertyValue(project, "ApplicationVersion"));
     }
 
+    [Fact]
+    public void Release_preparation_documents_match_target_without_claiming_publication()
+    {
+        var root = FindRepositoryRoot();
+        var preparation = Read(root, "docs/releases/VERSION_2_18_12_PREPARATION.md");
+        var notes = Read(root, "docs/releases/RELEASE_NOTES_2_18_12_DRAFT.md");
+        var checklist = Read(root, "docs/releases/RELEASE_CHECKLIST_2_18_12.md");
+
+        foreach (var text in new[] { preparation, notes, checklist })
+        {
+            Assert.Contains(ReleaseVersion, text, StringComparison.Ordinal);
+            Assert.Contains(ApplicationBuild, text, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("NOT PUBLISHED", preparation, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("NOT PUBLISHED", notes, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("NOT RELEASED", checklist, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("v2.18.12", checklist, StringComparison.Ordinal);
+    }
+
     private static string PropertyValue(XDocument document, string name) =>
         document.Descendants(name).Single().Value.Trim();
+
+    private static string Read(string root, string relativePath) =>
+        File.ReadAllText(Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar)));
 
     private static string FindRepositoryRoot()
     {
