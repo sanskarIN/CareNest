@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CareNest.CrossPlatform.Views.MainView">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <Grid Margin="28" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="24">
+      <StackPanel Grid.Row="0" Spacing="6">
+        <TextBlock Text="CareNest" FontSize="34" FontWeight="Bold" />
+        <TextBlock Text="Local-first family health organizer" FontSize="17" Opacity="0.78" />
+        <TextBlock x:Name="PlatformText" FontSize="14" Opacity="0.72" />
+      </StackPanel>
+
+      <Border Grid.Row="1" Padding="18" CornerRadius="14" BorderThickness="1">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+          <StackPanel Spacing="4">
+            <TextBlock Text="Cross-platform host" FontSize="19" FontWeight="SemiBold" />
+            <TextBlock Text="The same Avalonia presentation project builds for native desktop and WebAssembly while CareNest domain/application projects remain shared." TextWrapping="Wrap" MaxWidth="820" />
+          </StackPanel>
+          <TextBlock Grid.Column="1" Text=".NET 10" VerticalAlignment="Center" FontWeight="SemiBold" />
+        </Grid>
+      </Border>
+
+      <Border Grid.Row="2" Padding="18" CornerRadius="14" BorderThickness="1">
+        <StackPanel Spacing="6">
+          <TextBlock Text="Current parity status" FontSize="19" FontWeight="SemiBold" />
+          <TextBlock Text="This host currently validates cross-platform presentation and build reach. Full CareNest workflow parity remains on the established MAUI host until Linux/browser adapters and target-specific validation are completed." TextWrapping="Wrap" />
+          <TextBlock Text="No browser or desktop host should claim native reminders, unrestricted filesystem access, secure storage, camera access, or other operating-system capabilities until that capability is implemented and verified for the target." TextWrapping="Wrap" Opacity="0.72" />
+        </StackPanel>
+      </Border>
+
+      <StackPanel Grid.Row="3" Spacing="10">
+        <TextBlock Text="Shared CareNest domain areas" FontSize="22" FontWeight="SemiBold" />
+        <WrapPanel ItemWidth="240" ItemHeight="92">
+          <Border Margin="0,0,12,12" Padding="14" CornerRadius="12" BorderThickness="1"><StackPanel><TextBlock Text="Profiles" FontWeight="SemiBold" /><TextBlock Text="Family and caregiver organization" TextWrapping="Wrap" Opacity="0.72" /></StackPanel></Border>
+          <Border Margin="0,0,12,12" Padding="14" CornerRadius="12" BorderThickness="1"><StackPanel><TextBlock Text="Medicines" FontWeight="SemiBold" /><TextBlock Text="Schedules, logs and stock notes" TextWrapping="Wrap" Opacity="0.72" /></StackPanel></Border>
+          <Border Margin="0,0,12,12" Padding="14" CornerRadius="12" BorderThickness="1"><StackPanel><TextBlock Text="Appointments" FontWeight="SemiBold" /><TextBlock Text="Dates, notes and reminders" TextWrapping="Wrap" Opacity="0.72" /></StackPanel></Border>
+          <Border Margin="0,0,12,12" Padding="14" CornerRadius="12" BorderThickness="1"><StackPanel><TextBlock Text="Documents" FontWeight="SemiBold" /><TextBlock Text="Encrypted health-document workflows" TextWrapping="Wrap" Opacity="0.72" /></StackPanel></Border>
+          <Border Margin="0,0,12,12" Padding="14" CornerRadius="12" BorderThickness="1"><StackPanel><TextBlock Text="Reports" FontWeight="SemiBold" /><TextBlock Text="CSV, PDF and JSON exports" TextWrapping="Wrap" Opacity="0.72" /></StackPanel></Border>
+          <Border Margin="0,0,12,12" Padding="14" CornerRadius="12" BorderThickness="1"><StackPanel><TextBlock Text="Backup &amp; privacy" FontWeight="SemiBold" /><TextBlock Text="Local-first data and encrypted backups" TextWrapping="Wrap" Opacity="0.72" /></StackPanel></Border>
+        </WrapPanel>
+      </StackPanel>
+
+      <Border Grid.Row="4" Padding="18" CornerRadius="14" BorderThickness="1">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Configured build coverage" FontSize="20" FontWeight="SemiBold" />
+          <TextBlock Text="Android • iOS/iPadOS • macOS • Windows • Linux • WebAssembly browser" TextWrapping="Wrap" />
+          <TextBlock Text="A configured or successful build target is not, by itself, production feature-parity evidence. Platform-dependent capabilities remain subject to host implementation, operating-system/browser permissions, accessibility checks, packaging and real-target validation." TextWrapping="Wrap" Opacity="0.72" />
+        </StackPanel>
+      </Border>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

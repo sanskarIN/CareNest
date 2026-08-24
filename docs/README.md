@@ -7,16 +7,19 @@
 </p>
 
 **Release line:** `1.0.0-rc.1`  
-**Documentation baseline:** 2026-08-19  
+**Documentation baseline:** 2026-08-23  
 **Current automated baseline:** `releases/AUTOMATED_BASELINE.md`  
 **Production evidence standard:** `releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`  
 **Production evidence index:** `releases/PRODUCTION_EVIDENCE_INDEX.md`  
+**Cross-platform guide:** `setup/CROSS_PLATFORM.md`  
 **Dependency/toolchain baseline:** `DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`  
 **Current store-policy review:** `releases/STORE_POLICY_REVIEW_20260818.md`  
 **Package evidence guide:** `releases/PACKAGE_EVIDENCE_TOOLING.md`  
 **Documentation integrity guide:** `testing/DOCUMENTATION_INTEGRITY.md`
 
-CareNest is a local-first .NET MAUI family health organizer. It is organizational software, not a diagnostic, treatment, dosage-calculation, clinical-interaction, clinical-risk or emergency-service system.
+CareNest is a local-first .NET 10 family health organizer. The established application uses .NET MAUI for Android, iOS/iPadOS, Mac Catalyst and Windows. The current cross-platform continuation adds an Avalonia desktop host for Linux-capable desktop execution and an Avalonia Browser WebAssembly host. CareNest is organizational software, not a diagnostic, treatment, dosage-calculation, clinical-interaction, clinical-risk or emergency-service system.
+
+Configured Linux/browser build support is not a claim of full production feature parity. Use [`setup/CROSS_PLATFORM.md`](setup/CROSS_PLATFORM.md) and the production-evidence records linked below for the exact capability and evidence boundary.
 
 This directory is the canonical documentation hub. For the complete authority and audience map, start with [`DOCUMENTATION_CATALOG.md`](DOCUMENTATION_CATALOG.md).
 
@@ -32,9 +35,9 @@ The storefront is promoted throughout repository/documentation support and marke
 
 ## Current verification authority
 
-Use [`releases/AUTOMATED_BASELINE.md`](releases/AUTOMATED_BASELINE.md) for the latest **actually observed** exact-source automated result: source SHA, verification PR/marker, workflow IDs, test counts and conclusions.
+Use [`releases/AUTOMATED_BASELINE.md`](releases/AUTOMATED_BASELINE.md) for the latest **actually observed** accepted exact-source automated result: source SHA, verification PR/marker, workflow IDs, test counts and conclusions.
 
-The accepted automated source before the current production-evidence-readiness continuation is `30ee6c265104c64ec5a1a4013f592f7f058750e8`, with **122/122 unit**, **54/54 integration**, **194/194 UI/source-policy**, and **370/370 total core tests** plus the recorded platform/store/security matrix green. Do not transfer those results to a newer head until that exact newer head completes its required matrix.
+Do not copy a historical source SHA, test total or workflow result into a newer candidate. PR #84 is verification-relevant source and must complete its own final exact-head required matrix before it can replace the currently accepted automated boundary.
 
 Use [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) whenever verification-relevant source or release-governance documentation changes after the recorded baseline.
 
@@ -56,15 +59,24 @@ Use [`releases/PRODUCTION_EVIDENCE_INDEX.md`](releases/PRODUCTION_EVIDENCE_INDEX
 - Windows installed/manual validation;
 - iPhone/iPad real-device validation;
 - Mac Catalyst installed/manual validation;
+- Linux desktop validation;
+- Browser/WebAssembly validation;
 - accessibility validation;
 - packaged existing-data/document/backup compatibility;
 - signing/provenance;
 - store submission/review/approval/publication;
 - final production release approval.
 
+Linux/browser canonical records:
+
+- [`releases/templates/LINUX_DESKTOP_VALIDATION_RECORD.md`](releases/templates/LINUX_DESKTOP_VALIDATION_RECORD.md);
+- [`releases/templates/BROWSER_VALIDATION_RECORD.md`](releases/templates/BROWSER_VALIDATION_RECORD.md).
+
+Both start `NOT RUN`. A Linux Release build or WebAssembly publish is automated build evidence, not manual production evidence for persistence, notifications/background execution, secure storage, file/camera integration, accessibility, packaging/signing or complete feature parity.
+
 Canonical templates are evidence containers, not evidence by themselves. They intentionally start unperformed and must not be edited to look completed. Create release-specific copies and record only actual results.
 
-Allowed result states are `PASS`, `FAIL`, `BLOCKED`, `N/A`, and `NOT RUN`. Unknown, stale, blocked, or unperformed work must never be represented as a pass.
+Allowed result states are `PASS`, `FAIL`, `BLOCKED`, `N/A`, and `NOT RUN`. Unknown, stale, blocked, superseded, queued or unperformed work must never be represented as a pass.
 
 ## Current dependency and toolchain authority
 
@@ -72,13 +84,15 @@ See [`DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`](DEPENDENCY_AND_TOOLCHAIN_BASELINE.m
 
 Executable source remains authoritative in `Directory.Packages.props`, `Directory.Build.props` and `.github/workflows/`.
 
-The accepted `30ee6c...` source already completed the recorded exact-source automated matrix. Any newer dependency, workflow, runtime or verification-relevant documentation change still requires its own exact-head evidence before it replaces that accepted boundary.
+The cross-platform source adds centrally managed Avalonia packages and includes Avalonia desktop/browser restore paths in the unsuppressed Dependency Audit. Any newer dependency, workflow, runtime or verification-relevant documentation change still requires its own exact-head evidence before it replaces the accepted boundary.
 
 ## Current store-policy evidence
 
 Dated pre-submission review: [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md).
 
 The review compares the current product/package boundary with relevant Apple, Google Play and Microsoft Store policy areas. It does **not** mean CareNest is store-approved and does not replace final policy/store-console review against the exact production binary/listing on the submission date.
+
+Linux desktop and browser distribution/hosting are not silently treated as store-approved merely because those hosts compile. Any actual distribution channel requires its applicable current review and evidence.
 
 Use [`releases/templates/STORE_SUBMISSION_RECORD.md`](releases/templates/STORE_SUBMISSION_RECORD.md) to keep policy review, metadata completion, submission, review, rejection, approval and publication as distinct states.
 
@@ -95,7 +109,7 @@ Source-controlled tooling:
 
 Production evidence requires an immutable `v*` source tag, tag/source/checked-out-HEAD agreement, clean tracked workspace, non-secret signing/notarization provenance, successful store-safe payload scanning, SHA-256 evidence and JSON output outside the package payload.
 
-The tool does not sign artifacts, prove store approval, replace real-device/accessibility testing or replace packaged SQLite/encrypted-data compatibility evidence.
+The tool does not sign artifacts, prove store approval, replace real-device/browser/accessibility testing or replace packaged SQLite/encrypted-data compatibility evidence.
 
 ## Documentation integrity
 
@@ -108,14 +122,22 @@ python3 build/scripts/test-verify-documentation-links.py
 python3 build/scripts/verify-documentation-links.py
 ```
 
-The default exact-source gate excludes immutable `docs/history/` snapshots and designated dynamic post-verification status/evidence files. Use `--include-dynamic` only for the explicit dynamic-documentation audit described by the integrity guide.
+Cross-platform configuration/evidence verification:
+
+```bash
+python3 build/scripts/verify-cross-platform-targets.py
+python3 build/scripts/test-verify-cross-platform-targets.py
+```
+
+The default documentation exact-source gate excludes immutable `docs/history/` snapshots and designated dynamic post-verification status/evidence files. Use `--include-dynamic` only for the explicit dynamic-documentation audit described by the integrity guide.
 
 ## Primary documentation
 
 - [`DOCUMENTATION_CATALOG.md`](DOCUMENTATION_CATALOG.md) — complete navigation, audience and authority map.
 - [`COMPLETE_PROJECT_DOCUMENTATION.md`](COMPLETE_PROJECT_DOCUMENTATION.md) — end-to-end project reference.
 - [`DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`](DEPENDENCY_AND_TOOLCHAIN_BASELINE.md) — current package/action baseline and upgrade policy.
-- [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md) — Windows/Android/iOS/Mac Catalyst executable/package guide.
+- [`setup/CROSS_PLATFORM.md`](setup/CROSS_PLATFORM.md) — Linux/browser hosts, build commands, architecture and capability boundaries.
+- [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md) — established Windows/Android/iOS/Mac Catalyst executable/package guide.
 - [`releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`](releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md) — production evidence quality/result-state contract.
 - [`releases/PRODUCTION_EVIDENCE_INDEX.md`](releases/PRODUCTION_EVIDENCE_INDEX.md) — production evidence workflow/templates.
 - [`releases/RELEASE_EVIDENCE.md`](releases/RELEASE_EVIDENCE.md) — release evidence contract.
@@ -124,7 +146,7 @@ The default exact-source gate excludes immutable `docs/history/` snapshots and d
 - [`releases/VERIFICATION_BRANCH_PROTOCOL.md`](releases/VERIFICATION_BRANCH_PROTOCOL.md) — exact-head verification procedure.
 - [`releases/AUTOMATED_BASELINE.md`](releases/AUTOMATED_BASELINE.md) — mutable current automated evidence authority.
 - [`GETTING_STARTED.md`](GETTING_STARTED.md) — quickest safe user/developer entry point.
-- [`USER_GUIDE.md`](USER_GUIDE.md) — complete user workflows.
+- [`USER_GUIDE.md`](USER_GUIDE.md) — complete established application workflows.
 - [`FEATURE_REFERENCE.md`](FEATURE_REFERENCE.md) — feature-by-feature reference.
 - [`USER_FAQ.md`](USER_FAQ.md) — common questions.
 - [`KNOWN_LIMITATIONS.md`](KNOWN_LIMITATIONS.md) — intentional/external/RC limitations.
@@ -135,6 +157,7 @@ The default exact-source gate excludes immutable `docs/history/` snapshots and d
 - [`MAINTENANCE_AND_OPERATIONS.md`](MAINTENANCE_AND_OPERATIONS.md) — maintainer operations.
 - [`REPOSITORY_GOVERNANCE.md`](REPOSITORY_GOVERNANCE.md) — evidence/documentation governance.
 - [`DOCUMENTATION_STANDARDS.md`](DOCUMENTATION_STANDARDS.md) — writing/maintenance standards.
+- [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) — current dynamic project status.
 - [`../what_changed.md`](../what_changed.md) — detailed active continuation handoff.
 
 ## Product/user documentation
@@ -151,6 +174,8 @@ The default exact-source gate excludes immutable `docs/history/` snapshots and d
 - [`../TERMS.md`](../TERMS.md)
 - [`../SUPPORT.md`](../SUPPORT.md)
 - [`../SECURITY.md`](../SECURITY.md)
+
+The product/user documents primarily describe the established MAUI application. Linux/browser feature behavior must not be inferred from those documents unless a cross-platform implementation is explicitly documented and validated.
 
 ## Product safety boundary
 
@@ -181,29 +206,40 @@ Medicine strength/instruction values remain user-entered organizational text. Sc
 - [`architecture/ADR-0001-local-first.md`](architecture/ADR-0001-local-first.md)
 - [`architecture/ADR-0002-reminder-occurrences.md`](architecture/ADR-0002-reminder-occurrences.md)
 - [`architecture/ADR-0003-encrypted-backup-format.md`](architecture/ADR-0003-encrypted-backup-format.md)
+- [`setup/CROSS_PLATFORM.md`](setup/CROSS_PLATFORM.md)
 
-Intended dependency direction:
+Intended dependency direction keeps platform-neutral business rules outside presentation hosts:
 
 ```text
-CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure <- CareNest.App
+CareNest.Shared <- CareNest.Domain <- CareNest.Application <- CareNest.Infrastructure
+                                                        ^
+                                                        |
+                  CareNest.App (MAUI) ------------------+
+                  CareNest.CrossPlatform (Avalonia) ----+
+                    |- CareNest.CrossPlatform.Desktop
+                    `- CareNest.CrossPlatform.Browser
 ```
 
-Platform-neutral projects must not accidentally depend on MAUI. ViewModels should not issue direct SQL or casually create network clients.
+Platform-neutral projects must not accidentally depend on MAUI, Avalonia, browser APIs or operating-system-specific UI APIs. ViewModels should not issue direct SQL or casually create network clients.
 
 ## Current platform targets
 
-- Android: `net10.0-android`, minimum API 24.
-- iOS/iPadOS: `net10.0-ios`, minimum iOS 15.
-- Mac Catalyst: `net10.0-maccatalyst`, minimum 15.
-- Windows: `net10.0-windows10.0.19041.0`, minimum Windows 10.0.19041.0.
+- Android: .NET MAUI `net10.0-android`, minimum API 24.
+- iOS/iPadOS: .NET MAUI `net10.0-ios`, minimum iOS 15.
+- Mac Catalyst: .NET MAUI `net10.0-maccatalyst`, minimum 15.
+- Windows: .NET MAUI `net10.0-windows10.0.19041.0`, minimum Windows 10.0.19041.0.
+- Linux desktop: Avalonia Desktop host targeting `net10.0`.
+- Modern WebAssembly-capable browsers: Avalonia Browser host targeting `net10.0-browser`.
 
-See [`setup/PLATFORM_SETUP.md`](setup/PLATFORM_SETUP.md), [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md) and [`PLATFORM_BEHAVIOR_MATRIX.md`](PLATFORM_BEHAVIOR_MATRIX.md).
+See [`setup/CROSS_PLATFORM.md`](setup/CROSS_PLATFORM.md), [`setup/PLATFORM_SETUP.md`](setup/PLATFORM_SETUP.md), [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md) and [`PLATFORM_BEHAVIOR_MATRIX.md`](PLATFORM_BEHAVIOR_MATRIX.md).
 
-## Strict XAML compiled-binding policy
+## Strict XAML compiled-binding and cross-platform XAML policy
 
-The application project enables Source binding compilation and strict XAML compilation and promotes `XC0022`, `XC0023`, `XC0024`, `XC0025` to errors.
+The established MAUI application project enables Source binding compilation and strict XAML compilation and promotes `XC0022`, `XC0023`, `XC0024`, `XC0025` to errors.
 
-Binding-bearing pages/templates are required to carry accurate binding-context types. See [`releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`](releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md) and [`DEVELOPER_REFERENCE.md`](DEVELOPER_REFERENCE.md).
+Binding-bearing MAUI pages/templates are required to carry accurate binding-context types. See [`releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md`](releases/XAML_COMPILED_BINDINGS_VERIFICATION_20260816.md) and [`DEVELOPER_REFERENCE.md`](DEVELOPER_REFERENCE.md).
+
+The Avalonia cross-platform verifier separately XML-parses required Avalonia XAML and checks host/lifetime wiring before expensive platform builds.
 
 ## Privacy
 
@@ -214,6 +250,8 @@ Binding-bearing pages/templates are required to carry accurate binding-context t
 
 Current v1 intentionally has no required CareNest account/backend, no automatic CareNest cloud upload and no hidden runtime analytics/telemetry client. Explicit exports/shares can create copies outside CareNest control.
 
+Browser-specific persistence or hosting must preserve this boundary and must not introduce hidden telemetry/network upload merely to make a browser host work.
+
 ## Security
 
 - [`security/SECURITY_MODEL.md`](security/SECURITY_MODEL.md)
@@ -223,13 +261,15 @@ Current v1 intentionally has no required CareNest account/backend, no automatic 
 - [`security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md`](security/FULL_LOCAL_DATA_CLEAR_SECURITY_MODEL.md)
 - [`releases/SECURITY_RELEASE_REVIEW.md`](releases/SECURITY_RELEASE_REVIEW.md)
 
-Structured SQLite data is local/sandboxed but is not claimed as transparently whole-database encrypted. Imported document payloads and manual backups use separate encryption protections.
+Structured SQLite data in the established application is local/sandboxed but is not claimed as transparently whole-database encrypted. Imported document payloads and manual backups use separate encryption protections.
+
+Linux/browser secure-storage, filesystem and persistence claims must be based on host-specific implementations/evidence rather than copied from MAUI behavior.
 
 ## Dependency security
 
 Current source versions and action majors: [`DEPENDENCY_AND_TOOLCHAIN_BASELINE.md`](DEPENDENCY_AND_TOOLCHAIN_BASELINE.md).
 
-The former exact SQLite audit suppression remains removed. A green dependency audit does not replace packaged existing-database compatibility testing.
+The former exact SQLite audit suppression remains removed. Avalonia desktop and browser dependency graphs are included in the current branch's audit configuration. A green dependency audit does not replace packaged existing-database or platform/browser compatibility testing.
 
 ## Reminder documentation
 
@@ -239,6 +279,8 @@ The former exact SQLite audit suppression remains removed. A green dependency au
 
 The model separates explicit user intent, persisted occurrence state and OS request state. Reconciliation/compensation is required because database and platform scheduling cannot be committed atomically.
 
+The existence of an Avalonia Linux/browser host does not imply native reminder/background behavior on those hosts.
+
 ## Design, accessibility and localization
 
 - [`design/DESIGN_SYSTEM.md`](design/DESIGN_SYSTEM.md)
@@ -247,12 +289,13 @@ The model separates explicit user intent, persisted occurrence state and OS requ
 - [`design/STORE_ASSETS.md`](design/STORE_ASSETS.md)
 - [`releases/templates/ACCESSIBILITY_VALIDATION_RECORD.md`](releases/templates/ACCESSIBILITY_VALIDATION_RECORD.md)
 
-Automated source/semantics checks do not replace real assistive-technology evidence.
+Automated source/semantics checks do not replace real assistive-technology evidence on any platform, including Linux/browser hosts.
 
 ## Setup and developer operations
 
 - [`setup/DEVELOPMENT.md`](setup/DEVELOPMENT.md)
 - [`setup/PLATFORM_SETUP.md`](setup/PLATFORM_SETUP.md)
+- [`setup/CROSS_PLATFORM.md`](setup/CROSS_PLATFORM.md)
 - [`setup/TROUBLESHOOTING.md`](setup/TROUBLESHOOTING.md)
 - [`setup/MAINTAINER_OPERATIONS.md`](setup/MAINTAINER_OPERATIONS.md)
 - [`EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md`](EXECUTABLE_BUILD_AND_PACKAGING_GUIDE.md)
@@ -268,8 +311,11 @@ Automated source/semantics checks do not replace real assistive-technology evide
 - [`testing/DOCUMENTATION_INTEGRITY.md`](testing/DOCUMENTATION_INTEGRITY.md)
 - [`../tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs`](../tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs)
 - [`../tests/CareNest.UiTests/ProductionEvidenceDocumentationContractTests.cs`](../tests/CareNest.UiTests/ProductionEvidenceDocumentationContractTests.cs)
+- [`../tests/CareNest.UiTests/CrossPlatformEvidenceContractTests.cs`](../tests/CareNest.UiTests/CrossPlatformEvidenceContractTests.cs)
 - [`../tests/CareNest.UiTests/PackageEvidenceToolContractTests.cs`](../tests/CareNest.UiTests/PackageEvidenceToolContractTests.cs)
 - [`../tests/CareNest.UiTests/DocumentationIntegrityToolContractTests.cs`](../tests/CareNest.UiTests/DocumentationIntegrityToolContractTests.cs)
+- [`../build/scripts/verify-cross-platform-targets.py`](../build/scripts/verify-cross-platform-targets.py)
+- [`../build/scripts/test-verify-cross-platform-targets.py`](../build/scripts/test-verify-cross-platform-targets.py)
 
 Current test counts belong in [`releases/AUTOMATED_BASELINE.md`](releases/AUTOMATED_BASELINE.md) only after the exact source has actually run.
 
@@ -281,6 +327,8 @@ Current operational documents:
 - [`releases/EXECUTABLE_BUILD_CHECKLIST.md`](releases/EXECUTABLE_BUILD_CHECKLIST.md)
 - [`releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`](releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md)
 - [`releases/PRODUCTION_EVIDENCE_INDEX.md`](releases/PRODUCTION_EVIDENCE_INDEX.md)
+- [`releases/templates/LINUX_DESKTOP_VALIDATION_RECORD.md`](releases/templates/LINUX_DESKTOP_VALIDATION_RECORD.md)
+- [`releases/templates/BROWSER_VALIDATION_RECORD.md`](releases/templates/BROWSER_VALIDATION_RECORD.md)
 - [`releases/RELEASE_EVIDENCE.md`](releases/RELEASE_EVIDENCE.md)
 - [`releases/PACKAGE_EVIDENCE_TOOLING.md`](releases/PACKAGE_EVIDENCE_TOOLING.md)
 - [`releases/AUTOMATED_BASELINE.md`](releases/AUTOMATED_BASELINE.md)
@@ -296,11 +344,13 @@ Current operational documents:
 - [`releases/STORE_SUBMISSION_CHECKLIST.md`](releases/STORE_SUBMISSION_CHECKLIST.md)
 - [`releases/STORE_POLICY_REVIEW_20260818.md`](releases/STORE_POLICY_REVIEW_20260818.md)
 
-Automated source completeness is not equivalent to production approval. Real-device/platform, accessibility, packaged compatibility, production signing, final package provenance, live store declarations, submission-day policy review, immutable tagged gates and publication/store approval remain distinct evidence categories.
+Automated source completeness is not equivalent to production approval. Real-device/platform/browser, accessibility, packaged compatibility, production signing, final package provenance, live store declarations, submission-day policy review, immutable tagged gates and publication/store approval remain distinct evidence categories.
 
 ## Historical evidence
 
 `history/` and dated release documents preserve older source/test/configuration boundaries. Do not rewrite historical evidence merely to make old snapshots look current.
+
+Current cross-platform continuation archives include the previous active handoff/status before their 2026-08-23 replacements.
 
 ## Repository/community files
 
