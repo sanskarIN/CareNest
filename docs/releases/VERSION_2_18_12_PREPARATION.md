@@ -8,6 +8,16 @@
 
 This document records source preparation for CareNest `2.18.12`. It is not store approval, publication evidence, production-signing evidence, real-device validation, or proof of platform feature parity.
 
+## Version-specific release package
+
+Use these version-specific documents together:
+
+- `VERSION_2_18_12_PREPARATION.md` — source/version boundary and promotion rules;
+- `RELEASE_NOTES_2_18_12_DRAFT.md` — publication draft that remains non-final;
+- `RELEASE_CHECKLIST_2_18_12.md` — exact-head, production-evidence, signing and store checklist.
+
+The stable release authorities remain `RELEASE_CHECKLIST.md`, `PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`, `PRODUCTION_EVIDENCE_INDEX.md` and the canonical templates. Version-specific documents supplement them rather than replacing them.
+
 ## Source version baseline
 
 The release target is defined centrally in `Directory.Build.props`:
@@ -22,7 +32,7 @@ The established .NET MAUI application in `src/CareNest.App/CareNest.App.csproj` 
 - `ApplicationDisplayVersion`: `2.18.12`;
 - `ApplicationVersion`: `21812`.
 
-`tests/CareNest.UiTests/VersionConsistencyContractTests.cs` protects these values from accidental drift.
+`tests/CareNest.UiTests/VersionConsistencyContractTests.cs` protects these values and the non-published version-document state from accidental drift.
 
 ## Configured platform scope
 
