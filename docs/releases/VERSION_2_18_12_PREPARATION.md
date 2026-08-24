@@ -32,6 +32,12 @@ The established .NET MAUI application in `src/CareNest.App/CareNest.App.csproj` 
 - `ApplicationDisplayVersion`: `2.18.12`;
 - `ApplicationVersion`: `21812`.
 
+The central dependency baseline in `Directory.Packages.props` now includes:
+
+- `Microsoft.Maui.Controls`: `10.0.100`.
+
+This dependency update originated from Dependabot PR #85, whose exact pre-integration head passed CareNest CI, CodeQL, Dependency Audit, Store Package Configuration and Store Inspection Artifacts. The update is now integrated into PR #84 and must still pass the final PR #84 exact-head matrix together with the cross-platform and version-preparation changes.
+
 `tests/CareNest.UiTests/VersionConsistencyContractTests.cs` protects these values and the non-published version-document state from accidental drift.
 
 ## Configured platform scope
