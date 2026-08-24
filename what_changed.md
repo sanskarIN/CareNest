@@ -1,318 +1,251 @@
-# CareNest — Cross-Platform Current-Main Continuation Handoff
+# CareNest — 2.18.12 Preparation Handoff
 
-**Date:** 2026-08-23  
-**Release line:** `1.0.0-rc.1`  
+**Date:** 2026-08-24  
+**Target version:** `2.18.12`  
+**Package/build code:** `21812`  
+**Release state:** PREPARED IN SOURCE — NOT PUBLISHED  
 **Repository:** `https://github.com/sanskarIN/CareNest`  
 **Continuation branch:** `continue/cross-platform-current-main-20260823`  
-**Pull request:** `#84` — `feat: complete cross-platform hosts on current main`  
-**Current base used for this continuation:** `f58aaca1d1d7a3fef68cb30b8b9a68fa0f94bf09`  
-**Head before this handoff replacement:** `49bb93bfdd5b90f128dbde5a95b0b594c6723305`
+**Pull request:** `#84` — `feat: complete cross-platform hosts on current main`
 
-The complete production-evidence handoff that was active before this continuation is preserved byte-for-byte at:
+The earlier cross-platform handoff remains available in Git history at the pre-preparation boundary and is referenced under:
 
-`docs/history/cross-platform-before-current-main-20260823/what_changed.md`
+`docs/history/version-2.18.12-before-preparation-20260824/`
 
-That archive is retained instead of deleting or shortening the previous active handoff.
+This active handoff records only the current continuation state. Historical workflow results remain valid only for their exact source commits.
 
 ---
 
-## 1. Continuation decision
+## 1. CI formatting blocker corrected
 
-The repository had no open issues. The active remaining implementation work was PR #83, which added Linux desktop and WebAssembly/browser presentation hosts.
+The latest previously observed CareNest CI failure on PR #84 was caused by missing final newlines in three UI/source-policy test files. No runtime failure was identified by that run; formatting stopped the core-test job before the .NET test stages executed.
 
-PR #83 had successful workflow runs for its own head, but it had diverged from current `main` after PR #82 merged. A direct compare showed the old feature head was **27 commits ahead and 47 commits behind** current `main` with merge base `e9043a23de1e3aa5b46e7faf88d0e1201f9a2db6`.
+Corrected as separate commits:
 
-The cross-platform work was therefore rebuilt directly on current `main` rather than treating stale-base success evidence as valid for a new merge result.
+- `4933d6e8e6216c10e78510622644117f469e9e38` — `style: add final newline to cross-platform evidence tests`;
+- `3964b4381a27bf08b772b450052c8a2a8ee4fb7b` — `style: add final newline to production evidence tests`;
+- `84404b75e0a3a552fe897ea47df83882ce5cd89f` — `style: add final newline to release documentation tests`.
 
-The replacement branch began from:
+The affected files are:
 
-`f58aaca1d1d7a3fef68cb30b8b9a68fa0f94bf09`
+- `tests/CareNest.UiTests/CrossPlatformEvidenceContractTests.cs`;
+- `tests/CareNest.UiTests/ProductionEvidenceDocumentationContractTests.cs`;
+- `tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs`.
 
-and is not behind `main` at the point this handoff was written.
+A fresh exact-head verification result is still required after all current version-preparation changes. Older green jobs must not be reused as proof for the newer head.
 
 ---
 
-## 2. Cross-platform package baseline
+## 2. CareNest 2.18.12 central version baseline
 
 Commit:
 
-`12bdd17851316bdc0c395cc639cae8fbd96ad1e8` — `build: add Avalonia package baseline`
+`e8ea101765a314f8b39ca09e77d3a17725c2256c` — `build: set CareNest 2.18.12 assembly version baseline`
 
-Added centrally managed Avalonia packages at `12.1.1`:
+`Directory.Build.props` now defines:
 
-- `Avalonia`;
-- `Avalonia.Desktop`;
-- `Avalonia.Browser`;
-- `Avalonia.Themes.Fluent`;
-- `Avalonia.Fonts.Inter`.
+- `Version`: `2.18.12`;
+- `AssemblyVersion`: `2.18.12.0`;
+- `FileVersion`: `2.18.12.0`;
+- `InformationalVersion`: `2.18.12`.
 
-Existing MAUI and data/security package baselines were retained.
+The central version applies consistently across the source projects that consume the repository build properties.
 
 ---
 
-## 3. Shared Avalonia presentation host
+## 3. MAUI package metadata prepared
 
 Commit:
 
-`ca5de04c601791c03d7ab39ccde3991fd7bc2d27` — `feat: add shared Avalonia presentation host`
+`99ceec91b81d64234973d9cec57328fd506eee1f` — `build: prepare MAUI package metadata for 2.18.12`
+
+`src/CareNest.App/CareNest.App.csproj` now uses:
+
+- `ApplicationDisplayVersion`: `2.18.12`;
+- `ApplicationVersion`: `21812`.
+
+This prepares package metadata only. It is not evidence that Android, Apple or Windows stores have received, approved or published the build.
+
+---
+
+## 4. Version consistency regression protection
+
+Commit:
+
+`c87559feda5339faff1bd5c64a86aa83351f8fab` — `test: guard CareNest 2.18.12 version consistency`
 
 Added:
 
-- `src/CareNest.CrossPlatform/CareNest.CrossPlatform.csproj`;
-- `src/CareNest.CrossPlatform/App.axaml`;
-- `src/CareNest.CrossPlatform/App.axaml.cs`;
-- `src/CareNest.CrossPlatform/Views/MainView.axaml`;
-- `src/CareNest.CrossPlatform/Views/MainView.axaml.cs`.
+`tests/CareNest.UiTests/VersionConsistencyContractTests.cs`
 
-The host explicitly supports Avalonia classic-desktop and single-view lifetimes. The landing surface describes configured platform reach without claiming production feature parity.
+The contract verifies that:
+
+- the central semantic version is `2.18.12`;
+- central assembly/file versions are `2.18.12.0`;
+- MAUI display version is `2.18.12`;
+- MAUI package/build code is `21812`.
+
+Future version changes must intentionally update this contract instead of silently leaving package metadata inconsistent.
 
 ---
 
-## 4. Linux-capable desktop host
+## 5. Dedicated 2.18.12 release-preparation record
 
 Commit:
 
-`9aff88f6f2e1445337c236bc2f3fc9faf5102eee` — `feat: add Avalonia desktop host`
+`965c6177a61596130f7e343bdd19e655408076b4` — `docs: add CareNest 2.18.12 release preparation record`
 
 Added:
 
-- `src/CareNest.CrossPlatform.Desktop/CareNest.CrossPlatform.Desktop.csproj`;
-- `src/CareNest.CrossPlatform.Desktop/Program.cs`.
+`docs/releases/VERSION_2_18_12_PREPARATION.md`
 
-The desktop entry point uses Avalonia platform detection and classic desktop lifetime startup. It provides the Linux desktop build path while remaining capable of native Avalonia desktop execution on supported Windows/macOS environments.
+The record defines:
 
----
-
-## 5. WebAssembly/browser host
-
-Commit:
-
-`0820343d5f677438d8cf7a6174b75a40a7858a5c` — `feat: add Avalonia WebAssembly browser host`
-
-Added:
-
-- `src/CareNest.CrossPlatform.Browser/CareNest.CrossPlatform.Browser.csproj`;
-- `src/CareNest.CrossPlatform.Browser/Program.cs`;
-- `src/CareNest.CrossPlatform.Browser/wwwroot/index.html`;
-- `src/CareNest.CrossPlatform.Browser/wwwroot/app.css`;
-- `src/CareNest.CrossPlatform.Browser/wwwroot/main.js`.
-
-The browser host targets `net10.0-browser` through `Microsoft.NET.Sdk.WebAssembly` and starts the shared Avalonia application in the browser output element.
+- the exact target version/build code;
+- configured Android, iOS/iPadOS, Mac Catalyst, Windows, Linux and browser build reach;
+- the automated verification categories that must pass on the exact final head;
+- the real-device, accessibility, package-compatibility, signing, provenance and store evidence still required;
+- the rule that source preparation must not be described as publication or store approval.
 
 ---
 
-## 6. Solution registration
+## 6. Cross-platform implementation retained
 
-Commit:
+PR #84 continues to contain the previously completed cross-platform foundation:
 
-`27897cd658c5197d13665c5ff5205687a125f679` — `build: register cross-platform hosts in solution`
-
-`CareNest.sln` now registers:
-
-- `CareNest.CrossPlatform`;
-- `CareNest.CrossPlatform.Desktop`;
-- `CareNest.CrossPlatform.Browser`.
-
-Debug and Release solution configurations are present for all three projects.
-
----
-
-## 7. Fail-closed cross-platform configuration verifier
-
-Initial commit:
-
-`062ebe35f5cded2eeb0914246ae045e2750cdff3` — `test: add fail-closed cross-platform target verifier`
-
-Testability hardening:
-
-`58034afea2a811aa07851e15dc17a7e7ee9e92fe` — `test: make cross-platform verifier fixture-testable`
-
-Added:
-
-`build/scripts/verify-cross-platform-targets.py`
-
-The verifier fails when required platform projects, target-framework declarations, package references, host entry-point wiring, solution registration, CI/dependency/release integration, or required Avalonia XAML are missing or malformed.
-
-The verifier now accepts `--root` so isolated regression fixtures can be checked without mutating the live checkout.
-
----
-
-## 8. Verifier regression self-tests
-
-Commit:
-
-`ed566e81e47c72587c2fb2f1b3354c1b30911f4c` — `test: cover cross-platform verifier failure modes`
-
-Added:
-
-`build/scripts/test-verify-cross-platform-targets.py`
-
-The self-test:
-
-1. copies only the required verification fixture files;
-2. requires a valid fixture to pass;
-3. removes required desktop startup wiring and requires a fail-closed result with the missing token identified;
-4. injects malformed Avalonia XAML and requires a fail-closed XML/XAML error.
-
-This is additional regression protection beyond the superseded PR #83 implementation.
-
----
-
-## 9. CI integration
-
-Initial cross-platform CI commit:
-
-`20ba47243148356ea9d6611e223cd9ac372d2994` — `ci: build Linux and browser hosts`
-
-Verifier-self-test integration:
-
-`3729bdded3d61eb00ade53715ac11c09ae4fe52f` — `ci: self-test cross-platform target verification`
-
-CareNest CI now includes:
-
-- Python syntax validation for cross-platform verifier tooling;
-- direct cross-platform target verification;
+- established .NET MAUI hosts for Android, iOS/iPadOS, Mac Catalyst and Windows;
+- shared Avalonia presentation project;
+- Linux-capable Avalonia desktop host;
+- Avalonia WebAssembly/browser host;
+- browser bootstrap assets;
+- solution registration;
+- fail-closed cross-platform target verifier;
 - verifier regression self-tests;
-- platform-neutral formatting for the shared Avalonia and desktop projects;
+- Linux/browser CI builds;
+- Avalonia dependency auditing;
+- tagged-release Linux/browser build gates;
+- Linux and browser production-evidence templates;
+- cross-platform setup/capability documentation.
+
+Configured build support does not imply full production feature parity. Platform-specific persistence, notifications/background execution, secure storage, file/camera integration, sharing, accessibility, package behavior and store approval require actual evidence.
+
+---
+
+## 7. Current required automated verification
+
+The final exact PR #84 head must pass the current repository matrix before merge or release promotion:
+
+- formatting;
+- version-consistency contract;
+- unit tests;
+- integration tests;
+- UI/source-policy tests;
+- Android Release build;
+- Windows Release build;
+- iOS simulator Release build;
+- Mac Catalyst Release build;
 - Linux desktop Release build;
-- WebAssembly workload installation and browser Release publish;
-- all pre-existing unit, integration, UI/source-policy, Android, Windows and Apple jobs.
-
----
-
-## 10. Dependency audit integration
-
-Commit:
-
-`05e5bd0ae2154ef93cc2e0897899fecbea7a11af` — `ci: audit Avalonia desktop and browser dependencies`
-
-Dependency Audit now restores with unsuppressed NuGet audit for:
-
-- the existing platform-neutral tests;
-- Avalonia desktop;
-- Avalonia browser/WebAssembly;
-- the existing MAUI application dependency graph.
-
----
-
-## 11. Release-gate merge with PR #82 governance
-
-Current-main merge commit:
-
-`1ef827f7d38d1a19897efcc2cd1168dd82e501ae` — `ci: preserve production evidence and gate cross-platform hosts`
-
-Verifier-self-test release commit:
-
-`a334eb278eedc9f4f78943f43a3982cca24b5404` — `ci: require verifier self-tests in release gate`
-
-This was the only file-level overlap between PR #82 and the old cross-platform branch.
-
-The reconstructed release gate retains all PR #82 production-evidence requirements, including:
-
-- production validation evidence standard/index;
-- Android/Windows/iOS/Mac Catalyst validation templates;
-- accessibility validation template;
-- packaged compatibility template;
-- signing provenance template;
-- store submission template;
-- final production approval template.
-
-It additionally requires:
-
-- `docs/setup/CROSS_PLATFORM.md`;
-- the cross-platform verifier;
-- the verifier self-test;
-- direct target verification during release source tests;
-- verifier self-tests during release source tests;
-- Linux desktop Release build;
-- WebAssembly browser Release publish.
-
-No production-evidence protection from merged PR #82 was intentionally discarded.
-
----
-
-## 12. Cross-platform setup and architecture guide
-
-Commit:
-
-`1f5f206f5f222cdce2c43a2fcda33916408f1131` — `docs: add current cross-platform build guide`
-
-Added:
-
-`docs/setup/CROSS_PLATFORM.md`
-
-The guide covers:
-
-- Android, iOS/iPadOS, Mac Catalyst and Windows MAUI targets;
-- Linux desktop through Avalonia Desktop;
-- modern WebAssembly-capable browsers through Avalonia Browser;
-- Linux restore/build/run/publish commands;
-- browser WebAssembly workload/build/publish commands;
-- existing MAUI build commands;
-- presentation-host dependency direction;
-- browser/native capability boundaries;
-- CI verification semantics;
-- the distinction between configured build reach and production/manual feature-parity evidence.
-
----
-
-## 13. Previous handoff preserved
-
-Commit:
-
-`49bb93bfdd5b90f128dbde5a95b0b594c6723305` — `docs: archive production evidence handoff before cross-platform continuation`
-
-The previous root `what_changed.md` blob was reused exactly at:
-
-`docs/history/cross-platform-before-current-main-20260823/what_changed.md`
-
-so this active handoff can move forward without deleting the earlier production-evidence history.
-
----
-
-## 14. Current configured platform reach
-
-The source now configures these build targets/hosts on PR #84:
-
-- Android — .NET MAUI `net10.0-android`;
-- iOS/iPadOS — .NET MAUI `net10.0-ios`;
-- macOS — .NET MAUI Mac Catalyst `net10.0-maccatalyst`;
-- Windows — .NET MAUI `net10.0-windows10.0.19041.0`;
-- Linux desktop — Avalonia Desktop `net10.0` host;
-- modern WebAssembly-capable browsers — Avalonia Browser `net10.0-browser` host.
-
-Configured build reach must not be interpreted as complete production feature parity. Native notifications, secure storage, file/camera behavior, background execution, accessibility, packaging/signing and browser sandbox capabilities remain host/platform-specific evidence obligations.
-
----
-
-## 15. Verification boundary
-
-PR #84 was opened from current `main` after the reconstructed branch reached 14 commits and 20 changed files.
-
-At PR creation, the exact head was:
-
-`a334eb278eedc9f4f78943f43a3982cca24b5404`
-
-GitHub workflows were queued/in progress for that head. Those runs are not claimed as success until they actually complete successfully.
-
-Additional handoff/documentation commits after that head invalidate any older-head result as final PR evidence. The final exact head must complete its own required workflow set.
-
-Required final verification includes at least:
-
-- CareNest CI, including Linux desktop and browser jobs;
-- Dependency Audit, including Avalonia desktop/browser dependency graphs;
+- WebAssembly browser Release publish;
 - CodeQL;
+- unsuppressed Dependency Audit;
 - Store Package Configuration;
 - Store Inspection Artifacts.
 
-A green automated matrix still does not replace real production device/browser/accessibility/signing/store evidence.
+Queued, failed, cancelled, skipped, superseded and older-head results are not exact-head success evidence.
 
 ---
 
-## 16. Superseded PR #83
+## 8. Remaining repository workflow after PR #84 verification
 
-PR #83 remains historical implementation work from the stale/diverged base and should not be merged after PR #84 replaces it.
+After PR #84 has a complete exact-head green matrix:
 
-Its useful implementation content has been reconstructed on current `main`, with additional verifier self-test hardening and the PR #82 production-evidence release-gate changes preserved.
+1. merge PR #84 into `main` without discarding its granular commit history;
+2. retire/supersede stale PR #83;
+3. rebase and validate Dependabot PR #85 (`Microsoft.Maui.Controls` `10.0.100`) against the new `main`;
+4. merge dependency updates only after the full applicable MAUI verification matrix passes;
+5. update the dynamic automated baseline only from actually observed exact-source results;
+6. prepare immutable `v2.18.12` tagging only after automated and required production evidence is complete;
+7. generate final package checksum/provenance evidence from the exact production artifacts;
+8. complete signing, notarization/provisioning and live store metadata/declaration review;
+9. record submission/review/approval/publication outcomes separately.
 
-The preferred merge path is PR #84 after exact-head verification succeeds.
+---
+
+## 9. Real production validation still open
+
+Source preparation does not replace actual platform validation. The remaining production-evidence work includes, where applicable:
+
+### Android
+
+- representative installed-device validation;
+- notification permission denied/granted behavior;
+- reminder delivery, cancellation, snooze and actions;
+- exact/inexact alarm behavior;
+- battery/vendor restriction behavior;
+- reboot/restart/time-zone recovery;
+- documents/share/backup/app-lock/accessibility validation.
+
+### Windows
+
+- installed package/update behavior;
+- running/closed-app reminder boundaries;
+- timer replacement/cancellation and recovery;
+- documents/share/backup/app-lock;
+- keyboard/focus/theme/accessibility;
+- packaged existing-data upgrade behavior.
+
+### iPhone/iPad
+
+- real signed/provisioned device installation and upgrade;
+- notification permission/delivery/actions/snooze/reconciliation;
+- lifecycle/restart/time-zone behavior;
+- documents/share/backup/app-lock;
+- Dynamic Type/VoiceOver/privacy validation.
+
+### Mac Catalyst
+
+- installed application behavior;
+- notifications/actions/recovery;
+- documents/share/backup/app-lock;
+- keyboard/focus/accessibility;
+- signing/notarization evidence where applicable.
+
+### Linux desktop
+
+- representative distribution/runtime validation;
+- persistence and filesystem behavior;
+- secure-storage capability boundary;
+- notification/background capability boundary;
+- accessibility and packaging behavior.
+
+### Browser/WebAssembly
+
+- browser storage/persistence behavior;
+- reload/offline/multiple-tab behavior;
+- file/camera/permission behavior;
+- notification/background limitations;
+- accessibility and supported-browser validation.
+
+---
+
+## 10. Safety, privacy and evidence boundary retained
+
+The 2.18.12 preparation does not add diagnosis, dosage calculation, treatment recommendation, clinical-risk scoring or emergency-service functionality.
+
+Production evidence must use fictional/synthetic application data and must not publish real health records, prescription documents, PINs, backup passwords, private signing keys, access tokens, recovery codes or other secrets.
+
+Green automation alone cannot be represented as:
+
+- production signing;
+- real-device validation;
+- accessibility completion;
+- store approval;
+- publication;
+- global feature parity;
+- a guarantee that the application is defect-free.
+
+---
+
+## 11. Current continuation rule
+
+Continue from the latest exact branch head, not from an older workflow result. Correct real failures rather than suppressing checks. Promote `2.18.12` only after the corresponding automated and production evidence exists for the exact source/package being promoted.
