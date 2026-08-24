@@ -46,6 +46,10 @@ Canonical validation records now exist for Linux desktop and browser/WebAssembly
 
 CareNest `2.18.12` is defined centrally and protected by automated source-policy tests. The MAUI package metadata uses display version `2.18.12` and package/build code `21812`.
 
+### .NET MAUI servicing update
+
+The central package baseline now uses `Microsoft.Maui.Controls` `10.0.100`, replacing `10.0.90`. The standalone Dependabot PR for this update had a successful CI/security/store-check matrix on its own source before integration. The dependency is still subject to the complete final PR #84 exact-head matrix together with the cross-platform and 2.18.12 changes.
+
 ### CI formatting correction
 
 The previous PR head exposed three missing final-newline formatting errors in source-policy test files. Those formatting defects were corrected without weakening the formatter or skipping tests.
