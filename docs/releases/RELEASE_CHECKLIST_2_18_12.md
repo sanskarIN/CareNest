@@ -39,7 +39,7 @@ Do not check any item from an older, cancelled, skipped, queued, failed or super
 ## Repository follow-through
 
 - [ ] Merge PR #84 only after the exact-head matrix is green.
-- [ ] Close/supersede PR #83 after PR #84 is accepted.
+- [x] Close/supersede stale PR #83 in favor of current-main PR #84.
 - [ ] Rebase Dependabot PR #85 onto the new `main`.
 - [ ] Validate `Microsoft.Maui.Controls` `10.0.100` with the applicable MAUI matrix.
 - [ ] Merge PR #85 only if its exact head is green and compatible.
