@@ -31,7 +31,7 @@ public sealed class ActiveReleaseLineContractTests
         var version = PropertyValue(
             XDocument.Load(Path.Combine(root, "Directory.Build.props")),
             "Version");
-        var normalizedVersion = version.Replace('.', '_', StringComparison.Ordinal);
+        var normalizedVersion = version.Replace('.', '_');
 
         var preparation = Read(root, $"docs/releases/VERSION_{normalizedVersion}_PREPARATION.md");
         var notes = Read(root, $"docs/releases/RELEASE_NOTES_{normalizedVersion}_DRAFT.md");
