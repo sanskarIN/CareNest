@@ -46,7 +46,7 @@ The objective is to:
 - roll forward source/package metadata cleanly;
 - protect the new version line with automated consistency contracts;
 - create a complete version-specific release document package;
-- align active status/next-step/handoff documentation;
+- align active status/next-step/handoff/changelog documentation;
 - run the final exact-head CI/security/store matrix;
 - merge only after that exact head is green;
 - leave real-device/signing/store/publication work open until genuine evidence exists.
@@ -82,6 +82,22 @@ The contract now protects:
 - explicit non-published/non-released state;
 - intended immutable production tag name `v2.18.13` in the release checklist.
 
+### Active release-line alignment protection
+
+Added:
+
+`tests/CareNest.UiTests/ActiveReleaseLineContractTests.cs`
+
+The contract derives the active source version/build and requires:
+
+- `PROJECT_STATUS.md`;
+- `docs/releases/NEXT_STEPS.md`;
+- `what_changed.md`
+
+to follow that active version/build and remain explicitly `NOT PUBLISHED`.
+
+It also derives the expected version-specific release-document filenames and requires them to exist in fail-closed state. The handoff must continue to state that fresh exact-head verification has not yet been observed and that historical success cannot be transferred forward.
+
 ### Version-specific release package
 
 Added:
@@ -90,7 +106,7 @@ Added:
 - `docs/releases/RELEASE_NOTES_2_18_13_DRAFT.md`;
 - `docs/releases/RELEASE_CHECKLIST_2_18_13.md`.
 
-These files explicitly separate source preparation from real-device, accessibility, signing, store-approval and publication evidence.
+The checklist now marks all source-preparation/document-alignment rows complete while leaving exact-head automation and every real production/manual row open.
 
 ### Dynamic project/release documentation
 
@@ -98,9 +114,10 @@ Updated:
 
 - `PROJECT_STATUS.md`;
 - `docs/releases/NEXT_STEPS.md`;
-- `what_changed.md`.
+- `what_changed.md`;
+- `CHANGELOG.md`.
 
-The dynamic documents now identify `2.18.13` as the active preparation line while retaining the prior accepted `2.18.12` result as historical starting evidence rather than relabeling it.
+The active documents now identify `2.18.13` / `21813` as the preparation line while retaining the prior accepted `2.18.12` result only as historical exact-source evidence.
 
 ---
 
@@ -113,7 +130,8 @@ The dynamic documents now identify `2.18.13` as the active preparation line whil
 
 ### Source-policy tests
 
-- `tests/CareNest.UiTests/VersionConsistencyContractTests.cs`.
+- `tests/CareNest.UiTests/VersionConsistencyContractTests.cs`;
+- `tests/CareNest.UiTests/ActiveReleaseLineContractTests.cs`.
 
 ### Release documentation
 
@@ -122,6 +140,7 @@ The dynamic documents now identify `2.18.13` as the active preparation line whil
 - `docs/releases/RELEASE_CHECKLIST_2_18_13.md`;
 - `docs/releases/NEXT_STEPS.md`;
 - `PROJECT_STATUS.md`;
+- `CHANGELOG.md`;
 - `what_changed.md`.
 
 No runtime health-organizer behavior has been changed in this preparation batch.
@@ -246,13 +265,13 @@ No open GitHub issue backlog was found at the start of this continuation.
 
 No concrete new runtime defect has been identified in the current version-preparation changes so far.
 
-This does not constitute a global bug-free guarantee. The production/manual validation rows above remain necessary precisely because automated source verification cannot prove every runtime environment or distribution boundary.
+This does not constitute a global bug-free guarantee. The production/manual validation rows above remain necessary because automated source verification cannot prove every runtime environment or distribution boundary.
 
 ---
 
 ## 9. Migration notes
 
-The active patch roll-forward changes version/package metadata only. No database schema migration, backup-format migration or user-data conversion has been introduced by the `2.18.13` preparation commits listed below.
+The active patch roll-forward changes version/package metadata and release-governance contracts only. No database schema migration, backup-format migration or user-data conversion has been introduced by the `2.18.13` preparation commits listed below.
 
 Existing migration/compatibility requirements remain unchanged and must still be validated through actual packaged upgrade/restore evidence before production release.
 
@@ -260,7 +279,7 @@ Existing migration/compatibility requirements remain unchanged and must still be
 
 ## 10. Draft release-note summary
 
-CareNest `2.18.13` is a maintenance source roll-forward from the verified `2.18.12` baseline. It prepares new version/package metadata, refreshes version-consistency protection and establishes a complete fail-closed release-document package for the new patch line.
+CareNest `2.18.13` is a maintenance source roll-forward from the verified `2.18.12` baseline. It prepares new version/package metadata, refreshes version-consistency protection, adds active release-line drift protection, and establishes a complete fail-closed release-document package for the new patch line.
 
 The release does not claim new clinical functionality, real-device verification, production signing, accessibility completion, store approval or publication from source preparation alone.
 
@@ -274,9 +293,9 @@ Canonical draft:
 
 Starting merge:
 
-- `b2db4821047dbfb7fe223961fc237afcdfc8371e` — `Merge PR #86: promote CareNest 2.18.12 verification evidence`
+- `b2db4821047dbfb7fe223961fc237afcdfc8371e` — `Merge PR #86: promote CareNest 2.18.12 verification evidence`.
 
-Preparation branch commits so far:
+Preparation branch commits before this final handoff refresh:
 
 - `f9178d520f5b6718974bee0e7cce75d28209a04f` — `build: set CareNest 2.18.13 assembly version baseline`;
 - `0dba5216d03526cb0f2f428ac9b0744286a016d5` — `build: prepare MAUI package metadata for 2.18.13`;
@@ -285,7 +304,11 @@ Preparation branch commits so far:
 - `3bfb0bfc1089dffd261dc570f971f40bf4ac7c6f` — `docs: draft CareNest 2.18.13 release notes`;
 - `aa0c89752058d487d9590badc610cb023c63e6c1` — `docs: add CareNest 2.18.13 release checklist`;
 - `66119cfb543500d33d7c88e88a47704e2f536c13` — `docs: align project status with 2.18.13 preparation`;
-- `fc5251607acc4bf1d83ba49575555c93846c1a3f` — `docs: align next steps with 2.18.13 preparation`.
+- `fc5251607acc4bf1d83ba49575555c93846c1a3f` — `docs: align next steps with 2.18.13 preparation`;
+- `42ca18a3349ccb76f8694d7bdbfbcff71a76c7d2` — `docs: refresh handoff for CareNest 2.18.13 preparation`;
+- `615a39a091bb6d1d281bccdb2781d93c9c1aff58` — `test: guard active release-line handoff alignment`;
+- `f80f3d7d826934eca2d11542e05589e9fd9426db` — `docs: record CareNest 2.18.13 preparation in changelog`;
+- `f08c80a5db52f8eae4266fbd55ca91486d02ee02` — `docs: complete 2.18.13 source-preparation checklist`.
 
 Atomic commits are intentionally small and meaningful; no empty/artificial commits are used.
 
@@ -293,15 +316,14 @@ Atomic commits are intentionally small and meaningful; no empty/artificial commi
 
 ## 12. Next exact repository tasks
 
-1. update `CHANGELOG.md` for the `2.18.13` preparation line;
-2. mark the active `2.18.13` checklist documentation-alignment rows complete after the handoff/changelog edits land;
-3. add/refresh a source-policy contract for active dynamic release-document alignment if useful and non-duplicative;
-4. open the `2.18.13` preparation pull request;
-5. wait for actual exact-head workflow results to exist before recording counts/conclusions;
-6. fix any real CI/source defect exposed by those workflows without weakening gates;
-7. merge only when required exact-head checks are green, using an expected-head lock;
-8. promote post-merge automated evidence/status only from the observed accepted source;
-9. leave external/manual production rows open until genuine evidence can be collected.
+1. open the `2.18.13` preparation pull request;
+2. record the resulting final candidate head;
+3. inspect actual exact-head CareNest CI, CodeQL, Dependency Audit, Store Package Configuration and Store Inspection Artifacts;
+4. record actual test counts/build conclusions only after they exist;
+5. fix any real CI/source defect exposed by those workflows without weakening gates;
+6. merge only when required exact-head checks are green, using an expected-head lock;
+7. promote post-merge automated evidence/status only from the observed accepted source;
+8. leave external/manual production rows open until genuine evidence can be collected.
 
 ---
 
