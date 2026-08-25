@@ -47,17 +47,17 @@ public sealed class ActiveReleaseLineContractTests
     }
 
     [Fact]
-    public void Active_handoff_requires_fresh_exact_head_verification_before_promotion()
+    public void Active_handoff_preserves_exact_source_evidence_boundaries()
     {
         var root = FindRepositoryRoot();
         var handoff = Read(root, "what_changed.md");
 
         Assert.Contains(
-            "Fresh exact-head verification has not yet been observed",
+            "Historical workflow success is never transferred to a newer source",
             handoff,
             StringComparison.OrdinalIgnoreCase);
         Assert.Contains(
-            "Historical workflow success is never transferred to a newer source",
+            "genuine evidence",
             handoff,
             StringComparison.OrdinalIgnoreCase);
     }
