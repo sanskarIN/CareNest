@@ -1,65 +1,97 @@
 # CareNest — Current Project Status
 
-**Date:** 2026-08-24  
-**Release line:** `2.18.12`  
+**Date:** 2026-08-25  
+**Active preparation line:** `2.18.13`  
+**Package/build code:** `21813`  
 **Release state:** PREPARED IN SOURCE — NOT PUBLISHED  
 **Repository:** `https://github.com/sanskarIN/CareNest`  
-**Current automated evidence authority:** `docs/releases/AUTOMATED_BASELINE.md`  
-**Latest accepted verified branch source:** `1d9de89fbc7de69696c9d4276991f07bcdce1027`  
-**Verified PR merge ref:** `0a579f2a1d927173f3c69e8b32d0ac52ced6c944`  
-**Merged `main` commit:** `ca80bd554296363d71a6008cac73c819be77b39b`
+**Preparation branch:** `continue/prepare-2.18.13-20260825`  
+**Starting `main`:** `b2db4821047dbfb7fe223961fc237afcdfc8371e`  
+**Last accepted automated-source authority:** `docs/releases/AUTOMATED_BASELINE.md`
 
-The project-status snapshot that preceded the cross-platform current-main continuation remains preserved under:
+CareNest `2.18.13` is a maintenance continuation from the verified `2.18.12` repository baseline. Version/source preparation is in progress. No `2.18.13` production release, store approval, production signing, real-device validation or full cross-platform parity is claimed.
 
-`docs/history/cross-platform-before-current-status-20260823/PROJECT_STATUS.md`
-
-Historical evidence is authoritative only for its own exact source. The current accepted automated result is recorded in `docs/releases/AUTOMATED_BASELINE.md` and must not be confused with production-device, signing, store-approval or publication evidence.
+Historical evidence remains authoritative only for the exact source that produced it. The successful `2.18.12` and PR #86 workflow results are starting context, not verification evidence for a newer `2.18.13` head.
 
 ---
 
 ## 1. Current product boundary
 
-CareNest is a local-first organizational health application. It currently uses two presentation-host families over a .NET 10 codebase:
+CareNest is a local-first organizational health application. The current codebase uses:
 
 - .NET MAUI for Android, iOS/iPadOS, Mac Catalyst and Windows;
 - Avalonia for a Linux-capable desktop host and a WebAssembly browser host.
 
-CareNest does **not**:
+CareNest does **not** diagnose conditions, calculate or infer dosage, recommend treatment, perform clinical medication-interaction checking, calculate clinical risk scores, independently prove adherence, replace clinicians/pharmacists, provide emergency services, or guarantee operating-system/browser notification delivery.
 
-- diagnose conditions;
-- calculate or infer medicine dosage;
-- recommend treatment;
-- perform clinical medication-interaction checking;
-- calculate clinical risk scores;
-- independently prove adherence;
-- replace clinicians or pharmacists;
-- provide emergency services;
-- guarantee operating-system or browser notification delivery.
-
-The current source remains account-free and local-first within the documented product scope. It does not require a CareNest cloud backend and does not silently upload local health records.
+The application remains account-free and local-first within the documented scope. It does not require a CareNest cloud backend and does not silently upload local health records.
 
 ---
 
-## 2. Current version and dependency baseline
+## 2. Active 2.18.13 source metadata
 
-CareNest source is prepared for version `2.18.12`:
+The active source is being prepared with:
 
-- central semantic version: `2.18.12`;
-- assembly/file version: `2.18.12.0`;
-- MAUI application display version: `2.18.12`;
-- MAUI application package/build code: `21812`;
+- central semantic version: `2.18.13`;
+- assembly/file version: `2.18.13.0`;
+- informational version: `2.18.13`;
+- MAUI application display version: `2.18.13`;
+- MAUI package/build code: `21813`;
 - `Microsoft.Maui.Controls`: `10.0.100`;
 - Avalonia package family: `12.1.1`.
 
-`tests/CareNest.UiTests/VersionConsistencyContractTests.cs` protects the source/package version, MAUI dependency baseline and release-document non-publication state from accidental drift.
+`tests/CareNest.UiTests/VersionConsistencyContractTests.cs` now protects the `2.18.13` source/package metadata and non-publication state of the version-specific release documents.
 
-Preparation of these values does not mean `2.18.12` has been published.
+Prepared metadata is not publication evidence.
 
 ---
 
-## 3. Configured platform reach
+## 3. 2.18.13 starting repository boundary
 
-### Established MAUI targets
+The preparation branch starts from merged `main` commit:
+
+`b2db4821047dbfb7fe223961fc237afcdfc8371e`
+
+That commit includes PR #86 (`docs: promote CareNest 2.18.12 verification evidence`). PR #86 was merged only after its exact head:
+
+`e14a40d095a6f39993a0f62e497f15ec4668701f`
+
+completed successfully in:
+
+- CareNest CI;
+- CodeQL;
+- Dependency Audit;
+- Store Package Configuration;
+- Store Inspection Artifacts.
+
+Those results prove the PR #86 source boundary only. The final `2.18.13` preparation head must complete its own configured verification matrix before merge/promotion.
+
+---
+
+## 4. Last accepted 2.18.12 automated baseline
+
+The last accepted feature/source baseline before this version roll-forward remains recorded in:
+
+`docs/releases/AUTOMATED_BASELINE.md`
+
+For the accepted `2.18.12` source boundary, the observed core suite was:
+
+- unit tests: **122/122**;
+- integration tests: **54/54**;
+- UI/source-policy tests: **215/215**;
+- total core tests: **391/391**.
+
+The accepted `2.18.12` matrix also recorded successful Android, Windows, iOS simulator, Mac Catalyst, Linux desktop and WebAssembly/browser build/publish paths, plus CodeQL, unsuppressed dependency audit and store inspection/configuration workflows.
+
+The Windows job history includes a retained transient MAUI-workload `ResponseEnded` download failure followed by a same-source successful job-only retry. That history remains evidence rather than being rewritten.
+
+These numbers and workflow results must not be relabeled as `2.18.13` results. New counts/conclusions are recorded only after the final new source actually runs.
+
+---
+
+## 5. Configured platform reach
+
+### .NET MAUI targets
 
 - Android: `net10.0-android`;
 - iOS/iPadOS: `net10.0-ios`;
@@ -72,24 +104,20 @@ Preparation of these values does not mean `2.18.12` has been published.
 - modern WebAssembly-capable browsers: `CareNest.CrossPlatform.Browser`, targeting `net10.0-browser`;
 - shared Avalonia application/views: `CareNest.CrossPlatform`.
 
-The Avalonia desktop host can also execute on supported Windows/macOS environments, but it does not replace the established MAUI production boundary on those platforms.
+Configured build reach is not production feature parity. Linux/browser capabilities remain evidence-driven and must use `PASS`, `FAIL`, `BLOCKED`, `N/A` or `NOT RUN` according to actual validation.
 
-Configured build/presentation reach is **not** the same as production feature parity. Linux and browser runtime capabilities remain evidence-driven and must be represented as `NOT RUN`, `BLOCKED`, `N/A`, `FAIL` or `PASS` according to actual validation.
-
-Architecture and capability guide:
-
-`docs/setup/CROSS_PLATFORM.md`
+Architecture/capability guide: `docs/setup/CROSS_PLATFORM.md`.
 
 ---
 
-## 4. Established source-complete application scope
+## 6. Established source-complete application scope
 
-The current source retains the intended non-clinical CareNest organizer scope, including:
+The current source retains the intended non-clinical organizer scope, including:
 
 - multiple local person/family profiles;
 - medicine records with user-entered strength/instruction text;
 - explicit schedules and deterministic reminder occurrences;
-- reminder lifecycle/history/status/reconciliation/compensation behavior;
+- reminder lifecycle/history/status/reconciliation behavior;
 - appointments and optional reminders;
 - stock/refill organization;
 - encrypted imported-document vault;
@@ -104,101 +132,31 @@ The current source retains the intended non-clinical CareNest organizer scope, i
 - automated C#/structured-file quality contracts;
 - documentation-integrity tooling;
 - package-evidence/provenance tooling;
-- CodeQL, dependency, store and release gates.
+- CodeQL, dependency, store and release gates;
+- Linux desktop and browser presentation/build hosts.
 
-No speculative clinical or emergency feature was added merely to expand scope.
-
----
-
-## 5. Cross-platform foundation now merged
-
-PR #84 was merged into `main` at:
-
-`ca80bd554296363d71a6008cac73c819be77b39b`
-
-The merged source includes:
-
-- `src/CareNest.CrossPlatform/CareNest.CrossPlatform.csproj`;
-- shared Avalonia application and views;
-- `src/CareNest.CrossPlatform.Desktop/CareNest.CrossPlatform.Desktop.csproj` and desktop startup;
-- `src/CareNest.CrossPlatform.Browser/CareNest.CrossPlatform.Browser.csproj` and browser startup;
-- browser bootstrap assets under `src/CareNest.CrossPlatform.Browser/wwwroot/`;
-- solution registration for all three cross-platform projects;
-- Linux desktop and browser CI paths;
-- Avalonia dependency-audit paths;
-- tagged release-gate Linux/browser build/publish paths;
-- Linux and browser canonical production-validation templates.
-
-The older PR #83 was closed as superseded. Dependabot PR #85 was also closed after its `Microsoft.Maui.Controls` `10.0.100` update was integrated and verified through PR #84.
+No speculative clinical/emergency feature has been added to inflate scope.
 
 ---
 
-## 6. Fail-closed cross-platform verification
+## 7. Cross-platform verification boundary
 
-The merged source includes:
+The repository retains fail-closed cross-platform verification through:
 
 - `build/scripts/verify-cross-platform-targets.py`;
 - `build/scripts/test-verify-cross-platform-targets.py`.
 
-The verifier checks required:
+The verifier checks MAUI targets, Avalonia declarations, desktop/browser startup wiring, solution registration, Avalonia XAML, CI/audit/release-gate integration, public platform claims, setup documentation and fail-closed Linux/browser evidence templates.
 
-- MAUI target declarations;
-- Avalonia package declarations;
-- desktop/browser project targets;
-- application lifetime/bootstrap wiring;
-- solution registration;
-- well-formed Avalonia XAML;
-- CI and dependency-audit wiring;
-- release-gate wiring;
-- public README platform claims;
-- cross-platform setup documentation;
-- Linux/browser production-evidence records and fail-closed defaults.
-
-The isolated regression self-tests require intentional failures to be detected, including missing startup wiring, malformed Avalonia XAML and unsafe pre-completed production-evidence state.
-
----
-
-## 7. Current accepted automated evidence
-
-Canonical details are in:
-
-`docs/releases/AUTOMATED_BASELINE.md`
-
-The exact PR #84 branch source `1d9de89fbc7de69696c9d4276991f07bcdce1027`, evaluated through merge ref `0a579f2a1d927173f3c69e8b32d0ac52ced6c944`, produced:
-
-- repository Python tooling syntax: **success**;
-- cross-platform target verification: **success**;
-- cross-platform verifier self-tests: **success**;
-- package-evidence self-test: **success**;
-- documentation-link checker self-test: **success**;
-- active stable documentation links: **210** live local links across **128** stable active Markdown files;
-- platform-neutral formatting: **success**;
-- unit tests: **122/122**;
-- integration tests: **54/54**;
-- UI/source-policy tests: **215/215**;
-- total core tests: **391/391**;
-- Android Release: **success**;
-- Windows Release: **success**;
-- iOS simulator Release: **success**;
-- Mac Catalyst Release: **success**;
-- Linux desktop Release build: **success**;
-- WebAssembly browser Release publish: **success**;
-- Store Package Configuration: **success**;
-- Store Inspection Artifacts: **success**;
-- CodeQL: **success**;
-- unsuppressed Dependency Audit: **success**.
-
-CareNest CI run `32685906690` initially encountered a transient HTTP `ResponseEnded` failure while downloading the Windows MAUI workload. The Windows build had not started. A job-only retry on the unchanged exact source succeeded in workload installation and the Windows Release build. The final CI conclusion is success; the initial failure remains recorded in the automated baseline rather than being hidden.
+Regression self-tests intentionally require broken configurations to fail detection.
 
 ---
 
 ## 8. Production evidence semantics
 
-Canonical authority:
+Canonical authority: `docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`.
 
-`docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`
-
-Allowed evidence states remain:
+Allowed states remain:
 
 - `PASS`;
 - `FAIL`;
@@ -208,15 +166,13 @@ Allowed evidence states remain:
 
 Unknown, stale, queued, superseded, blocked or unperformed work must never be represented as a pass.
 
-Canonical templates are evidence containers, not evidence themselves. Release-specific copies should be completed only when actual validation occurs.
-
 Public evidence must use fictional/synthetic application data and must not contain real health records, prescription documents, PINs, backup passwords, private signing keys, access tokens, recovery codes or other secrets.
 
 ---
 
 ## 9. Backup security/resource boundary retained
 
-The verified 2.18.12 source retains the accepted authenticated-backup resource limits:
+The accepted source retains the documented authenticated-backup ceilings:
 
 - decrypted ZIP container: **2304 MiB** maximum;
 - manifest: **1 MiB** maximum;
@@ -224,115 +180,63 @@ The verified 2.18.12 source retains the accepted authenticated-backup resource l
 - each encrypted document: **512 MiB** maximum;
 - total uncompressed ZIP payload: **2 GiB** maximum;
 - documents: **5,000** maximum;
-- archive-entry count: document ceiling plus required fixed entries;
-- explicit directory-only ZIP entries: rejected.
+- archive-entry count bounded by document ceiling plus required fixed entries;
+- explicit directory-only ZIP entries rejected.
 
-Backup creation validates generated archives against the same topology/resource boundary before encryption. These automated protections do not replace packaged historical-backup compatibility validation.
+Automated protection does not replace packaged/historical backup compatibility validation.
 
 ---
 
 ## 10. External-commerce/package boundary retained
 
-CareNest keeps funding/storefront promotion outside the shipped health application package.
+Funding/storefront promotion remains outside the shipped health application package. Release governance continues to require final distributed app payloads to avoid in-app promotion/purchase surfaces for external funding/storefront destinations.
 
-The release governance continues to require final distributed app payloads to avoid in-app promotion/purchase surfaces for:
-
-- `buymeacoffee.com/sanskarIN`;
-- `ramsandesh.gumroad.com`.
-
-Final package inspection must retain the applicable store-safe marker checks. No health feature or local-data access may depend on purchase/funding state.
+No health feature or local-data access may depend on funding/purchase state.
 
 ---
 
-## 11. Remaining production work
+## 11. 2.18.13 source-side work completed so far
 
-The repository source and automated merge-readiness work are complete for the current prepared baseline. Remaining blockers require genuine external/manual evidence rather than more speculative source churn.
+On `continue/prepare-2.18.13-20260825`:
 
-### Android
+- central version metadata rolled to `2.18.13`;
+- MAUI display/package metadata rolled to `2.18.13` / `21813`;
+- version-consistency contract rolled to `2.18.13`;
+- `VERSION_2_18_13_PREPARATION.md` added;
+- `RELEASE_NOTES_2_18_13_DRAFT.md` added;
+- `RELEASE_CHECKLIST_2_18_13.md` added;
+- dynamic project/release handoff documents are being aligned to the new preparation boundary.
 
-- representative installed-device validation;
-- notification permission denied/granted behavior;
-- actual reminder delivery/actions/snooze/cancellation;
-- exact/inexact alarm and battery/vendor behavior;
-- reboot/restart/clock/time-zone/DST recovery;
-- force-stop limitation/recovery messaging;
-- documents/share/backup/app-lock/accessibility validation.
+The final branch head still requires exact-head automation before merge.
 
-### Windows
+---
 
-- actual intended installed-package/update path;
-- running/closed-app reminder behavior and limitations;
-- reminder replacement/cancellation/actions/snooze/recovery;
-- documents/share/backup/app-lock;
-- keyboard/focus/theme/Narrator/large-text validation;
-- existing-data packaged upgrade validation.
+## 12. Remaining production work
 
-### iPhone/iPad
-
-- real signed/provisioned device install/upgrade;
-- notification permission and actual delivery/actions/snooze behavior;
-- lifecycle/restart/time-zone behavior;
-- documents/share/backup/app-lock;
-- Dynamic Type/VoiceOver/notification-preview privacy;
-- packaged existing-data behavior where applicable.
-
-Simulator compilation is not real-device notification evidence.
-
-### Mac Catalyst
-
-- installed/manual behavior;
-- notification permission/delivery/actions/snooze;
-- lifecycle/restart/time-zone behavior;
-- file picker/share/backup/app-lock;
-- keyboard/focus/VoiceOver/large-text/theme/contrast;
-- signed/notarized candidate behavior where applicable.
-
-### Linux desktop
-
-- representative distribution/runtime validation;
-- launch/window lifecycle, scaling and X11/Wayland boundaries where represented;
-- filesystem/package prerequisites;
-- persistence/reminder/secure-storage/file/share capability evidence only where implemented;
-- keyboard/focus/assistive-technology checks;
-- explicit non-parity state for unsupported capabilities.
-
-### Browser/WebAssembly
-
-- actual hosted startup/static-asset/WebAssembly behavior;
-- browser storage/persistence/quota/private-mode boundaries where implemented;
-- reload/navigation/offline/multiple-tab behavior;
-- file/camera/notification permissions only where implemented;
-- unsupported-capability behavior;
-- screen-reader/focus/zoom checks;
-- verification that no hidden analytics/telemetry/network upload was added.
-
-### Cross-platform production gates
+The remaining blockers are genuine external/manual work rather than items that may be truthfully completed from source inspection alone:
 
 - packaged SQLite/encrypted-document/backup compatibility;
-- genuine historical-backup compatibility where genuine prior bytes exist;
-- accessibility validation with applicable assistive technologies;
+- Android installed-device notification/reminder/recovery/accessibility validation;
+- Windows installed-package/update/reminder/accessibility validation;
+- signed/provisioned iPhone/iPad real-device validation;
+- installed Mac Catalyst behavior and notarized-candidate evidence where applicable;
+- representative Linux runtime evidence;
+- hosted browser/WebAssembly runtime/storage/permission/accessibility evidence;
+- cross-platform accessibility validation using applicable assistive technology;
 - production signing/provisioning/notarization provenance;
-- exact final package/deployment SHA-256/provenance;
+- final package/deployment hashes/provenance;
 - store-safe final payload inspection;
-- live store metadata/declaration review;
-- submission-day policy review;
-- actual submission/review/approval/publication outcomes.
+- live submission-day policy/metadata/declaration review;
+- actual submission, review, approval and publication/deployment outcomes.
 
 ---
 
-## 12. Release decision
+## 13. Release decision
 
-CareNest `2.18.12` is **prepared and fully accepted at the current automated source boundary**, but it is **not production published**.
+CareNest `2.18.13` is **prepared/in preparation at the source boundary and NOT PUBLISHED**.
 
-Do not create or treat `v2.18.12` as an approved production tag until applicable production evidence is complete and the tagged release gates permit promotion.
+Do not create or treat `v2.18.13` as an approved production tag until applicable production evidence is complete and tagged release gates permit promotion.
 
-Do not claim:
-
-- production signing without signing evidence;
-- real-device behavior from simulator/build results;
-- Linux/browser full feature parity from successful builds;
-- store approval before actual approval;
-- publication before actual publication;
-- a global bug-free guarantee.
+Do not claim production signing without evidence, real-device behavior from simulator/build success, Linux/browser full parity from build success, store approval before actual approval, publication before actual publication, accessibility completion without assistive-technology evidence, or a global bug-free guarantee.
 
 The next actionable work is maintained in `docs/releases/NEXT_STEPS.md`.

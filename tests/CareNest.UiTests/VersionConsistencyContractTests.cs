@@ -4,9 +4,9 @@ namespace CareNest.UiTests;
 
 public sealed class VersionConsistencyContractTests
 {
-    private const string ReleaseVersion = "2.18.12";
-    private const string AssemblyVersion = "2.18.12.0";
-    private const string ApplicationBuild = "21812";
+    private const string ReleaseVersion = "2.18.13";
+    private const string AssemblyVersion = "2.18.13.0";
+    private const string ApplicationBuild = "21813";
     private const string MauiControlsVersion = "10.0.100";
 
     [Fact]
@@ -50,9 +50,9 @@ public sealed class VersionConsistencyContractTests
     public void Release_preparation_documents_match_target_without_claiming_publication()
     {
         var root = FindRepositoryRoot();
-        var preparation = Read(root, "docs/releases/VERSION_2_18_12_PREPARATION.md");
-        var notes = Read(root, "docs/releases/RELEASE_NOTES_2_18_12_DRAFT.md");
-        var checklist = Read(root, "docs/releases/RELEASE_CHECKLIST_2_18_12.md");
+        var preparation = Read(root, "docs/releases/VERSION_2_18_13_PREPARATION.md");
+        var notes = Read(root, "docs/releases/RELEASE_NOTES_2_18_13_DRAFT.md");
+        var checklist = Read(root, "docs/releases/RELEASE_CHECKLIST_2_18_13.md");
 
         foreach (var text in new[] { preparation, notes, checklist })
         {
@@ -64,7 +64,7 @@ public sealed class VersionConsistencyContractTests
         Assert.Contains("NOT PUBLISHED", preparation, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("NOT PUBLISHED", notes, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("NOT RELEASED", checklist, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("v2.18.12", checklist, StringComparison.Ordinal);
+        Assert.Contains("v2.18.13", checklist, StringComparison.Ordinal);
     }
 
     private static string PropertyValue(XDocument document, string name) =>

@@ -9,10 +9,10 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
-    <Version>2.18.12</Version>
-    <AssemblyVersion>2.18.12.0</AssemblyVersion>
-    <FileVersion>2.18.12.0</FileVersion>
-    <InformationalVersion>2.18.12</InformationalVersion>
+    <Version>2.18.13</Version>
+    <AssemblyVersion>2.18.13.0</AssemblyVersion>
+    <FileVersion>2.18.13.0</FileVersion>
+    <InformationalVersion>2.18.13</InformationalVersion>
     <RepositoryUrl>https://github.com/sanskarIN/CareNest</RepositoryUrl>
     <Authors>Sanskar</Authors>
     <Company>CareNest</Company>
