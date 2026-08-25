@@ -1,246 +1,445 @@
-# CareNest — Current 2.18.12 Preparation Handoff
+# CareNest — Post-Merge 2.18.12 Verification Handoff
 
 **Date:** 2026-08-24  
 **Target version:** `2.18.12`  
 **Package/build code:** `21812`  
 **MAUI Controls baseline:** `10.0.100`  
-**State:** PREPARED IN SOURCE — NOT PUBLISHED  
+**State:** AUTOMATED SOURCE ACCEPTED — NOT PUBLISHED  
 **Repository:** `https://github.com/sanskarIN/CareNest`  
-**Active branch:** `continue/cross-platform-current-main-20260823`  
-**Active pull request:** `#84` — `feat: complete cross-platform hosts and prepare 2.18.12`
+**Verified feature branch source:** `1d9de89fbc7de69696c9d4276991f07bcdce1027`  
+**Verified PR merge ref:** `0a579f2a1d927173f3c69e8b32d0ac52ced6c944`  
+**Merged `main` commit:** `ca80bd554296363d71a6008cac73c819be77b39b`  
+**Merged pull request:** `#84` — `feat: complete cross-platform hosts and prepare 2.18.12`  
+**Current continuation branch:** `continue/post-merge-2.18.12-governance-20260824`
 
-Historical handoffs and exact-source workflow results remain in Git history. Older results are evidence only for the source that produced them and must never be transferred to a newer head.
-
----
-
-## 1. Previous PR #84 CI blocker fixed
-
-The previously observed CareNest CI failure was a formatter failure caused by missing final newlines. The failure occurred before the core .NET test stages could execute.
-
-Fixed in three separate commits:
-
-- `4933d6e8e6216c10e78510622644117f469e9e38` — `style: add final newline to cross-platform evidence tests`;
-- `3964b4381a27bf08b772b450052c8a2a8ee4fb7b` — `style: add final newline to production evidence tests`;
-- `84404b75e0a3a552fe897ea47df83882ce5cd89f` — `style: add final newline to release documentation tests`.
-
-Affected files:
-
-- `tests/CareNest.UiTests/CrossPlatformEvidenceContractTests.cs`;
-- `tests/CareNest.UiTests/ProductionEvidenceDocumentationContractTests.cs`;
-- `tests/CareNest.UiTests/ReleaseDocumentationConsistencyContractTests.cs`.
-
-No formatter suppression or test bypass was added.
+The preparation handoff that existed before PR #84 merged remains preserved in Git history. Historical workflow results remain evidence only for the exact source/base combination that produced them and must not be transferred to a newer source without actual verification.
 
 ---
 
-## 2. Version 2.18.12 source metadata prepared
+## 1. PR #84 accepted and merged
 
-Central version baseline commit:
+PR #84 was held open until its exact final source completed the required automated matrix.
 
-`e8ea101765a314f8b39ca09e77d3a17725c2256c` — `build: set CareNest 2.18.12 assembly version baseline`
+Accepted branch source:
 
-`Directory.Build.props` now contains:
+`1d9de89fbc7de69696c9d4276991f07bcdce1027`
 
-- `Version`: `2.18.12`;
-- `AssemblyVersion`: `2.18.12.0`;
-- `FileVersion`: `2.18.12.0`;
-- `InformationalVersion`: `2.18.12`.
+Accepted GitHub pull-request merge ref:
 
-MAUI package metadata commit:
+`0a579f2a1d927173f3c69e8b32d0ac52ced6c944`
 
-`99ceec91b81d64234973d9cec57328fd506eee1f` — `build: prepare MAUI package metadata for 2.18.12`
+PR base used by that merge ref:
 
-`src/CareNest.App/CareNest.App.csproj` now contains:
+`f58aaca1d1d7a3fef68cb30b8b9a68fa0f94bf09`
 
-- `ApplicationDisplayVersion`: `2.18.12`;
-- `ApplicationVersion`: `21812`.
+After all required workflow groups had an accepted successful result, PR #84 was merged using an expected-head lock so a moved PR head could not be merged accidentally.
 
-This is package/source preparation only. It is not publication, signing or store-approval evidence.
+Resulting `main` merge commit:
 
----
+`ca80bd554296363d71a6008cac73c819be77b39b`
 
-## 3. Microsoft.Maui.Controls 10.0.100 integrated
-
-Dependabot PR #85 proposed the single central-package change:
-
-- `Microsoft.Maui.Controls` `10.0.90` → `10.0.100`.
-
-Its exact standalone head completed CareNest CI, CodeQL, Dependency Audit, Store Package Configuration and Store Inspection Artifacts successfully before integration. Those results remain historical evidence for that exact Dependabot source only.
-
-The update was integrated into PR #84 in:
-
-`1c872f37ee79e029b06ef4afae732080818522c5` — `build: update Microsoft.Maui.Controls to 10.0.100`
-
-PR #85 has now been closed as superseded. PR #84 must still pass its own exact-head matrix with MAUI `10.0.100`; the older Dependabot success cannot be copied onto the newer source.
+This merge carries the full granular PR history rather than replacing it with an unverified manual copy.
 
 ---
 
-## 4. Version and dependency consistency contracts
+## 2. Final automated test inventory observed
 
-Initial version contract:
+CareNest CI reported the following actual counts on the accepted PR #84 merge ref:
 
-`c87559feda5339faff1bd5c64a86aa83351f8fab` — `test: guard CareNest 2.18.12 version consistency`
+- unit tests: **122/122**;
+- integration tests: **54/54**;
+- UI/source-policy tests: **215/215**;
+- total core tests: **391/391**.
 
-Release-state hardening:
+The previous accepted baseline had 370/370 core tests. The increase comes from additional source-policy/cross-platform/version/release-governance coverage; the 122-unit and 54-integration suites remain intact.
 
-`87e57ead23ac7ff2b6f106f4096915774d7321a8` — `test: protect 2.18.12 release preparation state`
-
-MAUI dependency hardening:
-
-`3de3ab0e6755487932ac7f01cfd79361fbf3ddd4` — `test: guard MAUI 10.0.100 release dependency`
-
-`tests/CareNest.UiTests/VersionConsistencyContractTests.cs` now protects:
-
-- central semantic version `2.18.12`;
-- assembly/file version `2.18.12.0`;
-- MAUI display version `2.18.12`;
-- package/build code `21812`;
-- `Microsoft.Maui.Controls` `10.0.100`;
-- version-specific preparation, draft-notes and checklist documents;
-- explicit `NOT PUBLISHED` / `NOT RELEASED` state before real promotion evidence exists.
+No newer test total was predicted before CI reported it.
 
 ---
 
-## 5. Version-specific release package
+## 3. Repository and documentation integrity checks passed
 
-Preparation record:
+The accepted exact source also passed:
 
-`docs/releases/VERSION_2_18_12_PREPARATION.md`
+- Python tooling syntax validation;
+- fail-closed cross-platform target verification;
+- isolated cross-platform verifier regression self-tests;
+- package-evidence tooling self-test;
+- documentation-link checker self-test;
+- platform-neutral formatting verification.
 
-Created by:
+Observed stable active documentation integrity result:
 
-`965c6177a61596130f7e343bdd19e655408076b4` — `docs: add CareNest 2.18.12 release preparation record`
+- **210** live local links;
+- across **128** stable active Markdown files.
 
-Linked/hardened by:
-
-- `4b16c088a65271f6c1ee489333700745e13bf21d` — `docs: link 2.18.12 release package records`;
-- `83e2005fae7d2d39021672822852715b1b28ed27` — `docs: record MAUI 10.0.100 in 2.18.12 baseline`.
-
-Draft release notes:
-
-`docs/releases/RELEASE_NOTES_2_18_12_DRAFT.md`
-
-Commits:
-
-- `f460dc731739cbb3a8a1dc4cff16a619fc45698a` — `docs: draft CareNest 2.18.12 release notes`;
-- `bbc058538d5d4d49bf438a14ef202f8e3488c963` — `docs: include MAUI 10.0.100 in 2.18.12 draft notes`.
-
-Version-specific checklist:
-
-`docs/releases/RELEASE_CHECKLIST_2_18_12.md`
-
-Commits include:
-
-- `3de6ecb22c4adc2a682ab4c285f096f9e7211d5e` — initial checklist;
-- `60fd70512afc4c30def2c8fb053cac91789925e4` — PR #83 cleanup state;
-- `36391c7bebace9fe2ff65edd92a9ac47a0339997` — integrated MAUI servicing state.
-
-The version-specific documents supplement, and do not replace, the stable production-evidence authorities.
+No formatter, test or documentation-integrity rule was disabled to obtain the accepted result.
 
 ---
 
-## 6. Cross-platform foundation retained
+## 4. Platform build verification passed
 
-PR #84 contains the current-main cross-platform work:
+The accepted source completed the configured build matrix:
 
-- Android through .NET MAUI;
-- iOS/iPadOS through .NET MAUI;
-- Mac Catalyst through .NET MAUI;
-- Windows through .NET MAUI;
-- Linux desktop through Avalonia Desktop;
-- modern WebAssembly-capable browsers through Avalonia Browser;
-- shared Avalonia presentation layer;
+- Android Release: **success**;
+- Windows Release: **success**;
+- iOS simulator Release: **success**;
+- Mac Catalyst Release: **success**;
+- Linux Avalonia Desktop Release build: **success**;
+- Avalonia Browser WebAssembly Release publish: **success**.
+
+These results prove the configured automated build boundary only. They do not prove real-device notification behavior, installed-package behavior, Linux/browser full feature parity, accessibility completion, production signing or publication.
+
+---
+
+## 5. Windows transient workload-download failure retained honestly
+
+CareNest CI run:
+
+`32685906690`
+
+The first Windows job attempt failed before compilation while running:
+
+`dotnet workload install maui`
+
+The installer reported an HTTP response truncation with:
+
+`ResponseEnded`
+
+The Windows application build did not begin on that failed attempt.
+
+The source, PR base and merge ref were left unchanged. After the other CI jobs completed, only the failed Windows job was rerun.
+
+On run attempt 2:
+
+- .NET setup: **success**;
+- MAUI workload installation: **success**;
+- Windows Release build: **success**.
+
+The final CareNest CI conclusion became **success**.
+
+The initial failure is intentionally retained in `docs/releases/AUTOMATED_BASELINE.md` and this handoff. A transient infrastructure failure is not erased merely because a retry later succeeds.
+
+---
+
+## 6. Store/security/dependency workflow matrix passed
+
+Observed required top-level workflow runs for the accepted source:
+
+- CareNest CI `32685906690`: **success** after the documented Windows job-only retry;
+- Store Package Configuration `32685906685`: **success**;
+- Store Inspection Artifacts `32685906678`: **success**;
+- CodeQL `32685906722`: **success**;
+- Dependency Audit `32685906679`: **success**.
+
+Dependency Audit covered the platform-neutral graph, Avalonia desktop/browser graphs and MAUI application dependency graph without suppressing audit findings.
+
+Store Package Configuration successfully exercised its configured Android, Windows and Apple candidate builds.
+
+Store Inspection Artifacts successfully exercised:
+
+- store-safe scanner self-tests;
+- Android unsigned inspection artifact generation;
+- Windows self-contained inspection artifact generation;
+- Apple unsigned inspection artifact generation/provenance flow.
+
+Unsigned inspection artifacts are not signed production packages and are not store approval evidence.
+
+---
+
+## 7. Cross-platform foundation now lives on `main`
+
+PR #84 merged the current-main reconstruction of the Linux/WebAssembly work rather than reusing the stale/diverged base of older PR #83.
+
+The merged source includes:
+
+- centrally managed Avalonia `12.1.1` package baseline;
+- `CareNest.CrossPlatform` shared Avalonia application/views;
+- `CareNest.CrossPlatform.Desktop` Linux-capable desktop host;
+- `CareNest.CrossPlatform.Browser` WebAssembly browser host;
 - browser bootstrap assets;
 - solution registration;
-- fail-closed target verifier;
-- verifier regression self-tests;
-- Linux/browser CI jobs;
-- dependency audit integration;
-- tagged release-gate Linux/browser builds;
-- Linux/browser production-evidence templates;
-- cross-platform setup/capability documentation.
+- Linux desktop CI build;
+- WebAssembly browser CI publish;
+- Avalonia desktop/browser dependency-audit coverage;
+- tagged release-gate Linux/browser build/publish paths;
+- fail-closed cross-platform target verifier;
+- isolated verifier regression self-tests;
+- Linux desktop production-validation template;
+- browser/WebAssembly production-validation template;
+- release-governance integration that refuses to infer manual production evidence from green builds.
 
-Configured build reach does not prove runtime or production feature parity.
-
----
-
-## 7. Stale PRs retired
-
-### PR #83
-
-The older `feature/full-cross-platform` implementation was based on a superseded `main` state. It has been closed without merge and marked as superseded by PR #84.
-
-### PR #85
-
-The standalone Dependabot MAUI `10.0.100` PR has been closed after its one-line change was integrated into PR #84. Its own successful workflow history remains exact-source historical evidence only.
-
-This leaves PR #84 as the single active source path for the cross-platform + 2.18.12 + MAUI servicing preparation.
+PR #83 was closed as superseded and was not merged.
 
 ---
 
-## 8. Current PR #84 acceptance rule
+## 8. CareNest 2.18.12 source metadata accepted
 
-PR #84 must not be merged until the exact final head completes the current verification matrix successfully.
+The merged source is prepared with:
 
-Required automated evidence includes:
+- semantic version: `2.18.12`;
+- assembly version: `2.18.12.0`;
+- file version: `2.18.12.0`;
+- informational version: `2.18.12`;
+- MAUI `ApplicationDisplayVersion`: `2.18.12`;
+- MAUI `ApplicationVersion`: `21812`.
 
-- formatting;
-- version/dependency consistency contracts;
-- unit tests;
-- integration tests;
-- UI/source-policy tests;
-- Android Release build with MAUI `10.0.100`;
-- Windows Release build with MAUI `10.0.100`;
-- iOS simulator Release build with MAUI `10.0.100`;
-- Mac Catalyst Release build with MAUI `10.0.100`;
-- Linux desktop Release build;
-- WebAssembly browser Release publish;
-- CodeQL;
-- unsuppressed Dependency Audit;
-- Store Package Configuration;
-- Store Inspection Artifacts.
+`tests/CareNest.UiTests/VersionConsistencyContractTests.cs` protects these values and the non-publication state of the 2.18.12 preparation documents.
 
-Queued, pending, failed, cancelled, skipped, superseded or older-head runs are not exact-head success evidence.
+The version metadata is prepared and verified in source. It is **not** evidence that a `v2.18.12` production tag exists or that any store has approved/published the version.
 
 ---
 
-## 9. Production validation still open
+## 9. Microsoft.Maui.Controls 10.0.100 integrated and verified
 
-Even after automated source verification, `2.18.12` remains not production-released until real evidence exists for applicable targets.
+Dependabot PR #85 proposed the one-line central-package update:
 
-Required areas include:
+`Microsoft.Maui.Controls 10.0.90 -> 10.0.100`
 
-- Android installed-device reminder/notification and permission behavior;
-- Windows installed package/update and reminder boundaries;
-- real signed/provisioned iPhone/iPad behavior;
-- installed Mac Catalyst behavior;
-- representative Linux runtime behavior;
-- browser storage/reload/offline/permission/runtime behavior;
-- accessibility with applicable assistive technologies;
-- packaged existing-data/SQLite/encrypted-document/backup compatibility;
-- secure production signing/provisioning/notarization provenance;
-- exact final package SHA-256/provenance;
-- store-safe payload inspection;
-- live store metadata/declaration review;
+Its own exact source had already passed the repository CI/security/store matrix, but those results were not copied onto PR #84.
+
+The dependency update was integrated directly into PR #84 and then verified again through the complete PR #84 exact-source matrix.
+
+PR #85 was closed as superseded after integration.
+
+The current accepted CareNest source therefore uses:
+
+`Microsoft.Maui.Controls 10.0.100`
+
+with the full 2.18.12/cross-platform source around it actually tested.
+
+---
+
+## 10. Earlier final-newline CI defect remains fixed
+
+An earlier PR #84 head had failed formatting because three source-policy test files lacked final newlines:
+
+- `CrossPlatformEvidenceContractTests.cs`;
+- `ProductionEvidenceDocumentationContractTests.cs`;
+- `ReleaseDocumentationConsistencyContractTests.cs`.
+
+They were corrected in separate commits without suppressing formatting enforcement.
+
+The final accepted 2.18.12 source passed platform-neutral formatting, confirming the correction remained effective.
+
+---
+
+## 11. Automated evidence authority promoted post-merge
+
+A post-merge governance branch was created from:
+
+`ca80bd554296363d71a6008cac73c819be77b39b`
+
+Branch:
+
+`continue/post-merge-2.18.12-governance-20260824`
+
+The dynamic automated authority was updated in:
+
+`docs/releases/AUTOMATED_BASELINE.md`
+
+Promotion commit:
+
+`b3ce701c519e5e6b6da391a89c77f3e400a927ac` — `docs: promote verified 2.18.12 automated baseline`
+
+The new dynamic baseline records the exact source/base/merge identities, actual test counts, workflow IDs, build results and Windows retry history.
+
+It does not modify runtime behavior or transform green CI into manual production evidence.
+
+---
+
+## 12. Dynamic project status aligned
+
+`PROJECT_STATUS.md` was rewritten from its pre-merge PR #84 state to the accepted post-merge 2.18.12 state.
+
+Commit:
+
+`30b96cb93f093f41dd4985de0b3d5363bdce046c` — `docs: align project status with verified 2.18.12 source`
+
+The current status now records:
+
+- 2.18.12 prepared/not-published release state;
+- exact accepted source/merge identities;
+- current MAUI/Avalonia dependency baselines;
+- six configured platform families;
+- the actual 391/391 result;
+- the transient Windows first-attempt failure and successful unchanged-source retry;
+- retained backup resource ceilings;
+- retained repository-only external-commerce package boundary;
+- remaining real production validation/signing/store blockers.
+
+---
+
+## 13. Next-steps document converted to a real production checklist
+
+`docs/releases/NEXT_STEPS.md` was updated so it no longer describes PR #84 automation as unfinished.
+
+Commit:
+
+`29cd7614322a438efbeaba821fc29fbd78f4de23` — `docs: focus next steps on 2.18.12 production evidence`
+
+The current file marks the observed repository/automation acceptance complete and leaves only genuine production work open, including:
+
+- packaged SQLite/existing-data compatibility;
+- encrypted-document/backup compatibility;
+- Android installed-device validation;
+- Windows installed-package validation;
+- real iPhone/iPad validation;
+- Mac Catalyst installed/manual validation;
+- Linux runtime validation;
+- browser/WebAssembly runtime validation;
+- accessibility testing;
+- signing/provisioning/notarization/deployment provenance;
+- final package SHA-256/provenance;
+- store/deployment-day metadata/policy review;
+- immutable production tag only after approval gates permit it;
+- final production approval/publication record.
+
+---
+
+## 14. Backup resource/security boundary retained
+
+The accepted source keeps these default authenticated-backup limits:
+
+- decrypted ZIP container: **2304 MiB** maximum;
+- manifest: **1 MiB** maximum;
+- SQLite database: **1 GiB** maximum;
+- each encrypted document: **512 MiB** maximum;
+- total uncompressed ZIP payload: **2 GiB** maximum;
+- document count: **5,000** maximum;
+- archive-entry count: document ceiling plus required fixed entries;
+- explicit directory-only ZIP entries: rejected.
+
+The current cross-platform/version work did not weaken those boundaries.
+
+Genuine historical-backup compatibility remains a manual evidence requirement when genuine prior artifacts safely exist. Current artifacts must never be relabeled as historical evidence.
+
+---
+
+## 15. Production evidence remains deliberately unperformed where not actually tested
+
+Canonical production evidence rules remain in:
+
+- `docs/releases/PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`;
+- `docs/releases/PRODUCTION_EVIDENCE_INDEX.md`.
+
+Allowed result states remain:
+
+- `PASS`;
+- `FAIL`;
+- `BLOCKED`;
+- `N/A`;
+- `NOT RUN`.
+
+Canonical templates remain evidence containers and must not be treated as passes merely because they exist.
+
+Public evidence must use fictional/synthetic application data and must not contain real health records, prescription documents, PINs, backup passwords, private signing keys, access tokens, recovery codes or other secrets.
+
+---
+
+## 16. Remaining work that cannot be honestly completed from repository automation alone
+
+### Android
+
+- installed representative-device testing;
+- real notification permission/delivery/action/snooze behavior;
+- reboot/restart/time-zone/DST/battery/vendor/force-stop boundaries;
+- documents/share/backup/app-lock/TalkBack validation.
+
+### Windows
+
+- actual intended package installation/update path;
+- running/closed-app reminder behavior and limitation messaging;
+- documents/share/backup/app-lock;
+- keyboard/focus/Narrator/large-text/theme;
+- packaged existing-data upgrade behavior.
+
+### iPhone/iPad
+
+- signed/provisioned real-device install/upgrade;
+- real notification permission/delivery/actions;
+- lifecycle/time-zone behavior;
+- documents/share/backup/app-lock;
+- Dynamic Type/VoiceOver/notification-preview privacy.
+
+### Mac Catalyst
+
+- installed/manual runtime behavior;
+- notifications/actions/snooze/lifecycle;
+- file/share/backup/app-lock;
+- keyboard/focus/VoiceOver/large-text/theme/contrast;
+- signing/notarization where applicable.
+
+### Linux desktop
+
+- representative distribution/runtime evidence;
+- launch/window/scaling/package prerequisite behavior;
+- X11/Wayland boundaries where represented;
+- platform-specific persistence/reminder/secure-storage/file/share capability evidence only where implemented;
+- accessibility/keyboard/focus evidence;
+- explicit non-parity records for unsupported capabilities.
+
+### Browser/WebAssembly
+
+- actual hosted runtime/startup behavior;
+- browser storage/persistence/quota/private-mode behavior where implemented;
+- reload/navigation/offline/multiple-tab behavior;
+- browser notification/file/camera capabilities only where implemented;
+- unsupported-capability behavior;
+- screen-reader/focus/zoom validation;
+- confirmation that no hidden analytics/telemetry/network upload was added.
+
+### Release-wide
+
+- packaged SQLite/encrypted-document/backup compatibility;
+- genuine historical-backup compatibility where genuine prior bytes exist;
+- accessibility validation using applicable assistive technologies;
+- production signing/provisioning/notarization provenance;
+- exact final package/deployment hashes and evidence;
+- final store-safe payload inspection;
+- live store/deployment metadata and declarations;
+- submission-day policy review;
 - actual submission/review/approval/publication outcomes.
 
----
-
-## 10. Safety and privacy boundary retained
-
-The 2.18.12 preparation does not add diagnosis, dosage calculation, treatment recommendation, clinical-risk scoring or emergency-service behavior.
-
-Public validation evidence must use fictional/synthetic application data and must not expose real health records, prescription documents, PINs, backup passwords, private signing keys, access tokens, recovery codes or other secrets.
-
-Green CI alone must not be represented as production signing, real-device validation, accessibility completion, full platform parity, store approval, publication, or a guarantee that the software has no defects.
+None of these rows should be marked `PASS` until actual evidence exists.
 
 ---
 
-## 11. Next repository actions
+## 17. Release/tag decision
 
-1. accept PR #84 only after the exact final head is fully green;
-2. merge PR #84 into `main` while preserving granular history;
-3. promote automated baseline documentation only from actually observed exact-source results;
-4. complete real production evidence for the exact `2.18.12` packages;
-5. create immutable `v2.18.12` tagging only when the release gates permit promotion;
-6. retain signing/store/publication outcomes as separate evidence rather than inferring them from CI.
+CareNest `2.18.12` is now:
+
+- source metadata prepared;
+- cross-platform build foundation merged;
+- dependency baseline integrated;
+- exact PR source automated matrix accepted;
+- dynamic verification evidence promoted.
+
+CareNest `2.18.12` is **not yet**:
+
+- production signed;
+- fully real-device validated;
+- fully Linux/browser feature-parity validated;
+- accessibility-approved by real applicable testing;
+- store approved;
+- published.
+
+Do not create or treat `v2.18.12` as an approved production tag until the applicable production evidence is complete and tagged release gates permit promotion.
+
+Do not claim a global bug-free guarantee from the automated result.
+
+---
+
+## 18. Current continuation objective
+
+The post-merge governance branch should contain evidence/status reconciliation only unless a concrete new defect is discovered.
+
+Next repository actions:
+
+1. reconcile the version-specific 2.18.12 checklist with the completed PR #84 automation while keeping production rows open;
+2. verify the post-merge documentation/evidence branch;
+3. merge it only if its exact head is green;
+4. leave external/manual production evidence open until it can be genuinely produced;
+5. avoid speculative runtime churn merely to increase commit count.
+
+The repository now has no known open source issue that justifies pretending manual production work can be completed inside CI.

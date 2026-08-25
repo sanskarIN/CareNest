@@ -20,62 +20,82 @@ This checklist supplements the stable release authorities. It must not replace `
 
 ## Pull request acceptance
 
-- [ ] Exact final PR #84 head has successful CareNest CI.
-- [ ] Exact final PR #84 head has successful CodeQL.
-- [ ] Exact final PR #84 head has successful unsuppressed Dependency Audit.
-- [ ] Exact final PR #84 head has successful Store Package Configuration.
-- [ ] Exact final PR #84 head has successful Store Inspection Artifacts.
-- [ ] Unit tests pass on the exact final head.
-- [ ] Integration tests pass on the exact final head.
-- [ ] UI/source-policy tests pass on the exact final head.
-- [ ] Android Release build passes on the exact final head with MAUI `10.0.100`.
-- [ ] Windows Release build passes on the exact final head with MAUI `10.0.100`.
-- [ ] iOS simulator Release build passes on the exact final head with MAUI `10.0.100`.
-- [ ] Mac Catalyst Release build passes on the exact final head with MAUI `10.0.100`.
-- [ ] Linux desktop Release build passes on the exact final head.
-- [ ] WebAssembly browser Release publish passes on the exact final head.
+Accepted PR #84 branch source: `1d9de89fbc7de69696c9d4276991f07bcdce1027`.
 
-Do not check any item from an older, cancelled, skipped, queued, failed or superseded run.
+- [x] Exact final PR #84 source completed successful CareNest CI.
+- [x] Exact final PR #84 source completed successful CodeQL.
+- [x] Exact final PR #84 source completed successful unsuppressed Dependency Audit.
+- [x] Exact final PR #84 source completed successful Store Package Configuration.
+- [x] Exact final PR #84 source completed successful Store Inspection Artifacts.
+- [x] Unit tests passed: **122/122**.
+- [x] Integration tests passed: **54/54**.
+- [x] UI/source-policy tests passed: **215/215**.
+- [x] Total core tests passed: **391/391**.
+- [x] Android Release build passed with MAUI `10.0.100`.
+- [x] Windows Release build passed with MAUI `10.0.100` after a same-source job-only retry for a transient workload-download `ResponseEnded` error.
+- [x] iOS simulator Release build passed with MAUI `10.0.100`.
+- [x] Mac Catalyst Release build passed with MAUI `10.0.100`.
+- [x] Linux desktop Release build passed.
+- [x] WebAssembly browser Release publish passed.
+- [x] Stable documentation-link verification passed: **210** live local links across **128** stable active Markdown files.
+- [x] Platform-neutral formatting passed.
+
+The Windows first-attempt infrastructure failure is retained in `AUTOMATED_BASELINE.md`; it is not erased by the successful unchanged-source retry.
 
 ## Repository follow-through
 
-- [ ] Merge PR #84 only after the exact-head matrix is green.
+- [x] PR #84 merged only after the exact-head matrix was green.
+- [x] PR #84 merged into `main` at `ca80bd554296363d71a6008cac73c819be77b39b`.
 - [x] Close/supersede stale PR #83 in favor of current-main PR #84.
 - [x] Integrate Dependabot PR #85 `Microsoft.Maui.Controls` `10.0.100` change into PR #84.
 - [x] Close superseded PR #85 after preserving its exact-source verification boundary.
-- [ ] Promote the dynamic automated baseline only from actually observed results.
+- [x] Promote the dynamic automated baseline only from actually observed results.
+- [x] Align `PROJECT_STATUS.md`, `NEXT_STEPS.md` and `what_changed.md` with the accepted automated boundary.
 
 ## Production validation
+
+These rows remain open because CI/build success is not a substitute for real runtime evidence.
 
 - [ ] Android representative installed-device validation recorded.
 - [ ] Windows installed-package/update validation recorded.
 - [ ] iPhone/iPad signed/provisioned-device validation recorded.
 - [ ] Mac Catalyst installed application validation recorded.
-- [ ] Linux representative runtime validation recorded.
-- [ ] Browser/WebAssembly runtime validation recorded.
+- [ ] Linux representative runtime validation recorded for every environment represented as supported.
+- [ ] Browser/WebAssembly runtime validation recorded for every browser/deployment boundary represented as supported.
 - [ ] Accessibility validation recorded with applicable assistive technologies.
 - [ ] Packaged existing-data/SQLite/encrypted-document/backup compatibility recorded.
+- [ ] Genuine historical-backup compatibility recorded only where genuine prior artifacts safely exist.
 
 ## Signing and artifact provenance
 
 - [ ] Production signing/provisioning completed through secure platform tooling.
 - [ ] Notarization evidence recorded where applicable.
-- [ ] Exact final package SHA-256/provenance generated.
-- [ ] Store-safe payload scanner passes on exact final packages.
+- [ ] Exact final production package/deployment SHA-256/provenance generated.
+- [ ] Store-safe payload scanner passes on exact final distributed app packages.
 - [ ] Signing/provenance record completed without committing secrets.
+- [ ] Browser deployment origin/TLS/ownership provenance recorded if browser deployment is promoted.
+- [ ] Linux package/channel provenance recorded if Linux distribution is promoted.
 
-## Store and publication
+Unsigned automated inspection artifacts are not signed production packages.
 
-- [ ] Live Google Play declarations reviewed against exact package/listing.
-- [ ] Current Apple policy/listing requirements reviewed on submission day.
-- [ ] Current Microsoft Store requirements reviewed on submission day.
-- [ ] Store metadata/screenshots/privacy text reconciled with exact build.
-- [ ] Submission state recorded.
+## Store, distribution and publication
+
+- [ ] Live Google Play declarations reviewed against exact package/listing where applicable.
+- [ ] Current Apple policy/listing requirements reviewed on submission day where applicable.
+- [ ] Current Microsoft Store requirements reviewed on submission day where applicable.
+- [ ] Actual Linux distribution-channel requirements reviewed where applicable.
+- [ ] Actual browser hosting/privacy/security requirements reviewed where applicable.
+- [ ] Store/deployment metadata, screenshots and privacy text reconciled with exact build.
+- [ ] Submission/deployment state recorded.
 - [ ] Review/rejection/remediation state recorded where applicable.
 - [ ] Approval state recorded only after actual approval.
-- [ ] Publication state recorded only after actual publication.
-- [ ] Immutable `v2.18.12` tag created only when release gates permit it.
+- [ ] Publication state recorded only after actual publication/deployment.
+- [ ] Draft release notes reconciled with the exact production-approved source/package.
+- [ ] Immutable `v2.18.12` tag created only when production gates permit it.
+- [ ] Tagged release gates pass for the approved immutable tag.
 
 ## Final rule
 
-CareNest `2.18.12` must not be described as production released, fully platform-parity verified, store approved or globally defect-free until the corresponding evidence actually exists for the exact source and package being promoted.
+CareNest `2.18.12` has completed its current automated source-acceptance boundary but remains **NOT RELEASED**.
+
+It must not be described as production released, fully platform-parity verified, production signed, store approved or globally defect-free until the corresponding evidence actually exists for the exact source/package/deployment being promoted.
