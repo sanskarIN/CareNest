@@ -1,25 +1,25 @@
 # CareNest Current Automated Baseline
 
-**Release line:** `2.18.12` source preparation  
+**Release line:** `2.18.13` source preparation  
 **Record type:** dynamic verification evidence summary  
-**Last updated:** 2026-08-24  
+**Last updated:** 2026-08-25  
 **Release state:** PREPARED IN SOURCE — NOT PUBLISHED
 
 This file is the canonical **dynamic** pointer to the latest accepted exact-source automated verification baseline.
 
-It is intentionally kept separate from stable release-policy/documentation contracts so a completed verification run can be recorded without creating a self-referential requirement to re-run the same source merely because its evidence summary changed.
+It is intentionally kept separate from stable release-policy/documentation contracts so completed verification evidence can be promoted without representing production-device, signing, store-approval or publication work as complete.
 
 ## Current accepted baseline
 
-**Exact verified branch source SHA:** `1d9de89fbc7de69696c9d4276991f07bcdce1027`  
-**Verified PR merge ref SHA:** `0a579f2a1d927173f3c69e8b32d0ac52ced6c944`  
-**Merged `main` commit:** `ca80bd554296363d71a6008cac73c819be77b39b`  
-**Verification PR:** `#84` — `feat: complete cross-platform hosts and prepare 2.18.12`  
-**PR base used by the verified merge ref:** `f58aaca1d1d7a3fef68cb30b8b9a68fa0f94bf09`
+**Exact verified branch source SHA:** `323ea67281cbbdb3e7ca149fabd7135e8ad8a377`  
+**Verified PR merge ref SHA:** `421fead1e82c3d470ebf72417049d80b104c5516`  
+**Merged `main` commit:** `b3efa71ab412da65f08d78ad1c4d913e302ff901`  
+**Verification PR:** `#87` — `chore: prepare CareNest 2.18.13 maintenance line`  
+**PR base used by the verified merge ref:** `b2db4821047dbfb7fe223961fc237afcdfc8371e`
 
-The pull-request workflows checked out GitHub's merge ref `0a579f2a1d927173f3c69e8b32d0ac52ced6c944`, which merged exact branch source `1d9de89fbc7de69696c9d4276991f07bcdce1027` into the then-current `main` source `f58aaca1d1d7a3fef68cb30b8b9a68fa0f94bf09`. `main` did not move during the acceptance matrix, and PR #84 was merged only after every required top-level workflow group had an accepted successful result for that exact source/base combination.
+The accepted pull-request workflows checked out GitHub's merge ref `421fead1e82c3d470ebf72417049d80b104c5516`, which merged exact branch source `323ea67281cbbdb3e7ca149fabd7135e8ad8a377` into base `b2db4821047dbfb7fe223961fc237afcdfc8371e`. PR #87 remained mergeable and was merged with an expected-head lock only after every required top-level workflow group reported success for that corrected exact head.
 
-The resulting `main` merge commit is `ca80bd554296363d71a6008cac73c819be77b39b`. This dynamic evidence promotion records the already-observed PR acceptance evidence; it does not manufacture production-device, signing, store-approval or publication evidence for the merge commit.
+The resulting `main` merge commit is `b3efa71ab412da65f08d78ad1c4d913e302ff901`.
 
 ## Verified automated results
 
@@ -30,20 +30,20 @@ Repository/tooling checks:
 - cross-platform verifier regression self-tests: **success**;
 - package-evidence self-test: **success**;
 - documentation-link checker self-test: **success**;
-- stable active documentation local-link check: **success** — 210 live local links across 128 stable active Markdown files;
+- stable active documentation local-link check: **success** — 210 live local links across 131 stable active Markdown files;
 - platform-neutral formatting: **success**.
 
 Observed test inventory:
 
 - unit tests: **122/122**;
 - integration tests: **54/54**;
-- UI/source-policy tests: **215/215**;
-- total core tests: **391/391**.
+- UI/source-policy tests: **218/218**;
+- total core tests: **394/394**.
 
 Configured build verification:
 
 - Android Release: **success**;
-- Windows Release: **success** after a job-only retry described below;
+- Windows Release: **success**;
 - iOS simulator Release: **success**;
 - Mac Catalyst Release: **success**;
 - Linux desktop Avalonia Release build: **success**;
@@ -56,52 +56,61 @@ Store/security/dependency verification:
 - CodeQL: **success**;
 - unsuppressed Dependency Audit, including platform-neutral, Avalonia desktop/browser and MAUI application graphs: **success**.
 
-## Windows CI retry record
-
-CareNest CI run `32685906690` initially failed only in the Windows job while `dotnet workload install maui` was downloading workload packs. The installer reported an HTTP response truncation:
-
-`ResponseEnded`
-
-The Windows application build had not started, so this was not a source compilation failure.
-
-The failed Windows job was rerun without changing the source, PR base or merge ref. On run attempt 2:
-
-- .NET setup succeeded;
-- MAUI workload installation succeeded;
-- the Windows Release build succeeded;
-- every other CI job remained successful.
-
-The final top-level CareNest CI conclusion therefore became **success**. The transient first-attempt failure is retained here because verification evidence must not erase real failures or pretend they never occurred.
-
 ## Observed workflow runs
 
-- CareNest CI: `32685906690` — final conclusion **success**, with Windows job-only retry on attempt 2;
-- Store Package Configuration: `32685906685` — **success**;
-- Store Inspection Artifacts: `32685906678` — **success**;
-- CodeQL: `32685906722` — **success**;
-- Dependency Audit: `32685906679` — **success**.
+Accepted corrected exact head `323ea67281cbbdb3e7ca149fabd7135e8ad8a377`:
+
+- CareNest CI: `32842319249` — **success**;
+- Store Package Configuration: `32842319272` — **success**;
+- Store Inspection Artifacts: `32842319256` — **success**;
+- CodeQL: `32842319316` — **success**;
+- Dependency Audit: `32842319254` — **success**.
+
+## Pre-acceptance correction record
+
+The first PR #87 candidate head was:
+
+`b88a51c23eb12bdfb5d6c07573850ceef9b0ff24`
+
+Its CareNest CI core job exposed a compile-time defect in the newly added `ActiveReleaseLineContractTests.cs`: the test called a nonexistent `string.Replace(char, char, StringComparison)` overload while normalizing `2.18.13` into a version-specific document filename.
+
+Before that source was superseded:
+
+- repository Python/tooling checks passed;
+- documentation-link checks passed;
+- platform-neutral formatting passed;
+- unit tests passed **122/122**;
+- integration tests passed **54/54**;
+- the UI/source-policy project failed to compile at the new release-line contract;
+- Linux desktop and WebAssembly builds had already passed;
+- CodeQL and Dependency Audit had passed on that old source.
+
+The defect was fixed without weakening any gate by changing normalization to the valid char-to-char overload. Corrected commit:
+
+`323ea67281cbbdb3e7ca149fabd7135e8ad8a377`
+
+GitHub cancelled the superseded heavy CareNest CI / Store Package / Store Inspection runs after the new head was pushed. A fresh five-workflow acceptance matrix was then run for the corrected head and all required groups succeeded.
+
+The failed/cancelled earlier source is retained here because release evidence must not erase genuine pre-acceptance failures.
 
 ## Accepted source changes represented by this baseline
 
-The verified source includes the established local-first CareNest health-organizer scope plus the following release-relevant continuation work:
+The verified `2.18.13` source retains the established local-first CareNest health-organizer scope and the cross-platform build/presentation baseline from `2.18.12` while adding the maintenance release-line preparation:
 
-- .NET 10 MAUI targets for Android, iOS/iPadOS, Mac Catalyst and Windows;
-- Avalonia shared presentation host;
-- Linux-capable Avalonia desktop host;
-- WebAssembly Avalonia browser host;
-- solution registration for the cross-platform projects;
-- fail-closed cross-platform target verification and isolated verifier self-tests;
-- Linux/browser CI build integration;
-- Avalonia dependency-audit integration;
-- Linux/browser tagged-release build gates;
-- Linux/browser production-validation evidence templates that intentionally begin `NOT RUN`;
-- explicit separation of configured build/presentation reach from production feature parity;
-- CareNest semantic/display version preparation for `2.18.12`;
-- MAUI application package/build code `21812`;
-- central assembly/file/informational version consistency checks;
-- non-publication-state release documentation contracts;
-- `Microsoft.Maui.Controls` `10.0.100` integrated into the same exact-head verification matrix;
-- correction of the earlier final-newline formatting defects without disabling formatting enforcement.
+- central semantic version `2.18.13`;
+- central assembly/file version `2.18.13.0`;
+- MAUI display version `2.18.13`;
+- MAUI application package/build code `21813`;
+- `Microsoft.Maui.Controls` `10.0.100` retained;
+- Avalonia `12.1.1` package family retained;
+- `VERSION_2_18_13_PREPARATION.md`;
+- `RELEASE_NOTES_2_18_13_DRAFT.md`;
+- `RELEASE_CHECKLIST_2_18_13.md`;
+- updated `VersionConsistencyContractTests` for the `2.18.13` package;
+- active release-line alignment coverage in `ActiveReleaseLineContractTests`;
+- active project-status, next-step, changelog and continuation handoff preparation.
+
+No runtime clinical feature was added by this maintenance source roll-forward.
 
 ## Cross-platform evidence boundary
 
@@ -125,7 +134,7 @@ Canonical templates are evidence containers, not successful evidence by themselv
 
 ## Accepted backup security/resource boundary retained
 
-The verified source preserves the previously accepted authenticated-backup resource protections. Current defaults remain:
+The verified source preserves the established authenticated-backup resource protections. Current defaults remain:
 
 - decrypted ZIP container: **2304 MiB** maximum;
 - manifest: **1 MiB** maximum;
@@ -136,59 +145,51 @@ The verified source preserves the previously accepted authenticated-backup resou
 - archive-entry count: document ceiling plus required fixed entries;
 - explicit directory-only ZIP entries: rejected.
 
-Backup creation validates the generated ZIP against the same resource/topology boundary before encryption. Existing chunked authenticated-decryption and legacy compatibility rules remain subject to the documented caller-provided resource limits.
+Automated protection does not replace packaged or genuine historical-backup compatibility validation.
 
 ## Previous accepted automated baseline
 
-Immediately before this promotion, the accepted exact branch source was:
+Immediately before this promotion, the accepted exact feature/source branch SHA was:
 
-`30ee6c265104c64ec5a1a4013f592f7f058750e8`
+`1d9de89fbc7de69696c9d4276991f07bcdce1027`
 
-with:
+for CareNest `2.18.12`, with:
 
 - 122 unit tests;
 - 54 integration tests;
-- 194 UI/source-policy tests;
-- **370/370 total core tests**;
-- Android, Windows, iOS simulator and Mac Catalyst Release success;
+- 215 UI/source-policy tests;
+- **391/391 total core tests**;
+- Android, Windows, iOS simulator, Mac Catalyst, Linux desktop and WebAssembly/browser build success;
 - Store Package Configuration success;
 - Store Inspection Artifacts success;
 - CodeQL success;
 - Dependency Audit success.
 
-The newer accepted baseline advances the source-policy/UI inventory to 215 tests and the total core inventory to **391/391** while retaining the 122-unit and 54-integration suites.
+The newer accepted `2.18.13` baseline advances the UI/source-policy inventory to **218** and the total core inventory to **394/394** while retaining the 122-unit and 54-integration suites.
 
-Historical workflow results remain evidence only for their own exact source/merge boundaries and are not rewritten to appear as results of newer source.
+Historical workflow success is never transferred to a newer source; every result remains evidence only for its recorded exact source/merge boundary.
 
 ## Post-verification dynamic evidence files
 
-Only these active files are designated for normal post-verification evidence/status promotion without changing stable source/policy documentation:
+These active files are designated for normal evidence/status promotion:
 
 - `docs/releases/AUTOMATED_BASELINE.md`;
 - `PROJECT_STATUS.md`;
 - `docs/releases/NEXT_STEPS.md`;
 - `what_changed.md`.
 
-They are excluded from mutable-value executable release-documentation assertions, and the default stable documentation-link checker excludes them as documented in `docs/testing/DOCUMENTATION_INTEGRITY.md`.
-
-Stable documents such as `README.md`, `CHANGELOG.md`, `docs/README.md`, `docs/DOCUMENTATION_CATALOG.md`, `docs/COMPLETE_PROJECT_DOCUMENTATION.md`, `docs/CONFIGURATION_REFERENCE.md`, testing guides and stable release-policy documents are not routinely rewritten merely to insert mutable run IDs or test-count values.
+Mutable run IDs, source SHAs and test counts in these dynamic evidence files must not be treated as fixed values by executable release-policy tests. Stable source-policy contracts may protect invariant semantics such as active version/build alignment and fail-closed publication state.
 
 ## Update rule
 
-After a newer exact source is successfully verified:
+After a newer exact feature/source is successfully verified:
 
-1. record the exact frozen source SHA, verification PR/merge identity where applicable, workflow/run IDs, actual test counts and platform/security/store results;
+1. record the exact frozen source SHA, verification PR/merge identity, workflow/run IDs, actual test counts and platform/security/store results;
 2. update this file to point to that exact verified source and evidence record;
 3. update `PROJECT_STATUS.md`, `docs/releases/NEXT_STEPS.md`, and `what_changed.md` with the resulting state/evidence;
-4. optionally run `python3 build/scripts/verify-documentation-links.py --include-dynamic` as a documentation-only integrity audit of those dynamic files;
-5. do not modify runtime/test/project/workflow/build-script/stable-policy/stable-documentation source merely to record the completed result;
-6. if any verification-relevant or stable-source correction is required, freeze and verify the corrected replacement source instead.
-
-## Stable-policy boundary
-
-Stable release-policy documents and executable source-policy tests may link to this file, but they must not require this dynamic evidence file's current SHA/test-count text as an executable test input.
-
-This avoids an evidence loop where recording a successful verification would itself change an executable test input and require another verification solely to record the first one.
+4. preserve failed/superseded candidate history where it materially explains the accepted replacement source;
+5. do not modify runtime/test/project/workflow/build-script/stable-policy source merely to manufacture a cleaner evidence story;
+6. if a verification-relevant correction is required, freeze and verify the corrected replacement source instead.
 
 ## Production boundary
 
@@ -204,10 +205,10 @@ The accepted automated baseline still does not prove:
 - packaged SQLite/encrypted-document/backup compatibility;
 - genuine historical backup compatibility against current resource ceilings;
 - production signing/provisioning/notarization;
-- final signed-package SHA-256/provenance evidence;
+- final production package/deployment SHA-256/provenance evidence;
 - live store-console declarations and metadata reconciliation;
-- submission-date store-policy compliance;
+- submission-date store/distribution policy compliance;
 - store approval;
-- publication.
+- publication/deployment.
 
-CareNest `2.18.12` therefore remains **prepared in source, not published** until the applicable production evidence is actually completed.
+CareNest `2.18.13` therefore remains **prepared in source, not published** until the applicable production evidence is actually completed.
