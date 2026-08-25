@@ -8,6 +8,79 @@ The complete changelog that was active immediately before the 2026-08-17 Gumroad
 
 Earlier exact snapshots remain under `docs/history/` and Git history.
 
+## [Unreleased] - 2026-08-25
+
+### Changed — CareNest 2.18.13 maintenance preparation
+
+Started the next maintenance patch line from merged `main` commit:
+
+`b2db4821047dbfb7fe223961fc237afcdfc8371e`
+
+The active source metadata is now prepared for:
+
+- semantic/display version `2.18.13`;
+- assembly/file version `2.18.13.0`;
+- MAUI package/build code `21813`;
+- `Microsoft.Maui.Controls` `10.0.100`;
+- Avalonia `12.1.1` package family.
+
+This is a source/version roll-forward only. It does not claim production publication, signing, real-device validation, accessibility completion, store approval or Linux/browser full feature parity.
+
+### Added — 2.18.13 release package
+
+Added:
+
+- `docs/releases/VERSION_2_18_13_PREPARATION.md`;
+- `docs/releases/RELEASE_NOTES_2_18_13_DRAFT.md`;
+- `docs/releases/RELEASE_CHECKLIST_2_18_13.md`.
+
+The version-specific package records the exact starting repository boundary, requires fresh exact-head automation for the final `2.18.13` source, and keeps all unresolved production/manual evidence fail-closed.
+
+### Changed — active status and handoff
+
+Updated:
+
+- `PROJECT_STATUS.md`;
+- `docs/releases/NEXT_STEPS.md`;
+- `what_changed.md`.
+
+The active documentation now identifies `2.18.13` / `21813` as the preparation line while retaining the accepted `2.18.12` workflow/test results only as historical exact-source evidence.
+
+### Changed — version consistency protection
+
+`tests/CareNest.UiTests/VersionConsistencyContractTests.cs` now protects:
+
+- central `2.18.13` version metadata;
+- MAUI `2.18.13` / `21813` metadata;
+- `Microsoft.Maui.Controls` `10.0.100`;
+- the non-published `2.18.13` version-specific preparation package.
+
+### Added — active release-line alignment contract
+
+Added:
+
+`tests/CareNest.UiTests/ActiveReleaseLineContractTests.cs`
+
+The contract derives the active version/build from source metadata and requires the dynamic status, next-steps and handoff documents to follow that active line. It also requires the matching version-specific release package to exist and remain explicitly non-published/non-released.
+
+The contract additionally protects the handoff rule that fresh exact-head verification must be observed before promotion and that historical workflow success cannot be transferred to a newer source.
+
+### Verification status — fresh exact-head automation required
+
+The branch changes version metadata, tests and verification-sensitive release documentation after the last accepted source boundary.
+
+Therefore no `2.18.13` test count or platform/workflow success is predicted here. The final intended `2.18.13` source must complete fresh CareNest CI, CodeQL, unsuppressed Dependency Audit, Store Package Configuration and Store Inspection Artifacts before merge/promotion.
+
+The last accepted `2.18.12` result remains historical evidence only.
+
+### Production status
+
+CareNest `2.18.13` is **NOT PUBLISHED**.
+
+Production promotion still requires genuine packaged compatibility, real-device/runtime behavior, accessibility, signing/provenance, final package/deployment inspection, live distribution metadata/policy review and actual approval/publication evidence as applicable.
+
+---
+
 ## [Unreleased] - 2026-08-18
 
 ### Added — current pre-submission store-policy review
