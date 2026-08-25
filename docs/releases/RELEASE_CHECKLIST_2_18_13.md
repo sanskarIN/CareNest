@@ -15,11 +15,13 @@ This checklist supplements `RELEASE_CHECKLIST.md`, `PRODUCTION_VALIDATION_EVIDEN
 - [x] MAUI package/build code set to `21813`.
 - [x] `Microsoft.Maui.Controls` baseline retained at `10.0.100`.
 - [x] Version-consistency contract rolled forward to `2.18.13`.
+- [x] Active release-line alignment contract added.
 - [x] Version preparation record added.
 - [x] Draft release notes added.
-- [ ] Active `PROJECT_STATUS.md` aligned to the `2.18.13` preparation boundary.
-- [ ] Active `docs/releases/NEXT_STEPS.md` aligned to the `2.18.13` preparation boundary.
-- [ ] Active `what_changed.md` handoff aligned to the `2.18.13` preparation boundary.
+- [x] Active `PROJECT_STATUS.md` aligned to the `2.18.13` preparation boundary.
+- [x] Active `docs/releases/NEXT_STEPS.md` aligned to the `2.18.13` preparation boundary.
+- [x] Active `what_changed.md` handoff aligned to the `2.18.13` preparation boundary.
+- [x] `CHANGELOG.md` records the `2.18.13` maintenance preparation.
 
 ## Starting repository boundary
 
