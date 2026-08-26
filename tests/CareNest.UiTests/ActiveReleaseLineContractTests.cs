@@ -47,13 +47,13 @@ public sealed class ActiveReleaseLineContractTests
     }
 
     [Fact]
-    public void Active_handoff_requires_fresh_exact_head_verification_before_promotion()
+    public void Active_handoff_records_fresh_exact_head_verification_before_promotion()
     {
         var root = FindRepositoryRoot();
         var handoff = Read(root, "what_changed.md");
 
         Assert.Contains(
-            "Fresh exact-head verification has not yet been observed",
+            "Fresh exact-head verification has been observed",
             handoff,
             StringComparison.OrdinalIgnoreCase);
         Assert.Contains(
