@@ -1,219 +1,109 @@
-# CareNest — 2.18.13 Preparation Handoff
+# CareNest — 2.18.13 Verification Promotion Handoff
 
-**Date:** 2026-08-25  
+**Date:** 2026-08-26  
 **Target version:** `2.18.13`  
 **Package/build code:** `21813`  
 **MAUI Controls baseline:** `10.0.100`  
 **Avalonia baseline:** `12.1.1`  
-**State:** SOURCE PREPARATION — NOT PUBLISHED  
+**State:** SOURCE VERIFIED — NOT PUBLISHED  
 **Repository:** `https://github.com/sanskarIN/CareNest`  
-**Preparation branch:** `continue/prepare-2.18.13-20260825`  
-**Starting `main`:** `b2db4821047dbfb7fe223961fc237afcdfc8371e`  
-**Last accepted automated evidence authority:** `docs/releases/AUTOMATED_BASELINE.md`
+**Latest accepted exact source:** `323ea67281cbbdb3e7ca149fabd7135e8ad8a377`  
+**Verification PR:** `#87`  
+**Verification merge ref:** `421fead1e82c3d470ebf72417049d80b104c5516`  
+**Merged `main`:** `b3efa71ab412da65f08d78ad1c4d913e302ff901`  
+**Previous `main` boundary:** `b2db4821047dbfb7fe223961fc237afcdfc8371e`  
+**Current documentation-promotion branch:** `continue/promote-2.18.13-automation-20260826`
 
-This is the active continuation handoff for the `2.18.13` maintenance preparation line. The previous `2.18.12` handoff remains recoverable in Git history. Historical workflow success is never transferred to a newer source without a fresh exact-head run.
+This is the active continuation handoff for the CareNest `2.18.13` maintenance line. The exact `2.18.13` preparation source was independently verified before PR #87 was merged. This continuation records that evidence and tightens the release-line contract so the handoff cannot remain falsely stuck in a pre-verification state.
 
----
+## 1. Fresh exact-head verification observed
 
-## 1. Starting point completed before this continuation
+Fresh exact-head verification **has been observed** for the `2.18.13` preparation source `323ea67281cbbdb3e7ca149fabd7135e8ad8a377` through PR #87's exact merge ref `421fead1e82c3d470ebf72417049d80b104c5516`.
 
-PR #86 (`docs: promote CareNest 2.18.12 verification evidence`) was merged into `main` at:
-
-`b2db4821047dbfb7fe223961fc237afcdfc8371e`
-
-Its exact head was:
-
-`e14a40d095a6f39993a0f62e497f15ec4668701f`
-
-Before merge, the exact PR #86 head completed successfully in:
+The five required top-level workflow groups completed successfully:
 
 - CareNest CI;
 - CodeQL;
-- Dependency Audit;
+- unsuppressed Dependency Audit;
 - Store Package Configuration;
 - Store Inspection Artifacts.
 
-This continuation starts from that merged state. Those workflow results remain evidence for PR #86 only and are not claimed as `2.18.13` verification.
+Historical workflow success is never transferred to a newer source. The evidence recorded here belongs to the exact source and merge boundary named above.
 
----
+## 2. Observed test inventory
 
-## 2. Current milestone
-
-Prepare CareNest `2.18.13` as the next maintenance patch while preserving the fail-closed release boundary.
-
-The objective is to:
-
-- roll forward source/package metadata cleanly;
-- protect the new version line with automated consistency contracts;
-- create a complete version-specific release document package;
-- align active status/next-step/handoff/changelog documentation;
-- run the final exact-head CI/security/store matrix;
-- merge only after that exact head is green;
-- leave real-device/signing/store/publication work open until genuine evidence exists.
-
-No production-release claim is made by version preparation alone.
-
----
-
-## 3. Completed work in this continuation
-
-### Version metadata
-
-Completed:
-
-- `Directory.Build.props` semantic version -> `2.18.13`;
-- assembly/file version -> `2.18.13.0`;
-- informational version -> `2.18.13`;
-- MAUI `ApplicationDisplayVersion` -> `2.18.13`;
-- MAUI `ApplicationVersion` -> `21813`.
-
-### Version consistency protection
-
-Updated:
-
-`tests/CareNest.UiTests/VersionConsistencyContractTests.cs`
-
-The contract now protects:
-
-- central `2.18.13` version metadata;
-- MAUI `2.18.13` / `21813` package metadata;
-- `Microsoft.Maui.Controls` `10.0.100` baseline;
-- existence/content of the `2.18.13` preparation record, draft notes and checklist;
-- explicit non-published/non-released state;
-- intended immutable production tag name `v2.18.13` in the release checklist.
-
-### Active release-line alignment protection
-
-Added:
-
-`tests/CareNest.UiTests/ActiveReleaseLineContractTests.cs`
-
-The contract derives the active source version/build and requires:
-
-- `PROJECT_STATUS.md`;
-- `docs/releases/NEXT_STEPS.md`;
-- `what_changed.md`
-
-to follow that active version/build and remain explicitly `NOT PUBLISHED`.
-
-It also derives the expected version-specific release-document filenames and requires them to exist in fail-closed state. The handoff must continue to state that fresh exact-head verification has not yet been observed and that historical success cannot be transferred forward.
-
-### Version-specific release package
-
-Added:
-
-- `docs/releases/VERSION_2_18_13_PREPARATION.md`;
-- `docs/releases/RELEASE_NOTES_2_18_13_DRAFT.md`;
-- `docs/releases/RELEASE_CHECKLIST_2_18_13.md`.
-
-The checklist now marks all source-preparation/document-alignment rows complete while leaving exact-head automation and every real production/manual row open.
-
-### Dynamic project/release documentation
-
-Updated:
-
-- `PROJECT_STATUS.md`;
-- `docs/releases/NEXT_STEPS.md`;
-- `what_changed.md`;
-- `CHANGELOG.md`.
-
-The active documents now identify `2.18.13` / `21813` as the preparation line while retaining the prior accepted `2.18.12` result only as historical exact-source evidence.
-
----
-
-## 4. Files/modules changed so far
-
-### Build/version metadata
-
-- `Directory.Build.props`;
-- `src/CareNest.App/CareNest.App.csproj`.
-
-### Source-policy tests
-
-- `tests/CareNest.UiTests/VersionConsistencyContractTests.cs`;
-- `tests/CareNest.UiTests/ActiveReleaseLineContractTests.cs`.
-
-### Release documentation
-
-- `docs/releases/VERSION_2_18_13_PREPARATION.md`;
-- `docs/releases/RELEASE_NOTES_2_18_13_DRAFT.md`;
-- `docs/releases/RELEASE_CHECKLIST_2_18_13.md`;
-- `docs/releases/NEXT_STEPS.md`;
-- `PROJECT_STATUS.md`;
-- `CHANGELOG.md`;
-- `what_changed.md`.
-
-No runtime health-organizer behavior has been changed in this preparation batch.
-
----
-
-## 5. Verification/tests and observed results
-
-### Already observed before branch creation
-
-The starting `main` includes PR #86. Its exact head passed the five required top-level workflow groups listed above before merge.
-
-### Current `2.18.13` branch
-
-**Fresh exact-head verification has not yet been observed for the final `2.18.13` source.**
-
-Therefore this handoff does **not** assign test counts, build conclusions, workflow IDs or security/store conclusions to `2.18.13` yet.
-
-The last accepted `2.18.12` feature/source baseline recorded:
+CareNest CI Core tests on the accepted exact source reported:
 
 - unit tests: **122/122**;
 - integration tests: **54/54**;
-- UI/source-policy tests: **215/215**;
-- total core tests: **391/391**;
-- successful Android, Windows, iOS simulator, Mac Catalyst, Linux desktop and WebAssembly/browser build/publish paths;
-- successful CodeQL, Dependency Audit, Store Package Configuration and Store Inspection Artifacts.
+- UI/source-policy tests: **218/218**;
+- total core tests: **394/394**.
 
-Those values remain historical `2.18.12` evidence only.
+Repository/tooling checks also passed, including Python tooling syntax, cross-platform target verification, cross-platform verifier self-tests, package-evidence self-tests, documentation-link self-tests, stable active documentation-link verification, and platform-neutral formatting.
 
----
+The stable documentation-link gate reported **210 live local links across 131 stable active Markdown files**.
 
-## 6. Commands/tools and results used in this continuation
+## 3. Observed platform build/publish results
 
-Repository state was inspected through the connected GitHub repository interface.
+The accepted exact source passed the configured automated presentation/build matrix:
 
-Observed:
+- Android Release build — **success**;
+- Windows Release build — **success**;
+- iOS simulator Release build — **success**;
+- Mac Catalyst Release build — **success**;
+- Linux desktop Avalonia Release build — **success**;
+- WebAssembly Avalonia browser Release publish — **success**.
 
-- repository: `sanskarIN/CareNest`;
-- default branch: `main`;
-- PR #86 was open, mergeable and exact-head green;
-- PR #86 exact head `e14a40d095a6f39993a0f62e497f15ec4668701f` had successful CareNest CI, CodeQL, Dependency Audit, Store Package Configuration and Store Inspection Artifacts;
-- PR #86 was merged with an expected-head lock;
-- resulting `main`: `b2db4821047dbfb7fe223961fc237afcdfc8371e`;
-- no open repository issue backlog was found;
-- no remaining open pull request backlog was found after PR #86 merge.
+These results prove configured automated build/publish reach only. They do not prove full Linux/browser feature parity or real-device behavior.
 
-A separate local container clone attempt could not resolve `github.com` from that isolated environment. No local test result is claimed from that failed network attempt; repository verification is delegated to the actual GitHub Actions matrix after the preparation PR is opened.
+## 4. Observed workflow runs
 
----
+- CareNest CI: `32842319249` — **success**;
+- CodeQL: `32842319316` — **success**;
+- Dependency Audit: `32842319254` — **success**;
+- Store Package Configuration: `32842319272` — **success**;
+- Store Inspection Artifacts: `32842319256` — **success**.
 
-## 7. Current limitations / intentionally open work
+The accepted CareNest CI run completed all six platform/build jobs and the Core tests job successfully. No retry was required for this exact source run.
 
-The following cannot be honestly completed from source inspection or CI alone and remain open:
+## 5. Verification-promotion work now in progress
+
+This branch is intentionally focused on release-governance alignment after the successful `2.18.13` source verification.
+
+Completed in this continuation so far:
+
+- updated `ActiveReleaseLineContractTests` so the dynamic handoff can move from pre-verification wording to observed-verification wording;
+- refreshed this `what_changed.md` handoff with the exact accepted source, merge identity, workflow IDs, actual test counts and platform conclusions;
+- retained the explicit rule that historical evidence must never be transferred to a newer source.
+
+The documentation-promotion branch itself must still pass a fresh exact-head matrix because the active source-policy test was changed. Dynamic evidence files will only be promoted from observed results after that matrix succeeds.
+
+## 6. Remaining genuine production work
+
+Automated source verification does **not** close these production/manual rows:
 
 ### Packaged compatibility
 
 - existing-data/SQLite upgrade compatibility;
 - encrypted-document packaged compatibility;
 - backup create/inspect/restore compatibility;
-- genuine historical-backup compatibility only where genuine prior bytes safely exist.
+- genuine historical-backup compatibility only where genuine prior bytes safely exist;
+- reminder rebuild/reconciliation after packaged upgrade/restore.
 
 ### Android
 
 - installed-device behavior;
-- real notification permission/delivery/actions/snooze;
-- exact/inexact alarm and vendor/battery behavior;
+- notification permission and actual reminder delivery/actions/snooze;
+- exact/inexact alarm and battery/vendor behavior;
 - restart/reboot/time-zone/DST/force-stop boundaries;
-- TalkBack/large-text validation.
+- document/share/backup/app-lock behavior;
+- TalkBack and large-text validation.
 
 ### Windows
 
 - intended installed-package/update path;
-- running/closed-app reminder behavior;
+- installed CRUD/navigation and running/closed-app reminder behavior;
+- reminder replacement/cancellation/actions/snooze/recovery;
 - package upgrade compatibility;
 - keyboard/focus/Narrator/large-text/theme validation.
 
@@ -222,113 +112,64 @@ The following cannot be honestly completed from source inspection or CI alone an
 - signed/provisioned real-device install/upgrade;
 - actual notification behavior;
 - lifecycle/time-zone behavior;
+- document/share/backup/app-lock behavior;
 - Dynamic Type/VoiceOver/notification-preview privacy.
 
 ### Mac Catalyst
 
 - installed/manual behavior;
-- actual notifications/actions/snooze/lifecycle;
-- VoiceOver/keyboard/focus/contrast;
+- actual notification/action/snooze/lifecycle behavior;
+- file picker/share/backup/app-lock behavior;
+- keyboard/focus/VoiceOver/large-text/contrast;
 - signing/notarization evidence where applicable.
 
 ### Linux desktop
 
 - representative distribution/runtime evidence;
 - X11/Wayland boundaries where represented;
-- implemented persistence/reminder/secure-storage/file/share capabilities;
+- implemented persistence/reminder/secure-storage/file/share behavior;
 - accessibility/keyboard/focus evidence.
 
 ### Browser/WebAssembly
 
-- actual hosted runtime behavior;
+- hosted runtime behavior;
 - storage/persistence/quota/private-mode boundaries where implemented;
 - reload/navigation/offline behavior;
 - implemented notification/file/camera behavior;
 - screen-reader/focus/zoom evidence;
-- confirmation of no hidden analytics/telemetry/network upload.
+- confirmation that no hidden analytics/telemetry/network upload was introduced.
 
 ### Release-wide
 
 - production signing/provisioning/notarization provenance;
 - exact final package/deployment hashes and provenance;
 - final store-safe payload inspection;
-- live submission-day policy/metadata/declaration review;
-- actual submission/review/approval/publication/deployment outcomes.
+- submission-day policy/metadata/declaration review;
+- actual submission, review, approval and publication/deployment outcomes.
 
-None of these rows may become `PASS` without actual evidence.
+None of these rows may become `PASS` from source inspection, CI, assumption or intended future work.
 
----
+## 7. Migration and safety boundary
 
-## 8. Open issues / defects
+The `2.18.13` preparation line changes version/package metadata and release-governance contracts only. No database schema migration, backup-format migration or user-data conversion was introduced by the release-preparation work.
 
-No open GitHub issue backlog was found at the start of this continuation.
+CareNest remains a local-first organizational health application. It does not diagnose conditions, calculate or infer dosage, recommend treatment, perform clinical medication-interaction checking, calculate clinical risk, replace clinicians/pharmacists, provide emergency services, or guarantee notification delivery.
 
-No concrete new runtime defect has been identified in the current version-preparation changes so far.
+Public evidence must use fictional/synthetic data and must not contain real health records, prescription documents, PINs/passwords, encryption keys, access tokens, recovery codes or production signing material.
 
-This does not constitute a global bug-free guarantee. The production/manual validation rows above remain necessary because automated source verification cannot prove every runtime environment or distribution boundary.
+## 8. Release boundary
 
----
+CareNest `2.18.13` is **SOURCE VERIFIED — NOT PUBLISHED**.
 
-## 9. Migration notes
+Do not create or treat `v2.18.13` as an approved production tag until applicable packaged compatibility, real-device/runtime, accessibility, signing/provenance, final-package, live-policy, submission and approval evidence is complete and the release gates permit promotion.
 
-The active patch roll-forward changes version/package metadata and release-governance contracts only. No database schema migration, backup-format migration or user-data conversion has been introduced by the `2.18.13` preparation commits listed below.
+Do not claim global bug-freedom, full Linux/browser feature parity, production signing, store approval or publication without the corresponding evidence.
 
-Existing migration/compatibility requirements remain unchanged and must still be validated through actual packaged upgrade/restore evidence before production release.
+## 9. Next repository sequence
 
----
-
-## 10. Draft release-note summary
-
-CareNest `2.18.13` is a maintenance source roll-forward from the verified `2.18.12` baseline. It prepares new version/package metadata, refreshes version-consistency protection, adds active release-line drift protection, and establishes a complete fail-closed release-document package for the new patch line.
-
-The release does not claim new clinical functionality, real-device verification, production signing, accessibility completion, store approval or publication from source preparation alone.
-
-Canonical draft:
-
-`docs/releases/RELEASE_NOTES_2_18_13_DRAFT.md`
-
----
-
-## 11. Recent commits in this continuation
-
-Starting merge:
-
-- `b2db4821047dbfb7fe223961fc237afcdfc8371e` — `Merge PR #86: promote CareNest 2.18.12 verification evidence`.
-
-Preparation branch commits before this final handoff refresh:
-
-- `f9178d520f5b6718974bee0e7cce75d28209a04f` — `build: set CareNest 2.18.13 assembly version baseline`;
-- `0dba5216d03526cb0f2f428ac9b0744286a016d5` — `build: prepare MAUI package metadata for 2.18.13`;
-- `5d1cf10ce92fd575447391a2993ad649dfb76987` — `test: guard CareNest 2.18.13 version consistency`;
-- `9cbaa0cd37cceb092ffb5d7e38f3e6cb158dba89` — `docs: add CareNest 2.18.13 release preparation record`;
-- `3bfb0bfc1089dffd261dc570f971f40bf4ac7c6f` — `docs: draft CareNest 2.18.13 release notes`;
-- `aa0c89752058d487d9590badc610cb023c63e6c1` — `docs: add CareNest 2.18.13 release checklist`;
-- `66119cfb543500d33d7c88e88a47704e2f536c13` — `docs: align project status with 2.18.13 preparation`;
-- `fc5251607acc4bf1d83ba49575555c93846c1a3f` — `docs: align next steps with 2.18.13 preparation`;
-- `42ca18a3349ccb76f8694d7bdbfbcff71a76c7d2` — `docs: refresh handoff for CareNest 2.18.13 preparation`;
-- `615a39a091bb6d1d281bccdb2781d93c9c1aff58` — `test: guard active release-line handoff alignment`;
-- `f80f3d7d826934eca2d11542e05589e9fd9426db` — `docs: record CareNest 2.18.13 preparation in changelog`;
-- `f08c80a5db52f8eae4266fbd55ca91486d02ee02` — `docs: complete 2.18.13 source-preparation checklist`.
-
-Atomic commits are intentionally small and meaningful; no empty/artificial commits are used.
-
----
-
-## 12. Next exact repository tasks
-
-1. open the `2.18.13` preparation pull request;
-2. record the resulting final candidate head;
-3. inspect actual exact-head CareNest CI, CodeQL, Dependency Audit, Store Package Configuration and Store Inspection Artifacts;
-4. record actual test counts/build conclusions only after they exist;
-5. fix any real CI/source defect exposed by those workflows without weakening gates;
-6. merge only when required exact-head checks are green, using an expected-head lock;
-7. promote post-merge automated evidence/status only from the observed accepted source;
-8. leave external/manual production rows open until genuine evidence can be collected.
-
----
-
-## Final rule
-
-CareNest `2.18.13` is currently **SOURCE PREPARATION — NOT PUBLISHED**.
-
-Do not claim production signing, real-device behavior, full Linux/browser parity, accessibility completion, store approval, publication or a global bug-free guarantee unless the exact corresponding evidence exists.
+1. finish the remaining release-governance/source-document alignment;
+2. run the exact-head verification matrix for this documentation-promotion branch;
+3. record the resulting observed counts and workflow conclusions;
+4. promote `AUTOMATED_BASELINE.md`, `PROJECT_STATUS.md` and `docs/releases/NEXT_STEPS.md` from that observed result;
+5. keep all genuine production/manual rows explicitly open;
+6. proceed to packaged compatibility and platform evidence only when real test environments/artifacts are available.
