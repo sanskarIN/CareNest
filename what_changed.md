@@ -18,7 +18,7 @@ This is the active continuation handoff for the CareNest `2.18.13` maintenance l
 
 ## 1. Fresh exact-head verification observed
 
-Fresh exact-head verification **has been observed** for the `2.18.13` preparation source `323ea67281cbbdb3e7ca149fabd7135e8ad8a377` through PR #87's exact merge ref `421fead1e82c3d470ebf72417049d80b104c5516`.
+Fresh exact-head verification has been observed for the `2.18.13` preparation source `323ea67281cbbdb3e7ca149fabd7135e8ad8a377` through PR #87's exact merge ref `421fead1e82c3d470ebf72417049d80b104c5516`.
 
 The five required top-level workflow groups completed successfully:
 
