@@ -3,7 +3,7 @@
 **Target:** `2.18.13`  
 **Build/package code:** `21813`  
 **MAUI Controls:** `10.0.100`  
-**State:** PREPARATION — NOT RELEASED
+**State:** SOURCE VERIFIED — NOT RELEASED
 
 This checklist supplements `RELEASE_CHECKLIST.md`, `PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`, `PRODUCTION_EVIDENCE_INDEX.md` and the canonical evidence templates. It does not replace them.
 
@@ -20,55 +20,47 @@ This checklist supplements `RELEASE_CHECKLIST.md`, `PRODUCTION_VALIDATION_EVIDEN
 - [x] Draft release notes added.
 - [x] Active `PROJECT_STATUS.md` aligned to the `2.18.13` preparation boundary.
 - [x] Active `docs/releases/NEXT_STEPS.md` aligned to the `2.18.13` preparation boundary.
-- [x] Active `what_changed.md` handoff aligned to the `2.18.13` preparation boundary.
+- [x] Active `what_changed.md` handoff aligned to the `2.18.13` verification boundary.
 - [x] `CHANGELOG.md` records the `2.18.13` maintenance preparation.
 
-## Starting repository boundary
+## Accepted exact-head automated verification
 
-Preparation branch: `continue/prepare-2.18.13-20260825`.
+The following rows are complete from the observed PR #87 exact source/merge boundary.
 
-Starting `main`: `b2db4821047dbfb7fe223961fc237afcdfc8371e`.
+**Accepted branch source:** `323ea67281cbbdb3e7ca149fabd7135e8ad8a377`  
+**Verification PR:** `#87`  
+**Verification merge ref:** `421fead1e82c3d470ebf72417049d80b104c5516`  
+**Resulting `main` merge:** `b3efa71ab412da65f08d78ad1c4d913e302ff901`
 
-That starting source includes PR #86, whose exact head `e14a40d095a6f39993a0f62e497f15ec4668701f` passed:
+- [x] Final exact-source CareNest CI succeeds — run `32842319249`.
+- [x] Final exact-source CodeQL succeeds — run `32842319316`.
+- [x] Final exact-source unsuppressed Dependency Audit succeeds — run `32842319254`.
+- [x] Final exact-source Store Package Configuration succeeds — run `32842319272`.
+- [x] Final exact-source Store Inspection Artifacts succeeds — run `32842319256`.
+- [x] Unit tests pass — **122/122**.
+- [x] Integration tests pass — **54/54**.
+- [x] UI/source-policy tests pass — **218/218**.
+- [x] Total core test inventory — **394/394**.
+- [x] Platform-neutral formatting passes.
+- [x] Stable documentation-link verification passes — **210 live local links across 131 stable active Markdown files**.
+- [x] Android Release build passes.
+- [x] Windows Release build passes.
+- [x] iOS simulator Release build passes.
+- [x] Mac Catalyst Release build passes.
+- [x] Linux desktop Release build passes.
+- [x] WebAssembly browser Release publish passes.
 
-- CareNest CI;
-- CodeQL;
-- Dependency Audit;
-- Store Package Configuration;
-- Store Inspection Artifacts.
+The accepted CareNest CI run required no retry for this exact source. Historical evidence remains tied to its exact source boundary and is never transferred to a newer source without a fresh run.
 
-Those checks are historical evidence for the prior exact source only. They do not satisfy the final `2.18.13` exact-head acceptance rows below.
+## Verification-promotion continuation
 
-## Exact-head automated acceptance
+This continuation branch changes the active source-policy handoff contract after the successful PR #87 verification. Because a verification-sensitive test changed, this branch must earn its own fresh exact-head matrix before its new source becomes the accepted baseline.
 
-Complete these only from observed results on the final `2.18.13` pull-request head/merge ref.
-
-- [ ] Final exact-head CareNest CI succeeds.
-- [ ] Final exact-head CodeQL succeeds.
-- [ ] Final exact-head unsuppressed Dependency Audit succeeds.
-- [ ] Final exact-head Store Package Configuration succeeds.
-- [ ] Final exact-head Store Inspection Artifacts succeeds.
-- [ ] Unit tests pass on the accepted exact source.
-- [ ] Integration tests pass on the accepted exact source.
-- [ ] UI/source-policy tests pass on the accepted exact source.
-- [ ] Platform-neutral formatting passes.
-- [ ] Stable documentation-link verification passes.
-- [ ] Android Release build passes.
-- [ ] Windows Release build passes.
-- [ ] iOS simulator Release build passes.
-- [ ] Mac Catalyst Release build passes.
-- [ ] Linux desktop Release build passes.
-- [ ] WebAssembly browser Release publish passes.
-
-Do not pre-fill counts, workflow IDs or run conclusions before they are actually observed on the final source.
-
-## Repository follow-through
-
-- [ ] Merge the `2.18.13` preparation PR only after required exact-head checks are green.
-- [ ] Use an expected-head lock for the merge so a moved head cannot be accepted accidentally.
-- [ ] Record the accepted branch source, PR merge ref and resulting `main` commit.
-- [ ] Promote dynamic automated baseline/status records only from actually observed results.
-- [ ] Preserve any transient infrastructure failure/retry history rather than rewriting it as an uninterrupted pass.
+- [x] Create continuation branch from verified `main`.
+- [x] Align the handoff with the observed `2.18.13` exact-head evidence.
+- [x] Keep historical-evidence non-transfer wording protected.
+- [ ] Run fresh exact-head verification for the documentation-promotion continuation.
+- [ ] Promote the dynamic automated baseline/status documents from that new observed result.
 
 ## Production compatibility validation
 
@@ -189,6 +181,6 @@ Unsigned automated inspection artifacts are not signed production packages.
 
 ## Final rule
 
-CareNest `2.18.13` is currently **NOT RELEASED**.
+CareNest `2.18.13` is **SOURCE VERIFIED — NOT RELEASED**.
 
 Do not describe it as production released, fully platform-parity verified, accessibility-complete, production signed, store approved or globally defect-free until the corresponding evidence actually exists for the exact source/package/deployment being promoted.
