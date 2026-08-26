@@ -1,20 +1,22 @@
 # CareNest 2.18.13 Release Preparation
 
-**Prepared:** 2026-08-25  
+**Prepared:** 2026-08-26  
 **Target version:** `2.18.13`  
 **Package/build code:** `21813`  
-**State:** PREPARED IN SOURCE — NOT PUBLISHED  
+**State:** SOURCE VERIFIED — NOT PUBLISHED  
 **Repository:** `https://github.com/sanskarIN/CareNest`  
-**Preparation branch:** `continue/prepare-2.18.13-20260825`  
-**Starting `main`:** `b2db4821047dbfb7fe223961fc237afcdfc8371e`
+**Accepted exact source:** `323ea67281cbbdb3e7ca149fabd7135e8ad8a377`  
+**Verification PR:** `#87`  
+**Verification merge ref:** `421fead1e82c3d470ebf72417049d80b104c5516`  
+**Merged `main`:** `b3efa71ab412da65f08d78ad1c4d913e302ff901`
 
-This document records source preparation for CareNest `2.18.13`. It does not claim store approval, publication, production signing, real-device validation, accessibility completion, or full Linux/browser feature parity.
+This document records source preparation and observed automated verification for CareNest `2.18.13`. It does not claim store approval, publication, production signing, real-device validation, accessibility completion, or full Linux/browser feature parity.
 
 ## Why this patch line exists
 
-CareNest `2.18.12` reached an accepted automated-source boundary, and the post-merge governance PR #86 also completed its own exact-head verification before merging to `main` at `b2db4821047dbfb7fe223961fc237afcdfc8371e`.
+CareNest `2.18.12` reached an accepted automated-source boundary, followed by release-governance work that was verified and merged through PR #86. The `2.18.13` line is a maintenance continuation from that verified repository state.
 
-The `2.18.13` line is a maintenance continuation from that verified repository state. It rolls the active source version forward without converting unresolved production evidence into a pass. The external/manual release blockers inherited from `2.18.12` remain open until genuine evidence exists.
+The patch rolls the active source version forward, protects release-line metadata with automated contracts, and keeps unresolved production evidence fail-closed.
 
 ## Version-specific release package
 
@@ -22,7 +24,7 @@ Use these version-specific documents together:
 
 - `VERSION_2_18_13_PREPARATION.md` — source/version boundary and promotion rules;
 - `RELEASE_NOTES_2_18_13_DRAFT.md` — publication draft that remains non-final;
-- `RELEASE_CHECKLIST_2_18_13.md` — exact-head, production-evidence, signing and store checklist.
+- `RELEASE_CHECKLIST_2_18_13.md` — exact-source, production-evidence, signing and store checklist.
 
 The stable authorities remain `RELEASE_CHECKLIST.md`, `PRODUCTION_VALIDATION_EVIDENCE_STANDARD.md`, `PRODUCTION_EVIDENCE_INDEX.md` and the canonical validation templates.
 
@@ -47,44 +49,40 @@ The central dependency baseline currently includes:
 
 `tests/CareNest.UiTests/VersionConsistencyContractTests.cs` protects the release metadata, application build code, MAUI baseline and non-published version-document state from accidental drift.
 
-## Starting verification authority
+## Accepted automated verification
 
-The branch starts from merged `main` commit `b2db4821047dbfb7fe223961fc237afcdfc8371e`, which includes PR #86.
+PR #87 independently verified exact source `323ea67281cbbdb3e7ca149fabd7135e8ad8a377` through merge ref `421fead1e82c3d470ebf72417049d80b104c5516` before merging to `main` at `b3efa71ab412da65f08d78ad1c4d913e302ff901`.
 
-PR #86 exact head `e14a40d095a6f39993a0f62e497f15ec4668701f` completed successfully before merge in:
+Observed results:
 
-- CareNest CI;
-- CodeQL;
-- Dependency Audit;
-- Store Package Configuration;
-- Store Inspection Artifacts.
+- CareNest CI: **success** — run `32842319249`;
+- CodeQL: **success** — run `32842319316`;
+- unsuppressed Dependency Audit: **success** — run `32842319254`;
+- Store Package Configuration: **success** — run `32842319272`;
+- Store Inspection Artifacts: **success** — run `32842319256`;
+- unit tests: **122/122**;
+- integration tests: **54/54**;
+- UI/source-policy tests: **218/218**;
+- total core tests: **394/394**;
+- Android Release build: **success**;
+- Windows Release build: **success**;
+- iOS simulator Release build: **success**;
+- Mac Catalyst Release build: **success**;
+- Linux desktop Release build: **success**;
+- WebAssembly browser Release publish: **success**;
+- stable documentation-link verification: **success** — 210 live local links across 131 stable active Markdown files.
 
-Those results are historical evidence for that exact source only. They are not reused as verification evidence for the newer `2.18.13` branch head.
+The exact-source CareNest CI run required no retry. These results are authoritative for the exact source and merge boundary named above.
 
-## Required automated acceptance for 2.18.13
+## Verification continuation rule
 
-The exact final `2.18.13` preparation head must independently complete the configured verification matrix, including:
+The repository now contains a small follow-up source-policy contract change that updates the active handoff from pre-verification wording to observed-verification wording. That continuation branch must complete a fresh exact-head matrix before its new source becomes the next accepted automated baseline.
 
-- repository formatting and source-policy checks;
-- unit tests;
-- integration tests;
-- UI/source-policy tests;
-- Android Release build;
-- Windows Release build;
-- iOS simulator Release build;
-- Mac Catalyst Release build;
-- Linux desktop Release build;
-- WebAssembly browser Release publish;
-- CodeQL;
-- unsuppressed Dependency Audit;
-- Store Package Configuration;
-- Store Inspection Artifacts.
+Historical workflow success is never transferred to a newer source.
 
-Queued, skipped, cancelled, failed, superseded or older-head results are not success evidence for a newer source.
+## Production evidence still required
 
-## Production evidence inherited as open work
-
-The source roll-forward does not satisfy the production rows that were still open for `2.18.12`. Before `2.18.13` can be represented as production released, actual evidence is still required where applicable for:
+Before CareNest `2.18.13` can be represented as production released, actual evidence remains required where applicable for:
 
 - installed Android behavior and real notification/reminder behavior;
 - installed Windows package/update behavior;
