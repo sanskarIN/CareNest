@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -159,6 +160,42 @@ def test_output_inside_payload_is_rejected(temp: Path) -> None:
     require("outside the payload directory" in completed.stderr, "inside-payload rejection reason missing")
 
 
+def test_symlinked_payload_entry_is_rejected(temp: Path) -> None:
+    payload = temp / "symlink-package"
+    payload.mkdir()
+    target = temp / "outside.txt"
+    target.write_text("outside payload\n", encoding="utf-8")
+    link = payload / "linked.txt"
+    output = temp / "symlink-evidence.json"
+
+    try:
+        os.symlink(target, link)
+    except (OSError, NotImplementedError) as exc:
+        print(f"Symlink rejection self-test skipped: {exc}")
+        return
+
+    completed = run_tool(
+        str(payload),
+        "--platform",
+        "windows",
+        "--version",
+        "1.0.0-rc.1",
+        "--build",
+        "1",
+        "--package-id",
+        "com.sanskar.carenest",
+        "--stage",
+        "inspection",
+        "--signing-provenance",
+        "synthetic inspection artifact",
+        "--output",
+        str(output),
+    )
+    require(completed.returncode != 0, "symlinked payload entry unexpectedly passed evidence generation")
+    require(not output.exists(), "rejected symlink payload unexpectedly produced evidence output")
+    require("symbolic link" in completed.stderr, "symlink rejection reason missing")
+
+
 def test_production_requires_tag(temp: Path) -> None:
     payload = temp / "production-without-tag.bin"
     payload.write_bytes(b"synthetic signed-looking payload")
@@ -194,6 +231,7 @@ def main() -> int:
             test_safe_directory_manifest(temp)
             test_forbidden_marker_fails_closed(temp)
             test_output_inside_payload_is_rejected(temp)
+            test_symlinked_payload_entry_is_rejected(temp)
             test_production_requires_tag(temp)
     except (OSError, RuntimeError, json.JSONDecodeError) as exc:
         print(f"Package evidence self-test failed: {exc}", file=sys.stderr)

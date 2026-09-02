@@ -39,6 +39,8 @@ public sealed class PackageEvidenceToolContractTests
         Assert.Contains("run_store_safe_scan", tool, StringComparison.Ordinal);
         Assert.Contains("hashlib.sha256", tool, StringComparison.Ordinal);
         Assert.Contains("payload.rglob", tool, StringComparison.Ordinal);
+        Assert.Contains("is_symlink", tool, StringComparison.Ordinal);
+        Assert.Contains("Payload contains a symbolic link", tool, StringComparison.Ordinal);
         Assert.Contains("files", tool, StringComparison.Ordinal);
         Assert.Contains("storeSafePayloadScan", tool, StringComparison.Ordinal);
         Assert.Contains("Evidence output must be outside the payload directory", tool, StringComparison.Ordinal);
@@ -54,6 +56,7 @@ public sealed class PackageEvidenceToolContractTests
         Assert.Contains("test_safe_directory_manifest", selfTest, StringComparison.Ordinal);
         Assert.Contains("test_forbidden_marker_fails_closed", selfTest, StringComparison.Ordinal);
         Assert.Contains("test_output_inside_payload_is_rejected", selfTest, StringComparison.Ordinal);
+        Assert.Contains("test_symlinked_payload_entry_is_rejected", selfTest, StringComparison.Ordinal);
         Assert.Contains("test_production_requires_tag", selfTest, StringComparison.Ordinal);
         Assert.Contains("ramsandesh.gumroad.com", selfTest, StringComparison.Ordinal);
     }
