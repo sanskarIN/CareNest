@@ -1,6 +1,6 @@
 # CareNest Package Evidence Tooling
 
-**Release line:** `1.0.0-rc.1`  
+**Release line:** `2.18.13`  
 **Tool:** `build/scripts/create-package-evidence.py`  
 **Shell wrapper:** `build/scripts/create-package-evidence.sh`  
 **PowerShell wrapper:** `build/scripts/create-package-evidence.ps1`
@@ -77,6 +77,7 @@ It:
 - records whether tracked repository files are clean;
 - runs the store-safe payload scanner;
 - hashes the payload;
+- rejects symbolic links in payload files/directories rather than following them outside the inspected payload boundary;
 - writes the JSON evidence outside the payload path.
 
 Inspection mode does not require a release tag and may describe an unsigned/internal artifact in `--signing-provenance`.
@@ -87,8 +88,8 @@ Inspection mode does not require a release tag and may describe an unsigned/inte
 ./build/scripts/create-package-evidence.sh \
   artifacts/android/CareNest.aab \
   --platform android \
-  --version 1.0.0-rc.1 \
-  --build 1 \
+  --version 2.18.13 \
+  --build 21813 \
   --package-id com.sanskar.carenest \
   --stage inspection \
   --signing-provenance "unsigned CI inspection artifact" \
@@ -101,8 +102,8 @@ Inspection mode does not require a release tag and may describe an unsigned/inte
 ./build/scripts/create-package-evidence.ps1 `
   artifacts/windows/CareNest `
   --platform windows `
-  --version 1.0.0-rc.1 `
-  --build 1 `
+  --version 2.18.13 `
+  --build 21813 `
   --package-id com.sanskar.carenest `
   --stage inspection `
   --signing-provenance "unpackaged CI inspection output" `
@@ -123,9 +124,10 @@ It requires:
 - no tracked workspace changes;
 - a non-empty signing/notarization provenance description that is not labelled unsigned/not-applicable;
 - successful store-safe payload scanning;
-- an output location outside the package payload.
+- an output location outside the package payload;
+- a payload containing no symbolic links.
 
-This prevents the evidence tool from creating a production-labelled manifest while checked out at a different source than the release tag.
+This prevents the evidence tool from creating a production-labelled manifest while checked out at a different source than the release tag or while hashing files outside the intended payload boundary through symbolic links.
 
 It still cannot cryptographically prove that the human-readable signing-provenance description itself is truthful. Signing verification or store-managed provenance must be retained through the appropriate platform/store mechanism as additional evidence.
 
@@ -133,15 +135,15 @@ It still cannot cryptographically prove that the human-readable signing-provenan
 
 ```bash
 ./build/scripts/create-package-evidence.sh \
-  release/CareNest-1.0.0.aab \
+  release/CareNest-2.18.13.aab \
   --platform android \
-  --version 1.0.0 \
-  --build 1 \
+  --version 2.18.13 \
+  --build 21813 \
   --package-id com.sanskar.carenest \
   --stage production \
-  --source-tag v1.0.0 \
+  --source-tag v2.18.13 \
   --signing-provenance "Google Play App Signing; certificate fingerprint recorded in private release log" \
-  --output release/evidence/CareNest-1.0.0-android.json
+  --output release/evidence/CareNest-2.18.13-android.json
 ```
 
 Do not put keystore passwords, private keys, service credentials or other secrets in `--signing-provenance` or `--notes`.
@@ -150,45 +152,45 @@ Do not put keystore passwords, private keys, service credentials or other secret
 
 ```powershell
 ./build/scripts/create-package-evidence.ps1 `
-  release/CareNest-1.0.0.msix `
+  release/CareNest-2.18.13.msix `
   --platform windows `
-  --version 1.0.0 `
-  --build 1 `
+  --version 2.18.13 `
+  --build 21813 `
   --package-id com.sanskar.carenest `
   --stage production `
-  --source-tag v1.0.0 `
+  --source-tag v2.18.13 `
   --signing-provenance "Production code-signing certificate public thumbprint recorded separately" `
-  --output release/evidence/CareNest-1.0.0-windows.json
+  --output release/evidence/CareNest-2.18.13-windows.json
 ```
 
 ### iOS production example
 
 ```bash
 ./build/scripts/create-package-evidence.sh \
-  release/CareNest-1.0.0.ipa \
+  release/CareNest-2.18.13.ipa \
   --platform ios \
-  --version 1.0.0 \
-  --build 1 \
+  --version 2.18.13 \
+  --build 21813 \
   --package-id com.sanskar.carenest \
   --stage production \
-  --source-tag v1.0.0 \
+  --source-tag v2.18.13 \
   --signing-provenance "App Store distribution signing/provisioning identifiers recorded separately" \
-  --output release/evidence/CareNest-1.0.0-ios.json
+  --output release/evidence/CareNest-2.18.13-ios.json
 ```
 
 ### Mac Catalyst production example
 
 ```bash
 ./build/scripts/create-package-evidence.sh \
-  release/CareNest-1.0.0.pkg \
+  release/CareNest-2.18.13.pkg \
   --platform maccatalyst \
-  --version 1.0.0 \
-  --build 1 \
+  --version 2.18.13 \
+  --build 21813 \
   --package-id com.sanskar.carenest \
   --stage production \
-  --source-tag v1.0.0 \
+  --source-tag v2.18.13 \
   --signing-provenance "Developer ID/App Store signing and notarization record retained separately" \
-  --output release/evidence/CareNest-1.0.0-maccatalyst.json
+  --output release/evidence/CareNest-2.18.13-maccatalyst.json
 ```
 
 ## 5. Source SHA behavior
@@ -214,11 +216,13 @@ For a package file, the evidence JSON must not replace the package file itself.
 
 This prevents the evidence generator from changing the payload after/during hashing and creating unstable self-referential evidence.
 
-## 7. Directory hashing rule
+## 7. Directory and symbolic-link hashing rule
 
 For published directory payloads, each file is processed in sorted relative-path order.
 
-The aggregate digest receives, for each file:
+Before any file is hashed, the directory traversal rejects symbolic-link entries. The tool therefore never follows a payload symlink to bytes outside the inspected directory.
+
+The aggregate digest receives, for each accepted regular file:
 
 ```text
 relative-path NUL file-sha256 NUL file-size LF
@@ -232,6 +236,7 @@ The tool returns non-zero and does not create successful evidence when, among ot
 
 - the payload path does not exist;
 - the payload directory contains no files;
+- a payload file or directory entry is a symbolic link;
 - a file cannot be stat'ed or read;
 - the source SHA is invalid or cannot be resolved;
 - the store-safe scanner is missing;
@@ -259,6 +264,7 @@ The self-test uses temporary synthetic payloads only and verifies:
 - a safe directory produces deterministic sorted file evidence;
 - a Gumroad marker fails closed;
 - evidence output inside a payload directory is rejected;
+- a symbolic-link payload entry is rejected when the test environment supports creating symlinks;
 - production mode without a `v*` tag is rejected.
 
 CareNest CI runs Python syntax validation and this self-test before the .NET formatting/test steps.
