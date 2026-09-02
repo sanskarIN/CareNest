@@ -86,13 +86,19 @@ def sha256_file(path: Path) -> str:
 
 def iter_payload_files(payload: Path) -> Iterable[tuple[str, Path]]:
     if payload.is_file():
+        if payload.is_symlink():
+            raise RuntimeError(f"Payload must not be a symbolic link: {payload}")
         yield payload.name, payload
         return
     if not payload.is_dir():
         raise RuntimeError(f"Payload does not exist or is not a file/directory: {payload}")
 
-    for path in sorted(candidate for candidate in payload.rglob("*") if candidate.is_file()):
-        yield path.relative_to(payload).as_posix(), path
+    candidates = sorted(payload.rglob("*"))
+    for candidate in candidates:
+        if candidate.is_symlink():
+            raise RuntimeError(f"Payload contains a symbolic link: {candidate}")
+        if candidate.is_file():
+            yield candidate.relative_to(payload).as_posix(), candidate
 
 
 def collect_payload_evidence(payload: Path) -> tuple[list[dict[str, object]], str, int]:
