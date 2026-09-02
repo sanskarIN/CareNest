@@ -47,17 +47,25 @@ public sealed class ActiveReleaseLineContractTests
     }
 
     [Fact]
-    public void Active_handoff_requires_fresh_exact_head_verification_before_promotion()
+    public void Active_handoff_records_exact_head_verification_and_preserves_production_boundary()
     {
         var root = FindRepositoryRoot();
         var handoff = Read(root, "what_changed.md");
 
         Assert.Contains(
-            "Fresh exact-head verification has not yet been observed",
+            "Exact-head automated verification has now been observed successfully",
             handoff,
             StringComparison.OrdinalIgnoreCase);
         Assert.Contains(
-            "Historical workflow success is never transferred to a newer source",
+            "Production/manual evidence remains separate and is not inferred from CI",
+            handoff,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "A later source commit is a new candidate and must earn fresh exact-head verification",
+            handoff,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "NOT PUBLISHED",
             handoff,
             StringComparison.OrdinalIgnoreCase);
     }
